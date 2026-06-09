@@ -10,6 +10,14 @@ const requiredEnvVars = [
 ] as const;
 
 export function validateEnv() {
+  // Skip strict validation during Next.js build time compilation
+  if (
+    process.env.NEXT_PHASE === "phase-production-build" ||
+    process.env.NODE_ENV === "test"
+  ) {
+    return;
+  }
+
   const missing: string[] = [];
 
   for (const envVar of requiredEnvVars) {
