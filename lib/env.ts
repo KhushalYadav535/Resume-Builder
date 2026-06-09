@@ -35,5 +35,8 @@ export function validateEnv() {
   }
 }
 
-// Auto-run validation on module load (startup)
-validateEnv();
+// NOTE: Do NOT auto-run validateEnv() here.
+// During `next build`, worker processes that generate static pages
+// do not inherit NEXT_PHASE, causing the validation to throw and
+// crash the build. Instead, call validateEnv() explicitly in
+// runtime-only code paths (API routes, middleware, etc.).
