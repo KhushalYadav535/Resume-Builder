@@ -1,4 +1,3 @@
-import "@/lib/env";
 import type { Metadata } from "next";
 import { AuthProvider } from "@/components/AuthProvider";
 import "./globals.css";
