@@ -17,42 +17,71 @@ export async function GET(req: NextRequest) {
 
     const supabase = await createClient();
 
-    // Query recent 150 AI request logs
+    // Query recent 150 AI request logs (no join — ai_requests FK points to
+    // auth.users, not user_profiles, so PostgREST can't resolve the embed)
     const { data: logs, error: logsError } = await supabase
       .from("ai_requests")
-      .select("id, model_used, tokens_estimated, success, created_at, user_profiles(email)")
+      .select("id, user_id, model_used, tokens_estimated, success, created_at")
       .order("created_at", { ascending: false })
       .limit(150);
 
     if (logsError) {
-      console.warn("Error querying ai_requests table (might not be migrated yet):", logsError.message);
-      return NextResponse.json({ logs: [], stats: { totalRequests: 0, successCount: 0, failCount: 0, totalTokens: 0, successRate: 0, modelCounts: {} } });
+      console.warn("Error querying ai_requests table:", logsError.message);
+      return NextResponse.json({
+        success: true,
+        logs: [],
+        stats: { totalRequests: 0, successCount: 0, failCount: 0, totalTokens: 0, successRate: 0, modelCounts: {} }
+      });
     }
 
-    // Process aggregates
+    // Collect unique user IDs and batch-fetch their emails from user_profiles
+    const userIds = [...new Set((logs || []).map((l: any) => l.user_id).filter(Boolean))];
+    let emailMap: Record<string, string> = {};
+
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("user_profiles")
+        .select("id, email")
+        .in("id", userIds);
+
+      if (profiles) {
+        emailMap = Object.fromEntries(profiles.map((p: any) => [p.id, p.email]));
+      }
+    }
+
+    // Merge emails into logs and compute aggregates
     let totalRequests = logs?.length || 0;
     let successCount = 0;
     let failCount = 0;
     let totalTokens = 0;
     const modelCounts: Record<string, number> = {};
 
-    logs?.forEach((log: any) => {
+    const enrichedLogs = (logs || []).map((log: any) => {
       if (log.success) {
         successCount++;
       } else {
         failCount++;
       }
       totalTokens += log.tokens_estimated || 0;
-      
+
       const model = log.model_used || "unknown";
       modelCounts[model] = (modelCounts[model] || 0) + 1;
+
+      return {
+        id: log.id,
+        model_used: log.model_used,
+        tokens_estimated: log.tokens_estimated,
+        success: log.success,
+        created_at: log.created_at,
+        user_profiles: log.user_id ? { email: emailMap[log.user_id] || null } : null,
+      };
     });
 
     const successRate = totalRequests > 0 ? Math.round((successCount / totalRequests) * 100) : 100;
 
     return NextResponse.json({
       success: true,
-      logs: logs || [],
+      logs: enrichedLogs,
       stats: {
         totalRequests,
         successCount,
