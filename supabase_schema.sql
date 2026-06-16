@@ -216,7 +216,7 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON public.notifications(user_i
 -- 15. AI Requests Logging Table
 CREATE TABLE IF NOT EXISTS public.ai_requests (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   model_used text NOT NULL,
   tokens_estimated integer,
   success boolean DEFAULT true,

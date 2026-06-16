@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
-    const { targetRole, targetCity, yoe } = await req.json();
+    // We no longer destructure targetRole, targetCity, yoe since they aren't stored in user_profiles.
+    await req.json(); // Read to avoid ignoring payload stream
 
     // Update profiles database table
     const { data, error } = await supabase
