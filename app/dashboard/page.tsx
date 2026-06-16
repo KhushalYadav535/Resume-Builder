@@ -151,7 +151,7 @@ export default function Dashboard() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2.5rem", flexWrap: "wrap", gap: "1rem", borderBottom: "1px solid var(--border)", paddingBottom: "1.5rem" }}>
           <div>
             <p className="section-label" style={{ marginBottom: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              Logged in as: <span style={{ color: "var(--accent)", textTransform: "none" }}>{user?.email}</span>
+              Logged in as: <span style={{ color: "var(--accent)", textTransform: "none" }}>{user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || "User"}</span>
               {role === "admin" && (
                 <span className="tag tag-red" style={{ fontSize: "0.65rem", fontWeight: 800 }}>Admin Panel</span>
               )}
