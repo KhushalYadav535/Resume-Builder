@@ -203,13 +203,13 @@ export async function POST(req: NextRequest) {
             spacing: { before: 120, after: 40 },
             children: [
               new TextRun({
-                text: p.title || "Project",
+                text: p.name || "Project",
                 bold: true,
                 size: 22,
                 font: "Calibri",
               }),
               new TextRun({
-                text: p.role ? `  (${p.role})` : "",
+                text: p.date ? ` (${p.date})` : "",
                 italics: true,
                 size: 20,
                 font: "Calibri",
@@ -223,6 +223,30 @@ export async function POST(req: NextRequest) {
             ],
           })
         );
+
+        // Project Description
+        if (p.description) {
+          children.push(new Paragraph({
+            children: [
+              new TextRun({ text: "• ", size: 20 }),
+              new TextRun({ text: p.description, size: 20 }),
+            ],
+            spacing: { before: 80 },
+            indent: { left: 360, hanging: 360 },
+          }));
+        }
+
+        // Project Tech Stack
+        if (p.techStack && p.techStack.length > 0) {
+          children.push(new Paragraph({
+            children: [
+              new TextRun({ text: "• Tech Stack: ", size: 20, bold: true }),
+              new TextRun({ text: p.techStack.join(", "), size: 20 }),
+            ],
+            spacing: { before: 40 },
+            indent: { left: 360, hanging: 360 },
+          }));
+        }
 
         const pBullets = p.bullets || [];
         pBullets.forEach((pb: string) => {

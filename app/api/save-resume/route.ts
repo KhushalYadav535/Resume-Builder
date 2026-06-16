@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     
     // Auto-calculate ATS score if omitted (bridges the Builder ATS score gap)
     let atsScore = rawAtsScore !== undefined ? rawAtsScore : (ats_score !== undefined ? ats_score : null);
-    if (!atsScore && resumeText) {
+    if (atsScore == null && resumeText) {
       try {
         atsScore = calculateATS(resumeText);
       } catch (err) {

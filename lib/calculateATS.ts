@@ -19,7 +19,7 @@ function estimateYearsOfExperience(text: string): number {
     return 2;
   }
 
-  const sortedYears = [...new Set(yearMatches)].filter(y => y >= 1995 && y <= 2026).sort((a, b) => a - b);
+  const sortedYears = [...new Set(yearMatches)].filter(y => y >= 1995 && y <= new Date().getFullYear()).sort((a, b) => a - b);
   
   if (sortedYears.length < 2) {
     const lower = text.toLowerCase();

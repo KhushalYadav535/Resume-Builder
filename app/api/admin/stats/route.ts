@@ -36,8 +36,7 @@ export async function GET(req: NextRequest) {
     // Query all resumes owned by this user
     const { data: resumes, error } = await supabase
       .from("resumes")
-      .select("id, file_name, ats_score, template_id, created_at, updated_at")
-      .eq("user_id", user.id);
+      .select("id, file_name, ats_score, template_id, created_at, updated_at");
 
     if (error) {
       throw error;

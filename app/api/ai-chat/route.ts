@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { askAI } from "@/lib/openrouter";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
+
     const { messages, resumeData } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
