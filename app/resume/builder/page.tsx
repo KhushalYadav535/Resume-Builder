@@ -996,6 +996,21 @@ function BuilderContent() {
                   </button>
                 </div>
 
+                {(() => {
+                  const shortTenureCount = resume.workExperience.filter(exp => {
+                    const months = calculateTenureMonths(exp.startDate, exp.endDate, exp.current);
+                    return months > 0 && months < 18;
+                  }).length;
+                  if (shortTenureCount >= 3) {
+                    return (
+                      <div style={{ background: "rgba(255, 101, 132, 0.08)", borderLeft: "4px solid #ff6584", padding: "1rem", borderRadius: "8px", fontSize: "0.82rem", color: "var(--text)", marginBottom: "0.5rem" }}>
+                        <strong>⚠️ Job-Hopping Risk Warning:</strong> You have {shortTenureCount} short-tenure positions (under 18 months each). Automated resume screeners and recruiters may flag this pattern. We recommend providing clear, professional exit contexts (e.g. startup shut down, contract completion, UPSC preparation) in the Exit Context Note fields below to mitigate this risk.
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
                 {resume.workExperience.length === 0 && (
                   <div className="card" style={{ textAlign: "center", padding: "2.5rem", borderStyle: "dashed" }}>
                     <p style={{ color: "var(--text-muted)", marginBottom: "1rem" }}>No experience added yet.</p>

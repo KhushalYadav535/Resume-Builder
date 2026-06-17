@@ -395,7 +395,7 @@ export async function POST(req: NextRequest) {
             spacing: { after: 60 },
             children: [
               new TextRun({
-                text: `${c.name || "Certification"} ${c.issuer ? `issued by ${c.issuer}` : ""} ${c.year ? `(${c.year})` : ""}`,
+                text: `${c.name || "Certification"} ${c.issuer ? `issued by ${c.issuer}` : ""} ${c.date || c.year ? `(${c.date || c.year})` : ""}`,
                 size: 22,
                 font: "Calibri",
               }),
