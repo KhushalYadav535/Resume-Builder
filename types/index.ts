@@ -98,6 +98,7 @@ export interface ResumeData {
   fontSize?: number; // Zoom level or baseline font size
   spacing?: number; // Line spacing margin multiplier
   sectionOrder?: string[]; // Custom ordering sequence
+  targetJobDescription?: string;
 }
 
 export interface ATSScore {
