@@ -1933,10 +1933,11 @@ function BuilderContent() {
             )}
 
             {/* PREVIOUS / NEXT STEPS NAVIGATION BUTTONS */}
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem", borderTop: "1px solid var(--border)", paddingTop: "1rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem", borderTop: "1px solid var(--border)", paddingTop: "1rem", paddingBottom: "1rem" }}>
               <button
                 className="btn-secondary"
                 disabled={activeStep === "personal"}
+                style={{ padding: "0.4rem 1rem", fontSize: "0.85rem", borderRadius: "8px", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }}
                 onClick={() => {
                   const idx = steps.findIndex((s) => s.key === activeStep);
                   if (idx > 0) setActiveStep(steps[idx - 1].key);
@@ -1947,6 +1948,7 @@ function BuilderContent() {
               <button
                 className="btn-primary"
                 disabled={activeStep === "preview"}
+                style={{ padding: "0.4rem 1rem", fontSize: "0.85rem", borderRadius: "8px", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }}
                 onClick={() => {
                   const idx = steps.findIndex((s) => s.key === activeStep);
                   if (idx >= 0 && idx < steps.length - 1) setActiveStep(steps[idx + 1].key);
