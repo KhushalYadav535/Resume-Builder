@@ -280,6 +280,22 @@ function BuilderContent() {
     }
   }, [resume]);
 
+  // Scroll preview to active section dynamically
+  useEffect(() => {
+    if (activeStep && activeStep !== "preview" && activeStep !== "templates") {
+      setTimeout(() => {
+        const elementId = `preview-section-${activeStep}`;
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        } else if (activeStep === "personal" || activeStep === "summary") {
+          const container = document.getElementById("resume-preview-container");
+          if (container) container.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, [activeStep, resume]);
+
   // Debounced Autosave Trigger
   useEffect(() => {
     if (isFirstLoad.current) {
@@ -1973,7 +1989,9 @@ function BuilderContent() {
             </button>
           </div>
 
-          <div style={{ 
+          <div 
+            id="resume-preview-container"
+            style={{ 
             flex: 1, 
             overflowY: "auto", 
             background: "var(--bg-3)", 
