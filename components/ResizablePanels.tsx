@@ -99,11 +99,7 @@ export default function ResizablePanels({
   }, [isDragging, minWidth]);
 
   if (!isLeftPanelVisible) {
-    return (
-      <div className="w-full flex-1 flex flex-col">
-        {rightPanel}
-      </div>
-    );
+    return <>{rightPanel}</>;
   }
 
   if (isMobile) {
