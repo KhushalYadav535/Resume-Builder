@@ -243,6 +243,7 @@ export default function JobTracker() {
     { title: "Interviews", key: "Interview", color: "#f6d365" },
     { title: "Offers", key: "Offer", color: "#43e97b" },
     { title: "Rejected / Closed", key: "Rejected", color: "#ff6584" },
+    { title: "Withdrawn", key: "Withdrawn", color: "#888888" },
   ];
 
   if (authLoading || !user) {
