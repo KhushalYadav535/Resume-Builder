@@ -136,7 +136,7 @@ export default function AdminAIUsagePage() {
             </div>
 
             {/* Split layout: Model breakdown + Log table */}
-            <div style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: "1.5rem", alignItems: "start", flexWrap: "wrap" }}>
+            <div className="detail-split-grid" style={{ alignItems: "start" }}>
               
               {/* Recent logs table */}
               <div className="card" style={{ padding: 0 }}>

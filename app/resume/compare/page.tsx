@@ -109,7 +109,7 @@ export default function ResumeComparePage() {
           <div style={{ display: "grid", gap: "2rem" }}>
             
             {/* SELECTOR TOOLBAR */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", background: "var(--card)", padding: "1.2rem", borderRadius: "12px", border: "1px solid var(--border)" }}>
+            <div className="responsive-grid-2" style={{ gap: "2rem", background: "var(--card)", padding: "1.2rem", borderRadius: "12px", border: "1px solid var(--border)" }}>
               <div>
                 <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.35rem", fontWeight: 600 }}>Resume A (Left)</label>
                 <select 
@@ -144,7 +144,7 @@ export default function ResumeComparePage() {
               <div style={{ display: "grid", gap: "1rem" }}>
                 
                 {/* 1. Resume Name cards */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+                <div className="responsive-grid-2" style={{ gap: "2rem" }}>
                   <div className="card" style={{ borderLeft: "4px solid var(--accent)", padding: "1.2rem" }}>
                     <h3 style={{ fontWeight: 800, fontSize: "1.1rem", margin: 0 }}>{resumeA.file_name}</h3>
                     <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>Last updated: {new Date(resumeA.created_at).toLocaleDateString()}</span>
@@ -160,7 +160,7 @@ export default function ResumeComparePage() {
                   <h4 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "0.95rem", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.4rem" }}>
                     ATS Score Comparison
                   </h4>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", textAlign: "center" }}>
+                  <div className="responsive-grid-2" style={{ gap: "2rem", textAlign: "center" }}>
                     <div>
                       {resumeA.ats_score ? (
                         <>
@@ -194,7 +194,7 @@ export default function ResumeComparePage() {
                   <h4 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "0.95rem", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.4rem" }}>
                     Profile Completeness Ratio
                   </h4>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+                  <div className="responsive-grid-2" style={{ gap: "2rem" }}>
                     <div>
                       {(() => {
                         const score = getCompletionStats(resumeA.resume_data);
@@ -234,7 +234,7 @@ export default function ResumeComparePage() {
                   <h4 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "0.95rem", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.4rem" }}>
                     Work Experience & Projects
                   </h4>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+                  <div className="responsive-grid-2" style={{ gap: "2rem" }}>
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem", fontSize: "0.85rem" }}>
                         <span style={{ color: "var(--text-muted)" }}>Positions:</span>
@@ -264,7 +264,7 @@ export default function ResumeComparePage() {
                   <h4 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "0.95rem", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.4rem" }}>
                     Key Skills Density
                   </h4>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+                  <div className="responsive-grid-2" style={{ gap: "2rem" }}>
                     <div>
                       <span style={{ fontSize: "0.74rem", textTransform: "uppercase", color: "var(--text-muted)", display: "block", marginBottom: "0.5rem" }}>Technical Skills ({resumeA.resume_data?.skills?.technical?.length || 0})</span>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
@@ -292,7 +292,7 @@ export default function ResumeComparePage() {
                   <h4 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "0.95rem", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.4rem" }}>
                     Missing Keywords Gap
                   </h4>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+                  <div className="responsive-grid-2" style={{ gap: "2rem" }}>
                     <div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
                         {resumeA.ats_score?.missingKeywords?.map((kw: string) => (
@@ -316,7 +316,7 @@ export default function ResumeComparePage() {
                   <h4 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "0.95rem", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.4rem" }}>
                     Professional Summary
                   </h4>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+                  <div className="responsive-grid-2" style={{ gap: "2rem" }}>
                     <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.5, fontStyle: "italic" }}>
                       "{resumeA.resume_data?.summary || "No summary provided."}"
                     </div>

@@ -741,32 +741,14 @@ function BuilderContent() {
 
       {/* CORE 3-COLUMN WORKSPACE */}
       <div 
-        style={{ 
-          maxWidth: "1600px", 
-          margin: "0 auto", 
-          padding: "1.5rem", 
-          display: isFullscreen ? "block" : "flex",
-          gap: "1.5rem",
-          flexDirection: "row",
-        }}
+        className={isFullscreen ? "" : "builder-workspace"}
+        style={isFullscreen ? { maxWidth: "1600px", margin: "0 auto", padding: "1.5rem", display: "block" } : {}}
       >
         
         {/* COLUMN 1: PROGRESS & NAVIGATION SIDEBAR (Sticky) */}
         {!isFullscreen && (
           <div 
-            className="no-print" 
-            style={{ 
-              width: "260px", 
-              flexShrink: 0, 
-              display: "flex", 
-              flexDirection: "column", 
-              gap: "1rem",
-              position: "sticky",
-              top: "80px",
-              height: "calc(100vh - 120px)",
-              overflowY: "auto",
-              paddingRight: "6px"
-            }}
+            className="no-print builder-sidebar"
           >
             {/* Completion stats card */}
             <div className="card" style={{ padding: "1rem", display: "grid", gap: "0.5rem" }}>
@@ -928,7 +910,7 @@ function BuilderContent() {
         {/* COLUMN 2: ACTIVE STEP FORM EDITOR */}
         <ResizablePanels
           leftPanel={!isFullscreen ? (
-          <div className="no-print" style={{ flex: 1, minWidth: 0, display: "grid", gap: "1.2rem", height: "calc(100vh - 120px)", overflowY: "auto", paddingRight: "6px" }}>
+          <div className="no-print builder-editor-container">
             
             {/* STEP 1: Personal info */}
             {activeStep === "personal" && (
@@ -2205,15 +2187,7 @@ function BuilderContent() {
         rightPanel={
           <>
             {/* COLUMN 3: STICKY LIVE DOCUMENT PREVIEW PANEL */}
-            <div style={{ 
-          position: "sticky", 
-          top: "80px", 
-          alignSelf: "start", 
-          height: "calc(100vh - 120px)", 
-          display: "flex", 
-          flexDirection: "column",
-          gap: "0.8rem" 
-        }} className="no-print">
+            <div className="no-print builder-preview-container">
           
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>

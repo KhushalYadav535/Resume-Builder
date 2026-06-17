@@ -649,7 +649,7 @@ export default function UploadPage() {
                     <p style={{ color: "var(--text-muted)", lineHeight: 1.6, fontSize: "0.92rem" }}>{contentReview.overallFeedback}</p>
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", flexWrap: "wrap" }}>
+                  <div className="responsive-grid-2" style={{ gap: "1rem" }}>
                     <div className="card">
                       <p className="section-label" style={{ marginBottom: "0.75rem", color: "var(--accent)" }}>Executive Action Verbs</p>
                       {contentReview.actionVerbSuggestions?.map((s, i) => (
@@ -721,7 +721,7 @@ export default function UploadPage() {
               ) : (
                 <div style={{ display: "grid", gap: "1.2rem", animation: "fadeInUp 0.3s ease" }}>
                   
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem", flexWrap: "wrap" }}>
+                  <div className="responsive-grid-2" style={{ gap: "1.2rem" }}>
                     <div className="card">
                       <p className="section-label" style={{ marginBottom: "0.75rem", color: "var(--accent-2)" }}>Priority Keywords Missing</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
