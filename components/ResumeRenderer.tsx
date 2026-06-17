@@ -47,7 +47,7 @@ export default function ResumeRenderer({ data }: ResumeRendererProps) {
     }}>
       {/* Header Section */}
       {hasPersonal && (
-        <div style={{ marginBottom: "20px", textAlign: "left" }}>
+        <div id="preview-section-personal" style={{ marginBottom: "20px", textAlign: "left" }}>
           {personalInfo.fullName && (
             <h1 style={{
               fontSize: "22px",
@@ -97,7 +97,7 @@ export default function ResumeRenderer({ data }: ResumeRendererProps) {
 
       {/* Summary */}
       {summary && summary.trim() !== "" && (
-        <div style={{ marginBottom: "20px" }}>
+        <div id="preview-section-summary" style={{ marginBottom: "20px" }}>
           <h2 style={{
             fontSize: "11px",
             fontWeight: "bold",
@@ -115,7 +115,7 @@ export default function ResumeRenderer({ data }: ResumeRendererProps) {
 
       {/* Experience */}
       {workExperience && workExperience.length > 0 && (
-        <div style={{ marginBottom: "20px" }}>
+        <div id="preview-section-work" style={{ marginBottom: "20px" }}>
           <h2 style={{
             fontSize: "11px",
             fontWeight: "bold",
@@ -157,7 +157,7 @@ export default function ResumeRenderer({ data }: ResumeRendererProps) {
 
       {/* Education */}
       {education && education.length > 0 && (
-        <div style={{ marginBottom: "20px" }}>
+        <div id="preview-section-education" style={{ marginBottom: "20px" }}>
           <h2 style={{
             fontSize: "11px",
             fontWeight: "bold",
@@ -196,7 +196,7 @@ export default function ResumeRenderer({ data }: ResumeRendererProps) {
 
       {/* Skills */}
       {((skills?.technical && skills.technical.length > 0) || (skills?.soft && skills.soft.length > 0)) && (
-        <div style={{ marginBottom: "20px" }}>
+        <div id="preview-section-skills" style={{ marginBottom: "20px" }}>
           <h2 style={{
             fontSize: "11px",
             fontWeight: "bold",
@@ -255,7 +255,7 @@ export default function ResumeRenderer({ data }: ResumeRendererProps) {
 
       {/* Projects */}
       {projects && projects.length > 0 && (
-        <div style={{ marginBottom: "20px" }}>
+        <div id="preview-section-projects" style={{ marginBottom: "20px" }}>
           <h2 style={{
             fontSize: "11px",
             fontWeight: "bold",
@@ -289,7 +289,7 @@ export default function ResumeRenderer({ data }: ResumeRendererProps) {
 
       {/* Certifications */}
       {certifications && certifications.length > 0 && (
-        <div style={{ marginBottom: "20px" }}>
+        <div id="preview-section-certifications" style={{ marginBottom: "20px" }}>
           <h2 style={{
             fontSize: "11px",
             fontWeight: "bold",
@@ -316,7 +316,7 @@ export default function ResumeRenderer({ data }: ResumeRendererProps) {
 
       {/* Languages */}
       {languagesKnown && languagesKnown.length > 0 && (
-        <div style={{ marginBottom: "20px" }}>
+        <div id="preview-section-languages" style={{ marginBottom: "20px" }}>
           <h2 style={{
             fontSize: "11px",
             fontWeight: "bold",
