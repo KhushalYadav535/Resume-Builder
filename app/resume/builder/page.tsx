@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ResumeData, WorkExperience, Education, Project, Certification, ATSScore, LanguagesKnown } from "@/types";
 import { calculateATS } from "@/lib/calculateATS";
 import ResumeRenderer from "@/components/ResumeRenderer";
+import ResizablePanels from "@/components/ResizablePanels";
 
 const defaultEmptyResume: ResumeData = {
   personalInfo: { fullName: "", email: "", phone: "", linkedin: "", location: "", website: "", currentCTC: "", expectedCTC: "" },
@@ -856,7 +857,8 @@ function BuilderContent() {
         )}
 
         {/* COLUMN 2: ACTIVE STEP FORM EDITOR */}
-        {!isFullscreen && (
+        <ResizablePanels
+          leftPanel={!isFullscreen ? (
           <div className="no-print" style={{ flex: 1, minWidth: 0, display: "grid", gap: "1.2rem", height: "calc(100vh - 120px)", overflowY: "auto", paddingRight: "6px" }}>
             
             {/* STEP 1: Personal info */}
@@ -1955,10 +1957,11 @@ function BuilderContent() {
             </div>
 
           </div>
-        )}
-
-        {/* COLUMN 3: STICKY LIVE DOCUMENT PREVIEW PANEL */}
-        <div style={{ 
+        ) : null}
+        rightPanel={
+          <>
+            {/* COLUMN 3: STICKY LIVE DOCUMENT PREVIEW PANEL */}
+            <div style={{ 
           position: "sticky", 
           top: "80px", 
           alignSelf: "start", 
@@ -2019,6 +2022,9 @@ function BuilderContent() {
             </div>
           </div>
         </div>
+          </>
+        }
+        />
 
       </div>
 
