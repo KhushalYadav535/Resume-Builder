@@ -45,11 +45,19 @@ export default function Navbar() {
           align-items: center;
           gap: 0.5rem;
         }
+        .desktop-nav a:hover {
+          color: var(--accent) !important;
+          background: rgba(108, 99, 255, 0.05);
+        }
         .mobile-toggle-btn {
           display: none !important;
         }
         .mobile-nav-drawer {
           display: none;
+        }
+        .mobile-nav-drawer a:hover {
+          background: rgba(108, 99, 255, 0.05) !important;
+          color: var(--accent) !important;
         }
         @media (max-width: 768px) {
           .desktop-nav {

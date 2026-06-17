@@ -669,7 +669,7 @@ export default function JobTracker() {
                 <textarea className="input" rows={3} placeholder="Paste job requirements/description to calculate match score..." value={jdText} onChange={(e) => setJdText(e.target.value)} />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div className="responsive-grid-2" style={{ gap: "1rem" }}>
                 <div>
                   <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Salary Bracket</label>
                   <input className="input" value={salary} onChange={(e) => setSalary(e.target.value)} />
@@ -686,7 +686,7 @@ export default function JobTracker() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div className="responsive-grid-2" style={{ gap: "1rem" }}>
                 <div>
                   <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Applied Date</label>
                   <input type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} />

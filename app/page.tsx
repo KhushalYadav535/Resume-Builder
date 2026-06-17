@@ -36,13 +36,39 @@ export default function Home() {
         }}
       />
 
+      {/* Responsive Navbar Styles */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .landing-nav {
+          padding: 1.2rem 2.5rem !important;
+        }
+        .landing-logo {
+          font-size: 1.4rem !important;
+        }
+        .landing-nav-btn {
+          padding: 0.5rem 1.2rem !important;
+          font-size: 0.9rem !important;
+        }
+        @media (max-width: 600px) {
+          .landing-nav {
+            padding: 1rem 1rem !important;
+          }
+          .landing-logo {
+            font-size: 1.15rem !important;
+          }
+          .landing-nav-btn {
+            padding: 0.4rem 0.8rem !important;
+            font-size: 0.8rem !important;
+          }
+        }
+      `}} />
+
       {/* Navbar */}
       <nav
+        className="landing-nav"
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "1.2rem 2.5rem",
           borderBottom: "1px solid var(--border)",
           background: "rgba(10,10,15,0.6)",
           backdropFilter: "blur(10px)",
@@ -52,10 +78,10 @@ export default function Home() {
         }}
       >
         <span
+          className="landing-logo"
           style={{
             fontFamily: "Syne, sans-serif",
             fontWeight: 800,
-            fontSize: "1.4rem",
             background: "linear-gradient(135deg, #6c63ff, #ff6584)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
@@ -63,14 +89,14 @@ export default function Home() {
         >
           ResumeAI
         </span>
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
           <Link href="/dashboard" style={{ textDecoration: "none" }}>
-            <button className="btn-secondary" style={{ padding: "0.5rem 1.2rem" }}>
+            <button className="btn-secondary landing-nav-btn">
               Dashboard
             </button>
           </Link>
           <Link href="/resume/builder" style={{ textDecoration: "none" }}>
-            <button className="btn-primary" style={{ padding: "0.5rem 1.2rem" }}>
+            <button className="btn-primary landing-nav-btn">
               Get Started →
             </button>
           </Link>

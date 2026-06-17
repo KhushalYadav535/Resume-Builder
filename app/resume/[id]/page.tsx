@@ -531,18 +531,14 @@ export default function ResumeDetailPage() {
       </div>
 
       {/* CORE SPLIT GRID */}
-      <div style={{ 
-        maxWidth: "1450px", 
-        margin: "0 auto", 
-        padding: "1.5rem", 
-        display: "grid", 
-        gridTemplateColumns: isFullscreen ? "1fr" : "1.1fr 0.9fr", 
-        gap: "1.8rem" 
-      }}>
+      <div 
+        className={isFullscreen ? "" : "detail-split-grid"}
+        style={isFullscreen ? { maxWidth: "1450px", margin: "0 auto", padding: "1.5rem", display: "grid", gridTemplateColumns: "1fr" } : { maxWidth: "1450px", margin: "0 auto", padding: "1.5rem" }}
+      >
         
         {/* LEFT COLUMN: CRITIQUE PANELS & SETTINGS */}
         {!isFullscreen && (
-          <div className="no-print" style={{ display: "grid", gap: "1.2rem", height: "calc(100vh - 220px)", overflowY: "auto", paddingRight: "6px" }}>
+          <div className="no-print detail-left-column">
             
             {/* Real-time missing sections alerts */}
             {missingSecs.length > 0 && (
@@ -1288,15 +1284,7 @@ export default function ResumeDetailPage() {
         )}
 
         {/* RIGHT COLUMN: STICKY LIVE DOCUMENT PREVIEW PANEL */}
-        <div style={{ 
-          position: "sticky", 
-          top: "80px", 
-          alignSelf: "start", 
-          height: "calc(100vh - 160px)", 
-          display: "flex", 
-          flexDirection: "column",
-          gap: "0.8rem" 
-        }} className="no-print">
+        <div className="no-print detail-right-column">
           
           {/* Zoom controls & fullscreen & template switching toolbar */}
           <div className="card" style={{ padding: "0.75rem 1rem", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "0.8rem" }}>
