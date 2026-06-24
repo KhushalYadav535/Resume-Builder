@@ -122,11 +122,9 @@ function BuilderContent() {
   const [collapsedCards, setCollapsedCards] = useState<Record<string, boolean>>({});
   const [zoomFactor, setZoomFactor] = useState(0.85);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [importOption, setImportOption] = useState<"paste" | "csv">("paste");
+  const [importOption, setImportOption] = useState<"paste" | "pdf">("pdf");
   const [pasteText, setPasteText] = useState("");
-  const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [parsedLinkedInData, setParsedLinkedInData] = useState<any | null>(null);
-  const [showConfirmPreview, setShowConfirmPreview] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [linkedinLoading, setLinkedinLoading] = useState(false);
   const [showLinkedinModal, setShowLinkedinModal] = useState(false);
   const [aiLoading, setAiLoading] = useState<string>("");
@@ -478,9 +476,9 @@ function BuilderContent() {
           body: JSON.stringify({ rawText: pasteText, source: "paste" }),
         });
       } else {
-        if (!csvFile) return;
+        if (!pdfFile) return;
         const formData = new FormData();
-        formData.append("file", csvFile);
+        formData.append("file", pdfFile);
         res = await fetch("/api/linkedin-import", {
           method: "POST",
           body: formData,
@@ -492,8 +490,12 @@ function BuilderContent() {
         throw new Error(body.error || "LinkedIn extraction failed.");
       }
 
-      setParsedLinkedInData(body.data);
-      setShowConfirmPreview(true);
+      const mapped = mapLinkedInToResume(body.data);
+      setResume(mapped);
+      setShowLinkedinModal(false);
+      setPasteText("");
+      setPdfFile(null);
+      alert("LinkedIn import successful!");
     } catch (err: any) {
       console.error(err);
       setValidationError(err.message || "Unable to auto import LinkedIn.");
@@ -569,31 +571,7 @@ function BuilderContent() {
     };
   };
 
-  const handleImportConfirm = () => {
-    if (!parsedLinkedInData) return;
-    const mapped = mapLinkedInToResume(parsedLinkedInData);
-    setResume(mapped);
-    setShowConfirmPreview(false);
-    setParsedLinkedInData(null);
-    setShowLinkedinModal(false);
-    setPasteText("");
-    setCsvFile(null);
-    setActiveStep("preview");
-    alert("LinkedIn details successfully pre-filled into resume. Showing preview.");
-  };
 
-  const handleImportEdit = () => {
-    if (!parsedLinkedInData) return;
-    const mapped = mapLinkedInToResume(parsedLinkedInData);
-    setResume(mapped);
-    setShowConfirmPreview(false);
-    setParsedLinkedInData(null);
-    setShowLinkedinModal(false);
-    setPasteText("");
-    setCsvFile(null);
-    setActiveStep("personal");
-    alert("LinkedIn details successfully pre-filled. You can now edit each step.");
-  };
 
   const moveItem = <T,>(list: T[], index: number, direction: "up" | "down"): T[] => {
     const result = [...list];
@@ -2241,7 +2219,6 @@ function BuilderContent() {
       {/* LINKEDIN IMPORT MODAL */}
       {showLinkedinModal && (
         <div className="no-print" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-          {!showConfirmPreview ? (
             <div className="card" style={{ width: "100%", maxWidth: "500px", padding: "2rem" }}>
               <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, marginBottom: "0.5rem" }}>
                 Import LinkedIn Details
@@ -2268,20 +2245,20 @@ function BuilderContent() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setImportOption("csv")}
+                  onClick={() => setImportOption("pdf")}
                   style={{
                     flex: 1,
                     padding: "0.5rem",
                     borderRadius: "8px",
                     border: "none",
-                    background: importOption === "csv" ? "var(--accent)" : "transparent",
+                    background: importOption === "pdf" ? "var(--accent)" : "transparent",
                     color: "#fff",
                     fontSize: "0.85rem",
                     fontWeight: 600,
                     cursor: "pointer",
                   }}
                 >
-                  Option B: CSV Upload
+                  Option B: PDF Upload
                 </button>
               </div>
 
@@ -2303,27 +2280,20 @@ function BuilderContent() {
               ) : (
                 <div>
                   <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "0.8rem" }}>
-                    We'll guide you to export your profile data.
+                    Get your complete profile imported with AI extraction:
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => window.open("https://www.linkedin.com/mypreferences/d/download-my-data", "_blank")}
-                    className="btn-secondary"
-                    style={{ width: "100%", justifyContent: "center", marginBottom: "1rem" }}
-                  >
-                    🌐 Open LinkedIn Data Export Page
-                  </button>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "0.8rem" }}>
-                    Download your archive → extract the ZIP → upload the <strong>Profile.csv</strong> file below.
-                  </p>
+                  <ol style={{ fontSize: "0.85rem", color: "var(--text-muted)", paddingLeft: "1.2rem", marginBottom: "1rem", lineHeight: 1.6 }}>
+                    <li>On your LinkedIn profile page, click <strong>More</strong> → <strong>Save to PDF</strong></li>
+                    <li>Upload the downloaded PDF below</li>
+                  </ol>
                   <input
                     type="file"
-                    accept=".csv"
-                    onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+                    accept=".pdf"
+                    onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
                     style={{
                       width: "100%",
-                      padding: "0.5rem",
-                      background: "var(--bg-2)",
+                      padding: "1rem",
+                      background: "rgba(0,0,0,0.2)",
                       border: "1px dashed var(--border)",
                       borderRadius: "8px",
                       color: "#fff",
@@ -2353,58 +2323,12 @@ function BuilderContent() {
                   type="button"
                   onClick={handleLinkedInImport}
                   className="btn-primary"
-                  disabled={linkedinLoading || (importOption === "paste" ? !pasteText.trim() : !csvFile)}
+                  disabled={linkedinLoading || (importOption === "paste" ? !pasteText.trim() : !pdfFile)}
                 >
                   {linkedinLoading ? "Parsing..." : "✦ Import"}
                 </button>
               </div>
             </div>
-          ) : (
-            <div className="card" style={{ width: "100%", maxWidth: "460px", padding: "2rem" }}>
-              <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, marginBottom: "0.5rem" }}>
-                Confirm LinkedIn Import
-              </h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
-                We parsed your LinkedIn profile successfully! Here is what we extracted:
-              </p>
-              
-              <div style={{ display: "grid", gap: "0.5rem", background: "rgba(255,255,255,0.02)", padding: "1rem", borderRadius: "10px", border: "1px solid var(--border)", marginBottom: "1.5rem" }}>
-                <div style={{ fontSize: "0.85rem" }}>👤 Name: <strong>{parsedLinkedInData?.personal?.name || "Not found"}</strong></div>
-                <div style={{ fontSize: "0.85rem" }}>💼 Jobs: <strong>{parsedLinkedInData?.experience?.length || 0} found</strong></div>
-                <div style={{ fontSize: "0.85rem" }}>🎓 Education: <strong>{parsedLinkedInData?.education?.length || 0} found</strong></div>
-                <div style={{ fontSize: "0.85rem" }}>🛠️ Skills: <strong>{parsedLinkedInData?.skills?.length || 0} found</strong></div>
-                <div style={{ fontSize: "0.85rem" }}>📜 Certifications: <strong>{parsedLinkedInData?.certifications?.length || 0} found</strong></div>
-                <div style={{ fontSize: "0.85rem" }}>🚀 Projects: <strong>{parsedLinkedInData?.projects?.length || 0} found</strong></div>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                <button
-                  type="button"
-                  onClick={handleImportConfirm}
-                  className="btn-primary"
-                  style={{ width: "100%", justifyContent: "center" }}
-                >
-                  Confirm Import & Go to Preview
-                </button>
-                <button
-                  type="button"
-                  onClick={handleImportEdit}
-                  className="btn-secondary"
-                  style={{ width: "100%", justifyContent: "center" }}
-                >
-                  Edit Before Importing
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setShowConfirmPreview(false); }}
-                  className="btn-secondary"
-                  style={{ width: "100%", justifyContent: "center", border: "none", color: "var(--text-muted)" }}
-                >
-                  Back
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
