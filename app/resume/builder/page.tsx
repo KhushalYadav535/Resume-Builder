@@ -727,6 +727,9 @@ function BuilderContent() {
             <button onClick={() => setShowLinkedinModal(true)} className="btn-secondary" style={{ fontSize: "0.85rem", borderColor: "#a89fff", color: "#a89fff" }}>
               💼 Import LinkedIn
             </button>
+            <button onClick={() => setIsFullscreen(prev => !prev)} className="btn-primary" style={{ fontSize: "0.85rem" }}>
+              {isFullscreen ? "🗔 Hide Preview" : "🗔 See Preview"}
+            </button>
             <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.85rem" }}>
               📥 Export PDF
             </button>
@@ -740,17 +743,11 @@ function BuilderContent() {
       </div>
 
       {/* CORE 3-COLUMN WORKSPACE */}
-      <div 
-        className={isFullscreen ? "" : "builder-workspace"}
-        style={isFullscreen ? { maxWidth: "1600px", margin: "0 auto", padding: "1.5rem", display: "block" } : {}}
-      >
+      <div className="builder-workspace">
         
         {/* COLUMN 1: PROGRESS & NAVIGATION SIDEBAR (Sticky) */}
-        {!isFullscreen && (
-          <div 
-            className="no-print builder-sidebar"
-          >
-            {/* Completion stats card */}
+        <div className="no-print builder-sidebar">
+          {/* Completion stats card */}
             <div className="card" style={{ padding: "1rem", display: "grid", gap: "0.5rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Completion</span>
@@ -905,11 +902,10 @@ function BuilderContent() {
               </div>
             </div>
           </div>
-        )}
 
         {/* COLUMN 2: ACTIVE STEP FORM EDITOR */}
         <ResizablePanels
-          leftPanel={!isFullscreen ? (
+          leftPanel={(
           <div className="no-print builder-editor-container">
             
             {/* STEP 1: Personal info */}
@@ -2183,13 +2179,13 @@ function BuilderContent() {
             </div>
 
           </div>
-        ) : null}
-        rightPanel={
+        )}
+        rightPanel={isFullscreen ? (
           <>
             {/* COLUMN 3: STICKY LIVE DOCUMENT PREVIEW PANEL */}
             <div className="no-print builder-preview-container">
           
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
               <button onClick={() => setZoomFactor(prev => Math.max(0.5, prev - 0.05))} className="btn-secondary" style={{ padding: "0.3rem 0.6rem", fontSize: "0.8rem" }}>Zoom -</button>
               <input 
@@ -2204,10 +2200,6 @@ function BuilderContent() {
               <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>{Math.round(zoomFactor * 100)}%</span>
               <button onClick={() => setZoomFactor(prev => Math.min(1.2, prev + 0.05))} className="btn-secondary" style={{ padding: "0.3rem 0.6rem", fontSize: "0.8rem" }}>Zoom +</button>
             </div>
-            
-            <button onClick={() => setIsFullscreen(prev => !prev)} className="btn-secondary" style={{ padding: "0.3rem 0.7rem", fontSize: "0.8rem" }}>
-              {isFullscreen ? "🗖 Form Editor" : "🗔 Fullscreen Preview"}
-            </button>
           </div>
 
           <div 
@@ -2241,7 +2233,7 @@ function BuilderContent() {
           </div>
         </div>
           </>
-        }
+        ) : null}
         />
 
       </div>
