@@ -98,8 +98,14 @@ export default function ResizablePanels({
     };
   }, [isDragging, minWidth]);
 
+  const isRightPanelVisible = !!rightPanel;
+
   if (!isLeftPanelVisible) {
     return <>{rightPanel}</>;
+  }
+
+  if (!isRightPanelVisible) {
+    return <>{leftPanel}</>;
   }
 
   if (isMobile) {

@@ -7,19 +7,24 @@ import NotificationBell from "@/components/NotificationBell";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { role, user } = useAuth();
+  const { role, user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const links = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/resume/builder", label: "Build Resume" },
-    { href: "/resume/upload", label: "Upload" },
-    { href: "/resume/templates", label: "Templates" },
-    { href: "/job-tracker", label: "Job Tracker" },
-  ];
+  let links = [];
 
   if (role === "admin") {
-    links.push({ href: "/admin", label: "🛡️ Admin Panel" });
+    links = [
+      { href: "/admin", label: "🛡️ Admin Panel" },
+      { href: "/analytics", label: "📈 Analytics" },
+    ];
+  } else {
+    links = [
+      { href: "/dashboard", label: "Dashboard" },
+      { href: "/resume/builder", label: "Build Resume" },
+      { href: "/resume/upload", label: "Upload" },
+      { href: "/resume/templates", label: "Templates" },
+      { href: "/job-tracker", label: "Job Tracker" },
+    ];
   }
 
   // Close mobile menu when page changes
@@ -132,8 +137,32 @@ export default function Navbar() {
             </Link>
           ))}
           {user && (
-            <div style={{ marginLeft: "0.5rem", borderLeft: "1px solid var(--border)", paddingLeft: "0.8rem", display: "flex", alignItems: "center" }}>
+            <div style={{ marginLeft: "0.5rem", borderLeft: "1px solid var(--border)", paddingLeft: "0.8rem", display: "flex", alignItems: "center", gap: "0.8rem" }}>
               <NotificationBell />
+              <button 
+                onClick={logout}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--text-muted)",
+                  fontSize: "0.88rem",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  padding: "0.4rem 0.6rem",
+                  borderRadius: "8px",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#ff6584";
+                  e.currentTarget.style.background = "rgba(255,101,132,0.1)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "var(--text-muted)";
+                  e.currentTarget.style.background = "transparent";
+                }}
+              >
+                Logout
+              </button>
             </div>
           )}
         </div>
@@ -182,6 +211,25 @@ export default function Navbar() {
             {link.label}
           </Link>
         ))}
+        {user && (
+          <button
+            onClick={logout}
+            style={{
+              textAlign: "left",
+              border: "none",
+              padding: "0.6rem 1rem",
+              borderRadius: "8px",
+              fontSize: "0.95rem",
+              fontWeight: 500,
+              color: "#ff6584",
+              background: "transparent",
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+          >
+            Logout
+          </button>
+        )}
       </div>
     </nav>
   );

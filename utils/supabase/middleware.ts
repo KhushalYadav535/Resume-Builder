@@ -57,27 +57,39 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Enforce admin-only access on /analytics
-  if ((pathname === "/analytics" || pathname.startsWith("/analytics/")) && user) {
+  // Enforce role-based strict routing
+  if (user) {
     const { data: profile } = await supabase
       .from("user_profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role !== "admin") {
+    const role = profile?.role || "user";
+    const isAdminPath = pathname.startsWith("/admin") || pathname === "/analytics" || pathname.startsWith("/analytics/");
+    const isNormalUserPath = isProtectedPath && !isAdminPath;
+
+    // Admin trying to access normal protected pages
+    if (role === "admin" && isNormalUserPath) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      return NextResponse.redirect(url);
+    }
+
+    // Normal user trying to access admin pages
+    if (role !== "admin" && isAdminPath) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);
     }
-  }
 
-  // Redirect authenticated users trying to access login/signup to dashboard
-  const isAuthPath = pathname === "/login" || pathname === "/signup";
-  if (isAuthPath && user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+    // Redirect authenticated users trying to access login/signup based on role
+    const isAuthPath = pathname === "/login" || pathname === "/signup";
+    if (isAuthPath) {
+      const url = request.nextUrl.clone();
+      url.pathname = role === "admin" ? "/admin" : "/dashboard";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;
