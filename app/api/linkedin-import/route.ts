@@ -4,53 +4,23 @@ import { askAIJSON } from "@/lib/openrouter";
 
 export const dynamic = "force-dynamic";
 
-// Simple robust CSV parser for browser environments/Next APIs
-function parseCSV(text: string): string[][] {
-  const lines: string[][] = [];
-  let row: string[] = [];
-  let inQuotes = false;
-  let currentToken = "";
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    const nextChar = text[i + 1];
-
-    if (char === '"') {
-      if (inQuotes && nextChar === '"') {
-        currentToken += '"';
-        i++; // skip next quote
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === ',' && !inQuotes) {
-      row.push(currentToken.trim());
-      currentToken = "";
-    } else if ((char === '\r' || char === '\n') && !inQuotes) {
-      if (char === '\r' && nextChar === '\n') {
-        i++;
-      }
-      row.push(currentToken.trim());
-      if (row.length > 0 && row.some(cell => cell !== "")) {
-        lines.push(row);
-      }
-      row = [];
-      currentToken = "";
-    } else {
-      currentToken += char;
-    }
-  }
-  if (currentToken || row.length > 0) {
-    row.push(currentToken.trim());
-    lines.push(row);
-  }
-  return lines;
+function cleanLinkedInText(raw: string): string {
+  return raw
+    .replace(/Contact\n/gi, '')
+    .replace(/www\.linkedin\.com\/in\/[^\n]*/gi, '')
+    .replace(/\d+ connections/gi, '')
+    .replace(/\d+ followers/gi, '')
+    .replace(/Show more/gi, '')
+    .replace(/Show less/gi, '')
+    .replace(/Page \d+ of \d+/gi, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Verify active logged-in user session
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -62,151 +32,116 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const contentType = req.headers.get("content-type") || "";
+    const formData = await req.formData();
+    const file = formData.get("file") as File;
 
-    if (contentType.includes("multipart/form-data")) {
-      const formData = await req.formData();
-      const file = formData.get("file") as File;
+    if (!file) {
+      return NextResponse.json(
+        { error: "Missing required file parameter: file" },
+        { status: 400 }
+      );
+    }
 
-      if (!file) {
-        return NextResponse.json(
-          { error: "Missing required file parameter: file" },
-          { status: 400 }
-        );
-      }
-
-      const fileText = await file.text();
-      const rows = parseCSV(fileText);
-
-      if (rows.length < 2) {
-        return NextResponse.json(
-          { error: "Empty or invalid CSV file." },
-          { status: 400 }
-        );
-      }
-
-      const headers = rows[0].map((h) => h.toLowerCase().trim());
-      const firstRow = rows[1];
-
-      const getVal = (headerName: string) => {
-        const idx = headers.findIndex((h) => h.includes(headerName.toLowerCase()));
-        return idx !== -1 && firstRow[idx] ? firstRow[idx] : "";
-      };
-
-      // Map LinkedIn Profile.csv columns:
-      // First Name, Last Name, Headline, Summary, Zip Code, Geo Location, Address, Twitter Handles, Websites
-      const firstName = getVal("first name");
-      const lastName = getVal("last name");
-      const fullName = [firstName, lastName].filter(Boolean).join(" ");
-      const headline = getVal("headline");
-      const summary = getVal("summary");
-      const location = getVal("geo location") || getVal("address") || getVal("zip code") || "";
-      const websitesRaw = getVal("websites") || "";
-
-      let linkedinUrl = "";
-      if (websitesRaw) {
-        const websites = websitesRaw.split(/[\s,]+/);
-        const found = websites.find((w) => w.includes("linkedin.com"));
-        if (found) linkedinUrl = found;
-      }
-
-      const parsedData = {
-        personal: {
-          name: fullName,
-          email: "",
-          phone: "",
-          location: location,
-          linkedin: linkedinUrl,
-          headline: headline,
-        },
-        summary: summary,
-        experience: [],
-        education: [],
-        skills: [],
-        certifications: [],
-        projects: [],
-      };
-
-      return NextResponse.json({
-        success: true,
-        data: parsedData,
-      });
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    let rawText = "";
+    
+    if (fileExtension === "pdf") {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const pdfParseImport = await import("pdf-parse");
+      const pdfParse = pdfParseImport.default || pdfParseImport;
+      const pdfData = await pdfParse(buffer);
+      rawText = pdfData.text;
     } else {
-      // Option A: Text Paste
-      const { rawText, source } = await req.json();
+       return NextResponse.json({ error: "Only PDF files are supported." }, { status: 400 });
+    }
 
-      if (source !== "paste" || !rawText) {
-        return NextResponse.json(
-          { error: "Missing rawText or source parameter." },
-          { status: 400 }
-        );
-      }
+    if (!rawText) {
+       return NextResponse.json({ error: "Could not extract text for import." }, { status: 400 });
+    }
 
-      const prompt = `You are a resume parser. Extract ALL information from this LinkedIn profile text.
-Return a JSON object with EXACTLY this structure:
+    const cleanedText = cleanLinkedInText(rawText);
+
+    const prompt1 = `You are a resume data extractor. Extract ALL information from this LinkedIn profile PDF text.
+Return ONLY a valid JSON object — no explanation, no markdown, no preamble.
+
+Use EXACTLY this structure:
 {
-  personal: {
-    name: string,
-    email: string (empty if not found),
-    phone: string (empty if not found),
-    location: string,
-    linkedin: string,
-    headline: string
+  "personal": {
+    "name": "",
+    "headline": "",
+    "email": "",
+    "phone": "",
+    "location": "",
+    "linkedin_url": ""
   },
-  summary: string (the About section, full text),
-  experience: [
+  "summary": "",
+  "experience": [
     {
-      company: string,
-      title: string,
-      location: string,
-      startDate: string,
-      endDate: string (or "Present"),
-      bullets: string[] (each responsibility or achievement as a separate string)
+      "company": "",
+      "title": "",
+      "location": "",
+      "startDate": "",
+      "endDate": "",
+      "is_current": false,
+      "description": "",
+      "bullets": []
     }
   ],
-  education: [
+  "education": [
     {
-      institution: string,
-      degree: string,
-      field: string,
-      startDate: string,
-      endDate: string,
-      grade: string (CGPA or percentage if mentioned)
+      "institution": "",
+      "degree": "",
+      "field": "",
+      "startDate": "",
+      "endDate": "",
+      "grade": ""
     }
   ],
-  skills: string[] (all skills listed),
-  certifications: [
+  "skills": [],
+  "certifications": [
     {
-      name: string,
-      issuer: string,
-      date: string
+      "name": "",
+      "issuer": "",
+      "date": ""
     }
   ],
-  projects: [
+  "projects": [
     {
-      name: string,
-      description: string,
-      technologies: string[]
+      "name": "",
+      "description": "",
+      "technologies": []
+    }
+  ],
+  "languages": [
+    {
+      "language": "",
+      "proficiency": ""
     }
   ]
 }
-Return ONLY valid JSON. No explanation. No markdown. No preamble.
-If a field has no data, use empty string or empty array.
-Extract every single work experience entry, every education entry, every skill.
 
-LinkedIn Profile Text:
-${rawText}`;
+Rules:
+- Extract EVERY work experience entry, every education entry, every skill
+- If a field has no data, use empty string "" or empty array []
+- For experience descriptions: include the full text as "description" and also try to split into bullet points in the "bullets" array if line breaks exist
+- Never truncate or summarize — extract the complete raw content
+- Return ONLY the JSON object, nothing else
 
-      const parsedResume = await askAIJSON<any>(
-        prompt,
-        "You are a professional LinkedIn profile parser. You output ONLY valid JSON."
-      );
+LinkedIn PDF text to extract from:
+${cleanedText}`;
 
-      return NextResponse.json({
-        success: true,
-        data: parsedResume,
-      });
-    }
+    const extractedJSON = await askAIJSON<any>(prompt1, "You are a professional LinkedIn profile parser.");
+
+    if (!extractedJSON.experience) extractedJSON.experience = [];
+    if (!extractedJSON.skills) extractedJSON.skills = [];
+
+    return NextResponse.json({
+      success: true,
+      data: extractedJSON,
+      validation: null
+    });
+
   } catch (err: any) {
     console.error("LinkedIn import API failure:", err);
     return NextResponse.json(
