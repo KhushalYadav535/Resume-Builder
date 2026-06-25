@@ -187,6 +187,7 @@ export default function Dashboard() {
           {[
             { icon: "✦", label: "Build from Scratch", href: "/resume/builder", color: "#6c63ff" },
             { icon: "⇑", label: "Upload & Analyze", href: "/resume/upload", color: "#43e97b" },
+            { icon: "🎯", label: "Tailor for Job", href: "/resume/tailor", color: "#0ea5e9" },
             { icon: "▣", label: "Browse Templates", href: "/resume/templates", color: "#ff6584" },
           ].map((action) => (
             <Link key={action.label} href={action.href} style={{ textDecoration: "none" }}>
