@@ -37,42 +37,33 @@ export default function Navbar() {
   }
 
   return (
-    <div
+    <nav
       style={{
-        position: "fixed",
+        position: "sticky",
         top: 0,
-        left: 0,
         zIndex: 1000,
         width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        pointerEvents: "none",
+        background: "rgba(10, 10, 15, 0.85)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid var(--border)",
         transition: "all 0.3s ease",
-        opacity: scrolled ? 0.6 : 1,
-        filter: scrolled ? "blur(2px)" : "none",
       }}
     >
       <div 
         style={{ 
-          pointerEvents: "auto", 
           display: "flex", 
           width: "100%", 
           maxWidth: "1200px", 
-          padding: "0 1.5rem", 
+          margin: "0 auto",
+          padding: "0.75rem 1.5rem", 
           justifyContent: "space-between", 
-          alignItems: "center", 
-          marginTop: scrolled ? "0.5rem" : "1rem",
-          transition: "margin-top 0.3s ease"
+          alignItems: "center"
         }}
       >
         
         <PillNav
           items={links}
           activeHref={pathname}
-          baseColor="#000000"
-          pillColor="#1a1a24"
-          hoveredPillTextColor="#ffffff"
-          pillTextColor="#d1d1d1"
           className="resume-pill-nav"
         />
 
@@ -81,13 +72,8 @@ export default function Navbar() {
             display: "flex", 
             alignItems: "center", 
             gap: "0.8rem", 
-            background: "rgba(19, 19, 30, 0.8)",
-            backdropFilter: "blur(12px)",
-            border: "1px solid var(--border)",
-            padding: "0 1.5rem",
+            padding: "0 0.5rem",
             height: "42px",
-            borderRadius: "9999px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             zIndex: 100
           }}>
             <NotificationBell />
@@ -95,22 +81,24 @@ export default function Navbar() {
               onClick={logout}
               style={{
                 background: "transparent",
-                border: "none",
+                border: "1px solid var(--border-light)",
                 color: "#d1d1d1",
-                fontSize: "14px",
+                fontSize: "13px",
                 fontWeight: 600,
                 cursor: "pointer",
-                padding: "0.4rem 0.6rem",
+                padding: "0.4rem 0.8rem",
                 borderRadius: "8px",
                 transition: "all 0.2s",
                 textTransform: "uppercase",
-                letterSpacing: "0.2px"
+                letterSpacing: "0.5px"
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = "#ff6584";
+                e.currentTarget.style.borderColor = "#ff6584";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.color = "#d1d1d1";
+                e.currentTarget.style.borderColor = "var(--border-light)";
               }}
             >
               Logout
@@ -118,6 +106,6 @@ export default function Navbar() {
           </div>
         )}
       </div>
-    </div>
+    </nav>
   );
 }

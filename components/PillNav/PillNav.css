@@ -34,20 +34,14 @@
   display: flex;
   align-items: center;
   height: var(--nav-h);
-  background: rgba(19, 19, 30, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  border-radius: 9999px;
 }
 
 .pill-logo {
   width: var(--nav-h);
   height: var(--nav-h);
   border-radius: 50%;
-  background: rgba(19, 19, 30, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  padding: 8px;
+  background: transparent;
+  padding: 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
