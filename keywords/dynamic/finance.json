@@ -1,0 +1,61 @@
+{
+  "industry": "finance",
+  "version": "1.0",
+  "last_updated": "2026-06-01",
+  "keywords": [
+    {
+      "keyword": "Fintech",
+      "weight": 9,
+      "aliases": ["Financial Technology", "Digital Banking", "Payment Gateways"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Blockchain",
+      "weight": 8,
+      "aliases": ["Crypto", "DeFi", "Web3 Finance"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Algorithmic Trading",
+      "weight": 9,
+      "aliases": ["Algo Trading", "High Frequency Trading", "HFT"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "ESG Investing",
+      "weight": 8,
+      "aliases": ["ESG", "Sustainable Finance", "Impact Investing"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Open Banking",
+      "weight": 8,
+      "aliases": ["API Banking", "Account Aggregator"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Python for Finance",
+      "weight": 9,
+      "aliases": ["Pandas", "Quant", "Quantitative Finance"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    }
+  ]
+}

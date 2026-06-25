@@ -1,0 +1,61 @@
+{
+  "industry": "marketing",
+  "version": "1.0",
+  "last_updated": "2026-06-01",
+  "keywords": [
+    {
+      "keyword": "Growth Hacking",
+      "weight": 8,
+      "aliases": ["Growth Marketing", "User Acquisition"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "AI Marketing Tools",
+      "weight": 9,
+      "aliases": ["Midjourney", "ChatGPT for Marketing", "Jasper", "Copy.ai"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Influencer Marketing",
+      "weight": 7,
+      "aliases": ["Creator Economy"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Marketing Automation",
+      "weight": 8,
+      "aliases": ["Marketo", "Pardot", "Klaviyo"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Video Marketing",
+      "weight": 8,
+      "aliases": ["Reels", "TikTok Marketing", "YouTube SEO"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "B2B SaaS Marketing",
+      "weight": 9,
+      "aliases": ["Demand Generation", "Lead Generation", "ABM", "Account Based Marketing"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    }
+  ]
+}

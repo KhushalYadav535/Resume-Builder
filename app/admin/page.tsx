@@ -182,6 +182,11 @@ export default function AdminDashboardPage() {
               🤖 AI Usage Log
             </button>
           </Link>
+          <Link href="/admin/keywords" style={{ textDecoration: "none" }}>
+            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer" }}>
+              🧠 ATS Keywords
+            </button>
+          </Link>
         </div>
 
         {errorMsg && (

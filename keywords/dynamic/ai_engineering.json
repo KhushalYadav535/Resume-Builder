@@ -1,0 +1,97 @@
+{
+  "industry": "ai_engineering",
+  "version": "1.0",
+  "last_updated": "2026-06-01",
+  "keywords": [
+    {
+      "keyword": "LangGraph",
+      "weight": 10,
+      "aliases": [],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "RAG",
+      "weight": 10,
+      "aliases": ["Retrieval Augmented Generation", "retrieval-augmented generation"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Prompt Engineering",
+      "weight": 8,
+      "aliases": ["prompt design", "prompting"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Vector Database",
+      "weight": 9,
+      "aliases": ["Pinecone", "Weaviate", "Chroma", "Qdrant"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "AI Agents",
+      "weight": 10,
+      "aliases": ["agentic AI", "autonomous agents", "CrewAI", "AutoGen"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "LangChain",
+      "weight": 9,
+      "aliases": [],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "LlamaIndex",
+      "weight": 9,
+      "aliases": [],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "LoRA",
+      "weight": 8,
+      "aliases": ["Low-Rank Adaptation", "QLoRA", "PEFT"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Hugging Face",
+      "weight": 8,
+      "aliases": ["HuggingFace", "Transformers"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Fine-Tuning",
+      "weight": 8,
+      "aliases": ["Fine Tuning", "model tuning"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    }
+  ]
+}

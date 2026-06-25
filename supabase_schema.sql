@@ -245,4 +245,27 @@ CREATE POLICY "Admins can view all ai requests" ON public.ai_requests
 CREATE INDEX IF NOT EXISTS idx_ai_requests_user ON public.ai_requests(user_id);
 
 
+-- 16. Pending Keywords Table (Phase 2 Dynamic ATS)
+CREATE TABLE IF NOT EXISTS public.pending_keywords (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  industry text NOT NULL,
+  keyword text NOT NULL,
+  weight integer NOT NULL,
+  aliases text[] DEFAULT '{}',
+  status text DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  created_at timestamp with time zone DEFAULT now()
+);
 
+-- Enable RLS on pending_keywords
+ALTER TABLE public.pending_keywords ENABLE ROW LEVEL SECURITY;
+
+-- Drop previous policies if any
+DROP POLICY IF EXISTS "Admins can manage pending keywords" ON public.pending_keywords;
+
+-- Policy: Only admins can read/write
+CREATE POLICY "Admins can manage pending keywords" ON public.pending_keywords
+  FOR ALL USING (public.check_if_admin(auth.uid())) WITH CHECK (public.check_if_admin(auth.uid()));
+
+-- Index for performance
+CREATE INDEX IF NOT EXISTS idx_pending_keywords_industry ON public.pending_keywords(industry);
+CREATE INDEX IF NOT EXISTS idx_pending_keywords_status ON public.pending_keywords(status);

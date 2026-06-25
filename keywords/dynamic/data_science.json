@@ -1,0 +1,79 @@
+{
+  "industry": "data_science",
+  "version": "1.0",
+  "last_updated": "2026-06-01",
+  "keywords": [
+    {
+      "keyword": "Snowflake",
+      "weight": 9,
+      "aliases": [],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "dbt",
+      "weight": 9,
+      "aliases": ["data build tool"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Apache Airflow",
+      "weight": 8,
+      "aliases": ["Airflow"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Databricks",
+      "weight": 9,
+      "aliases": [],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "PySpark",
+      "weight": 8,
+      "aliases": [],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Looker",
+      "weight": 8,
+      "aliases": [],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Predictive Modeling",
+      "weight": 7,
+      "aliases": ["Predictive Analytics"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Data Pipeline",
+      "weight": 7,
+      "aliases": ["Data Pipelines"],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "industry": "general",
+  "version": "1.0",
+  "last_updated": "2026-06-01",
+  "keywords": [
+    { "keyword": "Communication", "weight": 6, "aliases": ["Verbal Communication", "Written Communication", "Presentation Skills"] },
+    { "keyword": "Leadership", "weight": 7, "aliases": ["Team Leadership", "Mentorship", "People Management"] },
+    { "keyword": "Problem Solving", "weight": 7, "aliases": ["Analytical Skills", "Critical Thinking", "Troubleshooting"] },
+    { "keyword": "Project Management", "weight": 6, "aliases": ["Task Management", "Time Management", "Coordination"] },
+    { "keyword": "Teamwork", "weight": 5, "aliases": ["Collaboration", "Cross-functional collaboration"] },
+    { "keyword": "Adaptability", "weight": 6, "aliases": ["Flexibility", "Fast Learner"] },
+    { "keyword": "Customer Service", "weight": 5, "aliases": ["Client Relations", "Customer Support"] },
+    { "keyword": "Operations", "weight": 6, "aliases": ["Process Improvement", "Operational Efficiency"] },
+    { "keyword": "Strategy", "weight": 7, "aliases": ["Strategic Planning", "Business Strategy"] },
+    { "keyword": "Negotiation", "weight": 6, "aliases": ["Conflict Resolution", "Vendor Management"] }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "keywords": [
+    {
+      "keyword": "Data Analytics",
+      "weight": 8,
+      "aliases": [
+        "Analytics",
+        "Data Analysis"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-25"
+    },
+    {
+      "keyword": "Cloud Computing",
+      "weight": 7,
+      "aliases": [
+        "Cloud",
+        "Cloud Services"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-25"
+    },
+    {
+      "keyword": "Blockchain Development",
+      "weight": 7,
+      "aliases": [
+        "Blockchain",
+        "Distributed Ledger"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-25"
+    }
+  ]
+}

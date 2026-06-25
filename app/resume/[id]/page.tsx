@@ -800,23 +800,54 @@ export default function ResumeDetailPage() {
                   ))}
                 </div>
 
-                {resume.ats_score.missingKeywords.length > 0 && (
-                  <div className="card">
-                    <p className="section-label" style={{ marginBottom: "0.6rem" }}>Missing Standard Competencies</p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                      {resume.ats_score.missingKeywords.map((kw) => <span key={kw} className="tag tag-red" style={{ fontSize: "0.74rem" }}>{kw}</span>)}
+                {resume.ats_score.detectedRole && (
+                  <div className="card" style={{ background: "rgba(108, 99, 255, 0.08)", border: "1px solid rgba(108, 99, 255, 0.2)" }}>
+                    <p className="section-label" style={{ marginBottom: "0.4rem" }}>Detected Role Configuration</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <span className="tag tag-purple" style={{ fontSize: "0.8rem", padding: "0.3rem 0.6rem" }}>
+                        {resume.ats_score.detectedRole} · {resume.ats_score.detectedIndustry} · {resume.ats_score.confidence}% confidence
+                      </span>
                     </div>
                   </div>
                 )}
 
-                {resume.ats_score.matchedKeywords && resume.ats_score.matchedKeywords.length > 0 && (
+                {((resume.ats_score.missingKeywordDetails || resume.ats_score.missingKeywords)?.length ?? 0) > 0 && (
                   <div className="card">
-                    <p className="section-label" style={{ marginBottom: "0.6rem", color: "#43e97b" }}>Matched Competencies ({resume.ats_score.matchedKeywords.length})</p>
+                    <p className="section-label" style={{ marginBottom: "0.6rem" }}>Missing High-Value Keywords</p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                      {resume.ats_score.matchedKeywords.map((kw) => <span key={kw} className="tag tag-green" style={{ fontSize: "0.74rem" }}>{kw}</span>)}
+                      {resume.ats_score.missingKeywordDetails ? (
+                        [...resume.ats_score.missingKeywordDetails].sort((a: any, b: any) => b.weight - a.weight).map((kw: any) => (
+                          <span key={kw.keyword} className="tag tag-red" style={{ fontSize: "0.74rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                            {kw.keyword} <span style={{ background: "rgba(255,101,132,0.2)", padding: "1px 4px", borderRadius: "4px", fontSize: "0.65rem" }}>{kw.weight}</span>
+                          </span>
+                        ))
+                      ) : (
+                        resume.ats_score.missingKeywords?.map((kw: string) => <span key={kw} className="tag tag-red" style={{ fontSize: "0.74rem" }}>{kw}</span>)
+                      )}
                     </div>
                   </div>
                 )}
+
+                {((resume.ats_score.keywordMatches || resume.ats_score.matchedKeywords)?.length ?? 0) > 0 && (
+                  <div className="card">
+                    <p className="section-label" style={{ marginBottom: "0.6rem", color: "#43e97b" }}>Matched Keywords</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                      {resume.ats_score.keywordMatches ? (
+                        [...resume.ats_score.keywordMatches].sort((a: any, b: any) => b.weight - a.weight).map((kw: any) => (
+                          <span key={kw.keyword} className="tag tag-green" style={{ fontSize: "0.74rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                            {kw.keyword} <span style={{ background: "rgba(67,233,123,0.2)", padding: "1px 4px", borderRadius: "4px", fontSize: "0.65rem" }}>{kw.weight}</span>
+                          </span>
+                        ))
+                      ) : (
+                        resume.ats_score.matchedKeywords?.map((kw: string) => <span key={kw} className="tag tag-green" style={{ fontSize: "0.74rem" }}>{kw}</span>)
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", textAlign: "center", marginTop: "0.5rem" }}>
+                  Keywords are updated periodically by our market intelligence system
+                </div>
 
                 <div className="card">
                   <p className="section-label" style={{ marginBottom: "0.6rem" }}>Improvement Suggestions</p>
