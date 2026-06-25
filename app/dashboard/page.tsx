@@ -179,24 +179,6 @@ export default function Dashboard() {
             <Link href="/resume/upload" style={{ textDecoration: "none" }}>
               <button className="btn-secondary">⇑ Upload</button>
             </Link>
-            <button 
-              className="btn-secondary" 
-              onClick={logout}
-              style={{ 
-                borderColor: "rgba(255, 101, 132, 0.35)", 
-                color: "#ff6584",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(255, 101, 132, 0.1)";
-                e.currentTarget.style.borderColor = "#ff6584";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.borderColor = "rgba(255, 101, 132, 0.35)";
-              }}
-            >
-              Log Out
-            </button>
           </div>
         </div>
 
