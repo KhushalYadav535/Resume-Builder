@@ -129,7 +129,38 @@ function BuilderContent() {
   const [showLinkedinModal, setShowLinkedinModal] = useState(false);
   const [aiLoading, setAiLoading] = useState<string>("");
 
+  // Inline AI Rewrite States
+  const [inlineRewriteKey, setInlineRewriteKey] = useState<string>("");
+  const [inlineRewriteSuggestions, setInlineRewriteSuggestions] = useState<string[]>([]);
+  const [inlineRewriteLoading, setInlineRewriteLoading] = useState(false);
+
+  const handleInlineRewrite = async (text: string, context: string, key: string) => {
+    setInlineRewriteKey(key);
+    setInlineRewriteLoading(true);
+    setInlineRewriteSuggestions([]);
+    try {
+      const res = await fetch("/api/ai-rewrite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          context,
+          targetJobDescription: resume.targetJobDescription || "",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || "Rewrite failed");
+      setInlineRewriteSuggestions(data.suggestions || []);
+    } catch (err: any) {
+      console.error(err);
+      setInlineRewriteSuggestions([]);
+    } finally {
+      setInlineRewriteLoading(false);
+    }
+  };
+
   // AI Career Coach States
+
   const [showCoach, setShowCoach] = useState(false);
   const [coachMessages, setCoachMessages] = useState<{ role: "user" | "coach"; content: string }[]>([
     { role: "coach", content: "👋 Namaste! I am your AI Career Coach. Ask me anything about improving your resume, explaining career gaps (like UPSC prep, personal reasons), or how to frame your salary package in ₹ LPA. How can I help you today?" }
@@ -953,8 +984,57 @@ function BuilderContent() {
                   onChange={(e) => setResume((r) => ({ ...r, summary: e.target.value }))}
                   style={{ fontSize: "0.88rem", lineHeight: 1.6 }}
                 />
+
+                {/* Inline AI Rewrite for Summary */}
+                {resume.summary.trim().length > 15 && (
+                  <div>
+                    <button
+                      className="btn-secondary"
+                      disabled={inlineRewriteLoading && inlineRewriteKey === "summary"}
+                      onClick={() => handleInlineRewrite(resume.summary, "Professional Summary", "summary")}
+                      style={{ fontSize: "0.78rem", padding: "0.35rem 0.8rem", borderColor: "#0ea5e9", color: "#0ea5e9" }}
+                    >
+                      {inlineRewriteLoading && inlineRewriteKey === "summary" ? (
+                        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          <span className="spinner" style={{ width: 12, height: 12 }} /> Rewriting...
+                        </span>
+                      ) : "✨ AI Rewrite"}
+                    </button>
+
+                    {inlineRewriteKey === "summary" && inlineRewriteSuggestions.length > 0 && (
+                      <div style={{ marginTop: "0.6rem", display: "grid", gap: "0.4rem" }}>
+                        <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase" }}>
+                          Click a suggestion to accept:
+                        </span>
+                        {inlineRewriteSuggestions.map((s, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => {
+                              setResume((r) => ({ ...r, summary: s }));
+                              setInlineRewriteSuggestions([]);
+                              setInlineRewriteKey("");
+                            }}
+                            style={{
+                              fontSize: "0.82rem", lineHeight: 1.5, padding: "0.6rem 0.8rem",
+                              background: "rgba(14, 165, 233, 0.04)", border: "1px solid rgba(14, 165, 233, 0.15)",
+                              borderRadius: "8px", cursor: "pointer", transition: "all 0.2s",
+                            }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "#0ea5e9"; (e.currentTarget as HTMLDivElement).style.background = "rgba(14, 165, 233, 0.08)"; }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(14, 165, 233, 0.15)"; (e.currentTarget as HTMLDivElement).style.background = "rgba(14, 165, 233, 0.04)"; }}
+                          >
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
+                              <span>{s}</span>
+                              <span style={{ fontSize: "0.72rem", color: "#0ea5e9", fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>✅ Accept</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
+
 
             {/* STEP 3: Work Experience */}
             {activeStep === "work" && (
@@ -1188,6 +1268,45 @@ function BuilderContent() {
                                     </button>
                                     <button onClick={() => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, bullets: w.bullets.filter((_, bIdx) => bIdx !== bi) } : w) }))} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "1.1rem" }}>×</button>
                                   </div>
+                                  {/* Inline AI Rewrite for this bullet */}
+                                  {bullet.trim().length > 10 && (
+                                    <div style={{ paddingLeft: "4px", marginTop: "0.2rem" }}>
+                                      <button
+                                        className="btn-secondary"
+                                        disabled={inlineRewriteLoading && inlineRewriteKey === `work-${idx}-${bi}`}
+                                        onClick={() => handleInlineRewrite(bullet, `Work Experience at ${exp.company} — ${exp.role}`, `work-${idx}-${bi}`)}
+                                        style={{ fontSize: "0.7rem", padding: "0.2rem 0.5rem", borderColor: "#0ea5e9", color: "#0ea5e9" }}
+                                      >
+                                        {inlineRewriteLoading && inlineRewriteKey === `work-${idx}-${bi}` ? "Rewriting..." : "✨ AI Rewrite"}
+                                      </button>
+
+                                      {inlineRewriteKey === `work-${idx}-${bi}` && inlineRewriteSuggestions.length > 0 && (
+                                        <div style={{ marginTop: "0.4rem", display: "grid", gap: "0.3rem" }}>
+                                          {inlineRewriteSuggestions.map((s, sIdx) => (
+                                            <div
+                                              key={sIdx}
+                                              onClick={() => {
+                                                setResume(prev => ({ ...prev, workExperience: prev.workExperience.map(w => w.id === exp.id ? { ...w, bullets: w.bullets.map((b, bIdx) => bIdx === bi ? s : b) } : w) }));
+                                                setInlineRewriteSuggestions([]);
+                                                setInlineRewriteKey("");
+                                              }}
+                                              style={{
+                                                fontSize: "0.78rem", lineHeight: 1.4, padding: "0.5rem 0.6rem",
+                                                background: "rgba(14, 165, 233, 0.04)", border: "1px solid rgba(14, 165, 233, 0.15)",
+                                                borderRadius: "6px", cursor: "pointer", transition: "all 0.2s",
+                                                display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.4rem",
+                                              }}
+                                              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "#0ea5e9"; }}
+                                              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(14, 165, 233, 0.15)"; }}
+                                            >
+                                              <span>{s}</span>
+                                              <span style={{ fontSize: "0.68rem", color: "#0ea5e9", fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>✅ Accept</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                   {!hasMetric && bullet.trim().length > 0 && (
                                     <span style={{ fontSize: "0.72rem", color: "#f6d365", paddingLeft: "4px" }}>
                                       💡 tip: Add numerical results (e.g. ₹ 5 Lakhs saved, 30% speedup) to satisfy ATS metrics audit.
@@ -1730,6 +1849,33 @@ function BuilderContent() {
             {/* STEP 9.5: Job Description Target Match */}
             {activeStep === "target-jd" && (
               <div style={{ display: "grid", gap: "1.2rem" }}>
+                {/* Banner linking to full Tailor page */}
+                <div style={{
+                  background: "linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(108, 99, 255, 0.06) 100%)",
+                  border: "1px solid rgba(14, 165, 233, 0.25)",
+                  borderRadius: "12px",
+                  padding: "1rem 1.2rem",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "1rem",
+                  flexWrap: "wrap",
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: "0.9rem", marginBottom: "0.2rem" }}>
+                      🎯 Want AI-powered one-click rewrites?
+                    </div>
+                    <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                      Use our dedicated Tailor page for a full AI rewrite experience — paste a JD, see suggestions, and accept changes instantly.
+                    </div>
+                  </div>
+                  <Link href={resumeId ? `/resume/tailor` : "/resume/tailor"}>
+                    <button className="btn-primary" style={{ fontSize: "0.82rem", padding: "0.5rem 1rem", whiteSpace: "nowrap" }}>
+                      Open Tailor Page →
+                    </button>
+                  </Link>
+                </div>
+
                 <div className="card" style={{ display: "grid", gap: "1.2rem" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem", margin: 0 }}>
                     Job Description Target Match
