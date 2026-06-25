@@ -226,13 +226,21 @@ function BuilderContent() {
 
   // Fetch or restore existing resume
   useEffect(() => {
-    if (authLoading || !user || !editId) return;
+    if (authLoading || !user) return;
 
     const fetchResume = async () => {
       try {
         const res = await fetch("/api/get-resumes");
         const data = await res.json();
-        const found = data.find((r: any) => r.id === editId);
+        
+        let found = null;
+        if (editId) {
+          found = data.find((r: any) => r.id === editId);
+        } else if (data && Array.isArray(data) && data.length > 0) {
+          // Prefill with the most recently updated resume if no editId is provided
+          found = [...data].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
+        }
+
         if (found && found.resume_data) {
           // Merge safely with defaults to prevent missing keys
           const merged: ResumeData = {
@@ -243,9 +251,12 @@ function BuilderContent() {
             placementChecklist: { ...defaultEmptyResume.placementChecklist, ...found.resume_data.placementChecklist },
           };
           setResume(merged);
-          setResumeId(found.id);
+          
+          if (editId) {
+            setResumeId(found.id);
+          }
           if (found.template_id) setSelectedTemplate(found.template_id);
-          if (found.jd_match) setJdMatchResult(found.jd_match);
+          if (editId && found.jd_match) setJdMatchResult(found.jd_match);
         }
       } catch (err) {
         console.error("Error loading resume details for edit:", err);
@@ -371,7 +382,14 @@ function BuilderContent() {
         }),
       });
 
-      if (!res.ok) throw new Error("Save request failed");
+      if (!res.ok) {
+        let errMessage = "Save request failed";
+        try {
+          const errData = await res.json();
+          if (errData.error) errMessage = errData.error;
+        } catch (e) {}
+        throw new Error(errMessage);
+      }
       const savedRow = await res.json();
       setResumeId(savedRow.id);
       setSaveStatus("saved");
