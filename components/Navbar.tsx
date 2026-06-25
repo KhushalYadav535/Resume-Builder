@@ -4,18 +4,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "@/components/NotificationBell";
+import PillNav from "./PillNav/PillNav";
 
 export default function Navbar() {
   const pathname = usePathname();
   const { role, user, logout } = useAuth();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   let links = [];
 
   if (role === "admin") {
     links = [
-      { href: "/admin", label: "🛡️ Admin Panel" },
-      { href: "/analytics", label: "📈 Analytics" },
+      { href: "/admin", label: "Admin Panel" },
+      { href: "/analytics", label: "Analytics" },
     ];
   } else {
     links = [
@@ -27,210 +36,88 @@ export default function Navbar() {
     ];
   }
 
-  // Close mobile menu when page changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
   return (
-    <nav
+    <div
       style={{
-        background: "rgba(10,10,15,0.92)",
-        backdropFilter: "blur(12px)",
-        borderBottom: "1px solid var(--border)",
-        position: "sticky",
+        position: "fixed",
         top: 0,
+        left: 0,
         zIndex: 1000,
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        pointerEvents: "none",
+        transition: "all 0.3s ease",
+        opacity: scrolled ? 0.6 : 1,
+        filter: scrolled ? "blur(2px)" : "none",
       }}
     >
-      {/* Media Query Injector */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        .desktop-nav {
-          display: flex !important;
-          align-items: center;
-          gap: 0.5rem;
-        }
-        .desktop-nav a:hover {
-          color: var(--accent) !important;
-          background: rgba(108, 99, 255, 0.05);
-        }
-        .mobile-toggle-btn {
-          display: none !important;
-        }
-        .mobile-nav-drawer {
-          display: none;
-        }
-        .mobile-nav-drawer a:hover {
-          background: rgba(108, 99, 255, 0.05) !important;
-          color: var(--accent) !important;
-        }
-        @media (max-width: 768px) {
-          .desktop-nav {
-            display: none !important;
-          }
-          .mobile-toggle-btn {
-            display: flex !important;
-          }
-          .mobile-nav-drawer {
-            display: ${isMobileMenuOpen ? "flex" : "none"};
-            flex-direction: column;
-            background: rgba(12, 12, 18, 0.98);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 1.5rem;
-            gap: 0.8rem;
-            position: absolute;
-            top: 60px;
-            left: 0;
-            width: 100%;
-            z-index: 999;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            animation: fadeInDown 0.2s ease;
-          }
-        }
-      `}} />
-
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "0 1.5rem",
-          height: "60px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+      <div 
+        style={{ 
+          pointerEvents: "auto", 
+          display: "flex", 
+          width: "100%", 
+          maxWidth: "1200px", 
+          padding: "0 1.5rem", 
+          justifyContent: "space-between", 
+          alignItems: "center", 
+          marginTop: scrolled ? "0.5rem" : "1rem",
+          transition: "margin-top 0.3s ease"
         }}
       >
-        {/* Logo */}
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <span
-            style={{
-              fontFamily: "Syne, sans-serif",
-              fontWeight: 800,
-              fontSize: "1.2rem",
-              background: "linear-gradient(135deg, #6c63ff, #ff6584)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            ResumeAI
-          </span>
-        </Link>
+        
+        <PillNav
+          items={links}
+          activeHref={pathname}
+          baseColor="#000000"
+          pillColor="#1a1a24"
+          hoveredPillTextColor="#ffffff"
+          pillTextColor="#d1d1d1"
+          className="resume-pill-nav"
+        />
 
-        {/* Desktop Navigation Links */}
-        <div className="desktop-nav">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
+        {user && (
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "0.8rem", 
+            background: "rgba(19, 19, 30, 0.8)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid var(--border)",
+            padding: "0 1.5rem",
+            height: "42px",
+            borderRadius: "9999px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            zIndex: 100
+          }}>
+            <NotificationBell />
+            <button 
+              onClick={logout}
               style={{
-                textDecoration: "none",
-                padding: "0.4rem 0.9rem",
+                background: "transparent",
+                border: "none",
+                color: "#d1d1d1",
+                fontSize: "14px",
+                fontWeight: 600,
+                cursor: "pointer",
+                padding: "0.4rem 0.6rem",
                 borderRadius: "8px",
-                fontSize: "0.88rem",
-                fontWeight: 500,
-                color: pathname === link.href ? "var(--accent)" : "var(--text-muted)",
-                background: pathname === link.href ? "rgba(108,99,255,0.1)" : "transparent",
                 transition: "all 0.2s",
+                textTransform: "uppercase",
+                letterSpacing: "0.2px"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#ff6584";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#d1d1d1";
               }}
             >
-              {link.label}
-            </Link>
-          ))}
-          {user && (
-            <div style={{ marginLeft: "0.5rem", borderLeft: "1px solid var(--border)", paddingLeft: "0.8rem", display: "flex", alignItems: "center", gap: "0.8rem" }}>
-              <NotificationBell />
-              <button 
-                onClick={logout}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--text-muted)",
-                  fontSize: "0.88rem",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  padding: "0.4rem 0.6rem",
-                  borderRadius: "8px",
-                  transition: "all 0.2s"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#ff6584";
-                  e.currentTarget.style.background = "rgba(255,101,132,0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "var(--text-muted)";
-                  e.currentTarget.style.background = "transparent";
-                }}
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Mobile controls (Notification bell + Hamburger toggle) */}
-        <div style={{ display: "none", alignItems: "center", gap: "0.5rem" }} className="mobile-toggle-btn">
-          {user && <NotificationBell />}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              flexDirection: "column",
-              gap: "5px",
-              padding: "0.5rem",
-              justifyContent: "center",
-            }}
-            aria-label="Toggle Navigation Menu"
-          >
-            <span style={{ width: "22px", height: "2px", background: "var(--text)", transition: "0.3s", transform: isMobileMenuOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
-            <span style={{ width: "22px", height: "2px", background: "var(--text)", transition: "0.3s", opacity: isMobileMenuOpen ? 0 : 1 }} />
-            <span style={{ width: "22px", height: "2px", background: "var(--text)", transition: "0.3s", transform: isMobileMenuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Drawer Dropdown */}
-      <div className="mobile-nav-drawer">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            style={{
-              textDecoration: "none",
-              padding: "0.6rem 1rem",
-              borderRadius: "8px",
-              fontSize: "0.95rem",
-              fontWeight: 500,
-              color: pathname === link.href ? "var(--accent)" : "var(--text)",
-              background: pathname === link.href ? "rgba(108,99,255,0.08)" : "transparent",
-              transition: "all 0.2s",
-            }}
-          >
-            {link.label}
-          </Link>
-        ))}
-        {user && (
-          <button
-            onClick={logout}
-            style={{
-              textAlign: "left",
-              border: "none",
-              padding: "0.6rem 1rem",
-              borderRadius: "8px",
-              fontSize: "0.95rem",
-              fontWeight: 500,
-              color: "#ff6584",
-              background: "transparent",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-          >
-            Logout
-          </button>
+              Logout
+            </button>
+          </div>
         )}
       </div>
-    </nav>
+    </div>
   );
 }
