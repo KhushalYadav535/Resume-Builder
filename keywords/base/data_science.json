@@ -1,0 +1,19 @@
+{
+  "industry": "data_science",
+  "version": "1.0",
+  "last_updated": "2026-06-01",
+  "keywords": [
+    { "keyword": "Data Analysis", "weight": 7, "aliases": ["Data Analytics"] },
+    { "keyword": "Statistics", "weight": 6, "aliases": ["Statistical Analysis", "Hypothesis Testing"] },
+    { "keyword": "Python", "weight": 8, "aliases": [] },
+    { "keyword": "R", "weight": 7, "aliases": [] },
+    { "keyword": "SQL", "weight": 8, "aliases": ["MySQL", "Postgres", "SQL Server"] },
+    { "keyword": "Tableau", "weight": 7, "aliases": [] },
+    { "keyword": "Power BI", "weight": 7, "aliases": ["PowerBI"] },
+    { "keyword": "Excel", "weight": 5, "aliases": ["Advanced Excel", "VBA"] },
+    { "keyword": "Data Visualization", "weight": 6, "aliases": ["Data Viz", "Matplotlib", "Seaborn"] },
+    { "keyword": "A/B Testing", "weight": 7, "aliases": ["AB Testing"] },
+    { "keyword": "Data Warehousing", "weight": 7, "aliases": ["ETL", "Data Warehouse"] },
+    { "keyword": "Big Data", "weight": 6, "aliases": ["Hadoop", "Spark"] }
+  ]
+}

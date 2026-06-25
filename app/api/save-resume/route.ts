@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { calculateATS } from "@/lib/calculateATS";
+import { calculateDynamicATS } from "@/lib/ats";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     let atsScore = rawAtsScore !== undefined ? rawAtsScore : (ats_score !== undefined ? ats_score : null);
     if (atsScore == null && resumeText) {
       try {
-        atsScore = calculateATS(resumeText);
+        atsScore = calculateDynamicATS(resumeText);
       } catch (err) {
         console.error("Failed to automatically compute ATS score during save:", err);
       }

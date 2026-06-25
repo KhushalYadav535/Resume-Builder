@@ -112,6 +112,14 @@ export interface ATSScore {
   missingKeywords: string[];
   matchedKeywords?: string[];
   suggestions: string[];
+  // Dynamic ATS Extensions
+  score?: number;
+  detectedIndustry?: string;
+  detectedRole?: string;
+  confidence?: number;
+  india_keyword_matches?: string[];
+  keywordMatches?: { keyword: string; weight: number; layer: string; matchedText: string }[];
+  missingKeywordDetails?: { keyword: string; weight: number }[];
 }
 
 export interface ContentReview {

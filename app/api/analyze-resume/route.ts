@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { parseResume } from "@/lib/resumeParser";
-import { calculateATS } from "@/lib/calculateATS";
+import { calculateDynamicATS } from "@/lib/ats";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     // Stage 1, 2 & 3: Run all processing completely LOCALLY (fast, free, 0 rate-limits!)
     const structuredResume = parseResume(resumeText);
-    const atsScore = calculateATS(resumeText);
+    const atsScore = calculateDynamicATS(resumeText);
 
     // Save to Supabase DB immediately
     const { data, error } = await supabase

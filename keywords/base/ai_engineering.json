@@ -1,0 +1,19 @@
+{
+  "industry": "ai_engineering",
+  "version": "1.0",
+  "last_updated": "2026-06-01",
+  "keywords": [
+    { "keyword": "Machine Learning", "weight": 8, "aliases": ["ML"] },
+    { "keyword": "Deep Learning", "weight": 8, "aliases": ["DL", "Neural Networks", "CNN", "RNN"] },
+    { "keyword": "Natural Language Processing", "weight": 8, "aliases": ["NLP"] },
+    { "keyword": "Computer Vision", "weight": 8, "aliases": ["CV"] },
+    { "keyword": "TensorFlow", "weight": 7, "aliases": ["TF"] },
+    { "keyword": "PyTorch", "weight": 9, "aliases": [] },
+    { "keyword": "Scikit-Learn", "weight": 6, "aliases": ["sklearn"] },
+    { "keyword": "Pandas", "weight": 6, "aliases": [] },
+    { "keyword": "NumPy", "weight": 6, "aliases": [] },
+    { "keyword": "MLOps", "weight": 8, "aliases": ["Machine Learning Operations"] },
+    { "keyword": "Data Mining", "weight": 5, "aliases": [] },
+    { "keyword": "Large Language Models", "weight": 10, "aliases": ["LLM", "LLMs"] }
+  ]
+}

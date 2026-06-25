@@ -1,0 +1,17 @@
+{
+  "industry": "product_management",
+  "version": "1.0",
+  "last_updated": "2026-06-01",
+  "keywords": [
+    { "keyword": "Product Strategy", "weight": 9, "aliases": ["Product Vision", "GTM", "Go-to-Market"] },
+    { "keyword": "Roadmapping", "weight": 8, "aliases": ["Product Roadmap", "Prioritization"] },
+    { "keyword": "Agile Methodology", "weight": 7, "aliases": ["Scrum", "Kanban", "Sprint Planning"] },
+    { "keyword": "User Stories", "weight": 6, "aliases": ["PRD", "Product Requirements Document", "Acceptance Criteria"] },
+    { "keyword": "Jira", "weight": 6, "aliases": ["Confluence", "Atlassian"] },
+    { "keyword": "Wireframing", "weight": 6, "aliases": ["Figma", "Prototyping", "UX/UI"] },
+    { "keyword": "A/B Testing", "weight": 8, "aliases": ["Experimentation", "Multivariate Testing"] },
+    { "keyword": "Data Analysis", "weight": 7, "aliases": ["Product Analytics", "Mixpanel", "Amplitude"] },
+    { "keyword": "Cross-functional Leadership", "weight": 8, "aliases": ["Stakeholder Management"] },
+    { "keyword": "Market Research", "weight": 7, "aliases": ["Customer Discovery", "User Interviews"] }
+  ]
+}

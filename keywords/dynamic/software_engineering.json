@@ -1,0 +1,108 @@
+{
+  "industry": "software_engineering",
+  "version": "1.0",
+  "last_updated": "2026-06-01",
+  "keywords": [
+    {
+      "keyword": "Next.js",
+      "weight": 10,
+      "aliases": [
+        "NextJS",
+        "App Router"
+      ],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Tailwind CSS",
+      "weight": 9,
+      "aliases": [
+        "TailwindCSS",
+        "Tailwind"
+      ],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "GraphQL",
+      "weight": 8,
+      "aliases": [
+        "Apollo"
+      ],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Rust",
+      "weight": 9,
+      "aliases": [
+        "Rustlang"
+      ],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Go",
+      "weight": 8,
+      "aliases": [
+        "Golang"
+      ],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "WebAssembly",
+      "weight": 7,
+      "aliases": [
+        "Wasm"
+      ],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Supabase",
+      "weight": 8,
+      "aliases": [
+        "BaaS"
+      ],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "TRPC",
+      "weight": 8,
+      "aliases": [
+        "tRPC"
+      ],
+      "added_on": "2026-01-01",
+      "expires_on": "2028-06-01",
+      "is_active": true,
+      "source": "Curated"
+    },
+    {
+      "keyword": "Kubernetes Operators",
+      "weight": 7,
+      "aliases": [
+        "Custom Resource Definitions",
+        "Operator pattern",
+        "CRDs"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-25"
+    }
+  ]
+}
