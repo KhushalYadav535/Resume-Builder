@@ -1,11 +1,13 @@
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
+import { validateEnv } from "@/lib/env";
 
 /**
  * Next.js 16+ Proxy Boundary to intercept incoming requests,
  * refresh auth cookies, and handle protected route redirects.
  */
 export async function proxy(request: NextRequest) {
+  validateEnv();
   return await updateSession(request);
 }
 
