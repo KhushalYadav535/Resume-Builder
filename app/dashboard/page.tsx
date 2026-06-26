@@ -166,13 +166,6 @@ export default function Dashboard() {
                 <button className="btn-secondary" style={{ borderColor: "#ff6584", color: "#ff6584" }}>🛡️ Admin Panel</button>
               </Link>
             )}
-            {resumes.length >= 2 && (
-              <Link href="/resume/compare" style={{ textDecoration: "none" }}>
-                <button className="btn-secondary" style={{ borderColor: "var(--accent)", color: "var(--accent)" }}>
-                  ⚖️ Compare Resumes
-                </button>
-              </Link>
-            )}
             <Link href="/resume/builder" style={{ textDecoration: "none" }}>
               <button className="btn-primary">✦ Build New</button>
             </Link>
