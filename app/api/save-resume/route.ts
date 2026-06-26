@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
           ats_score: atsScore,
           content_review: content_review || null,
           jd_match: jd_match || null,
-          template_id: template_id || "modern",
+          template_id: template_id || "standard",
           updated_at: new Date().toISOString()
         })
         .eq("id", id)
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
             ats_score: atsScore,
             content_review: content_review || null,
             jd_match: jd_match || null,
-            template_id: template_id || "modern",
+            template_id: template_id || "standard",
             updated_at: new Date().toISOString()
           }
         ])

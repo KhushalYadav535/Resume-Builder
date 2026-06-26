@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { ResumeData, WorkExperience, Education, Project, Certification, ATSScore, LanguagesKnown, JDMatch } from "@/types";
 import { calculateATS } from "@/lib/calculateATS";
-import ResumeRenderer from "@/components/ResumeRenderer";
+import ResumeDocument from "@/components/ResumeDocument";
 import ResizablePanels from "@/components/ResizablePanels";
 
 const defaultEmptyResume: ResumeData = {
@@ -99,7 +99,7 @@ function BuilderContent() {
   const searchParams = useSearchParams();
 
   // URL Query States
-  const initialTemplate = searchParams.get("template") || "modern";
+  const initialTemplate = searchParams.get("template") || "standard";
   const editId = searchParams.get("id");
 
   // Primary States
@@ -282,7 +282,9 @@ function BuilderContent() {
           if (editId) {
             setResumeId(found.id);
           }
-          if (found.template_id) setSelectedTemplate(found.template_id);
+          if (found.template_id && !searchParams.has("template")) {
+            setSelectedTemplate(found.template_id);
+          }
         }
       } catch (err) {
         console.error("Error loading resume details for edit:", err);
@@ -1789,6 +1791,7 @@ function BuilderContent() {
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Select Design Template</h2>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                     {[
+                      { id: "standard", name: "Standard (Recommended)", desc: "Highly recommended ATS-friendly, clean and professional layout." },
                       { id: "modern", name: "Modern ATS", desc: "Minimal design with standard sections - highly compatible." },
                       { id: "professional", name: "Professional", desc: "Classic layout styled with prominent timeline dividers." },
                       { id: "executive", name: "Executive", desc: "Structured top headers best for senior management." },
@@ -2214,7 +2217,7 @@ function BuilderContent() {
               borderRadius: "4px",
               transition: "transform 0.15s ease-out",
             }}>
-              <ResumeRenderer data={resume} />
+              <ResumeDocument data={resume} templateId={selectedTemplate} />
             </div>
           </div>
         </div>

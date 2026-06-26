@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
           ats_score: atsScore,
           content_review: null,
           jd_match: null,
-          template_id: "modern",
+          template_id: "standard",
         }
       ])
       .select();

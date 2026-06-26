@@ -7,6 +7,13 @@ import { ResumeData } from "@/types";
 
 const templates = [
   {
+    id: "standard",
+    name: "Standard (Recommended)",
+    desc: "Highly recommended ATS-friendly, clean and professional layout modeled after the industry standard.",
+    color: "#0f172a",
+    tags: ["Recommended", "ATS-Standard", "Professional"],
+  },
+  {
     id: "modern",
     name: "Modern ATS",
     desc: "Clean, standard structure — best for tech and software engineering roles",
@@ -159,8 +166,12 @@ function TemplatesContent() {
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
-        {templates.map((t) => (
+      <div style={{ marginBottom: "2rem" }}>
+        <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.5rem", fontWeight: 700, marginBottom: "1rem" }}>
+          Standard & Highly Recommended
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
+          {templates.filter(t => t.id === "standard").map((t) => (
           <div
             key={t.id}
             className="card"
@@ -248,6 +259,103 @@ function TemplatesContent() {
             </div>
           </div>
         ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "2rem" }}>
+        <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.5rem", fontWeight: 700, marginBottom: "1rem" }}>
+          Other Templates
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
+          {templates.filter(t => t.id !== "standard").map((t) => (
+            <div
+              key={t.id}
+              className="card"
+              style={{ 
+                cursor: "pointer", 
+                transition: "all 0.25s",
+                display: "flex",
+                flexDirection: "column",
+                height: "100%"
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.borderColor = t.color + "88";
+                (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
+                (e.currentTarget as HTMLDivElement).style.boxShadow = `0 10px 30px ${t.color}22`;
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)";
+                (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+                (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
+              }}
+              onClick={() => handleSelectTemplate(t.id)}
+            >
+              {/* Live scaled preview container */}
+              <div
+                style={{
+                  height: "230px",
+                  borderRadius: "10px",
+                  background: `#161622`,
+                  border: `1px solid var(--border)`,
+                  marginBottom: "1.2rem",
+                  position: "relative",
+                  overflow: "hidden",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "start",
+                  padding: "0.5rem"
+                }}
+              >
+                {resumeData ? (
+                  <div style={{
+                    width: "550px",
+                    transform: "scale(0.27)",
+                    transformOrigin: "top center",
+                    background: "#ffffff",
+                    color: "#333333",
+                    padding: t.id === "creative" ? "0" : "1.8rem",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    borderRadius: "4px",
+                    pointerEvents: "none",
+                  }}>
+                    <ResumeDocument data={resumeData} templateId={t.id} />
+                  </div>
+                ) : (
+                  /* Static placeholder layout */
+                  <div style={{ width: "85%", padding: "20px 12px", display: "grid", gap: "10px", opacity: 0.65 }}>
+                    <div style={{ height: 10, background: t.color, borderRadius: 4, width: "65%" }} />
+                    <div style={{ height: 5, background: t.color + "60", borderRadius: 2, width: "45%", marginBottom: "5px" }} />
+                    <div style={{ height: 4, background: "var(--border)", borderRadius: 2, width: "100%" }} />
+                    <div style={{ height: 4, background: "var(--border)", borderRadius: 2, width: "90%" }} />
+                    <div style={{ height: 4, background: "var(--border)", borderRadius: 2, width: "80%", marginBottom: "5px" }} />
+                    <div style={{ height: 6, background: t.color + "80", borderRadius: 2, width: "35%" }} />
+                    <div style={{ height: 4, background: "var(--border)", borderRadius: 2, width: "95%" }} />
+                    <div style={{ height: 4, background: "var(--border)", borderRadius: 2, width: "75%" }} />
+                  </div>
+                )}
+              </div>
+
+              <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.1rem", marginBottom: "0.4rem" }}>
+                  {t.name}
+                </h3>
+                <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginBottom: "1rem", lineHeight: 1.5, flex: 1 }}>
+                  {t.desc}
+                </p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "1.2rem" }}>
+                  {t.tags.map((tag) => (
+                    <span key={tag} className="tag tag-purple" style={{ fontSize: "0.7rem", padding: "0.15rem 0.6rem" }}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "0.6rem", fontSize: "0.85rem" }}>
+                  {editId ? "Select & Apply Style" : "Use Template →"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
