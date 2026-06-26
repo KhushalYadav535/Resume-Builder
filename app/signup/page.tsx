@@ -167,7 +167,7 @@ export default function SignupPage() {
           width: "100%",
           maxWidth: "420px",
           padding: "2.5rem 2rem",
-          background: "rgba(19, 19, 30, 0.8)",
+          background: "var(--card)",
           backdropFilter: "blur(12px)",
           border: "1px solid var(--border)",
           borderRadius: "20px",
@@ -227,7 +227,7 @@ export default function SignupPage() {
 
         <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1.25rem" }}>
           {/* Email vs Mobile Number tab pills */}
-          <div style={{ display: "flex", gap: "0.5rem", background: "rgba(255, 255, 255, 0.05)", padding: "4px", borderRadius: "10px" }}>
+          <div style={{ display: "flex", gap: "0.5rem", background: "var(--bg-3)", padding: "4px", borderRadius: "10px" }}>
             <button
               type="button"
               onClick={() => handleSwitchTab("email")}
@@ -237,7 +237,7 @@ export default function SignupPage() {
                 borderRadius: "8px",
                 border: "none",
                 background: loginMethod === "email" ? "var(--accent)" : "transparent",
-                color: "#fff",
+                color: loginMethod === "email" ? "#fff" : "var(--text)",
                 fontSize: "0.85rem",
                 fontWeight: 600,
                 cursor: "pointer",
@@ -255,7 +255,7 @@ export default function SignupPage() {
                 borderRadius: "8px",
                 border: "none",
                 background: loginMethod === "mobile" ? "var(--accent)" : "transparent",
-                color: "#fff",
+                color: loginMethod === "mobile" ? "#fff" : "var(--text)",
                 fontSize: "0.85rem",
                 fontWeight: 600,
                 cursor: "pointer",

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "@/components/NotificationBell";
 import PillNav from "./PillNav/PillNav";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -44,7 +45,7 @@ export default function Navbar() {
         top: 0,
         zIndex: 1000,
         width: "100%",
-        background: "rgba(10, 10, 15, 0.85)",
+        background: "var(--nav-bg)",
         backdropFilter: "blur(12px)",
         borderBottom: "1px solid var(--border)",
         transition: "all 0.3s ease",
@@ -77,13 +78,14 @@ export default function Navbar() {
             height: "42px",
             zIndex: 100
           }}>
+            <ThemeToggle />
             <NotificationBell />
             <button 
               onClick={logout}
               style={{
                 background: "transparent",
                 border: "1px solid var(--border-light)",
-                color: "#d1d1d1",
+                color: "var(--text-muted)",
                 fontSize: "13px",
                 fontWeight: 600,
                 cursor: "pointer",

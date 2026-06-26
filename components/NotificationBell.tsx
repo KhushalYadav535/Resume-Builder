@@ -141,7 +141,7 @@ export default function NotificationBell() {
             right: 0,
             marginTop: "8px",
             width: "320px",
-            background: "rgba(18, 18, 28, 0.95)",
+            background: "var(--nav-bg)",
             backdropFilter: "blur(16px)",
             border: "1px solid var(--border)",
             borderRadius: "12px",
