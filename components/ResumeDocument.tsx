@@ -1654,25 +1654,25 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           if (!summary) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.5rem" }}>Professional Summary</h3>
-              <p style={{ fontSize: `${fontSize * 0.85}pt`, margin: 0, lineHeight: 1.5 }}>{summary}</p>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Professional Summary</h3>
+              <p style={{ fontSize: `${fontSize * 0.85}pt`, margin: 0, lineHeight: 1.5, color: "var(--text)" }}>{summary}</p>
             </div>
           );
         case "work":
           if (workExperience.length === 0) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.5rem" }}>Work Experience</h3>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Work Experience</h3>
               {workExperience.map((exp) => (
                 <div key={exp.id} style={{ marginBottom: "1rem", fontSize: `${fontSize * 0.85}pt` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.15rem" }}>
-                    <span><strong>{exp.role || "Role"}</strong> {exp.company ? `– ${exp.company}` : ""}</span>
-                    <span style={{ fontStyle: "italic", color: "#444" }}>
+                    <span style={{ color: "var(--text-primary)" }}><strong>{exp.role || "Role"}</strong> {exp.company ? `– ${exp.company}` : ""}</span>
+                    <span style={{ fontStyle: "italic", color: "var(--text-muted)" }}>
                       {exp.startDate} {exp.endDate ? `– ${exp.endDate}` : ""} 
                       {exp.city ? ` | ${exp.city}` : ""}
                     </span>
                   </div>
-                  <ul style={{ margin: "4px 0 0", paddingLeft: "1.2rem", color: "#333" }}>
+                  <ul style={{ margin: "4px 0 0", paddingLeft: "1.2rem", color: "var(--text)" }}>
                     {exp.bullets.filter(b => b.trim()).map((b, bi) => <li key={bi} style={{ marginBottom: "4px", lineHeight: 1.5 }}>{b}</li>)}
                   </ul>
                 </div>
@@ -1683,18 +1683,18 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           if (education.length === 0) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.5rem" }}>Education</h3>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Education</h3>
               {education.map((edu) => (
                 <div key={edu.id} style={{ marginBottom: "0.8rem", fontSize: `${fontSize * 0.85}pt` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.15rem" }}>
-                    <span><strong>{edu.degree || "Degree"}{edu.field ? ` in ${edu.field}` : ""}</strong></span>
-                    <span style={{ fontStyle: "italic", color: "#444" }}>
+                    <span style={{ color: "var(--text-primary)" }}><strong>{edu.degree || "Degree"}{edu.field ? ` in ${edu.field}` : ""}</strong></span>
+                    <span style={{ fontStyle: "italic", color: "var(--text-muted)" }}>
                       {edu.startDate} {edu.endDate ? `– ${edu.endDate}` : ""}
                     </span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text)" }}>
                     <span>{edu.institution || "Institution"}{edu.boardOrUniversity ? ` – ${edu.boardOrUniversity}` : ""}</span>
-                    {edu.gpa && <span style={{ color: "#444" }}>GPA: {edu.gpa}</span>}
+                    {edu.gpa && <span style={{ color: "var(--text-muted)" }}>GPA: {edu.gpa}</span>}
                   </div>
                 </div>
               ))}
@@ -1704,13 +1704,13 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           if (skills.technical.length === 0 && skills.soft.length === 0) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.5rem" }}>Skills</h3>
-              <div style={{ fontSize: `${fontSize * 0.85}pt`, lineHeight: 1.5, display: "grid", gap: "0.2rem" }}>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Skills</h3>
+              <div style={{ fontSize: `${fontSize * 0.85}pt`, lineHeight: 1.5, display: "grid", gap: "0.2rem", color: "var(--text)" }}>
                 {skills.technical.length > 0 && (
-                  <div><strong>Technical:</strong> {skills.technical.join(", ")}</div>
+                  <div><strong style={{ color: "var(--text-primary)" }}>Technical:</strong> {skills.technical.join(", ")}</div>
                 )}
                 {skills.soft.length > 0 && (
-                  <div><strong>Soft:</strong> {skills.soft.join(", ")}</div>
+                  <div><strong style={{ color: "var(--text-primary)" }}>Soft:</strong> {skills.soft.join(", ")}</div>
                 )}
               </div>
             </div>
@@ -1719,15 +1719,15 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           if (projects.length === 0) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.5rem" }}>Projects</h3>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Projects</h3>
               {projects.map((proj) => (
                 <div key={proj.id} style={{ marginBottom: "1rem", fontSize: `${fontSize * 0.85}pt` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.15rem" }}>
-                    <span style={{ fontWeight: "bold", color: "#111" }}>
+                    <span style={{ fontWeight: "bold", color: "var(--text-primary)" }}>
                       {proj.link ? <a href={proj.link} style={{ color: "inherit", textDecoration: "none" }}>{proj.name}</a> : proj.name}
                     </span>
                   </div>
-                  <ul style={{ margin: "4px 0 0", paddingLeft: "1.2rem", color: "#333" }}>
+                  <ul style={{ margin: "4px 0 0", paddingLeft: "1.2rem", color: "var(--text)" }}>
                     {proj.description.split("\n").filter(b => b.trim()).map((b, bi) => <li key={bi} style={{ marginBottom: "4px", lineHeight: 1.5 }}>{b.replace(/^- /, '')}</li>)}
                   </ul>
                 </div>
@@ -1738,9 +1738,9 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           if (certifications.length === 0) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.5rem" }}>Certifications</h3>
-              <ul style={{ margin: 0, paddingLeft: "1.2rem", fontSize: `${fontSize * 0.85}pt`, lineHeight: 1.5 }}>
-                {certifications.map((c) => <li key={c.id}><strong>{c.name}</strong> {c.issuer ? `— ${c.issuer}` : ""} {c.date ? `(${c.date})` : ""}</li>)}
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Certifications</h3>
+              <ul style={{ margin: 0, paddingLeft: "1.2rem", fontSize: `${fontSize * 0.85}pt`, lineHeight: 1.5, color: "var(--text)" }}>
+                {certifications.map((c) => <li key={c.id}><strong style={{ color: "var(--text-primary)" }}>{c.name}</strong> {c.issuer ? `— ${c.issuer}` : ""} {c.date ? `(${c.date})` : ""}</li>)}
               </ul>
             </div>
           );
@@ -1750,10 +1750,10 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
     };
 
     return (
-      <div style={{ fontFamily: "Arial, Helvetica, sans-serif", color: "#000", fontSize: `${fontSize * 0.85}pt` }}>
+      <div style={{ fontFamily: "Arial, Helvetica, sans-serif", color: "var(--text-primary)", fontSize: `${fontSize * 0.85}pt` }}>
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
           <h1 style={{ fontSize: `${fontSize * 2.2}pt`, fontWeight: "bold", margin: "0 0 0.4rem 0" }}>{personalInfo.fullName}</h1>
-          <div style={{ fontSize: `${fontSize * 0.75}pt`, display: "flex", justifyContent: "center", gap: "1.2rem", flexWrap: "wrap", color: "#444" }}>
+          <div style={{ fontSize: `${fontSize * 0.75}pt`, display: "flex", justifyContent: "center", gap: "1.2rem", flexWrap: "wrap", color: "var(--text-muted)" }}>
             {personalInfo.email && <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>✉ {personalInfo.email}</span>}
             {personalInfo.phone && <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>✆ {personalInfo.phone}</span>}
             {personalInfo.location && <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>📍 {personalInfo.location}</span>}

@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { LoginSchema } from "@/lib/validation/auth";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Box, Mail, Phone, Lock, Smartphone } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,7 +24,6 @@ export default function LoginPage() {
   const [mobileNumber, setMobileNumber] = useState("");
   const [otpToken, setOtpToken] = useState("");
   const [showOtpInput, setShowOtpInput] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleSwitchTab = (method: "email" | "mobile") => {
     setLoginMethod(method);
@@ -61,7 +64,7 @@ export default function LoginPage() {
             phone: fullPhone,
           });
           if (error) {
-            setErrorMsg("Phone login is not enabled. Please use your email address.");
+            setErrorMsg("Phone login failed or not enabled.");
             setLoginMethod("email");
             setMobileNumber("");
           } else {
@@ -108,316 +111,203 @@ export default function LoginPage() {
   };
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "var(--bg)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem 1rem",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Background glow blobs */}
-      <div
-        style={{
-          position: "absolute",
-          top: "-200px",
-          left: "30%",
-          width: "600px",
-          height: "600px",
-          background: "radial-gradient(circle, rgba(108,99,255,0.1) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          bottom: "-200px",
-          right: "30%",
-          width: "600px",
-          height: "600px",
-          background: "radial-gradient(circle, rgba(255,101,132,0.08) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div
-        className="card glow fade-in-up"
-        style={{
-          width: "100%",
-          maxWidth: "420px",
-          padding: "2.5rem 2rem",
-          background: "var(--card)",
-          backdropFilter: "blur(12px)",
-          border: "1px solid var(--border)",
-          borderRadius: "20px",
-          zIndex: 10,
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <h1
-            style={{
-              fontFamily: "Syne, sans-serif",
-              fontSize: "1.8rem",
-              fontWeight: 800,
-              background: "linear-gradient(135deg, #6c63ff, #ff6584)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              marginBottom: "0.5rem",
-            }}
-          >
-            Welcome Back
+    <div className="flex min-h-screen bg-[var(--bg-surface)] relative">
+      <div className="absolute top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+      {/* Left Decorative Panel */}
+      <div className="hidden lg:flex flex-col relative w-[40%] bg-[var(--accent-grad)] p-12 overflow-hidden text-white">
+        <Link href="/" className="flex items-center gap-2 mb-16 relative z-10 w-fit no-underline">
+          <Box size={28} className="text-white" />
+          <span className="text-2xl font-[800] tracking-tight text-white font-['Syne',sans-serif]">
+            ResumeOptimizer
+          </span>
+        </Link>
+        <div className="relative z-10 flex flex-col justify-center flex-1 pr-12">
+          <h1 className="text-4xl lg:text-5xl font-extrabold font-['Syne',sans-serif] leading-tight mb-6 text-white">
+            Unlock your career potential.
           </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>
-            Log in to manage and optimize your resumes
+          <p className="text-white/80 text-lg leading-relaxed">
+            Build ATS-friendly resumes, analyze job descriptions, and let AI help you land your dream job faster.
           </p>
         </div>
+        
+        {/* Animated Background Blobs */}
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 mix-blend-overlay animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4 mix-blend-overlay" />
+      </div>
 
-        {errorMsg && (
-          <div
-            style={{
-              color: "#ff6584",
-              fontSize: "0.85rem",
-              padding: "0.75rem 1rem",
-              background: "rgba(255, 101, 132, 0.1)",
-              borderRadius: "8px",
-              marginBottom: "1.5rem",
-              border: "1px solid rgba(255, 101, 132, 0.2)",
-            }}
-          >
-            {errorMsg}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1.25rem" }}>
-          {/* Email vs Mobile Number tab pills */}
-          <div style={{ display: "flex", gap: "0.5rem", background: "var(--bg-3)", padding: "4px", borderRadius: "10px" }}>
-            <button
-              type="button"
-              onClick={() => handleSwitchTab("email")}
-              style={{
-                flex: 1,
-                padding: "0.5rem",
-                borderRadius: "8px",
-                border: "none",
-                background: loginMethod === "email" ? "var(--accent)" : "transparent",
-                color: loginMethod === "email" ? "#fff" : "var(--text)",
-                fontSize: "0.85rem",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "background 0.2s",
-              }}
-            >
-              Email
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSwitchTab("mobile")}
-              style={{
-                flex: 1,
-                padding: "0.5rem",
-                borderRadius: "8px",
-                border: "none",
-                background: loginMethod === "mobile" ? "var(--accent)" : "transparent",
-                color: loginMethod === "mobile" ? "#fff" : "var(--text)",
-                fontSize: "0.85rem",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "background 0.2s",
-              }}
-            >
-              Mobile Number
-            </button>
+      {/* Right Form Panel */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-[420px]">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-extrabold font-['Syne',sans-serif] text-[var(--text-primary)] mb-2">
+              Welcome back
+            </h2>
+            <p className="text-[var(--text-muted)] text-[15px]">
+              Log in to your account to continue
+            </p>
           </div>
 
-          {loginMethod === "email" ? (
-            <>
-              <div style={{ display: "grid", gap: "0.4rem" }}>
-                <label className="section-label" style={{ fontSize: "0.68rem" }}>
-                  Email Address
-                </label>
-                <input
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
+            {errorMsg && (
+              <div className="p-4 rounded-[var(--radius-md)] bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.2)] text-[14px] text-[var(--danger)] font-medium">
+                {errorMsg}
+              </div>
+            )}
+
+            {/* Email / Mobile Tabs */}
+            <div className="flex gap-2 p-1 bg-[var(--bg-elevated)] rounded-[var(--radius-md)] border border-[var(--border)]">
+              <button
+                type="button"
+                onClick={() => handleSwitchTab("email")}
+                className={`flex-1 py-2 text-sm font-semibold rounded-[var(--radius-sm)] transition-all ${
+                  loginMethod === "email"
+                    ? "bg-white dark:bg-[#2A2A38] shadow-sm text-[var(--text-primary)]"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                Email
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSwitchTab("mobile")}
+                className={`flex-1 py-2 text-sm font-semibold rounded-[var(--radius-sm)] transition-all ${
+                  loginMethod === "mobile"
+                    ? "bg-white dark:bg-[#2A2A38] shadow-sm text-[var(--text-primary)]"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                Mobile
+              </button>
+            </div>
+
+            {loginMethod === "email" ? (
+              <>
+                <Input
+                  label="Email Address"
                   type="email"
-                  className="input"
-                  placeholder="name@example.com"
+                  icon={<Mail size={18} />}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
                   disabled={submitting}
+                  required
                 />
-              </div>
-
-              <div style={{ display: "grid", gap: "0.4rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <label className="section-label" style={{ fontSize: "0.68rem" }}>
-                    Password
-                  </label>
-                  <Link href="/forgot-password" style={{ fontSize: "0.75rem", color: "var(--accent)", textDecoration: "none" }}>
-                    Forgot Password?
-                  </Link>
-                </div>
-                <div style={{ position: "relative" }}>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    className="input"
-                    placeholder="••••••••"
+                <div>
+                  <Input
+                    label="Password"
+                    type="password"
+                    icon={<Lock size={18} />}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required
                     disabled={submitting}
-                    style={{ paddingRight: "40px", width: "100%" }}
+                    required
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: "absolute",
-                      right: "12px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      color: "var(--text-muted)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {showPassword ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: "20px", height: "20px" }}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.815 7.815L21 21m-3.955-3.955l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                      </svg>
-                    ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: "20px", height: "20px" }}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {!showOtpInput ? (
-                <div style={{ display: "grid", gap: "0.4rem" }}>
-                  <label className="section-label" style={{ fontSize: "0.68rem" }}>
-                    Mobile Number
-                  </label>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <select
-                      className="input"
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      style={{ width: "95px", background: "var(--bg-2)", color: "#fff", border: "1px solid var(--border)", borderRadius: "8px", height: "42px" }}
+                  <div className="flex justify-end mt-2">
+                    <Link
+                      href="/forgot-password"
+                      className="text-[13px] font-semibold text-[var(--accent)] hover:text-[var(--accent-2)] transition-colors"
                     >
-                      <option value="+91">🇮🇳 +91</option>
-                      <option value="+1">🇺🇸 +1</option>
-                      <option value="+44">🇬🇧 +44</option>
-                      <option value="+61">🇦🇺 +61</option>
-                      <option value="+971">🇦🇪 +971</option>
-                      <option value="+65">🇸🇬 +65</option>
-                    </select>
-                    <input
-                      type="tel"
-                      className="input"
-                      placeholder="10-digit mobile number"
-                      maxLength={10}
-                      value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ""))}
-                      required
-                      disabled={submitting}
-                      style={{ flex: 1 }}
-                    />
+                      Forgot password?
+                    </Link>
                   </div>
                 </div>
-              ) : (
-                <div style={{ display: "grid", gap: "0.4rem" }}>
-                  <label className="section-label" style={{ fontSize: "0.68rem" }}>
-                    Enter 6-digit OTP
-                  </label>
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="123456"
-                    maxLength={6}
-                    value={otpToken}
-                    onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, ""))}
-                    required
-                    disabled={submitting}
-                  />
-                  <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
-                    OTP sent to {countryCode} {mobileNumber}
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-
-          <button
-            type="submit"
-            className="btn-primary"
-            style={{
-              width: "100%",
-              justifyContent: "center",
-              padding: "0.75rem",
-              fontSize: "0.95rem",
-              marginTop: "0.5rem",
-            }}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <span className="spinner" style={{ width: 18, height: 18, margin: "0 auto" }} />
-            ) : loginMethod === "email" ? (
-              "Log In →"
-            ) : !showOtpInput ? (
-              "Send OTP →"
+              </>
             ) : (
-              "Verify OTP →"
+              <>
+                {!showOtpInput ? (
+                  <div className="flex gap-3">
+                    <div className="w-[110px]">
+                      <Input
+                        label="Code"
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        label="Mobile Number"
+                        type="tel"
+                        icon={<Phone size={18} />}
+                        value={mobileNumber}
+                        onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ""))}
+                        maxLength={10}
+                        disabled={submitting}
+                        required
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <Input
+                      label="Enter 6-digit OTP"
+                      type="text"
+                      icon={<Smartphone size={18} />}
+                      value={otpToken}
+                      onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, ""))}
+                      maxLength={6}
+                      disabled={submitting}
+                      required
+                    />
+                    <p className="text-[13px] text-[var(--text-muted)] mt-2 font-medium">
+                      Code sent to {countryCode} {mobileNumber}
+                    </p>
+                  </div>
+                )}
+              </>
             )}
-          </button>
 
-          <div style={{ display: "flex", alignItems: "center", margin: "0.5rem 0", gap: "0.5rem" }}>
-            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>or</span>
-            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              loading={submitting}
+              className="mt-2"
+            >
+              {loginMethod === "email" ? "Log In" : !showOtpInput ? "Send Code" : "Verify Code"}
+            </Button>
+          </form>
+
+          <div className="flex items-center gap-4 my-8">
+            <div className="flex-1 h-[1px] bg-[var(--border)]" />
+            <span className="text-[13px] font-medium text-[var(--text-muted)] uppercase tracking-wider">
+              or continue with
+            </span>
+            <div className="flex-1 h-[1px] bg-[var(--border)]" />
           </div>
 
-          <button
+          <Button
             type="button"
-            className="btn-secondary"
+            variant="secondary"
+            size="lg"
+            fullWidth
             onClick={handleGoogleLogin}
-            style={{
-              width: "100%",
-              justifyContent: "center",
-              padding: "0.75rem",
-              fontSize: "0.95rem",
-            }}
+            className="bg-white dark:bg-transparent"
+            icon={
+              <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+            }
           >
-            Continue with Google
-          </button>
-        </form>
+            Google
+          </Button>
 
-        <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+          <p className="text-center text-[14px] text-[var(--text-muted)] mt-10">
             Don't have an account?{" "}
             <Link
               href="/signup"
-              style={{
-                color: "var(--accent)",
-                textDecoration: "none",
-                fontWeight: 600,
-              }}
+              className="text-[var(--accent)] font-semibold hover:text-[var(--accent-2)] transition-colors ml-1"
             >
-              Sign Up
+              Sign up
             </Link>
           </p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

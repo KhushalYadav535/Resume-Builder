@@ -1,16 +1,22 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { Resume } from "@/types";
-import { getSalaryBenchmark } from "@/lib/salaryData";
-
 import { createClient } from "@/utils/supabase/client";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { ATSRing } from "@/components/ui/ATSRing";
+import { Badge } from "@/components/ui/Badge";
+import { Input } from "@/components/ui/Input";
+import { Plus, Upload, Target, LayoutTemplate, FileText, Search, Trash2, Calendar, TrendingUp, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
-  const { user, role, loading: authLoading, logout } = useAuth();
+  const { user, role, loading: authLoading } = useAuth();
   const router = useRouter();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [fetchingResumes, setFetchingResumes] = useState(true);
@@ -19,11 +25,6 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "ats">("newest");
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  // Salary insights states
-  const [insightRole, setInsightRole] = useState("Software Engineer");
-  const [insightCity, setInsightCity] = useState("Hyderabad");
-  const [insightYoE, setInsightYoE] = useState(2);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -68,23 +69,8 @@ export default function Dashboard() {
     fetchResumesList();
   }, [authLoading, user]);
 
-  useEffect(() => {
-    if (resumes.length > 0) {
-      const firstResume = resumes[0];
-      const role = firstResume.resume_data?.personalInfo?.fullName
-        ? (firstResume.resume_data?.workExperience?.[0]?.role || "Software Engineer")
-        : "Software Engineer";
-      setInsightRole(role);
-      
-      const work = firstResume.resume_data?.workExperience || [];
-      if (work.length > 0) {
-        setInsightYoE(Math.max(1, Math.min(25, work.length * 2)));
-      }
-    }
-  }, [resumes]);
-
   const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigating to detail page on click
+    e.preventDefault();
     e.stopPropagation();
 
     if (!window.confirm("Are you sure you want to permanently delete this resume from your history? This action cannot be undone.")) {
@@ -112,310 +98,283 @@ export default function Dashboard() {
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 70) return "#43e97b";
-    if (score >= 45) return "#f6d365";
-    return "#ff6584";
-  };
+  const filteredResumes = useMemo(() => {
+    return resumes
+      .filter((r) => r.file_name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .sort((a, b) => {
+        if (sortBy === "oldest") {
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        }
+        if (sortBy === "ats") {
+          const scoreA = a.ats_score ? (a.ats_score as any).overall || 0 : 0;
+          const scoreB = b.ats_score ? (b.ats_score as any).overall || 0 : 0;
+          return scoreB - scoreA;
+        }
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+  }, [resumes, searchQuery, sortBy]);
 
-  // Perform search & sort operations locally
-  const filteredResumes = resumes
-    .filter((r) => r.file_name.toLowerCase().includes(searchQuery.toLowerCase()))
-    .sort((a, b) => {
-      if (sortBy === "oldest") {
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      }
-      if (sortBy === "ats") {
-        const scoreA = a.ats_score ? (a.ats_score as any).overall || 0 : 0;
-        const scoreB = b.ats_score ? (b.ats_score as any).overall || 0 : 0;
-        return scoreB - scoreA;
-      }
-      // default: newest
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
+  // Derived stats
+  const totalResumes = resumes.length;
+  const avgATSScore = totalResumes 
+    ? Math.round(resumes.reduce((acc, r) => acc + (r.ats_score ? (r.ats_score as any).overall || 0 : 0), 0) / totalResumes)
+    : 0;
+  
+  const currentDate = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date());
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+  
+  const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || "User";
 
   if (authLoading || !user) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div className="spinner" style={{ width: 40, height: 40 }} />
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <div className="spinner w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <div className="min-h-screen bg-[var(--bg-primary)] pb-20">
       <Navbar />
-      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
-
-        {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2.5rem", flexWrap: "wrap", gap: "1rem", borderBottom: "1px solid var(--border)", paddingBottom: "1.5rem" }}>
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        {/* Dynamic Header & Greeting */}
+        <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <p className="section-label" style={{ marginBottom: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              Logged in as: <span style={{ color: "var(--accent)", textTransform: "none" }}>{user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || "User"}</span>
+            <div className="flex items-center gap-3 mb-2 text-[var(--text-muted)] text-sm font-medium">
+              <Calendar size={16} />
+              {currentDate}
               {role === "admin" && (
-                <span className="tag tag-red" style={{ fontSize: "0.65rem", fontWeight: 800 }}>Admin Panel</span>
+                <Badge variant="danger">Admin</Badge>
               )}
-            </p>
-            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800 }}>
-              Your Resumes
+            </div>
+            <h1 className="font-['Syne',sans-serif] text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
+              {getGreeting()}, <span className="gradient-text">{userName}</span>
             </h1>
           </div>
-          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
-            {role === "admin" && (
-              <Link href="/admin" style={{ textDecoration: "none" }}>
-                <button className="btn-secondary" style={{ borderColor: "#ff6584", color: "#ff6584" }}>🛡️ Admin Panel</button>
-              </Link>
-            )}
-            <Link href="/resume/builder" style={{ textDecoration: "none" }}>
-              <button className="btn-primary">✦ Build New</button>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/resume/upload" className="no-underline">
+              <Button variant="secondary" icon={<Upload size={16} />}>Upload PDF</Button>
             </Link>
-            <Link href="/resume/upload" style={{ textDecoration: "none" }}>
-              <button className="btn-secondary">⇑ Upload</button>
+            <Link href="/resume/builder" className="no-underline">
+              <Button icon={<Plus size={16} />}>Create New</Button>
             </Link>
           </div>
-        </div>
+        </header>
 
-        {/* Quick Actions / Navigation Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2.5rem" }}>
-          {[
-            { icon: "✦", label: "Build from Scratch", href: "/resume/builder", color: "#6c63ff" },
-            { icon: "⇑", label: "Upload & Analyze", href: "/resume/upload", color: "#43e97b" },
-            { icon: "🎯", label: "Tailor for Job", href: "/resume/tailor", color: "#0ea5e9" },
-            { icon: "▣", label: "Browse Templates", href: "/resume/templates", color: "#ff6584" },
-          ].map((action) => (
-            <Link key={action.label} href={action.href} style={{ textDecoration: "none" }}>
-              <div
-                className="card"
-                style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "0.75rem", transition: "all 0.2s" }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.borderColor = action.color + "66";
-                  (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)";
-                  (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-                }}
-              >
-                <div style={{ width: 36, height: 36, borderRadius: 8, background: action.color + "20", display: "flex", alignItems: "center", justifyContent: "center", color: action.color, fontSize: "1.1rem" }}>
-                  {action.icon}
-                </div>
-                <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{action.label}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* SALARY INSIGHTS WIDGET CARD - Hidden for now */}
-        {/* {(() => {
-          const benchmark = getSalaryBenchmark(insightRole, insightYoE, insightCity);
-          return (
-            <div className="card" style={{ marginBottom: "2.5rem", background: "linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(20, 20, 30, 0.9) 100%)", border: "1px solid var(--border)" }}>
-              <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.1rem", fontWeight: 800, marginBottom: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span>🇮🇳</span> Salary & Pay Benchmark Insights
-              </h3>
-              
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "1.2rem" }}>
-                <div>
-                  <label style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block", marginBottom: "0.25rem" }}>Target Tech Role</label>
-                  <input 
-                    className="input" 
-                    style={{ fontSize: "0.82rem", padding: "0.5rem" }} 
-                    value={insightRole} 
-                    onChange={(e) => setInsightRole(e.target.value)} 
-                    placeholder="e.g. Backend Developer"
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block", marginBottom: "0.25rem" }}>Indian City Location</label>
-                  <select 
-                    className="input" 
-                    style={{ height: "38px", fontSize: "0.82rem", background: "var(--bg-2)" }} 
-                    value={insightCity} 
-                    onChange={(e) => setInsightCity(e.target.value)}
-                  >
-                    <option value="Bangalore">Bengaluru (Bangalore)</option>
-                    <option value="Mumbai">Mumbai</option>
-                    <option value="Delhi">Delhi / NCR</option>
-                    <option value="Hyderabad">Hyderabad</option>
-                    <option value="Pune">Pune</option>
-                    <option value="Chennai">Chennai</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block", marginBottom: "0.25rem" }}>Experience: {insightYoE} Years</label>
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="20" 
-                    value={insightYoE} 
-                    onChange={(e) => setInsightYoE(parseInt(e.target.value) || 0)} 
-                    style={{ width: "100%", accentColor: "var(--accent)", marginTop: "0.5rem" }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", background: "rgba(0, 0, 0, 0.25)", padding: "1rem", borderRadius: "10px" }}>
-                <div style={{ fontSize: "1.8rem" }}>₹</div>
-                <div>
-                  <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Calculated LPA Bracket ({benchmark.roleName} in {benchmark.cityName})</div>
-                  <strong style={{ fontSize: "1.25rem", color: "var(--accent)" }}>₹ {benchmark.minLPA} - {benchmark.maxLPA} LPA</strong>
-                </div>
-              </div>
+        {/* Mini-Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <Card className="flex items-center p-6 gap-5 bg-[var(--card)]/50 backdrop-blur-sm">
+            <div className="w-12 h-12 rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] flex items-center justify-center">
+              <FileText size={24} />
             </div>
-          );
-        })()} */}
+            <div>
+              <p className="text-[var(--text-muted)] text-sm font-medium mb-1">Total Resumes</p>
+              <p className="font-['Syne',sans-serif] text-2xl font-bold text-[var(--text-primary)]">{fetchingResumes ? "-" : totalResumes}</p>
+            </div>
+          </Card>
+          
+          <Card className="flex items-center p-6 gap-5 bg-[var(--card)]/50 backdrop-blur-sm">
+            <div className="w-12 h-12 rounded-xl bg-[var(--score-high)]/15 text-[var(--score-high)] flex items-center justify-center">
+              <Target size={24} />
+            </div>
+            <div>
+              <p className="text-[var(--text-muted)] text-sm font-medium mb-1">Avg ATS Score</p>
+              <p className="font-['Syne',sans-serif] text-2xl font-bold text-[var(--text-primary)]">{fetchingResumes ? "-" : `${avgATSScore}/100`}</p>
+            </div>
+          </Card>
 
-        {/* SEARCH & SORT TOOLBAR */}
-        <div style={{ 
-          display: "flex", 
-          justifyContent: "space-between", 
-          alignItems: "center", 
-          flexWrap: "wrap", 
-          gap: "1rem", 
-          marginBottom: "1.5rem",
-          background: "var(--card)", 
-          padding: "1rem", 
-          borderRadius: "12px", 
-          border: "1px solid var(--border)"
-        }}>
-          {/* Search bar input */}
-          <div style={{ flex: "1 1 300px", position: "relative" }}>
-            <input 
-              type="text"
-              placeholder="Search resumes by title..."
-              className="input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: "1rem" }}
-            />
-          </div>
-
-          {/* Sort selector dropdown */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-            <span style={{ fontSize: "0.82rem", color: "var(--text-muted)", fontWeight: 600 }}>Sort by:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              style={{
-                background: "var(--bg-2)",
-                border: "1px solid var(--border)",
-                color: "var(--text)",
-                padding: "0.55rem 1rem",
-                borderRadius: "8px",
-                fontFamily: "DM Sans, sans-serif",
-                fontSize: "0.88rem",
-                cursor: "pointer",
-                outline: "none"
-              }}
-            >
-              <option value="newest">Newest Upload</option>
-              <option value="oldest">Oldest Upload</option>
-              <option value="ats">Highest ATS Score</option>
-            </select>
-          </div>
+          <Card className="flex items-center p-6 gap-5 bg-[var(--card)]/50 backdrop-blur-sm">
+            <div className="w-12 h-12 rounded-xl bg-[var(--info)]/15 text-[var(--info)] flex items-center justify-center">
+              <TrendingUp size={24} />
+            </div>
+            <div>
+              <p className="text-[var(--text-muted)] text-sm font-medium mb-1">Recent Activity</p>
+              <p className="font-['Syne',sans-serif] text-xl font-bold text-[var(--text-primary)]">
+                {fetchingResumes ? "-" : resumes.length > 0 ? new Date(resumes[0].created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "None"}
+              </p>
+            </div>
+          </Card>
         </div>
 
-        {/* Resume List container */}
-        {fetchingResumes ? (
-          <div style={{ textAlign: "center", padding: "4rem", color: "var(--text-muted)" }}>
-            <div className="spinner" style={{ margin: "0 auto 1rem" }} />
-            Loading resumes...
-          </div>
-        ) : filteredResumes.length === 0 ? (
-          <div
-            className="card"
-            style={{ textAlign: "center", padding: "4rem 2rem", borderStyle: "dashed" }}
-          >
-            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📄</div>
-            <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, marginBottom: "0.5rem" }}>
-              {searchQuery ? "No search matches" : "No resumes saved"}
-            </h3>
-            <p style={{ color: "var(--text-muted)", marginBottom: "1.5rem", fontSize: "0.9rem" }}>
-              {searchQuery ? "Try altering your keyword filters or query above." : "Build your first resume or upload an existing one to get started."}
-            </p>
-            {!searchQuery && (
-              <Link href="/resume/builder" style={{ textDecoration: "none" }}>
-                <button className="btn-primary">Build My First Resume</button>
-              </Link>
-            )}
-          </div>
-        ) : (
-          <div style={{ display: "grid", gap: "1rem" }}>
-            {filteredResumes.map((resumeItem) => (
-              <Link key={resumeItem.id} href={`/resume/${resumeItem.id}`} style={{ textDecoration: "none" }}>
-                <div
-                  className="card"
-                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", cursor: "pointer", transition: "all 0.2s" }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border-light)";
-                    (e.currentTarget as HTMLDivElement).style.transform = "translateX(4px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)";
-                    (e.currentTarget as HTMLDivElement).style.transform = "translateX(0)";
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 10, background: "rgba(108,99,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>
-                      📄
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 700, marginBottom: "0.2rem", color: "var(--text)" }}>{resumeItem.file_name}</div>
-                      <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                        {new Date(resumeItem.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </div>
-                    </div>
+        {/* Quick Actions */}
+        <div className="mb-12">
+          <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { icon: <Plus size={20} />, label: "Build from Scratch", href: "/resume/builder", color: "var(--accent)" },
+              { icon: <Upload size={20} />, label: "Upload & Analyze", href: "/resume/upload", color: "var(--score-high)" },
+              { icon: <Target size={20} />, label: "Tailor for Job", href: "/resume/tailor", color: "var(--info)" },
+              { icon: <LayoutTemplate size={20} />, label: "Browse Templates", href: "/resume/templates", color: "var(--warning)" },
+            ].map((action) => (
+              <Link key={action.label} href={action.href} className="no-underline">
+                <Card hoverable className="p-4 flex items-center gap-4 transition-all duration-300 hover:border-[var(--accent)] hover:shadow-md">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: action.color }}>
+                    {action.icon}
                   </div>
-                  
-                  <div style={{ display: "flex", gap: "1.2rem", alignItems: "center" }}>
-                    {resumeItem.ats_score && (
-                      <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>ATS Score</div>
-                        <div style={{ fontWeight: 700, color: getScoreColor(resumeItem.ats_score.overall), fontFamily: "Syne, sans-serif" }}>
-                          {resumeItem.ats_score.overall}/100
-                        </div>
-                      </div>
-                    )}
-                    {resumeItem.jd_match && (
-                      <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>JD Match</div>
-                        <div style={{ fontWeight: 700, color: getScoreColor(resumeItem.jd_match.matchScore), fontFamily: "Syne, sans-serif" }}>
-                          {resumeItem.jd_match.matchScore}%
-                        </div>
-                      </div>
-                    )}
-
-                    {/* DELETE BUTTON */}
-                    <button
-                      onClick={(e) => handleDelete(resumeItem.id, e)}
-                      disabled={deletingId === resumeItem.id}
-                      className="btn-secondary"
-                      style={{
-                        padding: "0.45rem 0.75rem",
-                        borderColor: "rgba(255, 101, 132, 0.2)",
-                        color: "#ff6584",
-                        fontSize: "0.82rem"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "rgba(255, 101, 132, 0.1)";
-                        e.currentTarget.style.borderColor = "#ff6584";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.borderColor = "rgba(255, 101, 132, 0.2)";
-                      }}
-                    >
-                      {deletingId === resumeItem.id ? "..." : "🗑"}
-                    </button>
-                    
-                    <div style={{ color: "var(--text-muted)", fontSize: "1.2rem" }}>→</div>
-                  </div>
-                </div>
+                  <span className="font-semibold text-sm text-[var(--text-primary)]">{action.label}</span>
+                </Card>
               </Link>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+
+        {/* Resumes Library */}
+        <div>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+              <FileText size={20} className="text-[var(--accent)]" />
+              Your Resumes
+            </h2>
+            
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              <Input
+                placeholder="Search resumes..."
+                icon={<Search size={16} />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full sm:w-64"
+              />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="h-[42px] px-3 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent)] transition-colors w-full sm:w-auto"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="ats">Highest ATS Score</option>
+              </select>
+            </div>
+          </div>
+
+          {fetchingResumes ? (
+            /* Skeleton Loading State */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="p-6 h-[220px] flex flex-col justify-between">
+                  <div>
+                    <div className="h-6 w-3/4 bg-[var(--bg-elevated)] rounded-md mb-2 skeleton" />
+                    <div className="h-4 w-1/3 bg-[var(--bg-elevated)] rounded-md skeleton" />
+                  </div>
+                  <div className="flex justify-between items-end mt-6">
+                    <div className="w-16 h-16 rounded-full border-4 border-[var(--bg-elevated)] skeleton" />
+                    <div className="h-8 w-24 bg-[var(--bg-elevated)] rounded-md skeleton" />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : filteredResumes.length === 0 ? (
+            /* Empty State */
+            <Card className="py-20 flex flex-col items-center justify-center text-center border-dashed border-2">
+              <div className="w-20 h-20 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center mb-6 text-[var(--text-muted)]">
+                <FileText size={40} />
+              </div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
+                {searchQuery ? "No matches found" : "No resumes yet"}
+              </h3>
+              <p className="text-[var(--text-muted)] mb-8 max-w-sm">
+                {searchQuery 
+                  ? "Try adjusting your search query." 
+                  : "Create your first ATS-optimized resume to start landing interviews."}
+              </p>
+              {!searchQuery && (
+                <Link href="/resume/builder" className="no-underline">
+                  <Button size="lg" icon={<Plus size={18} />}>Create Resume</Button>
+                </Link>
+              )}
+            </Card>
+          ) : (
+            /* Resume Grid using 3D Cards */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredResumes.map((resumeItem, index) => {
+                const score = resumeItem.ats_score ? (resumeItem.ats_score as any).overall || 0 : 0;
+                const jdMatch = resumeItem.jd_match ? (resumeItem.jd_match as any).matchScore || 0 : 0;
+                
+                return (
+                  <motion.div
+                    key={resumeItem.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    <Link href={`/resume/${resumeItem.id}`} className="block no-underline h-full">
+                      <Card 
+                        hoverable 
+                        glowColor={score >= 70 ? "var(--score-high)" : score >= 40 ? "var(--score-mid)" : "var(--score-low)"}
+                        className="h-full flex flex-col p-6"
+                      >
+                        <div className="flex justify-between items-start mb-6">
+                          <div className="flex-1 pr-4">
+                            <h3 className="font-bold text-lg text-[var(--text-primary)] line-clamp-2 leading-tight mb-1">
+                              {resumeItem.file_name}
+                            </h3>
+                            <p className="text-xs text-[var(--text-muted)] flex items-center gap-1">
+                              <Calendar size={12} />
+                              {new Date(resumeItem.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                            </p>
+                          </div>
+                          
+                          <button
+                            onClick={(e) => handleDelete(resumeItem.id, e)}
+                            disabled={deletingId === resumeItem.id}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 transition-colors z-10"
+                            title="Delete resume"
+                          >
+                            {deletingId === resumeItem.id ? (
+                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
+                          </button>
+                        </div>
+
+                        <div className="mt-auto flex items-end justify-between">
+                          <div className="flex gap-4">
+                            {score > 0 ? (
+                              <div className="flex flex-col items-center">
+                                <ATSRing score={score} size={64} strokeWidth={6} />
+                                <span className="text-[10px] font-bold text-[var(--text-muted)] mt-1 uppercase tracking-wider">ATS Score</span>
+                              </div>
+                            ) : (
+                              <div className="w-16 h-16 rounded-full border-4 border-[var(--bg-elevated)] flex items-center justify-center text-[var(--text-muted)] text-xs font-bold bg-[var(--bg-surface)]">
+                                N/A
+                              </div>
+                            )}
+
+                            {jdMatch > 0 && (
+                              <div className="flex flex-col items-center">
+                                <div className="w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-lg bg-[var(--bg-surface)]" 
+                                  style={{ 
+                                    borderColor: jdMatch >= 70 ? 'var(--score-high)' : jdMatch >= 40 ? 'var(--score-mid)' : 'var(--score-low)',
+                                    color: jdMatch >= 70 ? 'var(--score-high)' : jdMatch >= 40 ? 'var(--score-mid)' : 'var(--score-low)'
+                                  }}>
+                                  {jdMatch}%
+                                </div>
+                                <span className="text-[10px] font-bold text-[var(--text-muted)] mt-1 uppercase tracking-wider">JD Match</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="text-[var(--accent)] font-medium text-sm flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            View <ArrowRight size={16} />
+                          </div>
+                        </div>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

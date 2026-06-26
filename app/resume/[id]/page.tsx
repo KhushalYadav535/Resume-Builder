@@ -6,7 +6,9 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { Resume } from "@/types";
 import ResumeDocument from "@/components/ResumeDocument";
-
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { ATSRing } from "@/components/ui/ATSRing";
 interface LoadingStage {
   label: string;
   minPercent: number;
@@ -744,7 +746,7 @@ export default function ResumeDetailPage() {
             )}
 
             {/* Tab Navigation */}
-            <div style={{ display: "flex", gap: "0.4rem", borderBottom: "1px solid var(--border)", marginTop: "0.5rem", overflowX: "auto", whiteSpace: "nowrap" }}>
+            <div className="flex gap-2 border-b border-[var(--border)] mt-4 pb-4 overflow-x-auto whitespace-nowrap scrollbar-hide">
               {[
                 { key: "ats", label: "ATS Analysis" },
                 { key: "content", label: "Content Review (Deep AI)" },
@@ -757,25 +759,17 @@ export default function ResumeDetailPage() {
                   <button 
                     key={tab.key} 
                     onClick={() => setActiveTab(tab.key as any)} 
-                    style={{ 
-                      padding: "0.65rem 1rem", 
-                      background: "transparent", 
-                      border: "none", 
-                      borderBottom: activeTab === tab.key ? "2px solid var(--accent)" : "2px solid transparent", 
-                      color: activeTab === tab.key ? "var(--accent)" : isDeepLocked ? "var(--text-dim)" : "var(--text-muted)", 
-                      fontFamily: "DM Sans, sans-serif", 
-                      fontWeight: 600, 
-                      fontSize: "0.82rem", 
-                      cursor: "pointer", 
-                      marginBottom: "-1px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.3rem",
-                      opacity: isDeepLocked ? 0.6 : 1,
-                      flexShrink: 0
-                    }}
+                    className={`px-4 py-2 rounded-full font-semibold text-sm flex items-center gap-2 transition-all duration-200 shrink-0 ${
+                      activeTab === tab.key 
+                        ? "bg-[var(--accent)] text-white shadow-md shadow-[var(--accent)]/20" 
+                        : isDeepLocked 
+                          ? "bg-[var(--bg-elevated)] text-[var(--text-dim)] cursor-not-allowed opacity-60 hover:bg-[var(--bg-elevated)]"
+                          : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:bg-[var(--bg-3)] hover:text-[var(--text-primary)]"
+                    }`}
+                    disabled={isDeepLocked}
+                    title={isDeepLocked ? "Requires Deep AI Analysis" : ""}
                   >
-                    {isDeepLocked && <span style={{ fontSize: "0.75rem" }}>🔒</span>}
+                    {isDeepLocked && <span className="text-xs opacity-75">🔒</span>}
                     {tab.label}
                   </button>
                 );
@@ -784,80 +778,84 @@ export default function ResumeDetailPage() {
 
             {/* ATS ANALYSIS PANEL */}
             {activeTab === "ats" && resume.ats_score && (
-              <div style={{ display: "grid", gap: "1rem", animation: "fadeInUp 0.3s ease" }}>
-                <div className="card">
-                  <p className="section-label" style={{ marginBottom: "0.8rem" }}>Score Breakdown</p>
-                  {Object.entries(resume.ats_score.breakdown).map(([key, val]) => (
-                    <div key={key} style={{ marginBottom: "0.75rem" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.2rem" }}>
-                        <span style={{ fontSize: "0.82rem", textTransform: "capitalize", fontWeight: 500 }}>{key}</span>
-                        <span style={{ fontSize: "0.82rem", fontWeight: 700, color: getScoreColor(val) }}>{val}/100</span>
+              <div className="grid gap-6 animate-fade-in-up mt-6">
+                <Card className="p-6">
+                  <h3 className="section-label mb-6">Score Breakdown</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                    {Object.entries(resume.ats_score.breakdown).map(([key, val]) => (
+                      <div key={key} className="flex items-center gap-4">
+                        <div className="w-[54px] shrink-0">
+                          <ATSRing score={val as number} size={54} strokeWidth={5} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold capitalize text-[var(--text-primary)] mb-1">{key}</p>
+                          <p className="text-xs text-[var(--text-muted)]">{(val as number) >= 70 ? 'Excellent' : (val as number) >= 40 ? 'Average' : 'Needs Work'}</p>
+                        </div>
                       </div>
-                      <div style={{ height: 6, background: "var(--bg-3)", borderRadius: 3, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${val}%`, background: getScoreColor(val), borderRadius: 3 }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </Card>
 
                 {resume.ats_score.detectedRole && (
-                  <div className="card" style={{ background: "rgba(108, 99, 255, 0.08)", border: "1px solid rgba(108, 99, 255, 0.2)" }}>
-                    <p className="section-label" style={{ marginBottom: "0.4rem" }}>Detected Role Configuration</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <span className="tag tag-purple" style={{ fontSize: "0.8rem", padding: "0.3rem 0.6rem" }}>
-                        {resume.ats_score.detectedRole} · {resume.ats_score.detectedIndustry} · {resume.ats_score.confidence}% confidence
-                      </span>
+                  <Card glowColor="var(--accent)" className="p-5 border-[var(--accent)]/30 bg-[var(--accent)]/5">
+                    <p className="section-label mb-3">Detected Role Configuration</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="accent">{resume.ats_score.detectedRole}</Badge>
+                      <Badge variant="neutral">{resume.ats_score.detectedIndustry}</Badge>
+                      <Badge variant="warning">{resume.ats_score.confidence}% confidence</Badge>
                     </div>
-                  </div>
+                  </Card>
                 )}
 
                 {((resume.ats_score.missingKeywordDetails || resume.ats_score.missingKeywords)?.length ?? 0) > 0 && (
-                  <div className="card">
-                    <p className="section-label" style={{ marginBottom: "0.6rem" }}>Missing High-Value Keywords</p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                  <Card className="p-6">
+                    <p className="section-label mb-4 text-[var(--danger)]">Missing High-Value Keywords</p>
+                    <div className="flex flex-wrap gap-2">
                       {resume.ats_score.missingKeywordDetails ? (
                         [...resume.ats_score.missingKeywordDetails].sort((a: any, b: any) => b.weight - a.weight).map((kw: any) => (
-                          <span key={kw.keyword} className="tag tag-red" style={{ fontSize: "0.74rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                            {kw.keyword} <span style={{ background: "rgba(255,101,132,0.2)", padding: "1px 4px", borderRadius: "4px", fontSize: "0.65rem" }}>{kw.weight}</span>
-                          </span>
+                          <Badge key={kw.keyword} variant="danger" className="flex items-center gap-1.5">
+                            {kw.keyword} <span className="bg-[var(--danger)]/20 px-1.5 py-0.5 rounded text-[10px]">{kw.weight}</span>
+                          </Badge>
                         ))
                       ) : (
-                        resume.ats_score.missingKeywords?.map((kw: string) => <span key={kw} className="tag tag-red" style={{ fontSize: "0.74rem" }}>{kw}</span>)
+                        resume.ats_score.missingKeywords?.map((kw: string) => <Badge key={kw} variant="danger">{kw}</Badge>)
                       )}
                     </div>
-                  </div>
+                  </Card>
                 )}
 
                 {((resume.ats_score.keywordMatches || resume.ats_score.matchedKeywords)?.length ?? 0) > 0 && (
-                  <div className="card">
-                    <p className="section-label" style={{ marginBottom: "0.6rem", color: "#43e97b" }}>Matched Keywords</p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                  <Card className="p-6">
+                    <p className="section-label mb-4 text-[var(--success)]">Matched Keywords</p>
+                    <div className="flex flex-wrap gap-2">
                       {resume.ats_score.keywordMatches ? (
                         [...resume.ats_score.keywordMatches].sort((a: any, b: any) => b.weight - a.weight).map((kw: any) => (
-                          <span key={kw.keyword} className="tag tag-green" style={{ fontSize: "0.74rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                            {kw.keyword} <span style={{ background: "rgba(67,233,123,0.2)", padding: "1px 4px", borderRadius: "4px", fontSize: "0.65rem" }}>{kw.weight}</span>
-                          </span>
+                          <Badge key={kw.keyword} variant="success" className="flex items-center gap-1.5">
+                            {kw.keyword} <span className="bg-[var(--success)]/20 px-1.5 py-0.5 rounded text-[10px]">{kw.weight}</span>
+                          </Badge>
                         ))
                       ) : (
-                        resume.ats_score.matchedKeywords?.map((kw: string) => <span key={kw} className="tag tag-green" style={{ fontSize: "0.74rem" }}>{kw}</span>)
+                        resume.ats_score.matchedKeywords?.map((kw: string) => <Badge key={kw} variant="success">{kw}</Badge>)
                       )}
                     </div>
-                  </div>
+                  </Card>
                 )}
 
-                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", textAlign: "center", marginTop: "0.5rem" }}>
+                <div className="text-xs text-[var(--text-muted)] text-center mt-2">
                   Keywords are updated periodically by our market intelligence system
                 </div>
 
-                <div className="card">
-                  <p className="section-label" style={{ marginBottom: "0.6rem" }}>Improvement Suggestions</p>
-                  {resume.ats_score.suggestions.map((s, i) => (
-                    <div key={i} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem", alignItems: "flex-start" }}>
-                      <span style={{ color: "var(--accent)", fontSize: "0.8rem" }}>→</span>
-                      <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.4 }}>{s}</span>
-                    </div>
-                  ))}
-                </div>
+                <Card className="p-6">
+                  <p className="section-label mb-4">Improvement Suggestions</p>
+                  <div className="space-y-3">
+                    {resume.ats_score.suggestions.map((s, i) => (
+                      <div key={i} className="flex gap-3 items-start">
+                        <span className="text-[var(--accent)] text-sm font-bold mt-0.5">→</span>
+                        <span className="text-sm text-[var(--text-muted)] leading-relaxed">{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
 
                 {/* Naukri / Portal Tips Card */}
                 <div className="card" style={{ display: "grid", gap: "0.8rem" }}>

@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
-
+import { Card } from "@/components/ui/Card";
 export default function CoverLetterPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -107,7 +107,7 @@ export default function CoverLetterPage() {
           </Link>
         </div>
 
-        <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
+        <Card className="grid gap-6 p-6">
           <div>
             <span style={{ fontSize: "0.75rem", color: "var(--accent-2)", fontWeight: 700, textTransform: "uppercase" }}>AI Copilot</span>
             <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.8rem", fontWeight: 800, margin: "0.2rem 0 0" }}>Cover Letter Generator</h1>
@@ -175,7 +175,7 @@ export default function CoverLetterPage() {
               </div>
             </div>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* Print-only container */}
