@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Home() {
   return (
@@ -70,7 +71,7 @@ export default function Home() {
           alignItems: "center",
           justifyContent: "space-between",
           borderBottom: "1px solid var(--border)",
-          background: "rgba(10,10,15,0.6)",
+          background: "var(--nav-bg)",
           backdropFilter: "blur(10px)",
           position: "sticky",
           top: 0,
@@ -90,6 +91,7 @@ export default function Home() {
           ResumeAI
         </span>
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <ThemeToggle />
           <Link href="/dashboard" style={{ textDecoration: "none" }}>
             <button className="btn-secondary landing-nav-btn">
               Dashboard

@@ -5,8 +5,33 @@
 @tailwind components;
 @tailwind utilities;
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 :root {
+  /* Light Theme */
+  --bg: #f8fafc;
+  --nav-bg: rgba(248, 250, 252, 0.85);
+  --bg-2: #f1f5f9;
+  --bg-3: #e2e8f0;
+  --border: #94a3b8;
+  --border-light: #cbd5e1;
+  --text: #020617;
+  --text-muted: #334155;
+  --text-dim: #475569;
+  --accent: #5227ff;
+  --accent-2: #e11d48;
+  --accent-3: #16a34a;
+  --accent-glow: rgba(82, 39, 255, 0.2);
+  --card: #ffffff;
+  --card-hover: #f8fafc;
+  
+  --transition-base: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  /* Dark Theme Overrides */
   --bg: #0a0a0f;
+  --nav-bg: rgba(10, 10, 15, 0.85);
   --bg-2: #111118;
   --bg-3: #1a1a24;
   --border: #2a2a38;
@@ -30,6 +55,8 @@
 
 html {
   scroll-behavior: smooth;
+  transition: background-color 250ms var(--transition-base),
+              color 250ms var(--transition-base);
 }
 
 body {
@@ -38,6 +65,8 @@ body {
   font-family: 'DM Sans', sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 250ms var(--transition-base),
+              color 250ms var(--transition-base);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -154,7 +183,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'DM Sans', sans-serif;
   font-size: 0.9rem;
   width: 100%;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.25s, color 0.25s;
   outline: none;
 }
 
@@ -178,7 +207,7 @@ textarea.input {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.5rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.25s, box-shadow 0.25s, background-color 0.25s;
 }
 
 .card:hover {
