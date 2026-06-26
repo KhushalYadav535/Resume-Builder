@@ -1667,7 +1667,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 <div key={exp.id} style={{ marginBottom: "0.8rem", fontSize: `${fontSize * 0.85}pt` }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span><strong>{exp.role} – {exp.company}</strong></span>
-                    <span style={{ fontStyle: "italic" }}>{exp.startDate} – {exp.endDate} {exp.location ? `| ${exp.location}` : ""}</span>
+                    <span style={{ fontStyle: "italic" }}>{exp.startDate} – {exp.endDate} {exp.city ? `| ${exp.city}` : ""}</span>
                   </div>
                   <ul style={{ margin: "4px 0 0", paddingLeft: "20px" }}>
                     {exp.bullets.map((b, bi) => <li key={bi} style={{ marginBottom: "2px", lineHeight: 1.4 }}>{b}</li>)}
@@ -1683,8 +1683,8 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.4rem" }}>Education</h3>
               {education.map((edu) => (
                 <div key={edu.id} style={{ marginBottom: "0.6rem", fontSize: `${fontSize * 0.85}pt` }}>
-                  <div><strong>{edu.school}{edu.location ? ` – ${edu.location}` : ""}</strong></div>
-                  <div style={{ fontStyle: "italic" }}>{edu.degree}</div>
+                  <div><strong>{edu.institution}{edu.boardOrUniversity ? ` – ${edu.boardOrUniversity}` : ""}</strong></div>
+                  <div style={{ fontStyle: "italic" }}>{edu.degree || "Degree"}{edu.field ? ` in ${edu.field}` : ""}</div>
                   {edu.gpa && <div style={{ fontSize: `${fontSize * 0.8}pt`, marginTop: "2px" }}>GPA: {edu.gpa}</div>}
                 </div>
               ))}
@@ -1711,7 +1711,6 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     <span style={{ fontWeight: "bold", color: "#1e40af" }}>
                       {proj.link ? <a href={proj.link} style={{ color: "inherit", textDecoration: "none" }}>{proj.name}</a> : proj.name}
                     </span>
-                    <span style={{ fontStyle: "italic" }}>{proj.startDate} – {proj.endDate}</span>
                   </div>
                   <ul style={{ margin: "4px 0 0", paddingLeft: "20px" }}>
                     {proj.description.split("\n").filter(Boolean).map((b, bi) => <li key={bi} style={{ marginBottom: "2px", lineHeight: 1.4 }}>{b.replace(/^- /, '')}</li>)}
