@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { Card } from "@/components/ui/Card";
 
 interface SignupHistoryItem {
   date: string;
@@ -207,7 +208,7 @@ export default function AdminDashboardPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.2rem" }}>
               
               {/* Total Users */}
-              <div className="card" style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+              <Card style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
                 <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(108,99,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
                   👥
                 </div>
@@ -217,10 +218,10 @@ export default function AdminDashboardPage() {
                   </div>
                   <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase" }}>Total Registered Users</div>
                 </div>
-              </div>
+              </Card>
 
               {/* Total Resumes */}
-              <div className="card" style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+              <Card style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
                 <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(67,233,123,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
                   📄
                 </div>
@@ -230,10 +231,10 @@ export default function AdminDashboardPage() {
                   </div>
                   <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase" }}>Total Resumes Saved</div>
                 </div>
-              </div>
+              </Card>
 
               {/* AI Usage */}
-              <div className="card" style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+              <Card style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
                 <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(255,101,132,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
                   ✦
                 </div>
@@ -245,10 +246,10 @@ export default function AdminDashboardPage() {
                     AI Runs ({stats.deepAnalysisCount} deep)
                   </div>
                 </div>
-              </div>
+              </Card>
 
               {/* Avg ATS */}
-              <div className="card" style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+              <Card style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
                 <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(246,211,101,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
                   📈
                 </div>
@@ -258,10 +259,10 @@ export default function AdminDashboardPage() {
                   </div>
                   <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase" }}>Average ATS Score</div>
                 </div>
-              </div>
+              </Card>
 
               {/* New Signups today */}
-              <div className="card" style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+              <Card style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
                 <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(67,233,123,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
                   🔥
                 </div>
@@ -271,10 +272,10 @@ export default function AdminDashboardPage() {
                   </div>
                   <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase" }}>Resumes Created Today</div>
                 </div>
-              </div>
+              </Card>
 
               {/* Storage Used */}
-              <div className="card" style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+              <Card style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
                 <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(108,99,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
                   💾
                 </div>
@@ -284,7 +285,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase" }}>Text Storage Utilized</div>
                 </div>
-              </div>
+              </Card>
 
             </div>
 
@@ -292,25 +293,25 @@ export default function AdminDashboardPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
               
               {/* Signups Chart */}
-              <div className="card">
+              <Card>
                 <p className="section-label" style={{ marginBottom: "1rem" }}>👤 User Signups Trend (Last 7 Days)</p>
                 <div style={{ marginTop: "1rem", padding: "0.5rem" }}>
                   {renderSVGChart(stats.signupsHistory, "Signups", "#43e97b")}
                 </div>
-              </div>
+              </Card>
 
               {/* Uploads Chart */}
-              <div className="card">
+              <Card>
                 <p className="section-label" style={{ marginBottom: "1rem" }}>📄 Resume Activity Trend (Last 7 Days)</p>
                 <div style={{ marginTop: "1rem", padding: "0.5rem" }}>
                   {renderSVGChart(stats.uploadsHistory, "Uploads", "#6c63ff")}
                 </div>
-              </div>
+              </Card>
 
             </div>
 
             {/* Layout distribution panel */}
-            <div className="card" style={{ maxWidth: "600px" }}>
+            <Card style={{ maxWidth: "600px" }}>
               <p className="section-label" style={{ marginBottom: "1.2rem" }}>Template Design Distribution</p>
               <div style={{ display: "grid", gap: "1rem" }}>
                 {Object.entries(stats.templateDistribution).map(([tpl, count]) => {
@@ -328,13 +329,13 @@ export default function AdminDashboardPage() {
                   );
                 })}
               </div>
-            </div>
+            </Card>
 
           </div>
         ) : (
-          <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
+          <Card style={{ textAlign: "center", padding: "3rem" }}>
             No platform statistics could be populated. Ensure data records exist in Supabase tables.
-          </div>
+          </Card>
         )}
 
       </div>

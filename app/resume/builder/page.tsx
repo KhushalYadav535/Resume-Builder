@@ -8,6 +8,11 @@ import { ResumeData, WorkExperience, Education, Project, Certification, ATSScore
 import { calculateATS } from "@/lib/calculateATS";
 import ResumeDocument from "@/components/ResumeDocument";
 import ResizablePanels from "@/components/ResizablePanels";
+import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+
 
 const defaultEmptyResume: ResumeData = {
   personalInfo: { fullName: "", email: "", phone: "", linkedin: "", location: "", website: "", currentCTC: "", expectedCTC: "" },
@@ -663,13 +668,13 @@ function BuilderContent() {
       
       {/* EDITOR HEADER */}
       <div className="no-print" style={{ background: "var(--bg-2)", borderBottom: "1px solid var(--border)", padding: "1.2rem 2rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1550px", margin: "0 auto", flexWrap: "wrap", gap: "1rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1550px", margin: "0 auto", flexWrap: "wrap", gap: "1.5rem" }}>
           <div>
-            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.6rem", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.6rem", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.8rem" }}>
               {resumeId ? "✏️ Premium Resume Editor" : "✦ Interactive Resume Builder"}
               {resume.fresherMode && <span style={{ fontSize: "0.75rem", background: "var(--accent-3)", color: "#000", padding: "2px 8px", borderRadius: "20px", fontWeight: 700 }}>FRESHER</span>}
             </h1>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", marginTop: "0.2rem", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", marginTop: "0.2rem", flexWrap: "wrap" }}>
               <span className="tag tag-purple" style={{ fontSize: "0.72rem", textTransform: "capitalize" }}>
                 Template: {selectedTemplate}
               </span>
@@ -684,7 +689,7 @@ function BuilderContent() {
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
             {saveStatus === "saving" && <span style={{ fontSize: "0.8rem", color: "var(--accent)" }} className="pulse">● Saving...</span>}
             {saveStatus === "saved" && <span style={{ fontSize: "0.8rem", color: "#43e97b" }}>✓ Saved</span>}
             {saveStatus === "error" && <span style={{ fontSize: "0.8rem", color: "#ff6584" }}>✗ Autosave failed</span>}
@@ -716,7 +721,7 @@ function BuilderContent() {
         {/* COLUMN 1: PROGRESS & NAVIGATION SIDEBAR (Sticky) */}
         <div className="no-print builder-sidebar">
           {/* Completion stats card */}
-            <div className="card" style={{ padding: "1rem", display: "grid", gap: "0.5rem" }}>
+            <div className="card" style={{ padding: "1rem", display: "grid", gap: "0.8rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Completion</span>
                 <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--accent)" }}>{completion.percent}%</span>
@@ -802,7 +807,7 @@ function BuilderContent() {
             </div>
 
             {/* Section Reordering Widget */}
-            <div className="card" style={{ padding: "1rem", display: "grid", gap: "0.6rem" }}>
+            <div className="card" style={{ padding: "1rem", display: "grid", gap: "1rem" }}>
               <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>🔀 Layout Ordering</span>
               <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", margin: 0 }}>Drag or use arrows to structure PDF sections.</p>
               
@@ -876,10 +881,48 @@ function BuilderContent() {
           leftPanel={(
           <div className="no-print builder-editor-container">
             
+            {/* HORIZONTAL STEPPER */}
+            <div className="mb-8 no-print">
+              <div className="flex items-center justify-between relative px-2">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-[var(--bg-elevated)] rounded-full -z-10"></div>
+                <div 
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[var(--accent)] rounded-full -z-10 transition-all duration-500" 
+                  style={{ width: `${(steps.findIndex(s => s.key === activeStep) / (steps.length - 1)) * 100}%` }}
+                ></div>
+                
+                {steps.map((stepItem, idx) => {
+                  const isActive = activeStep === stepItem.key;
+                  const isPast = steps.findIndex(s => s.key === activeStep) > idx;
+                  const isComplete = checkStepCompletion(stepItem.key);
+                  return (
+                    <button
+                      key={stepItem.key}
+                      onClick={() => setActiveStep(stepItem.key)}
+                      className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 shadow-md ${
+                        isActive 
+                          ? 'bg-[var(--accent)] text-white scale-125 ring-4 ring-[var(--accent)]/20' 
+                          : isPast 
+                            ? 'bg-[var(--accent)] text-white' 
+                            : 'bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:bg-[var(--bg-3)]'
+                      }`}
+                      title={stepItem.label}
+                    >
+                      {isComplete && !isActive ? '✓' : idx + 1}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="text-center mt-5 font-bold text-[var(--text-primary)] text-sm tracking-wide uppercase">
+                {steps.find(s => s.key === activeStep)?.label}
+              </div>
+            </div>
+
+            <div key={activeStep} className="pb-24">
+            
             {/* STEP 1: Personal info */}
             {activeStep === "personal" && (
-              <div className="card" style={{ display: "grid", gap: "1rem" }}>
-                <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Personal Information</h2>
+              <Card className="grid gap-6 p-8">
+                <h2 className="font-['Syne',sans-serif] font-bold text-xl text-[var(--text-primary)]">Personal Information</h2>
                 {([
                   ["fullName", "Full Name *", "John Doe"],
                   ["email", "Email Address *", "john@email.com"],
@@ -891,60 +934,59 @@ function BuilderContent() {
                   ["expectedCTC", "Expected CTC (e.g. 18 LPA)", "e.g. 15 LPA"]
                 ] as [keyof typeof resume.personalInfo, string, string][]).map(([field, label, placeholder]) => (
                   <div key={field}>
-                    <label style={{ fontSize: "0.82rem", color: "var(--text-muted)", display: "block", marginBottom: "0.35rem" }}>{label}</label>
-                    <input
-                      className="input"
+                    <Input
+                      label={label}
                       placeholder={placeholder}
                       value={resume.personalInfo[field] || ""}
                       onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, [field]: e.target.value } }))}
                     />
                   </div>
                 ))}
-              </div>
+              </Card>
             )}
 
             {/* STEP 2: Summary */}
             {activeStep === "summary" && (
-              <div className="card" style={{ display: "grid", gap: "1rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Professional Summary</h2>
-                  <button
-                    className="btn-secondary"
-                    style={{ fontSize: "0.8rem", padding: "0.4rem 0.9rem" }}
+              <Card className="grid gap-6 p-8">
+                <div className="flex justify-between items-center">
+                  <h2 className="font-['Syne',sans-serif] font-bold text-xl text-[var(--text-primary)]">Professional Summary</h2>
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     disabled={!!aiLoading}
                     onClick={() => handleAIEngineCall("summary", `Role: ${resume.workExperience[0]?.role || "Professional"}\nSkills: ${resume.skills.technical.join(", ")}`, (r) => setResume((prev) => ({ ...prev, summary: r })))}
                   >
                     {aiLoading === "summary" ? "Generating..." : "✦ AI Generate"}
-                  </button>
+                  </Button>
                 </div>
                 <textarea
-                  className="input"
+                  className="w-full min-h-[120px] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 text-[14px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all shadow-[var(--shadow-xs)]"
                   rows={6}
                   placeholder="Enter Compelling Summary..."
                   value={resume.summary}
                   onChange={(e) => setResume((r) => ({ ...r, summary: e.target.value }))}
-                  style={{ fontSize: "0.88rem", lineHeight: 1.6 }}
                 />
 
                 {/* Inline AI Rewrite for Summary */}
                 {resume.summary.trim().length > 15 && (
                   <div>
-                    <button
-                      className="btn-secondary"
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       disabled={inlineRewriteLoading && inlineRewriteKey === "summary"}
                       onClick={() => handleInlineRewrite(resume.summary, "Professional Summary", "summary")}
-                      style={{ fontSize: "0.78rem", padding: "0.35rem 0.8rem", borderColor: "#0ea5e9", color: "#0ea5e9" }}
+                      className="border-sky-500 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-950"
                     >
                       {inlineRewriteLoading && inlineRewriteKey === "summary" ? (
-                        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                          <span className="spinner" style={{ width: 12, height: 12 }} /> Rewriting...
+                        <span className="flex items-center gap-2">
+                          <span className="w-3 h-3 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" /> Rewriting...
                         </span>
                       ) : "✨ AI Rewrite"}
-                    </button>
+                    </Button>
 
                     {inlineRewriteKey === "summary" && inlineRewriteSuggestions.length > 0 && (
-                      <div style={{ marginTop: "0.6rem", display: "grid", gap: "0.4rem" }}>
-                        <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase" }}>
+                      <div className="mt-3 grid gap-2">
+                        <span className="text-xs font-bold text-[var(--accent)] uppercase tracking-wider">
                           Click a suggestion to accept:
                         </span>
                         {inlineRewriteSuggestions.map((s, idx) => (
@@ -955,17 +997,11 @@ function BuilderContent() {
                               setInlineRewriteSuggestions([]);
                               setInlineRewriteKey("");
                             }}
-                            style={{
-                              fontSize: "0.82rem", lineHeight: 1.5, padding: "0.6rem 0.8rem",
-                              background: "rgba(14, 165, 233, 0.04)", border: "1px solid rgba(14, 165, 233, 0.15)",
-                              borderRadius: "8px", cursor: "pointer", transition: "all 0.2s",
-                            }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "#0ea5e9"; (e.currentTarget as HTMLDivElement).style.background = "rgba(14, 165, 233, 0.08)"; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(14, 165, 233, 0.15)"; (e.currentTarget as HTMLDivElement).style.background = "rgba(14, 165, 233, 0.04)"; }}
+                            className="p-3 bg-sky-50/50 dark:bg-sky-900/10 border border-sky-100 dark:border-sky-900/50 rounded-[var(--radius-md)] cursor-pointer transition-all hover:bg-sky-50 hover:border-sky-400 dark:hover:bg-sky-900/30 text-sm leading-relaxed"
                           >
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
-                              <span>{s}</span>
-                              <span style={{ fontSize: "0.72rem", color: "#0ea5e9", fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>✅ Accept</span>
+                            <div className="flex justify-between items-start gap-4">
+                              <span className="text-[var(--text-primary)]">{s}</span>
+                              <span className="text-xs text-sky-500 font-bold whitespace-nowrap shrink-0">✅ Accept</span>
                             </div>
                           </div>
                         ))}
@@ -973,13 +1009,13 @@ function BuilderContent() {
                     )}
                   </div>
                 )}
-              </div>
+              </Card>
             )}
 
 
             {/* STEP 3: Work Experience */}
             {activeStep === "work" && (
-              <div style={{ display: "grid", gap: "1rem" }}>
+              <div style={{ display: "grid", gap: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Work Experience {resume.fresherMode && "(Optional)"}</h2>
                   <button
@@ -1015,7 +1051,7 @@ function BuilderContent() {
                 {resume.workExperience.map((exp, idx) => {
                   const isCollapsed = collapsedCards[exp.id] || false;
                   return (
-                    <div key={exp.id} className="card" style={{ display: "grid", gap: "0.8rem" }}>
+                    <div key={exp.id} className="card" style={{ display: "grid", gap: "1.2rem" }}>
                       
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem" }}>
                         <span 
@@ -1035,7 +1071,7 @@ function BuilderContent() {
 
                       {!isCollapsed && (
                         <>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem" }}>
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Company Name</label>
                               <input className="input" placeholder="e.g. TCS, Google" value={exp.company} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, company: e.target.value } : w) }))} />
@@ -1160,7 +1196,7 @@ function BuilderContent() {
                               const hasMetric = /\b(\d+|percent|%|lakhs?|crores?|lpa)\b/i.test(bullet) || bullet.includes("₹");
                               return (
                                 <div key={bi} style={{ display: "flex", flexDirection: "column", gap: "0.2rem", marginBottom: "0.6rem" }}>
-                                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                                  <div style={{ display: "flex", gap: "0.8rem" }}>
                                     <input
                                       className="input"
                                       placeholder="Describe result achieved..."
@@ -1268,7 +1304,7 @@ function BuilderContent() {
 
             {/* STEP 4: Education */}
             {activeStep === "education" && (
-              <div style={{ display: "grid", gap: "1rem" }}>
+              <div style={{ display: "grid", gap: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Education</h2>
                   <button 
@@ -1286,7 +1322,7 @@ function BuilderContent() {
                 {resume.education.map((edu, idx) => {
                   const isCollapsed = collapsedCards[edu.id] || false;
                   return (
-                    <div key={edu.id} className="card" style={{ display: "grid", gap: "0.8rem" }}>
+                    <div key={edu.id} className="card" style={{ display: "grid", gap: "1.2rem" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem" }}>
                         <span 
                           onClick={() => setCollapsedCards(prev => ({ ...prev, [edu.id]: !isCollapsed }))}
@@ -1302,7 +1338,7 @@ function BuilderContent() {
                       </div>
 
                       {!isCollapsed && (
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem" }}>
                           <div>
                             <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Education Level</label>
                             <select
@@ -1346,7 +1382,7 @@ function BuilderContent() {
                             <input className="input" placeholder="e.g. Cyber Security, Business" value={edu.field} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, field: e.target.value } : ed) }))} />
                           </div>
 
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Score Type</label>
                               <select
@@ -1380,7 +1416,7 @@ function BuilderContent() {
                             <input className="input" placeholder="e.g. NTSE Scholar" value={edu.scholarship || ""} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, scholarship: e.target.value } : ed) }))} />
                           </div>
 
-                          <div style={{ display: "flex", gap: "1rem", alignItems: "center", height: "42px", marginTop: "1.5rem" }}>
+                          <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", height: "42px", marginTop: "1.5rem" }}>
                             <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.82rem", cursor: "pointer" }}>
                               <input 
                                 type="checkbox" 
@@ -1422,7 +1458,7 @@ function BuilderContent() {
 
             {/* STEP 5: Skills */}
             {activeStep === "skills" && (
-              <div style={{ display: "grid", gap: "1rem" }}>
+              <div style={{ display: "grid", gap: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Skills</h2>
                   <button className="btn-secondary" style={{ fontSize: "0.8rem", padding: "0.4rem 0.9rem" }} disabled={!!aiLoading} onClick={() => {
@@ -1449,7 +1485,7 @@ function BuilderContent() {
                         </span>
                       ))}
                     </div>
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <div style={{ display: "flex", gap: "0.8rem" }}>
                       <input className="input" placeholder="React, SQL, Python..." value={skillInput.tech} onChange={(e) => setSkillInput((s) => ({ ...s, tech: e.target.value }))}
                         onKeyDown={(e) => { if (e.key === "Enter" && skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }} />
                       <button className="btn-secondary" style={{ whiteSpace: "nowrap", fontSize: "0.82rem" }} onClick={() => { if (skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }}>Add</button>
@@ -1465,7 +1501,7 @@ function BuilderContent() {
                         </span>
                       ))}
                     </div>
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <div style={{ display: "flex", gap: "0.8rem" }}>
                       <input className="input" placeholder="Leadership, Negotiation..." value={skillInput.soft} onChange={(e) => setSkillInput((s) => ({ ...s, soft: e.target.value }))}
                         onKeyDown={(e) => { if (e.key === "Enter" && skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }} />
                       <button className="btn-secondary" style={{ whiteSpace: "nowrap", fontSize: "0.82rem" }} onClick={() => { if (skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }}>Add</button>
@@ -1477,13 +1513,13 @@ function BuilderContent() {
 
             {/* STEP 6: Projects */}
             {activeStep === "projects" && (
-              <div style={{ display: "grid", gap: "1rem" }}>
+              <div style={{ display: "grid", gap: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Projects</h2>
                   <button className="btn-primary" style={{ fontSize: "0.82rem", padding: "0.45rem 1rem" }} onClick={() => setResume((r) => ({ ...r, projects: [...r.projects, { id: uid(), name: "", description: "", techStack: [], link: "" }] }))}>+ Add Project</button>
                 </div>
                 {resume.projects.map((proj, idx) => (
-                  <div key={proj.id} className="card" style={{ display: "grid", gap: "0.75rem" }}>
+                  <div key={proj.id} className="card" style={{ display: "grid", gap: "1.2rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>Project {idx + 1}</span>
                       <div style={{ display: "flex", gap: "0.4rem" }}>
@@ -1503,13 +1539,13 @@ function BuilderContent() {
 
             {/* STEP 7: Certifications */}
             {activeStep === "certifications" && (
-              <div style={{ display: "grid", gap: "1rem" }}>
+              <div style={{ display: "grid", gap: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Certifications</h2>
                   <button className="btn-primary" style={{ fontSize: "0.82rem", padding: "0.45rem 1rem" }} onClick={() => setResume((r) => ({ ...r, certifications: [...r.certifications, { id: uid(), name: "", issuer: "", date: "" }] }))}>+ Add Certification</button>
                 </div>
                 {resume.certifications.map((cert, idx) => (
-                  <div key={cert.id} className="card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "0.75rem", alignItems: "end" }}>
+                  <div key={cert.id} className="card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "1.2rem", alignItems: "end" }}>
                     <div>
                       <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Certification Name</label>
                       <input className="input" placeholder="AWS Solutions Architect" value={cert.name} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, name: e.target.value } : c) }))} />
@@ -1530,7 +1566,7 @@ function BuilderContent() {
 
             {/* STEP 8: Languages Known */}
             {activeStep === "languages" && (
-              <div style={{ display: "grid", gap: "1rem" }}>
+              <div style={{ display: "grid", gap: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Languages Known</h2>
                   <button
@@ -1552,7 +1588,7 @@ function BuilderContent() {
                 )}
 
                 {(resume.languagesKnown || []).map((lang, idx) => (
-                  <div key={lang.id} className="card" style={{ display: "grid", gap: "0.8rem" }}>
+                  <div key={lang.id} className="card" style={{ display: "grid", gap: "1.2rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem" }}>
                       <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>
                         🗣️ {lang.language || "Language"} ({lang.proficiency || "Proficiency"})
@@ -1568,7 +1604,7 @@ function BuilderContent() {
                       </button>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem" }}>
                       <div>
                         <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Language</label>
                         <input
@@ -1634,7 +1670,7 @@ function BuilderContent() {
                 <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Fresher Mode Achievements & Activities</h2>
 
                 {/* Competitive Exams */}
-                <div className="card" style={{ display: "grid", gap: "1rem" }}>
+                <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <h3 style={{ fontWeight: 700, fontSize: "1rem" }}>📝 Competitive Exams (JEE, GATE, CAT, UPSC)</h3>
                     <button
@@ -1654,7 +1690,7 @@ function BuilderContent() {
                   )}
 
                   {(resume.competitiveExams || []).map((item, idx) => (
-                    <div key={idx} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                    <div key={idx} style={{ display: "flex", gap: "0.8rem", alignItems: "center" }}>
                       <select
                         className="input"
                         style={{ flex: 1, background: "var(--bg-2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: "8px", height: "42px" }}
@@ -1706,7 +1742,7 @@ function BuilderContent() {
                 </div>
 
                 {/* Hackathons & Coding Contests */}
-                <div className="card" style={{ display: "grid", gap: "1rem" }}>
+                <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
                   <h3 style={{ fontWeight: 700, fontSize: "1rem" }}>🏆 Hackathons & Coding Contests</h3>
                   <div>
                     <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Hackathons Participated</label>
@@ -1731,7 +1767,7 @@ function BuilderContent() {
                 </div>
 
                 {/* Campus Activities */}
-                <div className="card" style={{ display: "grid", gap: "1rem" }}>
+                <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
                   <h3 style={{ fontWeight: 700, fontSize: "1rem" }}>📣 Campus Achievements & Club Roles</h3>
                   <div>
                     <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Campus Achievements</label>
@@ -1756,9 +1792,9 @@ function BuilderContent() {
                 </div>
 
                 {/* Placement Readiness Checklist */}
-                <div className="card" style={{ display: "grid", gap: "1rem" }}>
+                <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
                   <h3 style={{ fontWeight: 700, fontSize: "1rem" }}>🎓 Placement Readiness Checklist</h3>
-                  <div style={{ display: "grid", gap: "0.6rem" }}>
+                  <div style={{ display: "grid", gap: "1rem" }}>
                     {[
                       ["aptitudePrep", "Completed Quantitative & Verbal Aptitude Prep"],
                       ["codingPrep", "Completed Core DSA Preparation"],
@@ -1766,7 +1802,7 @@ function BuilderContent() {
                       ["resumeReviewed", "Resume audited and ATS score above 70%"],
                       ["linkedinUpdated", "LinkedIn Profile and GitHub repositories updated"]
                     ].map(([key, label]) => (
-                      <label key={key} style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "0.85rem", cursor: "pointer" }}>
+                      <label key={key} style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.85rem", cursor: "pointer" }}>
                         <input
                           type="checkbox"
                           checked={resume.placementChecklist?.[key] || false}
@@ -1793,9 +1829,9 @@ function BuilderContent() {
             {/* STEP 10: Template Selection & Spacing/Font controls */}
             {activeStep === "templates" && (
               <div style={{ display: "grid", gap: "1.2rem" }}>
-                <div className="card" style={{ display: "grid", gap: "1rem" }}>
+                <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Select Design Template</h2>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
                     {[
                       { id: "standard", name: "Standard (Recommended)", desc: "Highly recommended ATS-friendly, clean and professional layout." },
                       { id: "modern", name: "Modern ATS", desc: "Minimal design with standard sections - highly compatible." },
@@ -1829,7 +1865,7 @@ function BuilderContent() {
                   </div>
                 </div>
 
-                <div className="card" style={{ display: "grid", gap: "1rem" }}>
+                <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
                   <h3 style={{ fontWeight: 700, fontSize: "1rem" }}>🎨 Typography & Layout Controls</h3>
                   
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem" }}>
@@ -1905,7 +1941,7 @@ function BuilderContent() {
             {activeStep === "preview" && (
               <div style={{ display: "grid", gap: "1.2rem" }}>
                 {localATS && (
-                  <div className="card" style={{ display: "grid", gap: "1rem" }}>
+                  <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.1rem" }}>Local ATS Scan Report</h3>
                       <span className="tag tag-green" style={{ fontSize: "0.85rem", fontWeight: 800, background: localATS.overall >= 70 ? "rgba(67,233,123,0.15)" : "rgba(255,101,132,0.15)", color: localATS.overall >= 70 ? "#43e97b" : "#ff6584" }}>
@@ -1913,7 +1949,7 @@ function BuilderContent() {
                       </span>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.75rem" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "1.2rem" }}>
                       {Object.entries(localATS.breakdown).map(([key, val]) => (
                         <div key={key} style={{ background: "var(--bg-3)", padding: "0.6rem 0.8rem", borderRadius: "8px", textAlign: "center" }}>
                           <div style={{ fontSize: "0.68rem", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "0.2rem" }}>{key}</div>
@@ -1979,7 +2015,7 @@ function BuilderContent() {
                       Click <strong>"✨ Inject Keywords"</strong> to let AI seamlessly weave your missing ATS keywords into your existing content.
                     </p>
                     
-                    <div style={{ display: "grid", gap: "1rem" }}>
+                    <div style={{ display: "grid", gap: "1.5rem" }}>
                       {/* Summary Rewrite Target */}
                       {resume.summary && (
                         <div style={{ border: "1px solid var(--border)", padding: "1rem", borderRadius: "10px", background: "var(--bg-2)" }}>
@@ -1998,7 +2034,7 @@ function BuilderContent() {
                           
                           {/* Suggestions */}
                           {inlineRewriteKey === "ats-summary" && inlineRewriteSuggestions.length > 0 && (
-                            <div style={{ display: "grid", gap: "0.8rem", marginTop: "1rem" }}>
+                            <div style={{ display: "grid", gap: "1.2rem", marginTop: "1rem" }}>
                                 {inlineRewriteSuggestions.map((sug, i) => (
                                   <div key={i} style={{ padding: "0.8rem", background: "var(--bg-3)", borderLeft: "3px solid var(--accent)", borderRadius: "6px" }}>
                                     <p style={{ fontSize: "0.85rem", margin: "0 0 0.8rem", lineHeight: 1.5 }}>{sug}</p>
@@ -2035,7 +2071,7 @@ function BuilderContent() {
                               
                               {/* Suggestions */}
                               {inlineRewriteKey === key && inlineRewriteSuggestions.length > 0 && (
-                                <div style={{ display: "grid", gap: "0.8rem", marginTop: "1rem" }}>
+                                <div style={{ display: "grid", gap: "1.2rem", marginTop: "1rem" }}>
                                     {inlineRewriteSuggestions.map((sug, i) => (
                                       <div key={i} style={{ padding: "0.8rem", background: "var(--bg-3)", borderLeft: "3px solid var(--accent)", borderRadius: "6px" }}>
                                         <p style={{ fontSize: "0.85rem", margin: "0 0 0.8rem", lineHeight: 1.5 }}>{sug}</p>
@@ -2067,7 +2103,7 @@ function BuilderContent() {
                     Export it as an A4 print sheet PDF, create a public link to share with recruiters, or track application logs.
                   </p>
                   
-                  <div style={{ display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: "1.2rem", justifyContent: "center", flexWrap: "wrap" }}>
                     <button onClick={handlePrint} className="btn-primary" style={{ padding: "0.65rem 1.4rem" }}>
                       📥 Print / Save PDF
                     </button>
@@ -2079,7 +2115,7 @@ function BuilderContent() {
                   </div>
 
                   {/* Public Link Generator widget */}
-                  <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1.2rem", marginTop: "0.5rem", display: "grid", gap: "0.8rem", textAlign: "left" }}>
+                  <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1.2rem", marginTop: "0.5rem", display: "grid", gap: "1.2rem", textAlign: "left" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "0.82rem", fontWeight: 700 }}>🔗 Public Web Link Sharing</span>
                       {shareToken && (
@@ -2099,7 +2135,7 @@ function BuilderContent() {
                         {shareLoading ? "Generating Link..." : "✦ Generate Shareable Public Link"}
                       </button>
                     ) : (
-                      <div style={{ display: "grid", gap: "0.5rem" }}>
+                      <div style={{ display: "grid", gap: "0.8rem" }}>
                         <div style={{ display: "flex", gap: "0.4rem" }}>
                           <input 
                             readOnly 
@@ -2121,7 +2157,7 @@ function BuilderContent() {
                           </button>
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.2rem" }}>
-                          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.78rem", cursor: "pointer", color: "var(--text-muted)" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: "0.8rem", fontSize: "0.78rem", cursor: "pointer", color: "var(--text-muted)" }}>
                             <input
                               type="checkbox"
                               checked={isSharePublic}
@@ -2173,6 +2209,7 @@ function BuilderContent() {
               </button>
             </div>
 
+            </div>
           </div>
         )}
         rightPanel={isFullscreen ? (
@@ -2181,7 +2218,7 @@ function BuilderContent() {
             <div className="no-print builder-preview-container">
           
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
               <button onClick={() => setZoomFactor(prev => Math.max(0.5, prev - 0.05))} className="btn-secondary" style={{ padding: "0.3rem 0.6rem", fontSize: "0.8rem" }}>Zoom -</button>
               <input 
                 type="range" 
@@ -2242,7 +2279,7 @@ function BuilderContent() {
               </h3>
               
               {/* Option Toggle */}
-              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem", background: "rgba(255,255,255,0.05)", padding: "4px", borderRadius: "10px" }}>
+              <div style={{ display: "flex", gap: "0.8rem", marginBottom: "1rem", background: "rgba(255,255,255,0.05)", padding: "4px", borderRadius: "10px" }}>
                 <button
                   type="button"
                   onClick={() => setImportOption("paste")}
@@ -2327,7 +2364,7 @@ function BuilderContent() {
                 </div>
               )}
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.8rem", marginTop: "1.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "1.2rem", marginTop: "1.5rem" }}>
                 <button
                   type="button"
                   onClick={() => { setShowLinkedinModal(false); setValidationError(""); }}
@@ -2368,7 +2405,7 @@ function BuilderContent() {
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: "1rem", marginBottom: "1rem" }}>
             <div>
-              <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.2rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.2rem", display: "flex", alignItems: "center", gap: "0.8rem" }}>
                 ✦ AI Career Coach
               </h3>
               <span style={{ fontSize: "0.7rem", background: "rgba(108,99,255,0.15)", color: "var(--accent)", padding: "2px 8px", borderRadius: "10px", fontWeight: 600 }}>India-First Expert</span>
@@ -2382,7 +2419,7 @@ function BuilderContent() {
           </div>
 
           {/* Messages Container */}
-          <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.8rem", paddingRight: "4px", marginBottom: "1rem" }}>
+          <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "1.2rem", paddingRight: "4px", marginBottom: "1rem" }}>
             {coachMessages.map((msg, i) => (
               <div key={i} style={{
                 alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
@@ -2399,7 +2436,7 @@ function BuilderContent() {
               </div>
             ))}
             {coachLoading && (
-              <div style={{ alignSelf: "flex-start", background: "var(--bg-3)", padding: "0.75rem 1rem", borderRadius: "12px 12px 12px 2px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <div style={{ alignSelf: "flex-start", background: "var(--bg-3)", padding: "0.75rem 1rem", borderRadius: "12px 12px 12px 2px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.8rem" }}>
                 <span className="spinner" style={{ width: 14, height: 14 }}></span>
                 <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Coach is writing...</span>
               </div>
@@ -2440,7 +2477,7 @@ function BuilderContent() {
           )}
 
           {/* Input Area */}
-          <div style={{ display: "flex", gap: "0.6rem" }}>
+          <div style={{ display: "flex", gap: "1rem" }}>
             <input
               type="text"
               className="input"

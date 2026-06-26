@@ -3,6 +3,9 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import ResumeDocument from "@/components/ResumeDocument";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { ResumeData } from "@/types";
 
 const templates = [
@@ -172,28 +175,11 @@ function TemplatesContent() {
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
           {templates.filter(t => t.id === "standard").map((t) => (
-          <div
-            key={t.id}
-            className="card"
-            style={{ 
-              cursor: "pointer", 
-              transition: "all 0.25s",
-              display: "flex",
-              flexDirection: "column",
-              height: "100%"
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLDivElement).style.borderColor = t.color + "88";
-              (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
-              (e.currentTarget as HTMLDivElement).style.boxShadow = `0 10px 30px ${t.color}22`;
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)";
-              (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-              (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
-            }}
-            onClick={() => handleSelectTemplate(t.id)}
-          >
+            <Card
+              key={t.id}
+              className="cursor-pointer transition-all duration-300 flex flex-col h-full hover:-translate-y-1 hover:shadow-xl ring-2 ring-[var(--accent)] bg-[var(--accent-soft)]"
+              onClick={() => handleSelectTemplate(t.id)}
+            >
             {/* Live scaled preview container */}
             <div
               style={{
@@ -248,16 +234,16 @@ function TemplatesContent() {
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "1.2rem" }}>
                 {t.tags.map((tag) => (
-                  <span key={tag} className="tag tag-purple" style={{ fontSize: "0.7rem", padding: "0.15rem 0.6rem" }}>
+                  <Badge key={tag} variant="accent" style={{ fontSize: "0.7rem", padding: "0.15rem 0.6rem" }}>
                     {tag}
-                  </span>
+                  </Badge>
                 ))}
               </div>
-              <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "0.6rem", fontSize: "0.85rem" }}>
+              <Button fullWidth onClick={() => handleSelectTemplate(t.id)}>
                 {editId ? "Select & Apply Style" : "Use Template →"}
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         ))}
         </div>
       </div>
@@ -268,16 +254,9 @@ function TemplatesContent() {
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
           {templates.filter(t => t.id !== "standard").map((t) => (
-            <div
+            <Card
               key={t.id}
-              className="card"
-              style={{ 
-                cursor: "pointer", 
-                transition: "all 0.25s",
-                display: "flex",
-                flexDirection: "column",
-                height: "100%"
-              }}
+              className="cursor-pointer transition-all duration-300 flex flex-col h-full hover:-translate-y-1 hover:shadow-xl"
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLDivElement).style.borderColor = t.color + "88";
                 (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
@@ -344,16 +323,16 @@ function TemplatesContent() {
                 </p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "1.2rem" }}>
                   {t.tags.map((tag) => (
-                    <span key={tag} className="tag tag-purple" style={{ fontSize: "0.7rem", padding: "0.15rem 0.6rem" }}>
+                    <Badge key={tag} variant="accent" style={{ fontSize: "0.7rem", padding: "0.15rem 0.6rem" }}>
                       {tag}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
-                <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "0.6rem", fontSize: "0.85rem" }}>
+                <Button fullWidth onClick={() => handleSelectTemplate(t.id)}>
                   {editId ? "Select & Apply Style" : "Use Template →"}
-                </button>
+                </Button>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       </div>

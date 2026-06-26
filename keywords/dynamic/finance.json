@@ -6,7 +6,11 @@
     {
       "keyword": "Fintech",
       "weight": 9,
-      "aliases": ["Financial Technology", "Digital Banking", "Payment Gateways"],
+      "aliases": [
+        "Financial Technology",
+        "Digital Banking",
+        "Payment Gateways"
+      ],
       "added_on": "2026-01-01",
       "expires_on": "2028-06-01",
       "is_active": true,
@@ -15,7 +19,11 @@
     {
       "keyword": "Blockchain",
       "weight": 8,
-      "aliases": ["Crypto", "DeFi", "Web3 Finance"],
+      "aliases": [
+        "Crypto",
+        "DeFi",
+        "Web3 Finance"
+      ],
       "added_on": "2026-01-01",
       "expires_on": "2028-06-01",
       "is_active": true,
@@ -24,7 +32,11 @@
     {
       "keyword": "Algorithmic Trading",
       "weight": 9,
-      "aliases": ["Algo Trading", "High Frequency Trading", "HFT"],
+      "aliases": [
+        "Algo Trading",
+        "High Frequency Trading",
+        "HFT"
+      ],
       "added_on": "2026-01-01",
       "expires_on": "2028-06-01",
       "is_active": true,
@@ -33,7 +45,11 @@
     {
       "keyword": "ESG Investing",
       "weight": 8,
-      "aliases": ["ESG", "Sustainable Finance", "Impact Investing"],
+      "aliases": [
+        "ESG",
+        "Sustainable Finance",
+        "Impact Investing"
+      ],
       "added_on": "2026-01-01",
       "expires_on": "2028-06-01",
       "is_active": true,
@@ -42,7 +58,10 @@
     {
       "keyword": "Open Banking",
       "weight": 8,
-      "aliases": ["API Banking", "Account Aggregator"],
+      "aliases": [
+        "API Banking",
+        "Account Aggregator"
+      ],
       "added_on": "2026-01-01",
       "expires_on": "2028-06-01",
       "is_active": true,
@@ -51,11 +70,103 @@
     {
       "keyword": "Python for Finance",
       "weight": 9,
-      "aliases": ["Pandas", "Quant", "Quantitative Finance"],
+      "aliases": [
+        "Pandas",
+        "Quant",
+        "Quantitative Finance"
+      ],
       "added_on": "2026-01-01",
       "expires_on": "2028-06-01",
       "is_active": true,
       "source": "Curated"
+    },
+    {
+      "keyword": "sustainable finance analytics",
+      "weight": 9,
+      "aliases": [
+        "ESG analytics",
+        "green finance analytics",
+        "sustainability finance metrics"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "low-code financial app development",
+      "weight": 6,
+      "aliases": [
+        "low code finance apps",
+        "no-code finance solutions",
+        "rapid finance app development"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "regtech automation",
+      "weight": 8,
+      "aliases": [
+        "regulatory technology automation",
+        "regtech tools",
+        "compliance automation"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "quantitative risk analytics",
+      "weight": 7,
+      "aliases": [
+        "quant risk analytics",
+        "quantitative risk modeling",
+        "risk analytics"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "AI-driven credit scoring",
+      "weight": 8,
+      "aliases": [
+        "machine learning credit models",
+        "AI credit assessment",
+        "ML credit scoring"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "cloud native finance platforms",
+      "weight": 9,
+      "aliases": [
+        "cloud finance",
+        "SaaS finance solutions",
+        "finance cloud platforms"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "data mesh for finance",
+      "weight": 7,
+      "aliases": [
+        "finance data mesh",
+        "data mesh architecture",
+        "decentralized data finance"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "distributed ledger accounting",
+      "weight": 6,
+      "aliases": [
+        "DLT accounting",
+        "blockchain accounting",
+        "ledger-based accounting"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
     }
   ]
 }

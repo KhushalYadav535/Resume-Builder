@@ -103,6 +103,257 @@
       ],
       "is_active": true,
       "expires_on": "2026-12-25"
+    },
+    {
+      "keyword": "FastAPI",
+      "weight": 8,
+      "aliases": [
+        "FastAPI framework",
+        "Python async framework",
+        "FastAPI"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Composable Architecture",
+      "weight": 5,
+      "aliases": [
+        "Composable Microservices",
+        "Composable Design",
+        "Service Mesh"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Svelte",
+      "weight": 6,
+      "aliases": [
+        "SvelteKit",
+        "Svelte framework",
+        "Svelte"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Deno",
+      "weight": 7,
+      "aliases": [
+        "Deno runtime",
+        "TypeScript runtime",
+        "Deno"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Edge Computing",
+      "weight": 6,
+      "aliases": [
+        "Edge services",
+        "Cloudflare Workers",
+        "AWS Lambda@Edge"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Terraform",
+      "weight": 8,
+      "aliases": [
+        "IaC",
+        "Infrastructure as Code",
+        "Terraform"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Observability",
+      "weight": 7,
+      "aliases": [
+        "Observability stack",
+        "Monitoring",
+        "Tracing",
+        "Logging"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Serverless",
+      "weight": 9,
+      "aliases": [
+        "Serverless architecture",
+        "Lambda",
+        "FaaS",
+        "Function as a Service"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Serverless Computing",
+      "weight": 8,
+      "aliases": [
+        "AWS Lambda",
+        "Azure Functions",
+        "Google Cloud Functions",
+        "Vercel Serverless",
+        "Supabase Functions"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Rust Programming",
+      "weight": 9,
+      "aliases": [
+        "Rust",
+        "Rust 2021",
+        "Rust for WebAssembly",
+        "Safe Systems Programming",
+        "Rust Ecosystem"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Low-Code/No-Code Platforms",
+      "weight": 7,
+      "aliases": [
+        "Retool",
+        "Bubble",
+        "Webflow",
+        "Zapier",
+        "Airtable Automation"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Quantum Computing",
+      "weight": 7,
+      "aliases": [
+        "Quantum Algorithms",
+        "Q#",
+        "Qiskit",
+        "Grover's Algorithm",
+        "Quantum Cryptography"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Edge Computing",
+      "weight": 8,
+      "aliases": [
+        "Edge AI",
+        "WebAssembly",
+        "IoT Development",
+        "Edge Functions",
+        "Cloudflare Workers"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Cloud-Native Development",
+      "weight": 8,
+      "aliases": [
+        "Cloud Engineering",
+        "Kubernetes",
+        "Docker",
+        "Helm Charts",
+        "Service Mesh"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "TypeScript Ecosystem",
+      "weight": 9,
+      "aliases": [
+        "TypeScript",
+        "TS",
+        "TypeScript 5",
+        "TypeScript Next",
+        "TypeScript Node"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "AI/ML Engineering",
+      "weight": 9,
+      "aliases": [
+        "Artificial Intelligence",
+        "Machine Learning",
+        "Deep Learning",
+        "TensorFlow",
+        "PyTorch"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "GitOps",
+      "weight": 8,
+      "aliases": [
+        "Git-based operations",
+        "Git-based deployment",
+        "Git-driven infrastructure"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "LangChain",
+      "weight": 8,
+      "aliases": [
+        "LLM chain",
+        "Large Language Model chain",
+        "Prompt chaining"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Serverless",
+      "weight": 9,
+      "aliases": [
+        "Lambda",
+        "Azure Functions",
+        "Google Cloud Functions",
+        "AWS Lambda"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Data Mesh",
+      "weight": 7,
+      "aliases": [
+        "Decentralized data",
+        "Data topology",
+        "Data product"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Infrastructure as Code",
+      "weight": 9,
+      "aliases": [
+        "IaC",
+        "Terraform",
+        "Pulumi",
+        "CloudFormation"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
     }
   ]
 }

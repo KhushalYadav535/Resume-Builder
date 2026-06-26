@@ -29,6 +29,135 @@
       ],
       "is_active": true,
       "expires_on": "2026-12-25"
+    },
+    {
+      "keyword": "Low-Code Developer",
+      "weight": 7,
+      "aliases": [
+        "No-Code",
+        "Citizen Developer",
+        "Platform Developer"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "AI/ML Engineering",
+      "weight": 9,
+      "aliases": [
+        "Artificial Intelligence",
+        "Machine Learning",
+        "AI Engineering"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Cybersecurity Analyst",
+      "weight": 8,
+      "aliases": [
+        "InfoSec",
+        "Security Operations",
+        "Threat Hunting"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "DevOps Engineer",
+      "weight": 9,
+      "aliases": [
+        "CI/CD",
+        "Infrastructure as Code",
+        "Containerization"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Product Manager",
+      "weight": 7,
+      "aliases": [
+        "Tech Lead",
+        "Product Owner",
+        "Agile PM"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Data Engineer",
+      "weight": 8,
+      "aliases": [
+        "ETL",
+        "Data Pipeline",
+        "Big Data"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "UX/UI Designer",
+      "weight": 6,
+      "aliases": [
+        "User Experience",
+        "User Interface",
+        "Interaction Design"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "RPA Developer",
+      "weight": 5,
+      "aliases": [
+        "Robotic Process Automation",
+        "Bot Development",
+        "Automation Engineer"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Cybersecurity",
+      "weight": 8,
+      "aliases": [
+        "Security",
+        "InfoSec"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "UX/UI Design",
+      "weight": 6,
+      "aliases": [
+        "User Experience",
+        "User Interface"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "Product Management",
+      "weight": 7,
+      "aliases": [
+        "Product Manager",
+        "Product Owner"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
+    },
+    {
+      "keyword": "AI/ML Engineering",
+      "weight": 9,
+      "aliases": [
+        "AI",
+        "Machine Learning",
+        "ML"
+      ],
+      "is_active": true,
+      "expires_on": "2026-12-26"
     }
   ]
 }

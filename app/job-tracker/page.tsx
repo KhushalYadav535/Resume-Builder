@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { useAuth } from "@/hooks/useAuth";
 
 export interface JobApplication {
@@ -343,24 +345,14 @@ export default function JobTracker() {
                       </div>
                     ) : (
                       colApps.map((app) => (
-                        <div 
+                        <Card 
                           key={app.id} 
                           onClick={() => openEdit(app)}
-                          style={{ 
-                            background: "var(--card)", 
-                            border: "1px solid var(--border)", 
-                            borderRadius: "10px", 
-                            padding: "1rem", 
-                            cursor: "pointer",
-                            transition: "transform 0.15s, border-color 0.15s",
-                          }}
-                          className="job-card-hover"
+                          className="p-4 cursor-pointer transition-all duration-150 hover:-translate-y-0.5"
                           onMouseOver={(e) => {
-                            e.currentTarget.style.transform = "translateY(-2px)";
                             e.currentTarget.style.borderColor = col.color;
                           }}
                           onMouseOut={(e) => {
-                            e.currentTarget.style.transform = "none";
                             e.currentTarget.style.borderColor = "var(--border)";
                           }}
                         >
@@ -418,11 +410,11 @@ export default function JobTracker() {
                                 onMouseOver={(e) => e.currentTarget.style.borderColor = c.color}
                                 onMouseOut={(e) => e.currentTarget.style.borderColor = "var(--border)"}
                               >
-                                → {c.key}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+                                  → {c.key}
+                                </button>
+                              ))}
+                            </div>
+                        </Card>
                       ))
                     )}
                   </div>
