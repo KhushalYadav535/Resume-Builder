@@ -493,28 +493,29 @@ function BuilderContent() {
     
     const personalInfo = {
       ...defaultEmptyResume.personalInfo,
-      fullName: data.personal?.name || defaultEmptyResume.personalInfo.fullName,
-      email: data.personal?.email || defaultEmptyResume.personalInfo.email,
-      phone: data.personal?.phone || defaultEmptyResume.personalInfo.phone,
-      location: data.personal?.location || defaultEmptyResume.personalInfo.location,
-      linkedin: data.personal?.linkedin || defaultEmptyResume.personalInfo.linkedin,
-      headline: data.personal?.headline || (defaultEmptyResume.personalInfo as any).headline,
+      fullName: data.personal?.name || "",
+      email: data.personal?.email || "",
+      phone: data.personal?.phone || "",
+      location: data.personal?.location || "",
+      linkedin: data.personal?.linkedin_url || data.personal?.linkedin || "",
+      headline: data.personal?.headline || "",
     };
 
     const workExperience = (data.experience || []).map((exp: any, idx: number) => ({
       id: `exp_${idx}_${Date.now()}`,
       company: exp.company || "",
       role: exp.title || "",
-      location: exp.location || "",
+      city: exp.city || exp.location || "",
       startDate: exp.startDate || "",
       endDate: exp.endDate || "",
-      current: exp.endDate === "Present" || exp.endDate === "Current",
+      current: exp.endDate === "Present" || exp.endDate === "Current" || exp.is_current || false,
       bullets: exp.bullets || [],
     }));
 
     const education = (data.education || []).map((edu: any, idx: number) => ({
       id: `edu_${idx}_${Date.now()}`,
       institution: edu.institution || "",
+      boardOrUniversity: edu.boardOrUniversity || "",
       degree: edu.degree || "",
       field: edu.field || "",
       startDate: edu.startDate || "",
@@ -543,15 +544,20 @@ function BuilderContent() {
     return {
       ...defaultEmptyResume,
       personalInfo,
-      summary: data.summary || defaultEmptyResume.summary,
-      workExperience: workExperience.length > 0 ? workExperience : defaultEmptyResume.workExperience,
-      education: education.length > 0 ? education : defaultEmptyResume.education,
+      summary: data.summary || "",
+      workExperience: workExperience,
+      education: education,
       skills: {
-        technical: technicalSkills.length > 0 ? technicalSkills : defaultEmptyResume.skills.technical,
+        technical: technicalSkills,
         soft: defaultEmptyResume.skills.soft,
       },
-      projects: projects.length > 0 ? projects : defaultEmptyResume.projects,
-      certifications: certifications.length > 0 ? certifications : defaultEmptyResume.certifications,
+      projects: projects,
+      certifications: certifications,
+      languagesKnown: data.languages ? data.languages.map((l: any, i: number) => ({
+        id: `lang_${i}_${Date.now()}`,
+        language: l.language || "",
+        proficiency: l.proficiency || "",
+      })) : defaultEmptyResume.languagesKnown,
     };
   };
 
@@ -2456,6 +2462,14 @@ function BuilderContent() {
           </div>
         </div>
       )}
+      
+      {/* PRINT-ONLY RESUME CONTAINER */}
+      <div className="print-only">
+        <div className="resume-paper resume-print-area" style={{ background: "#ffffff", color: "#333333", padding: "40px", width: "100%" }}>
+          <ResumeDocument data={resume} templateId={selectedTemplate} />
+        </div>
+      </div>
+
     </div>
   );
 }

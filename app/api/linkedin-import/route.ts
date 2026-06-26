@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
     const cleanedText = cleanLinkedInText(rawText);
 
-    const prompt1 = `You are a resume data extractor. Extract ALL information from this LinkedIn profile PDF text.
+    const prompt1 = `You are an expert resume data extractor and strict validator. Extract ALL information from this LinkedIn profile PDF text and rigorously clean the data.
 Return ONLY a valid JSON object — no explanation, no markdown, no preamble.
 
 Use EXACTLY this structure:
@@ -80,7 +80,7 @@ Use EXACTLY this structure:
     {
       "company": "",
       "title": "",
-      "location": "",
+      "city": "",
       "startDate": "",
       "endDate": "",
       "is_current": false,
@@ -91,6 +91,7 @@ Use EXACTLY this structure:
   "education": [
     {
       "institution": "",
+      "boardOrUniversity": "",
       "degree": "",
       "field": "",
       "startDate": "",
@@ -121,12 +122,16 @@ Use EXACTLY this structure:
   ]
 }
 
-Rules:
-- Extract EVERY work experience entry, every education entry, every skill
-- If a field has no data, use empty string "" or empty array []
-- For experience descriptions: include the full text as "description" and also try to split into bullet points in the "bullets" array if line breaks exist
-- Never truncate or summarize — extract the complete raw content
-- Return ONLY the JSON object, nothing else
+STRICT VALIDATION RULES:
+1. Role vs Company: Cross-verify that "company" ONLY contains the organization name, and "title" ONLY contains the job designation/role. DO NOT mix them up.
+2. Date Standardization: Clean and standardize all "startDate" and "endDate" fields into 'Month Year' format (e.g., 'Jan 2021', 'Aug 2023'). Drop exact days. Use 'Present' for current roles.
+3. Smart Relocation: If you find technical skills, tools, or technologies lumped inside a job description or summary, extract them and MOVE them to the "skills" array.
+4. Boilerplate Removal: Strip out generic LinkedIn artifacts (like "Show more", "Contact", "Page X of Y", etc.) that may have slipped into the text.
+5. Content Quality: For experience descriptions, try to split paragraphs into clean, actionable bullet points in the "bullets" array.
+6. Schema Matching: Use "city" instead of location for experience. Use "boardOrUniversity" for education if applicable.
+7. If a field has no data, use empty string "" or empty array [].
+8. Never truncate valid professional content.
+9. IF YOU CANNOT EXTRACT DATA, YOU MUST STILL RETURN A VALID JSON OBJECT MATCHING THE STRUCTURE WITH EMPTY FIELDS. DO NOT OUTPUT ANY EXPLANATORY TEXT.
 
 LinkedIn PDF text to extract from:
 ${cleanedText}`;
