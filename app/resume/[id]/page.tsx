@@ -5,7 +5,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { Resume } from "@/types";
-import ResumeRenderer from "@/components/ResumeRenderer";
+import ResumeDocument from "@/components/ResumeDocument";
 
 interface LoadingStage {
   label: string;
@@ -44,7 +44,7 @@ export default function ResumeDetailPage() {
   const [activeTab, setActiveTab] = useState<"ats" | "content" | "jd" | "interview" | "skillgap">("ats");
   
   // Custom toolbar states
-  const [selectedTemplate, setSelectedTemplate] = useState("modern");
+  const [selectedTemplate, setSelectedTemplate] = useState("standard");
   const [zoomFactor, setZoomFactor] = useState(0.85);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -1329,6 +1329,7 @@ export default function ResumeDetailPage() {
                 className="input"
                 style={{ width: "135px", padding: "0.25rem 0.5rem", fontSize: "0.78rem", borderRadius: "6px" }}
               >
+                <option value="standard">Standard (Recommended)</option>
                 <option value="modern">Modern ATS</option>
                 <option value="professional">Professional</option>
                 <option value="executive">Executive</option>
@@ -1397,7 +1398,7 @@ export default function ResumeDetailPage() {
               borderRadius: "4px",
               transition: "transform 0.15s ease-out",
             }}>
-              <ResumeRenderer data={(resume as any).structured_data || resume.resume_data || emptyResumeData} />
+              <ResumeDocument data={(resume as any).structured_data || resume.resume_data || emptyResumeData} templateId={selectedTemplate} />
             </div>
 
           </div>
@@ -1408,7 +1409,7 @@ export default function ResumeDetailPage() {
       {/* PRINT-ONLY RESUME CONTAINER */}
       <div className="print-only">
         <div className="resume-paper resume-print-area" style={{ background: "#ffffff", color: "#333333", padding: "40px", width: "100%" }}>
-          <ResumeRenderer data={(resume as any).structured_data || resume.resume_data || emptyResumeData} />
+          <ResumeDocument data={(resume as any).structured_data || resume.resume_data || emptyResumeData} templateId={selectedTemplate} />
         </div>
       </div>
 

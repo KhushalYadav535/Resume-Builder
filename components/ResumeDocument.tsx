@@ -1646,6 +1646,116 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
     );
   };
 
+  // 12. STANDARD TEMPLATE (Harvard/ATS standard)
+  const renderStandardTemplate = () => {
+    const renderSection = (key: string) => {
+      switch (key) {
+        case "summary":
+          if (!summary) return null;
+          return (
+            <div style={{ marginBottom: "1rem" }}>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.4rem" }}>Professional Summary</h3>
+              <p style={{ fontSize: `${fontSize * 0.85}pt`, margin: 0, lineHeight: 1.4 }}>{summary}</p>
+            </div>
+          );
+        case "work":
+          if (workExperience.length === 0) return null;
+          return (
+            <div style={{ marginBottom: "1rem" }}>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.4rem" }}>Work Experience</h3>
+              {workExperience.map((exp) => (
+                <div key={exp.id} style={{ marginBottom: "0.8rem", fontSize: `${fontSize * 0.85}pt` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span><strong>{exp.role} – {exp.company}</strong></span>
+                    <span style={{ fontStyle: "italic" }}>{exp.startDate} – {exp.endDate} {exp.location ? `| ${exp.location}` : ""}</span>
+                  </div>
+                  <ul style={{ margin: "4px 0 0", paddingLeft: "20px" }}>
+                    {exp.bullets.map((b, bi) => <li key={bi} style={{ marginBottom: "2px", lineHeight: 1.4 }}>{b}</li>)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          );
+        case "education":
+          if (education.length === 0) return null;
+          return (
+            <div style={{ marginBottom: "1rem" }}>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.4rem" }}>Education</h3>
+              {education.map((edu) => (
+                <div key={edu.id} style={{ marginBottom: "0.6rem", fontSize: `${fontSize * 0.85}pt` }}>
+                  <div><strong>{edu.school}{edu.location ? ` – ${edu.location}` : ""}</strong></div>
+                  <div style={{ fontStyle: "italic" }}>{edu.degree}</div>
+                  {edu.gpa && <div style={{ fontSize: `${fontSize * 0.8}pt`, marginTop: "2px" }}>GPA: {edu.gpa}</div>}
+                </div>
+              ))}
+            </div>
+          );
+        case "skills":
+          if (skills.technical.length === 0 && skills.soft.length === 0) return null;
+          return (
+            <div style={{ marginBottom: "1rem" }}>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.4rem" }}>Skills</h3>
+              <div style={{ fontSize: `${fontSize * 0.85}pt`, lineHeight: 1.4 }}>
+                {[...skills.technical, ...skills.soft].filter(Boolean).join(", ")}
+              </div>
+            </div>
+          );
+        case "projects":
+          if (projects.length === 0) return null;
+          return (
+            <div style={{ marginBottom: "1rem" }}>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.4rem" }}>Projects</h3>
+              {projects.map((proj) => (
+                <div key={proj.id} style={{ marginBottom: "0.8rem", fontSize: `${fontSize * 0.85}pt` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontWeight: "bold", color: "#1e40af" }}>
+                      {proj.link ? <a href={proj.link} style={{ color: "inherit", textDecoration: "none" }}>{proj.name}</a> : proj.name}
+                    </span>
+                    <span style={{ fontStyle: "italic" }}>{proj.startDate} – {proj.endDate}</span>
+                  </div>
+                  <ul style={{ margin: "4px 0 0", paddingLeft: "20px" }}>
+                    {proj.description.split("\n").filter(Boolean).map((b, bi) => <li key={bi} style={{ marginBottom: "2px", lineHeight: 1.4 }}>{b.replace(/^- /, '')}</li>)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          );
+        case "certifications":
+          if (certifications.length === 0) return null;
+          return (
+            <div style={{ marginBottom: "1rem" }}>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "2px", marginBottom: "0.4rem" }}>Certifications</h3>
+              <ul style={{ margin: 0, paddingLeft: "20px", fontSize: `${fontSize * 0.85}pt` }}>
+                {certifications.map((c) => <li key={c.id}><strong>{c.name}</strong> — {c.issuer || "N/A"} ({c.date})</li>)}
+              </ul>
+            </div>
+          );
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <div style={{ fontFamily: "Arial, Helvetica, sans-serif", color: "#000", fontSize: `${fontSize * 0.85}pt` }}>
+        <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+          <h1 style={{ fontSize: `${fontSize * 2.2}pt`, fontWeight: "bold", margin: "0 0 0.4rem 0" }}>{personalInfo.fullName}</h1>
+          <div style={{ fontSize: `${fontSize * 0.75}pt`, display: "flex", justifyContent: "center", gap: "1.2rem", flexWrap: "wrap", color: "#444" }}>
+            {personalInfo.email && <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>✉ {personalInfo.email}</span>}
+            {personalInfo.phone && <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>✆ {personalInfo.phone}</span>}
+            {personalInfo.location && <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>📍 {personalInfo.location}</span>}
+            {personalInfo.linkedin && <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>in {personalInfo.linkedin.replace('https://www.linkedin.com/in/', '').replace('https://linkedin.com/in/', '').replace(/\/$/, '')}</span>}
+          </div>
+        </div>
+
+        {order.map((secKey) => (
+          <div key={secKey}>
+            {renderSection(secKey)}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   // Switch templates routing resolver
   switch (templateId) {
     case "professional":
@@ -1669,7 +1779,9 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
     case "minimal-2":
       return renderMinimal2Template();
     case "modern":
-    default:
       return renderModernTemplate();
+    case "standard":
+    default:
+      return renderStandardTemplate();
   }
 }
