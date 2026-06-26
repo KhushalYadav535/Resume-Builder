@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { parseResume } from "@/lib/resumeParser";
 import { calculateDynamicATS } from "@/lib/ats";
+import { sanitizeInput, sanitizeObject } from "@/lib/sanitization";
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +28,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { resumeText, fileName } = await req.json();
+    let { resumeText, fileName } = await req.json();
     if (!resumeText) {
       return NextResponse.json({ error: "No resume text provided" }, { status: 400 });
     }
+    resumeText = sanitizeInput(resumeText);
+    fileName = sanitizeInput(fileName);
 
     // Stage 1, 2 & 3: Run all processing completely LOCALLY (fast, free, 0 rate-limits!)
     const structuredResume = parseResume(resumeText);
@@ -71,7 +74,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("Failed local resume analysis:", err);
     return NextResponse.json(
-      { error: "Failed to parse resume: " + (err.message || String(err)) },
+      { error: "An unexpected error occurred while parsing the resume." },
       { status: 500 }
     );
   }

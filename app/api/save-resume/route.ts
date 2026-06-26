@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { calculateDynamicATS } from "@/lib/ats";
+import { sanitizeObject, sanitizeInput } from "@/lib/sanitization";
 
 export const dynamic = "force-dynamic";
 
@@ -33,9 +34,9 @@ export async function POST(req: NextRequest) {
       content_review, jd_match, template_id 
     } = body;
 
-    const fileName = rawFileName || file_name || "Untitled Resume";
-    const resumeText = rawResumeText || raw_text || "";
-    const structuredResume = rawStructuredResume || resume_data || {};
+    const fileName = sanitizeInput(rawFileName || file_name || "Untitled Resume");
+    const resumeText = sanitizeInput(rawResumeText || raw_text || "");
+    const structuredResume = sanitizeObject(rawStructuredResume || resume_data || {});
     
     // Auto-calculate ATS score if omitted (bridges the Builder ATS score gap)
     let atsScore = rawAtsScore !== undefined ? rawAtsScore : (ats_score !== undefined ? ats_score : null);
@@ -105,16 +106,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(savedRecord);
   } catch (err: any) {
     console.error("Failed to save resume:", err);
-    
-    if (err.message === "User not authenticated") {
-      return NextResponse.json(
-        { error: "User not logged in or active session expired." },
-        { status: 401 }
-      );
-    }
-    
     return NextResponse.json(
-      { error: err.message || "Failed to save resume" },
+      { error: "An unexpected error occurred while saving the resume." },
       { status: 500 }
     );
   }

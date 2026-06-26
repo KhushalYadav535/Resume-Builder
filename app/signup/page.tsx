@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { SignupSchema } from "@/lib/validation/auth";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -47,8 +48,9 @@ export default function SignupPage() {
         return;
       }
 
-      if (password.length < 6) {
-        setErrorMsg("Password must be at least 6 characters.");
+      const validation = SignupSchema.safeParse({ email, password });
+      if (!validation.success) {
+        setErrorMsg(validation.error.issues[0].message);
         return;
       }
     }

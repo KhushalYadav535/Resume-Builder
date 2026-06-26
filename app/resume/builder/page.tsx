@@ -76,7 +76,6 @@ type Step =
   | "certifications" 
   | "languages"
   | "fresher"
-  | "target-jd"
   | "templates" 
   | "preview";
 
@@ -90,7 +89,6 @@ const stepsOrder: { key: Step; label: string }[] = [
   { key: "certifications", label: "Certifications" },
   { key: "languages", label: "Languages Known" },
   { key: "fresher", label: "Fresher Activities" },
-  { key: "target-jd", label: "JD Target Match" },
   { key: "templates", label: "Template & Design" },
   { key: "preview", label: "Preview & Scan" },
 ];
@@ -112,10 +110,8 @@ function BuilderContent() {
   const [saveStatus, setSaveStatus] = useState<"" | "saving" | "saved" | "error">("");
   const [validationError, setValidationError] = useState("");
   
-  // Real-time Local ATS Score & JD Match
+  // Real-time Local ATS Score
   const [localATS, setLocalATS] = useState<ATSScore | null>(null);
-  const [jdMatchResult, setJdMatchResult] = useState<JDMatch | null>(null);
-  const [jdMatchLoading, setJdMatchLoading] = useState(false);
 
   // UI Helpers
   const [skillInput, setSkillInput] = useState({ tech: "", soft: "" });
@@ -287,7 +283,6 @@ function BuilderContent() {
             setResumeId(found.id);
           }
           if (found.template_id) setSelectedTemplate(found.template_id);
-          if (editId && found.jd_match) setJdMatchResult(found.jd_match);
         }
       } catch (err) {
         console.error("Error loading resume details for edit:", err);
@@ -409,7 +404,7 @@ function BuilderContent() {
           resume_data: resume,
           template_id: selectedTemplate,
           ats_score: finalATS,
-          jd_match: jdMatchResult,
+          jd_match: null,
         }),
       });
 
@@ -448,68 +443,6 @@ function BuilderContent() {
     }
   };
 
-  const handleJdMatchAnalysis = async () => {
-    if (!resume.targetJobDescription?.trim()) return;
-    setJdMatchLoading(true);
-    try {
-      const res = await fetch("/api/jd-match", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeData: resume,
-          jobDescription: resume.targetJobDescription,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Failed to analyze Job Match");
-      }
-
-      setJdMatchResult(data);
-
-      if (resumeId) {
-        const rawText = [
-          resume.personalInfo.fullName,
-          resume.personalInfo.email,
-          resume.personalInfo.phone,
-          resume.personalInfo.location,
-          resume.personalInfo.linkedin,
-          resume.personalInfo.website,
-          resume.summary,
-          ...resume.workExperience.flatMap((w) => [w.company, w.role, w.industry || "", w.city || "", ...(w.bullets || []), w.toolsUsed?.join(", ") || ""]),
-          ...resume.education.map((e) => `${e.level || ""} ${e.degree || ""} in ${e.field || ""} at ${e.institution || ""} ${e.boardOrUniversity || ""} ${e.academicAchievements || ""}`),
-          ...resume.skills.technical,
-          ...resume.skills.soft,
-          ...(resume.languagesKnown?.map(l => `${l.language} ${l.proficiency} ${l.certification || ""}`) || []),
-          ...(resume.hackathons || []),
-          ...(resume.codingContests || []),
-          ...(resume.campusAchievements || []),
-          ...(resume.clubsAndLeadership || []),
-          ...(resume.competitiveExams?.map(ex => `${ex.exam} ${ex.score} ${ex.year}`) || []),
-        ].join("\n");
-
-        await fetch("/api/save-resume", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: resumeId,
-            file_name: `${resume.personalInfo.fullName}'s Resume`,
-            raw_text: rawText,
-            resume_data: resume,
-            template_id: selectedTemplate,
-            ats_score: localATS,
-            jd_match: data,
-          }),
-        });
-      }
-    } catch (err: any) {
-      console.error(err);
-      alert("Error analyzing Job Match: " + (err.message || String(err)));
-    } finally {
-      setJdMatchLoading(false);
-    }
-  };
 
   const handleLinkedInImport = async () => {
     setLinkedinLoading(true);
@@ -1847,189 +1780,7 @@ function BuilderContent() {
             )}
 
             {/* STEP 9.5: Job Description Target Match */}
-            {activeStep === "target-jd" && (
-              <div style={{ display: "grid", gap: "1.2rem" }}>
-                {/* Banner linking to full Tailor page */}
-                <div style={{
-                  background: "linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(108, 99, 255, 0.06) 100%)",
-                  border: "1px solid rgba(14, 165, 233, 0.25)",
-                  borderRadius: "12px",
-                  padding: "1rem 1.2rem",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: "1rem",
-                  flexWrap: "wrap",
-                }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: "0.9rem", marginBottom: "0.2rem" }}>
-                      🎯 Want AI-powered one-click rewrites?
-                    </div>
-                    <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-                      Use our dedicated Tailor page for a full AI rewrite experience — paste a JD, see suggestions, and accept changes instantly.
-                    </div>
-                  </div>
-                  <Link href={resumeId ? `/resume/tailor` : "/resume/tailor"}>
-                    <button className="btn-primary" style={{ fontSize: "0.82rem", padding: "0.5rem 1rem", whiteSpace: "nowrap" }}>
-                      Open Tailor Page →
-                    </button>
-                  </Link>
-                </div>
 
-                <div className="card" style={{ display: "grid", gap: "1.2rem" }}>
-                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem", margin: 0 }}>
-                    Job Description Target Match
-                  </h2>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.5, margin: 0 }}>
-                    Paste your target job description here. Our AI will analyze your resume against this description, calculate an ATS match score, identify keyword gaps, and provide actionable recommendations.
-                  </p>
-                  <textarea
-                    className="input"
-                    rows={8}
-                    placeholder="Paste the job description you want to optimize for..."
-                    value={resume.targetJobDescription || ""}
-                    onChange={(e) => setResume((r) => ({ ...r, targetJobDescription: e.target.value }))}
-                    style={{ fontSize: "0.88rem", lineHeight: 1.6 }}
-                  />
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <button
-                      className="btn-primary"
-                      disabled={!resume.targetJobDescription?.trim() || jdMatchLoading}
-                      onClick={handleJdMatchAnalysis}
-                      style={{ padding: "0.6rem 1.2rem", fontSize: "0.85rem" }}
-                    >
-                      {jdMatchLoading ? (
-                        <>
-                          <span className="spinner" style={{ width: 14, height: 14 }}></span>
-                          Analyzing Match...
-                        </>
-                      ) : (
-                        "✦ Analyze Job Match"
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {jdMatchLoading && (
-                  <div className="card" style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center", justifyContent: "center", padding: "3rem" }}>
-                    <div className="spinner" style={{ width: 36, height: 36, borderWidth: "3px" }} />
-                    <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", margin: 0 }} className="pulse">
-                      Parsing resume sections and job description...
-                    </p>
-                  </div>
-                )}
-
-                {!jdMatchLoading && jdMatchResult && (
-                  <div className="card" style={{ display: "grid", gap: "1.2rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: "1rem" }}>
-                      <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.1rem", margin: 0 }}>
-                        Analysis Results
-                      </h3>
-                      <span className={`tag ${
-                        jdMatchResult.matchScore >= 70 
-                          ? "tag-green" 
-                          : jdMatchResult.matchScore >= 50 
-                            ? "tag-yellow" 
-                            : "tag-red"
-                      }`} style={{ fontSize: "0.9rem", fontWeight: 800, padding: "0.4rem 1rem" }}>
-                        Score: {jdMatchResult.matchScore}/100
-                      </span>
-                    </div>
-
-                    {/* Compatibility Score progress bar */}
-                    <div>
-                      <label style={{ fontSize: "0.82rem", color: "var(--text-muted)", display: "block", marginBottom: "0.5rem" }}>
-                        Compatibility Score
-                      </label>
-                      <div style={{ height: "8px", background: "var(--bg-3)", borderRadius: "4px", overflow: "hidden", position: "relative" }}>
-                        <div style={{ 
-                          height: "100%", 
-                          width: `${jdMatchResult.matchScore}%`, 
-                          background: jdMatchResult.matchScore >= 70 
-                            ? "var(--accent-3)" 
-                            : jdMatchResult.matchScore >= 50 
-                              ? "#f6d365" 
-                              : "var(--accent-2)",
-                          transition: "width 0.3s" 
-                        }} />
-                      </div>
-                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.4rem", margin: 0 }}>
-                        {jdMatchResult.matchScore >= 80 
-                          ? "Excellent match! Your resume aligns highly with the job requirements." 
-                          : jdMatchResult.matchScore >= 60 
-                            ? "Good foundation. Some critical gaps exist; address the suggestions below to boost your compatibility." 
-                            : "Low compatibility. Significant keyword additions and rephrasing are needed to pass the ATS filter."}
-                      </p>
-                    </div>
-
-                    {/* Priority Additions */}
-                    {jdMatchResult.priorityAdditions && jdMatchResult.priorityAdditions.length > 0 && (
-                      <div style={{ background: "rgba(255, 101, 132, 0.04)", border: "1px solid rgba(255, 101, 132, 0.2)", padding: "1rem", borderRadius: "10px" }}>
-                        <h4 style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--accent-2)", marginBottom: "0.6rem", display: "flex", alignItems: "center", gap: "0.4rem", margin: 0 }}>
-                          🚨 High Priority Additions
-                        </h4>
-                        <div style={{ display: "grid", gap: "0.4rem", marginTop: "0.5rem" }}>
-                          {jdMatchResult.priorityAdditions.map((item, idx) => (
-                            <div key={idx} style={{ fontSize: "0.82rem", color: "var(--text)", display: "flex", gap: "0.5rem" }}>
-                              <span>•</span>
-                              <span>{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Matched Keywords */}
-                    {jdMatchResult.matchedKeywords && jdMatchResult.matchedKeywords.length > 0 && (
-                      <div>
-                        <h4 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent-3)", marginBottom: "0.5rem", margin: 0 }}>
-                          ✓ Matched Keywords ({jdMatchResult.matchedKeywords.length})
-                        </h4>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.5rem" }}>
-                          {jdMatchResult.matchedKeywords.map((kw, i) => (
-                            <span key={i} className="tag tag-green">
-                              {kw}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Missing Keywords */}
-                    {jdMatchResult.missingKeywords && jdMatchResult.missingKeywords.length > 0 && (
-                      <div>
-                        <h4 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent-2)", marginBottom: "0.5rem", margin: 0 }}>
-                          ✗ Missing Keywords ({jdMatchResult.missingKeywords.length})
-                        </h4>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.5rem" }}>
-                          {jdMatchResult.missingKeywords.map((kw, i) => (
-                            <span key={i} className="tag tag-red">
-                              + {kw}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* AI Suggestions */}
-                    {jdMatchResult.suggestions && jdMatchResult.suggestions.length > 0 && (
-                      <div>
-                        <h4 style={{ fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.5rem", margin: 0 }}>
-                          💡 Optimization Recommendations
-                        </h4>
-                        <div style={{ display: "grid", gap: "0.45rem", marginTop: "0.5rem" }}>
-                          {jdMatchResult.suggestions.map((s, i) => (
-                            <div key={i} style={{ fontSize: "0.82rem", color: "var(--text-muted)", background: "var(--bg-3)", padding: "0.6rem 0.8rem", borderRadius: "8px", borderLeft: "3px solid var(--accent)", lineHeight: 1.4 }}>
-                              {s}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* STEP 10: Template Selection & Spacing/Font controls */}
             {activeStep === "templates" && (
@@ -2204,6 +1955,99 @@ function BuilderContent() {
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* ATS AI Rewrite Section */}
+                {localATS && localATS.missingKeywords && localATS.missingKeywords.length > 0 && (
+                  <div className="card" style={{ display: "grid", gap: "1.2rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.15rem", margin: 0 }}>
+                        ✨ ATS Keyword Injector
+                      </h2>
+                    </div>
+                    <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", margin: 0, lineHeight: 1.5 }}>
+                      Click <strong>"✨ Inject Keywords"</strong> to let AI seamlessly weave your missing ATS keywords into your existing content.
+                    </p>
+                    
+                    <div style={{ display: "grid", gap: "1rem" }}>
+                      {/* Summary Rewrite Target */}
+                      {resume.summary && (
+                        <div style={{ border: "1px solid var(--border)", padding: "1rem", borderRadius: "10px", background: "var(--bg-2)" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
+                            <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Professional Summary</span>
+                            <button 
+                              className="btn-secondary" 
+                              disabled={inlineRewriteLoading}
+                              onClick={() => handleInlineRewrite(resume.summary, "Professional Summary", "ats-summary")}
+                              style={{ fontSize: "0.78rem", padding: "0.35rem 0.8rem", borderColor: "var(--accent)", color: "var(--accent)" }}
+                            >
+                              {inlineRewriteLoading && inlineRewriteKey === "ats-summary" ? "Generating..." : "✨ Inject Keywords"}
+                            </button>
+                          </div>
+                          <div style={{ fontSize: "0.85rem", color: "var(--text)", lineHeight: 1.5 }}>{resume.summary}</div>
+                          
+                          {/* Suggestions */}
+                          {inlineRewriteKey === "ats-summary" && inlineRewriteSuggestions.length > 0 && (
+                            <div style={{ display: "grid", gap: "0.8rem", marginTop: "1rem" }}>
+                                {inlineRewriteSuggestions.map((sug, i) => (
+                                  <div key={i} style={{ padding: "0.8rem", background: "var(--bg-3)", borderLeft: "3px solid var(--accent)", borderRadius: "6px" }}>
+                                    <p style={{ fontSize: "0.85rem", margin: "0 0 0.8rem", lineHeight: 1.5 }}>{sug}</p>
+                                    <button className="btn-primary" style={{ fontSize: "0.75rem", padding: "0.3rem 0.8rem" }} onClick={() => {
+                                      setResume(r => ({ ...r, summary: sug }));
+                                      setInlineRewriteSuggestions([]);
+                                      setInlineRewriteKey("");
+                                    }}>✅ Accept</button>
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Work Experience Targets */}
+                      {resume.workExperience.map((exp, expIdx) => 
+                        exp.bullets?.map((bullet, bulletIdx) => {
+                          const key = `ats-work-${expIdx}-${bulletIdx}`;
+                          return (
+                            <div key={key} style={{ border: "1px solid var(--border)", padding: "1rem", borderRadius: "10px", background: "var(--bg-2)" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
+                                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>{exp.company} — Bullet {bulletIdx + 1}</span>
+                                <button 
+                                  className="btn-secondary" 
+                                  disabled={inlineRewriteLoading}
+                                  onClick={() => handleInlineRewrite(bullet, `Work Experience at ${exp.company} — ${exp.role}`, key)}
+                                  style={{ fontSize: "0.78rem", padding: "0.35rem 0.8rem", borderColor: "var(--accent)", color: "var(--accent)" }}
+                                >
+                                  {inlineRewriteLoading && inlineRewriteKey === key ? "Generating..." : "✨ Inject Keywords"}
+                                </button>
+                              </div>
+                              <div style={{ fontSize: "0.85rem", color: "var(--text)", lineHeight: 1.5 }}>{bullet}</div>
+                              
+                              {/* Suggestions */}
+                              {inlineRewriteKey === key && inlineRewriteSuggestions.length > 0 && (
+                                <div style={{ display: "grid", gap: "0.8rem", marginTop: "1rem" }}>
+                                    {inlineRewriteSuggestions.map((sug, i) => (
+                                      <div key={i} style={{ padding: "0.8rem", background: "var(--bg-3)", borderLeft: "3px solid var(--accent)", borderRadius: "6px" }}>
+                                        <p style={{ fontSize: "0.85rem", margin: "0 0 0.8rem", lineHeight: 1.5 }}>{sug}</p>
+                                        <button className="btn-primary" style={{ fontSize: "0.75rem", padding: "0.3rem 0.8rem" }} onClick={() => {
+                                          const newExp = [...resume.workExperience];
+                                          if (newExp[expIdx].bullets) {
+                                            newExp[expIdx].bullets[bulletIdx] = sug;
+                                          }
+                                          setResume(r => ({ ...r, workExperience: newExp }));
+                                          setInlineRewriteSuggestions([]);
+                                          setInlineRewriteKey("");
+                                        }}>✅ Accept</button>
+                                      </div>
+                                    ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
                   </div>
                 )}
 

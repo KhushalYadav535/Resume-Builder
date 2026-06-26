@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { LoginSchema } from "@/lib/validation/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,6 +39,13 @@ export default function LoginPage() {
 
     try {
       if (loginMethod === "email") {
+        const validation = LoginSchema.safeParse({ email, password });
+        if (!validation.success) {
+          setErrorMsg(validation.error.issues[0].message);
+          setSubmitting(false);
+          return;
+        }
+
         const res = await login(email, password);
         if (res.error) {
           setErrorMsg(res.error);

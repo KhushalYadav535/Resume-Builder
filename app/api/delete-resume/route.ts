@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("Failed to delete resume:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to delete resume" },
+      { error: "An unexpected error occurred while deleting the resume." },
       { status: 500 }
     );
   }
