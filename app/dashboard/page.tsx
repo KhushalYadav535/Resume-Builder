@@ -212,8 +212,8 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* SALARY INSIGHTS WIDGET CARD */}
-        {(() => {
+        {/* SALARY INSIGHTS WIDGET CARD - Hidden for now */}
+        {/* {(() => {
           const benchmark = getSalaryBenchmark(insightRole, insightYoE, insightCity);
           return (
             <div className="card" style={{ marginBottom: "2.5rem", background: "linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(20, 20, 30, 0.9) 100%)", border: "1px solid var(--border)" }}>
@@ -270,7 +270,7 @@ export default function Dashboard() {
               </div>
             </div>
           );
-        })()}
+        })()} */}
 
         {/* SEARCH & SORT TOOLBAR */}
         <div style={{ 

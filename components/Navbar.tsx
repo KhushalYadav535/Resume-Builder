@@ -33,7 +33,7 @@ export default function Navbar() {
       { href: "/resume/tailor", label: "Tailor Resume" },
       { href: "/resume/upload", label: "Upload" },
       { href: "/resume/templates", label: "Templates" },
-      { href: "/job-tracker", label: "Job Tracker" },
+      // { href: "/job-tracker", label: "Job Tracker" }, // Hidden for now
     ];
   }
 
