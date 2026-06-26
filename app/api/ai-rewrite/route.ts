@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { askAIJSON } from "@/lib/openrouter";
+import { apiLimiter, getIP } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,16 @@ interface RewriteSuggestion {
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
+
+    try {
+      await apiLimiter.check(20, getIP(req));
+    } catch {
+      return NextResponse.json(
+        { error: "Too many AI rewrite requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -27,7 +38,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { text, context, targetJobDescription } = await req.json();
+    const { text, context, targetJobDescription, atsMissingKeywords, atsIndustry } = await req.json();
 
     if (!text || !text.trim()) {
       return NextResponse.json(
@@ -37,6 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     const hasJD = !!targetJobDescription && targetJobDescription.trim().length > 0;
+    const hasATS = atsMissingKeywords && atsMissingKeywords.length > 0;
 
     const prompt = `You are a world-class professional resume writer and ATS optimization expert.
 
@@ -55,6 +67,12 @@ ${hasJD ? `TARGET JOB DESCRIPTION (align rewrites with these keywords and requir
 ${targetJobDescription}
 
 IMPORTANT: Each rewrite MUST naturally incorporate relevant keywords from this job description while maintaining authenticity. Do NOT fabricate skills or experience the original text doesn't imply.` : ""}
+
+${hasATS ? `ATS OPTIMIZATION CONTEXT:
+The user is targeting the "${atsIndustry || "relevant"}" industry. The resume is currently missing these critical ATS keywords:
+${atsMissingKeywords.join(", ")}
+
+IMPORTANT: Naturally weave as many of these missing ATS keywords into the rewrite as possible to boost the ATS match score.` : ""}
 
 Return a JSON object with this exact structure:
 {
@@ -84,7 +102,7 @@ Rules:
   } catch (err: any) {
     console.error("AI Rewrite failed:", err);
     return NextResponse.json(
-      { error: "Rewrite failed: " + (err.message || String(err)) },
+      { error: "An unexpected error occurred while rewriting the text." },
       { status: 500 }
     );
   }
