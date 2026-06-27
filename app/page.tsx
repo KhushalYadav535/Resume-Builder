@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import ParticleBackground from "@/components/ui/ParticleBackground";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -35,112 +36,89 @@ function Counter({ value, suffix = "", prefix = "" }: { value: number; suffix?: 
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[var(--bg-primary)] overflow-hidden relative">
-      {/* Background glow blobs */}
-      <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-[var(--accent-glow)] rounded-full blur-[120px] mix-blend-multiply opacity-70 pointer-events-none animate-pulse-ring" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[var(--shadow-glow-red)] rounded-full blur-[120px] mix-blend-multiply opacity-30 pointer-events-none" />
+    <main style={{ position: 'relative', minHeight: '100vh', background: 'var(--bg-page)', overflowX: 'hidden' }}>
+      <ParticleBackground count={75} connectionDist={130} />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <Navbar />
 
-      <Navbar />
+        {/* Hero Section */}
+        <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 24px 60px', overflow: 'hidden' }}>
+          {/* Background gradient orbs */}
+          <div style={{ position: 'absolute', top: '-120px', left: '-100px', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(var(--particle-rgb), 0.12) 0%, transparent 70%)', animation: 'orbDrift 10s ease-in-out infinite', pointerEvents: 'none', zIndex: 1 }} />
+          <div style={{ position: 'absolute', bottom: '-80px', right: '-60px', width: '420px', height: '420px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124, 58, 237, 0.10) 0%, transparent 70%)', animation: 'orbDrift 13s ease-in-out infinite reverse', pointerEvents: 'none', zIndex: 1 }} />
 
-      {/* Hero Section */}
-      <section className="relative max-w-7xl mx-auto px-6 pt-24 pb-32 flex flex-col lg:flex-row items-center gap-16">
-        <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left z-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="mb-6"
-          >
-            <Badge variant="accent" className="px-4 py-1.5 text-sm shadow-[var(--shadow-sm)]">
+          {/* Resume mockup card (background decoration) */}
+          <div className="hidden md:block hero-bg-mockup" style={{ position: 'absolute', right: 'clamp(-40px, 4vw, 60px)', top: '50%', transform: 'translateY(-50%)', width: 'clamp(280px, 28vw, 380px)', zIndex: 2, pointerEvents: 'none', filter: 'blur(1px)', animation: 'float 5s ease-in-out infinite' }}>
+            <div className="relative w-full aspect-[4/3] rounded-2xl bg-[var(--bg-glass)] border border-[var(--border)] shadow-[var(--shadow-3d)] backdrop-blur-xl p-6 overflow-hidden transform rotate-y-[-10deg] rotate-x-[5deg] hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-[800ms] ease-out">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-[var(--accent-grad)]" />
+              <div className="flex justify-between items-start mb-8">
+                <div>
+                  <div className="h-6 w-48 bg-[var(--bg-elevated)] rounded-md mb-2 skeleton" />
+                  <div className="h-4 w-32 bg-[var(--bg-elevated)] rounded-md skeleton" />
+                </div>
+                <div className="w-12 h-12 rounded-full border-[3px] border-[var(--score-high)] flex items-center justify-center font-mono font-bold text-[var(--score-high)] text-sm">
+                  98
+                </div>
+              </div>
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="w-2 h-2 rounded-full bg-[var(--accent)] mt-2" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-full bg-[var(--bg-elevated)] rounded-md skeleton" />
+                      <div className="h-4 w-5/6 bg-[var(--bg-elevated)] rounded-md skeleton" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Floating optimization chip */}
+              <motion.div 
+                animate={{ y: [0, -10, 0] }}
+                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                className="absolute bottom-6 right-6 bg-[var(--bg-surface)] px-4 py-2 rounded-full shadow-[var(--shadow-lg)] border border-[var(--border)] flex items-center gap-2 text-sm font-semibold"
+              >
+                <Sparkles size={16} className="text-[var(--accent)]" />
+                <span>ATS Optimized</span>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Hero text content */}
+          <div style={{ position: 'relative', zIndex: 3, maxWidth: '680px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', textAlign: 'center', animation: 'heroFadeUp 0.9s var(--ease-out) both' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', background: 'var(--accent-soft)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-full)', fontSize: '13px', fontWeight: 600, color: 'var(--accent)', animation: 'heroFadeUp 0.9s var(--ease-out) both' }}>
               <Sparkles size={14} className="mr-1.5" />
               AI-Powered Resume Platform
-            </Badge>
-          </motion.div>
-
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-            className="font-['Syne',sans-serif] text-[clamp(3rem,6vw,5rem)] font-extrabold leading-[1.05] mb-6 text-[var(--text-primary)]"
-          >
-            Land your dream job with a{" "}
-            <span className="gradient-text relative inline-block">
-              resume that works
-              <svg className="absolute w-full h-3 -bottom-1 left-0 text-[var(--accent)] opacity-40" viewBox="0 0 100 10" preserveAspectRatio="none">
-                <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="none" />
-              </svg>
-            </span>
-          </motion.h1>
-
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
-            className="text-lg lg:text-xl color-[var(--text-secondary)] leading-relaxed max-w-2xl mb-10"
-          >
-            Build from scratch, optimize for ATS, match job descriptions, and get
-            AI-powered content improvements — all in one platform.
-          </motion.p>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
-          >
-            <Link href="/resume/builder" className="w-full sm:w-auto no-underline">
-              <Button size="lg" fullWidth icon={<FileText size={18} />}>
-                Build My Resume
-              </Button>
-            </Link>
-            <Link href="/resume/upload" className="w-full sm:w-auto no-underline">
-              <Button variant="secondary" size="lg" fullWidth icon={<Upload size={18} />}>
-                Upload Resume
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9, rotateY: -15 }}
-          animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-          className="flex-1 w-full relative z-10 perspective-[1000px] hidden lg:block"
-        >
-          <div className="relative w-full aspect-[4/3] rounded-2xl bg-[var(--bg-glass)] border border-[var(--border)] shadow-[var(--shadow-3d)] backdrop-blur-xl p-6 overflow-hidden transform rotate-y-[-10deg] rotate-x-[5deg] hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-[800ms] ease-out">
-            <div className="absolute top-0 left-0 w-full h-1.5 bg-[var(--accent-grad)]" />
-            <div className="flex justify-between items-start mb-8">
-              <div>
-                <div className="h-6 w-48 bg-[var(--bg-elevated)] rounded-md mb-2 skeleton" />
-                <div className="h-4 w-32 bg-[var(--bg-elevated)] rounded-md skeleton" />
-              </div>
-              <div className="w-12 h-12 rounded-full border-[3px] border-[var(--score-high)] flex items-center justify-center font-mono font-bold text-[var(--score-high)] text-sm">
-                98
-              </div>
             </div>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="w-2 h-2 rounded-full bg-[var(--accent)] mt-2" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 w-full bg-[var(--bg-elevated)] rounded-md skeleton" />
-                    <div className="h-4 w-5/6 bg-[var(--bg-elevated)] rounded-md skeleton" />
-                  </div>
-                </div>
-              ))}
+
+            <h1 className="font-['Syne',sans-serif]" style={{ fontSize: 'clamp(42px, 7vw, 78px)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.025em', textAlign: 'center', color: 'var(--text-primary)', animation: 'heroFadeUp 0.9s 0.1s var(--ease-out) both' }}>
+              Land your dream job with a{" "}
+              <span className="gradient-text relative inline-block">
+                resume that works
+                <svg className="absolute w-full h-3 -bottom-1 left-0 text-[var(--accent)] opacity-40" viewBox="0 0 100 10" preserveAspectRatio="none">
+                  <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="none" />
+                </svg>
+              </span>
+            </h1>
+
+            <p style={{ fontSize: 'clamp(16px, 2.2vw, 19px)', color: 'var(--text-secondary)', maxWidth: '520px', textAlign: 'center', lineHeight: 1.65, animation: 'heroFadeUp 0.9s 0.2s var(--ease-out) both' }}>
+              Build from scratch, optimize for ATS, match job descriptions, and get
+              AI-powered content improvements — all in one platform.
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '14px', animation: 'heroFadeUp 0.9s 0.3s var(--ease-out) both' }}>
+              <Link href="/resume/builder" className="w-full sm:w-auto no-underline">
+                <Button size="lg" fullWidth icon={<FileText size={18} />}>
+                  Build My Resume
+                </Button>
+              </Link>
+              <Link href="/resume/upload" className="w-full sm:w-auto no-underline">
+                <Button variant="secondary" size="lg" fullWidth icon={<Upload size={18} />}>
+                  Upload Resume
+                </Button>
+              </Link>
             </div>
-            {/* Floating optimization chip */}
-            <motion.div 
-              animate={{ y: [0, -10, 0] }}
-              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-              className="absolute bottom-6 right-6 bg-white dark:bg-[#1A1A24] px-4 py-2 rounded-full shadow-[var(--shadow-lg)] border border-[var(--border)] flex items-center gap-2 text-sm font-semibold"
-            >
-              <Sparkles size={16} className="text-[var(--accent)]" />
-              <span>ATS Optimized</span>
-            </motion.div>
           </div>
-        </motion.div>
-      </section>
+        </section>
 
       {/* Stats Section */}
       <section className="border-y border-[var(--border)] bg-[var(--bg-surface)] py-16 relative z-10">
@@ -264,6 +242,7 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+      </div>
     </main>
   );
 }

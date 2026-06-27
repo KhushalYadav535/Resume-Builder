@@ -3,6 +3,7 @@ import { useState, Suspense, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import ParticleBackground from "@/components/ui/ParticleBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { ResumeData, WorkExperience, Education, Project, Certification, ATSScore, LanguagesKnown, JDMatch } from "@/types";
 import { calculateATS } from "@/lib/calculateATS";
@@ -514,7 +515,7 @@ function BuilderContent() {
       startDate: exp.startDate || "",
       endDate: exp.endDate || "",
       current: exp.endDate === "Present" || exp.endDate === "Current" || exp.is_current || false,
-      bullets: exp.bullets || [],
+      bullets: (exp.bullets && exp.bullets.length > 0) ? exp.bullets : (exp.description ? [exp.description] : []),
     }));
 
     const education = (data.education || []).map((edu: any, idx: number) => ({
@@ -663,7 +664,8 @@ function BuilderContent() {
   });
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", position: "relative" }}>
+      <ParticleBackground count={50} connectionDist={110} />
       <Navbar />
       
       {/* EDITOR HEADER */}
@@ -689,25 +691,25 @@ function BuilderContent() {
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-xl)", padding: "0.5rem 1rem", boxShadow: "var(--shadow-sm)" }}>
             {saveStatus === "saving" && <span style={{ fontSize: "0.8rem", color: "var(--accent)" }} className="pulse">● Saving...</span>}
             {saveStatus === "saved" && <span style={{ fontSize: "0.8rem", color: "#43e97b" }}>✓ Saved</span>}
             {saveStatus === "error" && <span style={{ fontSize: "0.8rem", color: "#ff6584" }}>✗ Autosave failed</span>}
 
-            <button onClick={() => setShowCoach(prev => !prev)} className="btn-secondary" style={{ fontSize: "0.85rem", borderColor: "var(--accent)", color: "var(--accent)", fontWeight: 600 }}>
+            <button onClick={() => setShowCoach(prev => !prev)} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderColor: "var(--accent)", color: "var(--accent)", fontWeight: 600, background: "var(--accent-soft)", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
               ✦ AI Career Coach
             </button>
-            <button onClick={() => setShowLinkedinModal(true)} className="btn-secondary" style={{ fontSize: "0.85rem", borderColor: "#a89fff", color: "#a89fff" }}>
+            <button onClick={() => setShowLinkedinModal(true)} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderColor: "#a89fff", color: "#a89fff", background: "rgba(168, 159, 255, 0.1)", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
               💼 Import LinkedIn
             </button>
-            <button onClick={() => setIsFullscreen(prev => !prev)} className="btn-primary" style={{ fontSize: "0.85rem" }}>
+            <button onClick={() => setIsFullscreen(prev => !prev)} className="btn-primary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
               {isFullscreen ? "🗔 Hide Preview" : "🗔 See Preview"}
             </button>
-            <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.85rem" }}>
+            <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
               📥 Export PDF
             </button>
             <Link href="/dashboard">
-              <button className="btn-secondary" style={{ fontSize: "0.85rem" }}>
+              <button className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
                 ← Close
               </button>
             </Link>
@@ -722,7 +724,7 @@ function BuilderContent() {
         <div className="no-print builder-sidebar">
           {/* Completion stats card */}
             <div className="card" style={{ padding: "1rem", display: "grid", gap: "0.8rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Completion</span>
                 <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--accent)" }}>{completion.percent}%</span>
               </div>
@@ -734,7 +736,7 @@ function BuilderContent() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border)", paddingTop: "0.8rem", marginTop: "0.3rem" }}>
                 <span style={{ fontSize: "0.82rem", fontWeight: 700 }}>Fresher Mode</span>
                 <label className="switch" style={{ position: "relative", display: "inline-block", width: "40px", height: "20px" }}>
-                  <input
+                  <Input variant="static"
                     type="checkbox"
                     checked={resume.fresherMode || false}
                     onChange={(e) => {
@@ -934,7 +936,7 @@ function BuilderContent() {
                   ["expectedCTC", "Expected CTC (e.g. 18 LPA)", "e.g. 15 LPA"]
                 ] as [keyof typeof resume.personalInfo, string, string][]).map(([field, label, placeholder]) => (
                   <div key={field}>
-                    <Input
+                    <Input variant="static"
                       label={label}
                       placeholder={placeholder}
                       value={resume.personalInfo[field] || ""}
@@ -1015,8 +1017,8 @@ function BuilderContent() {
 
             {/* STEP 3: Work Experience */}
             {activeStep === "work" && (
-              <div style={{ display: "grid", gap: "1.5rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div className={`grid gap-6 ${!isFullscreen ? "md:grid-cols-2 items-start" : "grid-cols-1 items-start"}`}>
+                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Work Experience {resume.fresherMode && "(Optional)"}</h2>
                   <button
                     className="btn-primary"
@@ -1034,7 +1036,7 @@ function BuilderContent() {
                   }).length;
                   if (shortTenureCount >= 3) {
                     return (
-                      <div style={{ background: "rgba(255, 101, 132, 0.08)", borderLeft: "4px solid #ff6584", padding: "1rem", borderRadius: "8px", fontSize: "0.82rem", color: "var(--text)", marginBottom: "0.5rem" }}>
+                      <div className="col-span-full" style={{ background: "rgba(255, 101, 132, 0.08)", borderLeft: "4px solid #ff6584", padding: "1rem", borderRadius: "8px", fontSize: "0.82rem", color: "var(--text)", marginBottom: "0.5rem" }}>
                         <strong>⚠️ Job-Hopping Risk Warning:</strong> You have {shortTenureCount} short-tenure positions (under 18 months each). Automated resume screeners and recruiters may flag this pattern. We recommend providing clear, professional exit contexts (e.g. startup shut down, contract completion, UPSC preparation) in the Exit Context Note fields below to mitigate this risk.
                       </div>
                     );
@@ -1074,19 +1076,19 @@ function BuilderContent() {
                           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem" }}>
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Company Name</label>
-                              <input className="input" placeholder="e.g. TCS, Google" value={exp.company} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, company: e.target.value } : w) }))} />
+                              <Input variant="static" className="input" placeholder="e.g. TCS, Google" value={exp.company} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, company: e.target.value } : w) }))} />
                             </div>
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Role Title</label>
-                              <input className="input" placeholder="e.g. Software Engineer" value={exp.role} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, role: e.target.value } : w) }))} />
+                              <Input variant="static" className="input" placeholder="e.g. Software Engineer" value={exp.role} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, role: e.target.value } : w) }))} />
                             </div>
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Start Date (e.g. Jan 2022)</label>
-                              <input className="input" placeholder="Jan 2022" value={exp.startDate} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, startDate: e.target.value } : w) }))} />
+                              <Input variant="static" className="input" placeholder="Jan 2022" value={exp.startDate} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, startDate: e.target.value } : w) }))} />
                             </div>
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>End Date (e.g. Present)</label>
-                              <input className="input" placeholder="Present" value={exp.endDate} disabled={exp.current} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, endDate: e.target.value } : w) }))} />
+                              <Input variant="static" className="input" placeholder="Present" value={exp.endDate} disabled={exp.current} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, endDate: e.target.value } : w) }))} />
                             </div>
 
                             {(() => {
@@ -1132,37 +1134,37 @@ function BuilderContent() {
 
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Industry</label>
-                              <input className="input" placeholder="e.g. IT, FinTech, Banking" value={exp.industry || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, industry: e.target.value } : w) }))} />
+                              <Input variant="static" className="input" placeholder="e.g. IT, FinTech, Banking" value={exp.industry || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, industry: e.target.value } : w) }))} />
                             </div>
 
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>City</label>
-                              <input className="input" placeholder="e.g. Pune, Bangalore" value={exp.city || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, city: e.target.value } : w) }))} />
+                              <Input variant="static" className="input" placeholder="e.g. Pune, Bangalore" value={exp.city || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, city: e.target.value } : w) }))} />
                             </div>
 
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Team Size supervised</label>
-                              <input type="number" className="input" placeholder="e.g. 5" value={exp.teamSize || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, teamSize: parseInt(e.target.value) || undefined } : w) }))} />
+                              <Input variant="static" type="number" className="input" placeholder="e.g. 5" value={exp.teamSize || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, teamSize: parseInt(e.target.value) || undefined } : w) }))} />
                             </div>
 
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Reporting Manager (Role)</label>
-                              <input className="input" placeholder="e.g. Engineering Manager" value={exp.reportingManager || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, reportingManager: e.target.value } : w) }))} />
+                              <Input variant="static" className="input" placeholder="e.g. Engineering Manager" value={exp.reportingManager || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, reportingManager: e.target.value } : w) }))} />
                             </div>
 
                             <div style={{ gridColumn: "span 2" }}>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Tools Used (Comma-separated)</label>
-                              <input className="input" placeholder="e.g. Jira, Git, React" value={exp.toolsUsed?.join(", ") || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, toolsUsed: e.target.value.split(",").map(t => t.trim()).filter(Boolean) } : w) }))} />
+                              <Input variant="static" className="input" placeholder="e.g. Jira, Git, React" value={exp.toolsUsed?.join(", ") || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, toolsUsed: e.target.value.split(",").map(t => t.trim()).filter(Boolean) } : w) }))} />
                             </div>
 
                             <div style={{ gridColumn: "span 2" }}>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Exit Context Note / Reason for Short Tenure</label>
-                              <input className="input" placeholder="e.g. Project-based contract, startup shut down, health reasons, UPSC / competitive exam preparation" value={exp.contextNote || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, contextNote: e.target.value } : w) }))} />
+                              <Input variant="static" className="input" placeholder="e.g. Project-based contract, startup shut down, health reasons, UPSC / competitive exam preparation" value={exp.contextNote || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, contextNote: e.target.value } : w) }))} />
                             </div>
 
                             <div style={{ gridColumn: "span 2", marginTop: "0.5rem" }}>
                               <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", cursor: "pointer", fontWeight: 600 }}>
-                                <input
+                                <Input variant="static"
                                   type="checkbox"
                                   checked={exp.showSalary || false}
                                   onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, showSalary: e.target.checked } : w) }))}
@@ -1176,15 +1178,15 @@ function BuilderContent() {
                               <>
                                 <div>
                                   <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Current CTC (e.g. ₹ 8.5 LPA)</label>
-                                  <input className="input" placeholder="e.g. ₹ 8.5 LPA" value={exp.currentCTC || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, currentCTC: e.target.value } : w) }))} />
+                                  <Input variant="static" className="input" placeholder="e.g. ₹ 8.5 LPA" value={exp.currentCTC || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, currentCTC: e.target.value } : w) }))} />
                                 </div>
                                 <div>
                                   <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Expected CTC (e.g. ₹ 12.0 LPA)</label>
-                                  <input className="input" placeholder="e.g. ₹ 12.0 LPA" value={exp.expectedCTC || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, expectedCTC: e.target.value } : w) }))} />
+                                  <Input variant="static" className="input" placeholder="e.g. ₹ 12.0 LPA" value={exp.expectedCTC || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, expectedCTC: e.target.value } : w) }))} />
                                 </div>
                                 <div style={{ gridColumn: "span 2" }}>
                                   <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Salary Breakup details</label>
-                                  <input className="input" placeholder="e.g. ₹ 8.0 LPA Fixed + ₹ 0.5 LPA Variable" value={exp.salaryBreakup || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, salaryBreakup: e.target.value } : w) }))} />
+                                  <Input variant="static" className="input" placeholder="e.g. ₹ 8.0 LPA Fixed + ₹ 0.5 LPA Variable" value={exp.salaryBreakup || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, salaryBreakup: e.target.value } : w) }))} />
                                 </div>
                               </>
                             )}
@@ -1197,7 +1199,7 @@ function BuilderContent() {
                               return (
                                 <div key={bi} style={{ display: "flex", flexDirection: "column", gap: "0.2rem", marginBottom: "0.6rem" }}>
                                   <div style={{ display: "flex", gap: "0.8rem" }}>
-                                    <input
+                                    <Input variant="static"
                                       className="input"
                                       placeholder="Describe result achieved..."
                                       value={bullet}
@@ -1304,8 +1306,8 @@ function BuilderContent() {
 
             {/* STEP 4: Education */}
             {activeStep === "education" && (
-              <div style={{ display: "grid", gap: "1.5rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div className={`grid gap-6 ${!isFullscreen ? "md:grid-cols-2 items-start" : "grid-cols-1 items-start"}`}>
+                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Education</h2>
                   <button 
                     className="btn-primary" 
@@ -1359,7 +1361,7 @@ function BuilderContent() {
                           
                           <div>
                             <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Board or University</label>
-                            <input 
+                            <Input variant="static" 
                               className="input" 
                               placeholder="e.g. CBSE, ICSE, IIT, NIT, Pune University" 
                               value={edu.boardOrUniversity || ""} 
@@ -1369,17 +1371,17 @@ function BuilderContent() {
 
                           <div>
                             <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Institution Name</label>
-                            <input className="input" placeholder="e.g. VIT Bhopal University" value={edu.institution} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, institution: e.target.value } : ed) }))} />
+                            <Input variant="static" className="input" placeholder="e.g. VIT Bhopal University" value={edu.institution} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, institution: e.target.value } : ed) }))} />
                           </div>
 
                           <div>
                             <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Degree / Certificate</label>
-                            <input className="input" placeholder="B.Tech Computer Science" value={edu.degree} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, degree: e.target.value } : ed) }))} />
+                            <Input variant="static" className="input" placeholder="B.Tech Computer Science" value={edu.degree} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, degree: e.target.value } : ed) }))} />
                           </div>
 
                           <div>
                             <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Field of Study</label>
-                            <input className="input" placeholder="e.g. Cyber Security, Business" value={edu.field} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, field: e.target.value } : ed) }))} />
+                            <Input variant="static" className="input" placeholder="e.g. Cyber Security, Business" value={edu.field} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, field: e.target.value } : ed) }))} />
                           </div>
 
                           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
@@ -1397,28 +1399,28 @@ function BuilderContent() {
                             </div>
                             <div>
                               <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Score</label>
-                              <input className="input" placeholder={edu.gpaType === "percentage" ? "e.g. 91.5%" : "e.g. 9.2/10"} value={edu.gpa} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, gpa: e.target.value } : ed) }))} />
+                              <Input variant="static" className="input" placeholder={edu.gpaType === "percentage" ? "e.g. 91.5%" : "e.g. 9.2/10"} value={edu.gpa} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, gpa: e.target.value } : ed) }))} />
                             </div>
                           </div>
 
                           <div>
                             <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Start Year</label>
-                            <input className="input" placeholder="2020" value={edu.startDate} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, startDate: e.target.value } : ed) }))} />
+                            <Input variant="static" className="input" placeholder="2020" value={edu.startDate} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, startDate: e.target.value } : ed) }))} />
                           </div>
 
                           <div>
                             <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>End Year</label>
-                            <input className="input" placeholder="2024" value={edu.endDate} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, endDate: e.target.value } : ed) }))} />
+                            <Input variant="static" className="input" placeholder="2024" value={edu.endDate} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, endDate: e.target.value } : ed) }))} />
                           </div>
 
                           <div>
                             <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Scholarship (Optional)</label>
-                            <input className="input" placeholder="e.g. NTSE Scholar" value={edu.scholarship || ""} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, scholarship: e.target.value } : ed) }))} />
+                            <Input variant="static" className="input" placeholder="e.g. NTSE Scholar" value={edu.scholarship || ""} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, scholarship: e.target.value } : ed) }))} />
                           </div>
 
                           <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", height: "42px", marginTop: "1.5rem" }}>
                             <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.82rem", cursor: "pointer" }}>
-                              <input 
+                              <Input variant="static" 
                                 type="checkbox" 
                                 checked={edu.distinction || false} 
                                 onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, distinction: e.target.checked } : ed) }))} 
@@ -1427,7 +1429,7 @@ function BuilderContent() {
                               Graduated with Distinction
                             </label>
                             <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.82rem", cursor: "pointer" }}>
-                              <input 
+                              <Input variant="static" 
                                 type="checkbox" 
                                 checked={edu.topper || false} 
                                 onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, topper: e.target.checked } : ed) }))} 
@@ -1459,7 +1461,7 @@ function BuilderContent() {
             {/* STEP 5: Skills */}
             {activeStep === "skills" && (
               <div style={{ display: "grid", gap: "1.5rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Skills</h2>
                   <button className="btn-secondary" style={{ fontSize: "0.8rem", padding: "0.4rem 0.9rem" }} disabled={!!aiLoading} onClick={() => {
                     const role = resume.workExperience[0]?.role || "software engineer";
@@ -1486,7 +1488,7 @@ function BuilderContent() {
                       ))}
                     </div>
                     <div style={{ display: "flex", gap: "0.8rem" }}>
-                      <input className="input" placeholder="React, SQL, Python..." value={skillInput.tech} onChange={(e) => setSkillInput((s) => ({ ...s, tech: e.target.value }))}
+                      <Input variant="static" className="input" placeholder="React, SQL, Python..." value={skillInput.tech} onChange={(e) => setSkillInput((s) => ({ ...s, tech: e.target.value }))}
                         onKeyDown={(e) => { if (e.key === "Enter" && skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }} />
                       <button className="btn-secondary" style={{ whiteSpace: "nowrap", fontSize: "0.82rem" }} onClick={() => { if (skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }}>Add</button>
                     </div>
@@ -1502,7 +1504,7 @@ function BuilderContent() {
                       ))}
                     </div>
                     <div style={{ display: "flex", gap: "0.8rem" }}>
-                      <input className="input" placeholder="Leadership, Negotiation..." value={skillInput.soft} onChange={(e) => setSkillInput((s) => ({ ...s, soft: e.target.value }))}
+                      <Input variant="static" className="input" placeholder="Leadership, Negotiation..." value={skillInput.soft} onChange={(e) => setSkillInput((s) => ({ ...s, soft: e.target.value }))}
                         onKeyDown={(e) => { if (e.key === "Enter" && skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }} />
                       <button className="btn-secondary" style={{ whiteSpace: "nowrap", fontSize: "0.82rem" }} onClick={() => { if (skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }}>Add</button>
                     </div>
@@ -1513,8 +1515,8 @@ function BuilderContent() {
 
             {/* STEP 6: Projects */}
             {activeStep === "projects" && (
-              <div style={{ display: "grid", gap: "1.5rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div className={`grid gap-6 ${!isFullscreen ? "md:grid-cols-2 items-start" : "grid-cols-1 items-start"}`}>
+                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Projects</h2>
                   <button className="btn-primary" style={{ fontSize: "0.82rem", padding: "0.45rem 1rem" }} onClick={() => setResume((r) => ({ ...r, projects: [...r.projects, { id: uid(), name: "", description: "", techStack: [], link: "" }] }))}>+ Add Project</button>
                 </div>
@@ -1528,10 +1530,10 @@ function BuilderContent() {
                         <button onClick={() => setResume((r) => ({ ...r, projects: r.projects.filter((p) => p.id !== proj.id) }))} style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "0.85rem" }}>Remove</button>
                       </div>
                     </div>
-                    <input className="input" placeholder="Project Name" value={proj.name} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, name: e.target.value } : p) }))} />
+                    <Input variant="static" className="input" placeholder="Project Name" value={proj.name} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, name: e.target.value } : p) }))} />
                     <textarea className="input" rows={3} placeholder="Brief description of what it does and your role..." value={proj.description} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, description: e.target.value } : p) }))} />
-                    <input className="input" placeholder="GitHub / Live Link" value={proj.link} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, link: e.target.value } : p) }))} />
-                    <input className="input" placeholder="Tech stack (comma separated)" value={proj.techStack.join(", ")} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, techStack: e.target.value.split(",").map((s) => s.trim()) } : p) }))} />
+                    <Input variant="static" className="input" placeholder="GitHub / Live Link" value={proj.link} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, link: e.target.value } : p) }))} />
+                    <Input variant="static" className="input" placeholder="Tech stack (comma separated)" value={proj.techStack.join(", ")} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, techStack: e.target.value.split(",").map((s) => s.trim()) } : p) }))} />
                   </div>
                 ))}
               </div>
@@ -1539,8 +1541,8 @@ function BuilderContent() {
 
             {/* STEP 7: Certifications */}
             {activeStep === "certifications" && (
-              <div style={{ display: "grid", gap: "1.5rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div className={`grid gap-6 ${!isFullscreen ? "md:grid-cols-2 items-start" : "grid-cols-1 items-start"}`}>
+                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Certifications</h2>
                   <button className="btn-primary" style={{ fontSize: "0.82rem", padding: "0.45rem 1rem" }} onClick={() => setResume((r) => ({ ...r, certifications: [...r.certifications, { id: uid(), name: "", issuer: "", date: "" }] }))}>+ Add Certification</button>
                 </div>
@@ -1548,15 +1550,15 @@ function BuilderContent() {
                   <div key={cert.id} className="card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "1.2rem", alignItems: "end" }}>
                     <div>
                       <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Certification Name</label>
-                      <input className="input" placeholder="AWS Solutions Architect" value={cert.name} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, name: e.target.value } : c) }))} />
+                      <Input variant="static" className="input" placeholder="AWS Solutions Architect" value={cert.name} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, name: e.target.value } : c) }))} />
                     </div>
                     <div>
                       <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Issuer</label>
-                      <input className="input" placeholder="Amazon Web Services" value={cert.issuer} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, issuer: e.target.value } : c) }))} />
+                      <Input variant="static" className="input" placeholder="Amazon Web Services" value={cert.issuer} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, issuer: e.target.value } : c) }))} />
                     </div>
                     <div>
                       <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Date</label>
-                      <input className="input" placeholder="2024" value={cert.date} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, date: e.target.value } : c) }))} />
+                      <Input variant="static" className="input" placeholder="2024" value={cert.date} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, date: e.target.value } : c) }))} />
                     </div>
                     <button onClick={() => setResume((r) => ({ ...r, certifications: r.certifications.filter((c) => c.id !== cert.id) }))} style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "1.2rem", paddingBottom: "0.6rem" }}>×</button>
                   </div>
@@ -1566,8 +1568,8 @@ function BuilderContent() {
 
             {/* STEP 8: Languages Known */}
             {activeStep === "languages" && (
-              <div style={{ display: "grid", gap: "1.5rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div className={`grid gap-6 ${!isFullscreen ? "md:grid-cols-2 items-start" : "grid-cols-1 items-start"}`}>
+                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Languages Known</h2>
                   <button
                     className="btn-primary"
@@ -1607,7 +1609,7 @@ function BuilderContent() {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem" }}>
                       <div>
                         <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Language</label>
-                        <input
+                        <Input variant="static"
                           className="input"
                           placeholder="Hindi, Marathi, Tamil, etc."
                           value={lang.language}
@@ -1636,7 +1638,7 @@ function BuilderContent() {
                       </div>
                       <div>
                         <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Certification (Optional)</label>
-                        <input
+                        <Input variant="static"
                           className="input"
                           placeholder="IELTS Band 8.5, JLPT N2"
                           value={lang.certification || ""}
@@ -1648,7 +1650,7 @@ function BuilderContent() {
                       </div>
                       <div>
                         <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Context (Optional)</label>
-                        <input
+                        <Input variant="static"
                           className="input"
                           placeholder="Professional Work, Conversation"
                           value={lang.usageContext || ""}
@@ -1671,7 +1673,7 @@ function BuilderContent() {
 
                 {/* Competitive Exams */}
                 <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <h3 style={{ fontWeight: 700, fontSize: "1rem" }}>📝 Competitive Exams (JEE, GATE, CAT, UPSC)</h3>
                     <button
                       className="btn-secondary"
@@ -1708,7 +1710,7 @@ function BuilderContent() {
                         <option value="NEET">NEET</option>
                         <option value="GMAT">GMAT</option>
                       </select>
-                      <input
+                      <Input variant="static"
                         className="input"
                         style={{ flex: 1.5 }}
                         placeholder="AIR 120 / 99.8 Percentile"
@@ -1718,7 +1720,7 @@ function BuilderContent() {
                           competitiveExams: (r.competitiveExams || []).map((ex, i) => i === idx ? { ...ex, score: e.target.value } : ex)
                         }))}
                       />
-                      <input
+                      <Input variant="static"
                         className="input"
                         style={{ flex: 0.8 }}
                         placeholder="Year"
@@ -1803,7 +1805,7 @@ function BuilderContent() {
                       ["linkedinUpdated", "LinkedIn Profile and GitHub repositories updated"]
                     ].map(([key, label]) => (
                       <label key={key} style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.85rem", cursor: "pointer" }}>
-                        <input
+                        <Input variant="static"
                           type="checkbox"
                           checked={resume.placementChecklist?.[key] || false}
                           onChange={(e) => setResume(r => ({
@@ -1909,7 +1911,7 @@ function BuilderContent() {
 
                     <div>
                       <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.35rem" }}>Font Size ({resume.fontSize || 10}pt)</label>
-                      <input
+                      <Input variant="static"
                         type="range"
                         min="8"
                         max="14"
@@ -1922,7 +1924,7 @@ function BuilderContent() {
 
                     <div>
                       <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.35rem" }}>Line Spacing ({resume.spacing || 1.2})</label>
-                      <input
+                      <Input variant="static"
                         type="range"
                         min="1"
                         max="2"
@@ -1942,7 +1944,7 @@ function BuilderContent() {
               <div style={{ display: "grid", gap: "1.2rem" }}>
                 {localATS && (
                   <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.1rem" }}>Local ATS Scan Report</h3>
                       <span className="tag tag-green" style={{ fontSize: "0.85rem", fontWeight: 800, background: localATS.overall >= 70 ? "rgba(67,233,123,0.15)" : "rgba(255,101,132,0.15)", color: localATS.overall >= 70 ? "#43e97b" : "#ff6584" }}>
                         Score: {localATS.overall}/100
@@ -2006,7 +2008,7 @@ function BuilderContent() {
                 {/* ATS AI Rewrite Section */}
                 {localATS && localATS.missingKeywords && localATS.missingKeywords.length > 0 && (
                   <div className="card" style={{ display: "grid", gap: "1.2rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.15rem", margin: 0 }}>
                         ✨ ATS Keyword Injector
                       </h2>
@@ -2116,7 +2118,7 @@ function BuilderContent() {
 
                   {/* Public Link Generator widget */}
                   <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1.2rem", marginTop: "0.5rem", display: "grid", gap: "1.2rem", textAlign: "left" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "0.82rem", fontWeight: 700 }}>🔗 Public Web Link Sharing</span>
                       {shareToken && (
                         <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
@@ -2137,7 +2139,7 @@ function BuilderContent() {
                     ) : (
                       <div style={{ display: "grid", gap: "0.8rem" }}>
                         <div style={{ display: "flex", gap: "0.4rem" }}>
-                          <input 
+                          <Input variant="static" 
                             readOnly 
                             className="input" 
                             style={{ fontSize: "0.8rem", padding: "0.5rem", flex: 1, background: "var(--bg-3)" }} 
@@ -2158,7 +2160,7 @@ function BuilderContent() {
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.2rem" }}>
                           <label style={{ display: "flex", alignItems: "center", gap: "0.8rem", fontSize: "0.78rem", cursor: "pointer", color: "var(--text-muted)" }}>
-                            <input
+                            <Input variant="static"
                               type="checkbox"
                               checked={isSharePublic}
                               onChange={handleToggleShare}
@@ -2220,7 +2222,7 @@ function BuilderContent() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
               <button onClick={() => setZoomFactor(prev => Math.max(0.5, prev - 0.05))} className="btn-secondary" style={{ padding: "0.3rem 0.6rem", fontSize: "0.8rem" }}>Zoom -</button>
-              <input 
+              <Input variant="static" 
                 type="range" 
                 min="0.5" 
                 max="1.2" 
@@ -2257,6 +2259,9 @@ function BuilderContent() {
               minHeight: "297mm",
               maxWidth: "800px",
               boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+              WebkitFontSmoothing: "subpixel-antialiased",
+              transformStyle: "preserve-3d",
+              backfaceVisibility: "hidden",
               borderRadius: "4px",
               transition: "transform 0.15s ease-out",
             }}>
@@ -2272,14 +2277,14 @@ function BuilderContent() {
 
       {/* LINKEDIN IMPORT MODAL */}
       {showLinkedinModal && (
-        <div className="no-print" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-            <div className="card" style={{ width: "100%", maxWidth: "500px", padding: "2rem" }}>
-              <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, marginBottom: "0.5rem" }}>
+        <div className="no-print" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(4px)" }}>
+            <div style={{ width: "100%", maxWidth: "500px", padding: "2rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-xl)", boxShadow: "0 20px 50px rgba(0,0,0,0.6)", zIndex: 1001 }}>
+              <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, marginBottom: "0.5rem", color: "var(--text-primary)" }}>
                 Import LinkedIn Details
               </h3>
               
               {/* Option Toggle */}
-              <div style={{ display: "flex", gap: "0.8rem", marginBottom: "1rem", background: "rgba(255,255,255,0.05)", padding: "4px", borderRadius: "10px" }}>
+              <div style={{ display: "flex", gap: "0.8rem", marginBottom: "1rem", background: "var(--bg-elevated)", padding: "4px", borderRadius: "10px" }}>
                 <button
                   type="button"
                   onClick={() => setImportOption("paste")}
@@ -2289,10 +2294,11 @@ function BuilderContent() {
                     borderRadius: "8px",
                     border: "none",
                     background: importOption === "paste" ? "var(--accent)" : "transparent",
-                    color: "#fff",
+                    color: importOption === "paste" ? "#fff" : "var(--text-primary)",
                     fontSize: "0.85rem",
                     fontWeight: 600,
                     cursor: "pointer",
+                    transition: "all 0.2s",
                   }}
                 >
                   Option A: Text Paste
@@ -2306,10 +2312,11 @@ function BuilderContent() {
                     borderRadius: "8px",
                     border: "none",
                     background: importOption === "pdf" ? "var(--accent)" : "transparent",
-                    color: "#fff",
+                    color: importOption === "pdf" ? "#fff" : "var(--text-primary)",
                     fontSize: "0.85rem",
                     fontWeight: 600,
                     cursor: "pointer",
+                    transition: "all 0.2s",
                   }}
                 >
                   Option B: PDF Upload
@@ -2324,7 +2331,7 @@ function BuilderContent() {
                   </p>
                   <textarea
                     className="input"
-                    style={{ minHeight: "12rem", width: "100%", fontFamily: "monospace", fontSize: "0.82rem" }}
+                    style={{ minHeight: "12rem", width: "100%", fontFamily: "monospace", fontSize: "0.82rem", background: "var(--bg-elevated)", color: "var(--text-primary)" }}
                     placeholder="Paste copied LinkedIn profile text here..."
                     value={pasteText}
                     onChange={(e) => setPasteText(e.target.value)}
@@ -2347,10 +2354,10 @@ function BuilderContent() {
                     style={{
                       width: "100%",
                       padding: "1rem",
-                      background: "rgba(0,0,0,0.2)",
+                      background: "var(--bg-elevated)",
                       border: "1px dashed var(--border)",
                       borderRadius: "8px",
-                      color: "#fff",
+                      color: "var(--text-primary)",
                       cursor: "pointer",
                     }}
                     disabled={linkedinLoading}
@@ -2394,10 +2401,10 @@ function BuilderContent() {
           right: 0,
           bottom: 0,
           width: "420px",
-          background: "var(--bg-2)",
+          background: "var(--bg-surface)",
           borderLeft: "1px solid var(--border)",
-          boxShadow: "-10px 0 30px rgba(0,0,0,0.5)",
-          zIndex: 999,
+          boxShadow: "-10px 0 40px rgba(0,0,0,0.6)",
+          zIndex: 2000,
           display: "flex",
           flexDirection: "column",
           padding: "1.5rem",
@@ -2405,14 +2412,14 @@ function BuilderContent() {
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: "1rem", marginBottom: "1rem" }}>
             <div>
-              <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.2rem", display: "flex", alignItems: "center", gap: "0.8rem" }}>
+              <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.2rem", display: "flex", alignItems: "center", gap: "0.8rem", color: "var(--text-primary)" }}>
                 ✦ AI Career Coach
               </h3>
               <span style={{ fontSize: "0.7rem", background: "rgba(108,99,255,0.15)", color: "var(--accent)", padding: "2px 8px", borderRadius: "10px", fontWeight: 600 }}>India-First Expert</span>
             </div>
             <button 
               onClick={() => setShowCoach(false)} 
-              style={{ background: "none", border: "none", color: "var(--text)", fontSize: "1.25rem", cursor: "pointer", fontWeight: 700 }}
+              style={{ background: "none", border: "none", color: "var(--text-primary)", fontSize: "1.25rem", cursor: "pointer", fontWeight: 700 }}
             >
               ✕
             </button>
@@ -2424,8 +2431,8 @@ function BuilderContent() {
               <div key={i} style={{
                 alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
                 maxWidth: "85%",
-                background: msg.role === "user" ? "var(--accent)" : "var(--bg-3)",
-                color: msg.role === "user" ? "#fff" : "var(--text)",
+                background: msg.role === "user" ? "var(--accent)" : "var(--bg-elevated)",
+                color: msg.role === "user" ? "#fff" : "var(--text-primary)",
                 padding: "0.75rem 1rem",
                 borderRadius: msg.role === "user" ? "12px 12px 2px 12px" : "12px 12px 12px 2px",
                 fontSize: "0.85rem",
@@ -2436,7 +2443,7 @@ function BuilderContent() {
               </div>
             ))}
             {coachLoading && (
-              <div style={{ alignSelf: "flex-start", background: "var(--bg-3)", padding: "0.75rem 1rem", borderRadius: "12px 12px 12px 2px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.8rem" }}>
+              <div style={{ alignSelf: "flex-start", background: "var(--bg-elevated)", padding: "0.75rem 1rem", borderRadius: "12px 12px 12px 2px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.8rem", color: "var(--text-primary)" }}>
                 <span className="spinner" style={{ width: 14, height: 14 }}></span>
                 <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Coach is writing...</span>
               </div>
@@ -2458,13 +2465,13 @@ function BuilderContent() {
                   onClick={() => handleCoachSend(topic)}
                   style={{
                     textAlign: "left",
-                    background: "var(--bg-3)",
+                    background: "var(--bg-elevated)",
                     border: "1px solid var(--border)",
                     borderRadius: "8px",
                     padding: "0.5rem 0.75rem",
                     fontSize: "0.78rem",
                     cursor: "pointer",
-                    color: "var(--text)",
+                    color: "var(--text-primary)",
                     transition: "all 0.2s"
                   }}
                   onMouseOver={(e) => e.currentTarget.style.borderColor = "var(--accent)"}
@@ -2477,7 +2484,7 @@ function BuilderContent() {
           )}
 
           {/* Input Area */}
-          <div style={{ display: "flex", gap: "1rem" }}>
+          <div style={{ display: "flex", gap: "0.8rem" }}>
             <input
               type="text"
               className="input"
@@ -2485,13 +2492,13 @@ function BuilderContent() {
               value={coachInput}
               onChange={(e) => setCoachInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !coachLoading) handleCoachSend(); }}
-              style={{ flex: 1, fontSize: "0.85rem" }}
+              style={{ flex: 1, fontSize: "0.85rem", background: "var(--bg-elevated)", color: "var(--text-primary)" }}
               disabled={coachLoading}
             />
             <button 
               onClick={() => handleCoachSend()}
               className="btn-primary" 
-              style={{ padding: "0 1rem", fontSize: "0.85rem" }}
+              style={{ padding: "0 1.2rem", fontSize: "0.85rem", borderRadius: "10px", flexShrink: 0 }}
               disabled={coachLoading || !coachInput.trim()}
             >
               Send

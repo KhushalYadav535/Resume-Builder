@@ -8,6 +8,7 @@ import { Resume } from "@/types";
 import ResumeDocument from "@/components/ResumeDocument";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ATSRing } from "@/components/ui/ATSRing";
 interface LoadingStage {
   label: string;
@@ -451,8 +452,10 @@ export default function ResumeDetailPage() {
   const completionPercent = getCompletionStats(resume.resume_data);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <Navbar />
+    <div className="min-h-screen bg-[var(--bg-page)] relative overflow-hidden">
+      <ParticleBackground count={50} connectionDist={110} />
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <Navbar />
       
       {/* HEADER WIDGET (Hidden on print) */}
       <div className="no-print" style={{ background: "var(--bg-2)", borderBottom: "1px solid var(--border)", padding: "1.2rem 2rem" }}>
@@ -1492,6 +1495,7 @@ export default function ResumeDetailPage() {
         </div>
       )}
 
+      </div>
     </div>
   );
 }

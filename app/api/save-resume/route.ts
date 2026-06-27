@@ -69,7 +69,26 @@ export async function POST(req: NextRequest) {
         .select();
 
       if (error) throw error;
-      resultData = data;
+      if (!data || data.length === 0) {
+        const { data: insertData, error: insertError } = await supabase
+          .from("resumes")
+          .insert([{
+            user_id: user.id,
+            file_name: fileName,
+            raw_text: resumeText,
+            resume_data: structuredResume,
+            ats_score: atsScore,
+            content_review: content_review || null,
+            jd_match: jd_match || null,
+            template_id: template_id || "standard",
+            updated_at: new Date().toISOString()
+          }])
+          .select();
+        if (insertError) throw insertError;
+        resultData = insertData;
+      } else {
+        resultData = data;
+      }
     } else {
       // INSERT NEW RECORD
       const { data, error } = await supabase

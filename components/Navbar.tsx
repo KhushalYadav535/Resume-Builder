@@ -17,6 +17,20 @@ export default function Navbar() {
   const pathname = usePathname();
   const { role, user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Scroll listener for fade behavior
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -45,7 +59,6 @@ export default function Navbar() {
       { href: "/resume/tailor", label: "Tailor Resume" },
       { href: "/resume/upload", label: "Upload" },
       { href: "/resume/templates", label: "Templates" },
-      { href: "/jobs", label: "Job Tracker" },
     ];
   }
 
@@ -54,12 +67,13 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className="sticky top-0 z-50 flex items-center justify-between px-6 border-b border-[var(--border)]"
+        className={cn(
+          "glass-nav sticky top-0 z-[100] flex items-center justify-between border-b border-[var(--border)] transition-all duration-300 ease-out",
+          scrolled ? "opacity-35 hover:opacity-100" : "opacity-100"
+        )}
         style={{
-          height: "64px",
-          background: "var(--bg-glass)",
-          backdropFilter: "blur(24px) saturate(160%)",
-          WebkitBackdropFilter: "blur(24px) saturate(160%)",
+          height: "60px",
+          padding: "0 clamp(16px, 4vw, 32px)",
         }}
       >
         <div className="flex items-center gap-6">
@@ -76,7 +90,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2 no-underline">
             <Box size={24} className="text-[var(--accent)]" />
             <span
-              className="text-[20px] font-[800] tracking-tight text-[var(--text-primary)]"
+              className="text-[18px] font-[800] tracking-tight text-[var(--text-primary)]"
               style={{ fontFamily: "var(--font-inter)" }}
             >
               Resume<span className="gradient-text">Optimizer</span>
@@ -94,10 +108,10 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "relative px-3 py-1.5 text-[14px] font-medium rounded-[var(--radius-md)] transition-all duration-[var(--dur-fast)] no-underline group",
+                    "relative px-3 py-1.5 text-[14px] font-[500] rounded-[var(--radius-md)] transition-all duration-[var(--dur-fast)] no-underline group",
                     isActive
                       ? "text-[var(--accent)] bg-[var(--accent-soft)]"
-                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)]"
                   )}
                 >
                   {link.label}

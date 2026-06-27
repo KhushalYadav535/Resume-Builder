@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { Card } from "@/components/ui/Card";
+import ParticleBackground from "@/components/ui/ParticleBackground";
 
 interface SignupHistoryItem {
   date: string;
@@ -151,9 +152,11 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <Navbar />
-      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
+    <div className="min-h-screen bg-[var(--bg-page)] relative overflow-hidden">
+      <ParticleBackground count={50} connectionDist={110} />
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <Navbar />
+        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
 
         {/* Title */}
         <div style={{ marginBottom: "2rem" }}>
@@ -338,6 +341,7 @@ export default function AdminDashboardPage() {
           </Card>
         )}
 
+      </div>
       </div>
     </div>
   );
