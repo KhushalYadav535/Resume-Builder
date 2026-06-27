@@ -10,6 +10,8 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ATSRing } from "@/components/ui/ATSRing";
+import ResumeSuggestionsModal from "@/components/ResumeSuggestionsModal";
+
 interface LoadingStage {
   label: string;
   minPercent: number;
@@ -44,7 +46,7 @@ export default function ResumeDetailPage() {
   
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"ats" | "content" | "jd" | "interview" | "skillgap">("ats");
+  const [activeTab, setActiveTab] = useState<"ats" | "content" | "jd" | "suggestions" | "interview" | "skillgap">("ats");
   
   // Custom toolbar states
   const [selectedTemplate, setSelectedTemplate] = useState("standard");
@@ -81,6 +83,42 @@ export default function ResumeDetailPage() {
   const [naukriTips, setNaukriTips] = useState<{ area: string; tip: string; priority: string }[]>([]);
   const [naukriLoading, setNaukriLoading] = useState(false);
   const [naukriFetched, setNaukriFetched] = useState(false);
+
+  // Suggestions States
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestionsFetched, setSuggestionsFetched] = useState(false);
+  const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
+  const [estimatedNewScore, setEstimatedNewScore] = useState(0);
+
+  const fetchSuggestions = async () => {
+    if (!resume || suggestionsFetched || suggestionsLoading) return;
+    setSuggestionsLoading(true);
+    try {
+      const res = await fetch("/api/resume/suggestions/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          resumeId: resume.id,
+          resumeText: resume.raw_text,
+          detectedRole: resume.ats_score?.detectedRole,
+          detectedIndustry: resume.ats_score?.detectedIndustry
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.suggestions) {
+          setSuggestions(data.suggestions);
+          setEstimatedNewScore(data.estimatedNewScore);
+          setSuggestionsFetched(true);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  };
 
   const fetchNaukriTips = async () => {
     if (!resume || naukriFetched || naukriLoading) return;
@@ -124,6 +162,11 @@ export default function ResumeDetailPage() {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
+        
+        // Show success banner if they applied suggestions recently
+        if (estimatedNewScore > 0 || (resume.ats_score && resume.ats_score.overall > 70)) {
+          alert(`Download complete! 🎉\nYour optimized resume has an ATS score of ${resume.ats_score?.overall || 100}/100.`);
+        }
       } else {
         alert("Failed to export Word document.");
       }
@@ -456,6 +499,32 @@ export default function ResumeDetailPage() {
       <ParticleBackground count={50} connectionDist={110} />
       <div style={{ position: 'relative', zIndex: 10 }}>
         <Navbar />
+
+      {showSuggestionsModal && resume && resume.ats_score && (
+        <ResumeSuggestionsModal
+          resumeId={resume.id}
+          suggestions={suggestions}
+          currentScore={resume.ats_score.overall}
+          potentialScore={estimatedNewScore}
+          onClose={() => setShowSuggestionsModal(false)}
+          onApply={async (selectedIds) => {
+            setShowSuggestionsModal(false);
+            try {
+              const res = await fetch("/api/resume/suggestions/apply", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ resumeId: resume.id, applySuggestionIds: selectedIds })
+              });
+              if (res.ok) {
+                // Navigate to builder with a query param to trigger the toast/highlight
+                router.push(`/resume/builder?id=${resume.id}&suggestionsApplied=true`);
+              }
+            } catch (err) {
+              console.error("Failed to apply suggestions:", err);
+            }
+          }}
+        />
+      )}
       
       {/* HEADER WIDGET (Hidden on print) */}
       <div className="no-print" style={{ background: "var(--bg-2)", borderBottom: "1px solid var(--border)", padding: "1.2rem 2rem" }}>
@@ -754,6 +823,7 @@ export default function ResumeDetailPage() {
                 { key: "ats", label: "ATS Analysis" },
                 { key: "content", label: "Content Review (Deep AI)" },
                 { key: "jd", label: "JD Match (Deep AI)" },
+                { key: "suggestions", label: "Suggested Improvements" },
                 { key: "interview", label: "Interview Prep" },
                 { key: "skillgap", label: "Skill Gap & Career" },
               ].map((tab) => {
@@ -1092,6 +1162,46 @@ export default function ResumeDetailPage() {
                   </div>
                 </div>
               )
+            )}
+
+            {/* SUGGESTED IMPROVEMENTS TAB */}
+            {activeTab === "suggestions" && (
+              <div style={{ display: "grid", gap: "1rem", animation: "fadeInUp 0.3s ease" }}>
+                <div className="card" style={{ display: "grid", gap: "1rem", padding: "1.5rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>✨ Interactive Improvements</h3>
+                      <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: "0.2rem 0 0 0" }}>
+                        Generate AI suggestions to improve your ATS score by adding missing keywords and skills.
+                      </p>
+                    </div>
+                    <button
+                      onClick={fetchSuggestions}
+                      disabled={suggestionsLoading}
+                      className="btn-primary"
+                      style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}
+                    >
+                      {suggestionsLoading ? "Analyzing..." : "Find Improvements"}
+                    </button>
+                  </div>
+                  
+                  {suggestions.length > 0 && (
+                    <div style={{ display: "grid", gap: "0.5rem", marginTop: "0.5rem" }}>
+                      <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--accent)" }}>
+                        {suggestions.length} highly impactful improvements found! 
+                        Estimated new score: {estimatedNewScore}/100.
+                      </p>
+                      <button
+                        onClick={() => setShowSuggestionsModal(true)}
+                        className="btn-secondary"
+                        style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", width: "fit-content" }}
+                      >
+                        View & Apply Suggestions
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
 
             {activeTab === "interview" && (
