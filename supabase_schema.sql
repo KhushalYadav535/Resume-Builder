@@ -269,3 +269,85 @@ CREATE POLICY "Admins can manage pending keywords" ON public.pending_keywords
 -- Index for performance
 CREATE INDEX IF NOT EXISTS idx_pending_keywords_industry ON public.pending_keywords(industry);
 CREATE INDEX IF NOT EXISTS idx_pending_keywords_status ON public.pending_keywords(status);
+
+-- 17. Resume Improvement Suggestions Table
+CREATE TABLE IF NOT EXISTS public.resume_suggestions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  resume_id UUID NOT NULL REFERENCES public.resumes(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  suggestion_type TEXT NOT NULL CHECK (suggestion_type IN (
+    'missing_keyword',
+    'missing_skill',
+    'experience_gap',
+    'skill_enhancement',
+    'formatting_improvement'
+  )),
+  title TEXT NOT NULL,
+  description TEXT,
+  suggested_text TEXT NOT NULL,
+  category TEXT,
+  priority INT DEFAULT 1 CHECK (priority BETWEEN 1 AND 5),
+  is_accepted BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(resume_id, suggestion_type, suggested_text)
+);
+
+ALTER TABLE public.resume_suggestions ENABLE ROW LEVEL SECURITY;
+
+-- Drop previous policies if any
+DROP POLICY IF EXISTS "Users can view their own suggestions" ON public.resume_suggestions;
+DROP POLICY IF EXISTS "Users can manage their own suggestions" ON public.resume_suggestions;
+
+CREATE POLICY "Users can manage their own suggestions"
+  ON public.resume_suggestions
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_resume_suggestions_resume ON public.resume_suggestions(resume_id);
+
+-- 18. Comprehensive Resume Improvement Suggestions Table
+CREATE TABLE IF NOT EXISTS public.resume_improvement_suggestions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  resume_id UUID NOT NULL REFERENCES public.resumes(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  
+  suggestion_category TEXT NOT NULL CHECK (suggestion_category IN (
+    'ats_keyword',
+    'technical_skill',
+    'soft_skill',
+    'experience_bullet',
+    'achievement_quantification',
+    'action_verb',
+    'professional_summary',
+    'education',
+    'certification',
+    'project',
+    'formatting',
+    'contact_info',
+    'skills_organization',
+    'work_experience_structure'
+  )),
+  
+  title TEXT NOT NULL,
+  description TEXT,
+  suggested_text TEXT,
+  current_text TEXT,
+  impact_level TEXT CHECK (impact_level IN ('high', 'medium', 'low')),
+  priority INT DEFAULT 1 CHECK (priority BETWEEN 1 AND 5),
+  section TEXT,
+  is_accepted BOOLEAN DEFAULT FALSE,
+  
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.resume_improvement_suggestions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view and manage their suggestions"
+  ON public.resume_improvement_suggestions
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_resume_imp_sugg_resume ON public.resume_improvement_suggestions(resume_id);

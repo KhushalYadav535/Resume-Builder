@@ -126,7 +126,7 @@ export async function askAI(prompt: string, systemPrompt?: string): Promise<stri
 export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promise<T> {
   const combinedSystem = (systemPrompt ? `${systemPrompt}\n\n` : "") + 
     INDIAN_MARKET_GUIDELINE + 
-    "\n\nYou must respond ONLY with valid JSON. No explanation, no markdown, no backticks. Just raw JSON.";
+    "\n\nYou must respond ONLY with valid JSON. No explanation, no markdown, no backticks. Ensure ALL property names are double-quoted. Do NOT include any trailing commas. Just raw JSON.";
 
   try {
     const messages = [
@@ -134,21 +134,48 @@ export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promi
       { role: "user", content: prompt }
     ];
 
-    const rawResponse = await fetchOpenRouter(messages, 0.7, 3000);
+    const rawResponse = await fetchOpenRouter(messages, 0.7, 4000);
 
     console.log("--- OpenRouter Raw JSON Response ---");
     console.log(rawResponse);
     console.log("-------------------------------------");
 
     const clean = rawResponse.replace(/```json|```/g, "").trim();
+    
+    // Helper to fix common AI trailing comma errors
+    const sanitizeJSON = (str: string) => str.replace(/,\s*([\]}])/g, '$1');
+    const sanitizedClean = sanitizeJSON(clean);
+
     try {
-      return JSON.parse(clean) as T;
+      return JSON.parse(sanitizedClean) as T;
     } catch (parseError: any) {
-      const match = clean.match(/\{[\s\S]*\}/);
-      if (match) return JSON.parse(match[0]) as T;
-      
+      // Try array first (for askAIJSON<any[]> cases)
       const matchArr = clean.match(/\[[\s\S]*\]/);
-      if (matchArr) return JSON.parse(matchArr[0]) as T;
+      if (matchArr) {
+        try { return JSON.parse(sanitizeJSON(matchArr[0])) as T; } catch(e) {}
+      }
+      
+      // Try object next
+      const matchObj = clean.match(/\{[\s\S]*\}/);
+      if (matchObj) {
+        try { return JSON.parse(sanitizeJSON(matchObj[0])) as T; } catch(e) {}
+      }
+
+      // Ultimate Fallback: Extract all flat JSON objects individually (ignores bad objects & truncation)
+      const flatObjects = clean.match(/\{[^{}]+\}/g);
+      if (flatObjects && flatObjects.length > 0) {
+        const parsed = [];
+        for (const objStr of flatObjects) {
+          try {
+            // Fix unquoted keys for this specific object if needed
+            let fixed = objStr.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+            parsed.push(JSON.parse(sanitizeJSON(fixed)));
+          } catch(e) {}
+        }
+        if (parsed.length > 0) {
+          return parsed as any;
+        }
+      }
       
       throw new Error("AI returned invalid JSON: " + parseError.message);
     }

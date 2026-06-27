@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { AiChangesHistoryModal } from "@/components/AiChangesHistoryModal";
 
 
 const defaultEmptyResume: ResumeData = {
@@ -136,6 +137,22 @@ function BuilderContent() {
   const [inlineRewriteKey, setInlineRewriteKey] = useState<string>("");
   const [inlineRewriteSuggestions, setInlineRewriteSuggestions] = useState<string[]>([]);
   const [inlineRewriteLoading, setInlineRewriteLoading] = useState(false);
+
+  // Suggestions Application State
+  const [showSuggestionsGlow, setShowSuggestionsGlow] = useState(false);
+  const [showAiHistory, setShowAiHistory] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("suggestionsApplied")) {
+      setShowSuggestionsGlow(true);
+      setTimeout(() => setShowSuggestionsGlow(false), 3000);
+      
+      // Clean up the URL so it doesn't re-trigger on refresh
+      const url = new URL(window.location.href);
+      url.searchParams.delete("suggestionsApplied");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams]);
 
   const handleInlineRewrite = async (text: string, context: string, key: string) => {
     setInlineRewriteKey(key);
@@ -718,8 +735,16 @@ function BuilderContent() {
         </div>
       </div>
 
+      {/* TOAST NOTIFICATION FOR SUGGESTIONS */}
+      <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${showSuggestionsGlow ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
+        <div className="bg-green-500/10 border border-green-500/50 backdrop-blur-md text-green-400 px-6 py-3 rounded-full shadow-[0_0_20px_rgba(34,197,94,0.3)] flex items-center gap-3">
+          <span className="text-xl">✨</span>
+          <span className="font-semibold">{searchParams.get("suggestionsApplied")} improvements applied to your resume. Review and refine below</span>
+        </div>
+      </div>
+
       {/* CORE 3-COLUMN WORKSPACE */}
-      <div className="builder-workspace">
+      <div className={`builder-workspace transition-all duration-1000 ${showSuggestionsGlow ? 'brightness-110 shadow-[inset_0_0_50px_rgba(34,197,94,0.05)]' : ''}`}>
         
         {/* COLUMN 1: PROGRESS & NAVIGATION SIDEBAR (Sticky) */}
         <div className="no-print builder-sidebar">
@@ -2399,6 +2424,42 @@ function BuilderContent() {
                 </>
               )}
             </div>
+        </div>
+      )}
+
+      {/* AI CHANGES HISTORY WIDGET */}
+      <button 
+        onClick={() => setShowAiHistory(true)}
+        className="no-print animate-in fade-in slide-in-from-bottom-5 duration-700 hover:scale-105 transition-transform"
+        style={{
+          position: "fixed",
+          bottom: "24px",
+          left: "24px",
+          background: "var(--accent)",
+          color: "#fff",
+          border: "none",
+          borderRadius: "50px",
+          padding: "0.75rem 1.25rem",
+          fontWeight: 700,
+          fontSize: "0.9rem",
+          cursor: "pointer",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.3), 0 0 15px rgba(67,233,123,0.3)",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          zIndex: 1000
+        }}
+      >
+        <span style={{ fontSize: "1.1rem" }}>✨</span> View AI Edits
+      </button>
+
+      {showAiHistory && resumeId && (
+        <div className="no-print">
+          <AiChangesHistoryModal 
+            resumeId={resumeId}
+            isOpen={showAiHistory}
+            onClose={() => setShowAiHistory(false)}
+          />
         </div>
       )}
 
