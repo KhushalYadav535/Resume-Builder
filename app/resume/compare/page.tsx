@@ -295,16 +295,16 @@ export default function ResumeComparePage() {
                   <div className="responsive-grid-2" style={{ gap: "2rem" }}>
                     <div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
-                        {resumeA.ats_score?.missingKeywords?.map((kw: string) => (
-                          <span key={kw} className="tag tag-red" style={{ fontSize: "0.72rem" }}>{kw}</span>
+                        {resumeA.ats_score?.missingKeywords?.map((kw: string, i: number) => (
+                          <span key={`${kw}-${i}`} className="tag tag-red" style={{ fontSize: "0.72rem" }}>{kw}</span>
                         )) || <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>No missing keywords</span>}
                       </div>
                     </div>
 
                     <div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
-                        {resumeB.ats_score?.missingKeywords?.map((kw: string) => (
-                          <span key={kw} className="tag tag-red" style={{ fontSize: "0.72rem" }}>{kw}</span>
+                        {resumeB.ats_score?.missingKeywords?.map((kw: string, i: number) => (
+                          <span key={`${kw}-${i}`} className="tag tag-red" style={{ fontSize: "0.72rem" }}>{kw}</span>
                         )) || <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>No missing keywords</span>}
                       </div>
                     </div>

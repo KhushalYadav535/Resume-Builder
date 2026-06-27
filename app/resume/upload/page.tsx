@@ -612,7 +612,7 @@ export default function UploadPage() {
                   <div className="card">
                     <p className="section-label" style={{ marginBottom: "0.8rem" }}>Standard Recommended Keywords</p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                      {atsScore.missingKeywords.map((kw) => <span key={kw} className="tag tag-red">{kw}</span>)}
+                      {atsScore.missingKeywords.map((kw, i) => <span key={`${kw}-${i}`} className="tag tag-red">{kw}</span>)}
                     </div>
                   </div>
                 )}
@@ -726,7 +726,7 @@ export default function UploadPage() {
                     <div className="card">
                       <p className="section-label" style={{ marginBottom: "0.75rem", color: "var(--accent-2)" }}>Priority Keywords Missing</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                        {jdMatch.priorityAdditions?.map((kw) => <span key={kw} className="tag tag-red">{kw}</span>)}
+                        {jdMatch.priorityAdditions?.map((kw, i) => <span key={`${kw}-${i}`} className="tag tag-red">{kw}</span>)}
                         {jdMatch.priorityAdditions?.length === 0 && <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>0 critical skills missing! Excellent match.</span>}
                       </div>
                     </div>
@@ -734,7 +734,7 @@ export default function UploadPage() {
                     <div className="card">
                       <p className="section-label" style={{ marginBottom: "0.75rem", color: "var(--accent-3)" }}>Matched Keywords</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                        {jdMatch.matchedKeywords?.map((kw) => <span key={kw} className="tag tag-green">{kw}</span>)}
+                        {jdMatch.matchedKeywords?.map((kw, i) => <span key={`${kw}-${i}`} className="tag tag-green">{kw}</span>)}
                         {jdMatch.matchedKeywords?.length === 0 && <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>No matching keywords found.</span>}
                       </div>
                     </div>
@@ -744,7 +744,7 @@ export default function UploadPage() {
                     <div className="card">
                       <p className="section-label" style={{ marginBottom: "0.75rem" }}>All Detected JD Skill Gaps</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                        {jdMatch.missingKeywords.map((kw) => <span key={kw} className="tag tag-yellow">{kw}</span>)}
+                        {jdMatch.missingKeywords.map((kw, i) => <span key={`${kw}-${i}`} className="tag tag-yellow">{kw}</span>)}
                       </div>
                     </div>
                   )}
