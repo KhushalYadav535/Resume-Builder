@@ -815,13 +815,13 @@ export default function ResumeDetailPage() {
                     <p className="section-label mb-4 text-[var(--danger)]">Missing High-Value Keywords</p>
                     <div className="flex flex-wrap gap-2">
                       {resume.ats_score.missingKeywordDetails ? (
-                        [...resume.ats_score.missingKeywordDetails].sort((a: any, b: any) => b.weight - a.weight).map((kw: any) => (
-                          <Badge key={kw.keyword} variant="danger" className="flex items-center gap-1.5">
+                        [...resume.ats_score.missingKeywordDetails].sort((a: any, b: any) => b.weight - a.weight).map((kw: any, i: number) => (
+                          <Badge key={`${kw.keyword}-${i}`} variant="danger" className="flex items-center gap-1.5">
                             {kw.keyword} <span className="bg-[var(--danger)]/20 px-1.5 py-0.5 rounded text-[10px]">{kw.weight}</span>
                           </Badge>
                         ))
                       ) : (
-                        resume.ats_score.missingKeywords?.map((kw: string) => <Badge key={kw} variant="danger">{kw}</Badge>)
+                        resume.ats_score.missingKeywords?.map((kw: string, i: number) => <Badge key={`${kw}-${i}`} variant="danger">{kw}</Badge>)
                       )}
                     </div>
                   </Card>
@@ -832,13 +832,13 @@ export default function ResumeDetailPage() {
                     <p className="section-label mb-4 text-[var(--success)]">Matched Keywords</p>
                     <div className="flex flex-wrap gap-2">
                       {resume.ats_score.keywordMatches ? (
-                        [...resume.ats_score.keywordMatches].sort((a: any, b: any) => b.weight - a.weight).map((kw: any) => (
-                          <Badge key={kw.keyword} variant="success" className="flex items-center gap-1.5">
+                        [...resume.ats_score.keywordMatches].sort((a: any, b: any) => b.weight - a.weight).map((kw: any, i: number) => (
+                          <Badge key={`${kw.keyword}-${i}`} variant="success" className="flex items-center gap-1.5">
                             {kw.keyword} <span className="bg-[var(--success)]/20 px-1.5 py-0.5 rounded text-[10px]">{kw.weight}</span>
                           </Badge>
                         ))
                       ) : (
-                        resume.ats_score.matchedKeywords?.map((kw: string) => <Badge key={kw} variant="success">{kw}</Badge>)
+                        resume.ats_score.matchedKeywords?.map((kw: string, i: number) => <Badge key={`${kw}-${i}`} variant="success">{kw}</Badge>)
                       )}
                     </div>
                   </Card>
@@ -1058,7 +1058,7 @@ export default function ResumeDetailPage() {
                     <div className="card" style={{ padding: "1.2rem" }}>
                       <p className="section-label" style={{ marginBottom: "0.5rem", color: "var(--accent-2)" }}>Priority Keywords Missing</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                        {resume.jd_match.priorityAdditions?.map((kw) => <span key={kw} className="tag tag-red" style={{ fontSize: "0.72rem" }}>{kw}</span>)}
+                        {resume.jd_match.priorityAdditions?.map((kw, i) => <span key={`${kw}-${i}`} className="tag tag-red" style={{ fontSize: "0.72rem" }}>{kw}</span>)}
                         {resume.jd_match.priorityAdditions?.length === 0 && <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>0 critical skills missing!</span>}
                       </div>
                     </div>
@@ -1066,7 +1066,7 @@ export default function ResumeDetailPage() {
                     <div className="card" style={{ padding: "1.2rem" }}>
                       <p className="section-label" style={{ marginBottom: "0.5rem", color: "var(--accent-3)" }}>Matched Keywords</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                        {resume.jd_match.matchedKeywords?.map((kw) => <span key={kw} className="tag tag-green" style={{ fontSize: "0.72rem" }}>{kw}</span>)}
+                        {resume.jd_match.matchedKeywords?.map((kw, i) => <span key={`${kw}-${i}`} className="tag tag-green" style={{ fontSize: "0.72rem" }}>{kw}</span>)}
                         {resume.jd_match.matchedKeywords?.length === 0 && <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>No matching keywords.</span>}
                       </div>
                     </div>
@@ -1076,7 +1076,7 @@ export default function ResumeDetailPage() {
                     <div className="card" style={{ padding: "1.2rem" }}>
                       <p className="section-label" style={{ marginBottom: "0.5rem" }}>All Detected JD Skill Gaps</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                        {resume.jd_match.missingKeywords.map((kw) => <span key={kw} className="tag tag-yellow" style={{ fontSize: "0.72rem" }}>{kw}</span>)}
+                        {resume.jd_match.missingKeywords.map((kw, i) => <span key={`${kw}-${i}`} className="tag tag-yellow" style={{ fontSize: "0.72rem" }}>{kw}</span>)}
                       </div>
                     </div>
                   )}
