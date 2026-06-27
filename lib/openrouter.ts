@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
 
 async function logAIRequest(model: string, success: boolean, tokensEstimated: number = 500) {
@@ -18,9 +17,9 @@ async function logAIRequest(model: string, success: boolean, tokensEstimated: nu
 }
 
 const OPENROUTER_MODELS = [
+  "google/gemma-4-31b-it:free",                  // Google Gemma 4 (highly capable, non-Venice)
   "openrouter/free",                             // Smart router that auto-allocates an available free model
   "z-ai/glm-4.5-air:free",                       // Zhipu GLM (highly available, non-Venice)
-  "google/gemma-4-31b-it:free",                  // Google Gemma 4 (highly capable, non-Venice)
   "poolside/laguna-xs.2:free",                   // Poolside (highly available, non-Venice)
   "liquid/lfm-2.5-1.2b-instruct:free",           // Liquid LFM (highly available, non-Venice)
   "meta-llama/llama-3.3-70b-instruct:free",      // Venice fallback
@@ -92,45 +91,15 @@ async function fetchOpenRouter(messages: any[], temperature: number, maxTokens: 
 
 /**
  * Text generation helper.
- * Deploys Google Gemini (gemini-2.0-flash) with an automatic failover to OpenRouter
- * models chain if Gemini encounters quota blocks or failures.
+ * Deploys OpenRouter models chain.
  */
 const INDIAN_MARKET_GUIDELINE = "Guidelines: When discussing financial metrics, budgets, salaries, package targets, scale, or metrics, use Indian currency symbols (₹, Rupee) and conventions (Lakhs, Crores, LPA, e.g. 15 LPA) rather than Western formats ($ or USD).";
 
 export async function askAI(prompt: string, systemPrompt?: string): Promise<string> {
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const hasGemini = geminiKey && geminiKey !== "YOUR_KEY_HERE" && !geminiKey.startsWith("your-");
-
   const combinedSystem = systemPrompt
     ? `${systemPrompt}\n\n${INDIAN_MARKET_GUIDELINE}`
     : INDIAN_MARKET_GUIDELINE;
 
-  if (hasGemini) {
-    try {
-      console.log("Attempting text generation with Google Gemini API...");
-      const genAI = new GoogleGenerativeAI(geminiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-      const finalPrompt = `${combinedSystem}\n\n${prompt}`;
-
-      const result = await model.generateContent(finalPrompt);
-      const responseText = result.response.text();
-
-      console.log("--- Gemini Raw Text Response ---");
-      console.log(responseText);
-      console.log("---------------------------------");
-
-      if (responseText && responseText.trim()) {
-        await logAIRequest("gemini-2.0-flash", true, 800);
-        return responseText;
-      }
-    } catch (err: any) {
-      console.warn("Gemini API call failed. Cascading to OpenRouter fallback chain...", err.message || err);
-      await logAIRequest("gemini-2.0-flash", false, 800);
-    }
-  }
-
-  // Cascading OpenRouter Fallback
   try {
     const messages = [
       { role: "system", content: combinedSystem },
@@ -145,67 +114,20 @@ export async function askAI(prompt: string, systemPrompt?: string): Promise<stri
 
     return content;
   } catch (err: any) {
-    console.error("AI Client Failure (Gemini and OpenRouter both failed):", err);
+    console.error("AI Client Failure (OpenRouter failed):", err);
     throw new Error(`AI Client Failure: ${err.message || String(err)}`);
   }
 }
 
 /**
  * JSON generation helper.
- * Deploys Google Gemini (gemini-2.0-flash) with an automatic failover to OpenRouter
- * models chain if Gemini encounters quota blocks or failures.
+ * Deploys OpenRouter models chain.
  */
 export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promise<T> {
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const hasGemini = geminiKey && geminiKey !== "YOUR_KEY_HERE" && !geminiKey.startsWith("your-");
-
   const combinedSystem = (systemPrompt ? `${systemPrompt}\n\n` : "") + 
     INDIAN_MARKET_GUIDELINE + 
     "\n\nYou must respond ONLY with valid JSON. No explanation, no markdown, no backticks. Just raw JSON.";
 
-  if (hasGemini) {
-    try {
-      console.log("Attempting JSON generation with Google Gemini API...");
-      const genAI = new GoogleGenerativeAI(geminiKey);
-      const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
-        generationConfig: {
-          responseMimeType: "application/json",
-        },
-      });
-
-      const finalPrompt = `${combinedSystem}\n\n${prompt}`;
-
-      const result = await model.generateContent(finalPrompt);
-      const rawResponse = result.response.text();
-
-      console.log("--- Gemini Raw JSON Response ---");
-      console.log(rawResponse);
-      console.log("---------------------------------");
-
-      if (rawResponse && rawResponse.trim()) {
-        const clean = rawResponse.replace(/```json|```/g, "").trim();
-        try {
-          const parsed = JSON.parse(clean) as T;
-          await logAIRequest("gemini-2.0-flash (json)", true, 1000);
-          return parsed;
-        } catch (parseError: any) {
-          const match = clean.match(/\{[\s\S]*\}/);
-          if (match) {
-            const parsed = JSON.parse(match[0]) as T;
-            await logAIRequest("gemini-2.0-flash (json)", true, 1000);
-            return parsed;
-          }
-          throw parseError;
-        }
-      }
-    } catch (err: any) {
-      console.warn("Gemini API call failed. Cascading to OpenRouter fallback chain...", err.message || err);
-      await logAIRequest("gemini-2.0-flash (json)", false, 1000);
-    }
-  }
-
-  // Cascading OpenRouter Fallback for JSON
   try {
     const messages = [
       { role: "system", content: combinedSystem },
@@ -224,10 +146,14 @@ export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promi
     } catch (parseError: any) {
       const match = clean.match(/\{[\s\S]*\}/);
       if (match) return JSON.parse(match[0]) as T;
+      
+      const matchArr = clean.match(/\[[\s\S]*\]/);
+      if (matchArr) return JSON.parse(matchArr[0]) as T;
+      
       throw new Error("AI returned invalid JSON: " + parseError.message);
     }
   } catch (err: any) {
-    console.error("AI Client JSON Failure (Gemini and OpenRouter both failed):", err);
+    console.error("AI Client JSON Failure (OpenRouter failed):", err);
     throw new Error(`AI Client JSON Failure: ${err.message || String(err)}`);
   }
 }
