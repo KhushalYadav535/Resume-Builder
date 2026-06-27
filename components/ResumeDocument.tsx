@@ -87,7 +87,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 0.95}pt`, fontWeight: 700, color: primaryColor, textTransform: "uppercase", borderBottom: "1px solid #dddddd", paddingBottom: "0.2rem", marginBottom: "0.5rem", fontFamily: "'Syne', sans-serif" }}>
                 Professional Summary
               </h3>
-              <p style={{ fontSize: `${fontSize * 0.82}pt`, color: "#444444", lineHeight: spacing, margin: 0 }}>{summary}</p>
+              <p style={{ fontSize: `${fontSize * 0.82}pt`, color: "#222222", lineHeight: spacing, margin: 0 }}>{summary}</p>
             </div>
           );
         case "work":
@@ -101,9 +101,9 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 <div key={exp.id} style={{ marginBottom: "0.8rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: `${fontSize * 0.85}pt`, color: "#222222", marginBottom: "0.15rem" }}>
                     <span>{exp.role} {exp.company ? `— ${exp.company}` : ""} {exp.employmentType ? `(${exp.employmentType})` : ""}</span>
-                    <span style={{ fontSize: `${fontSize * 0.78}pt`, color: "#666666" }}>{exp.startDate} {exp.endDate ? `- ${exp.endDate}` : ""}</span>
+                    <span style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222" }}>{exp.startDate} {exp.endDate ? `- ${exp.endDate}` : ""}</span>
                   </div>
-                  <div style={{ fontSize: `${fontSize * 0.76}pt`, color: "#666666", marginBottom: "0.25rem" }}>
+                  <div style={{ fontSize: `${fontSize * 0.76}pt`, color: "#222222", marginBottom: "0.25rem" }}>
                     {[exp.city, exp.industry, exp.companyScale ? `${exp.companyScale} scale` : "", exp.reportingManager ? `Manager: ${exp.reportingManager}` : ""].filter(Boolean).join(" • ")}
                     {exp.showSalary && (exp.currentCTC || exp.expectedCTC) && (
                       <strong style={{ color: primaryColor, marginLeft: "0.5rem" }}>
@@ -113,11 +113,11 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                   </div>
                   <ul style={{ paddingLeft: "1.1rem", margin: 0 }}>
                     {exp.bullets.map((b, bi) => (
-                      b && <li key={bi} style={{ fontSize: `${fontSize * 0.78}pt`, color: "#444444", lineHeight: spacing, marginBottom: "0.2rem" }}>{b}</li>
+                      b && <li key={bi} style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222", lineHeight: spacing, marginBottom: "0.2rem" }}>{b}</li>
                     ))}
                   </ul>
                   {exp.toolsUsed && exp.toolsUsed.length > 0 && (
-                    <div style={{ fontSize: `${fontSize * 0.74}pt`, color: "#666666", fontStyle: "italic", marginTop: "0.2rem" }}>
+                    <div style={{ fontSize: `${fontSize * 0.74}pt`, color: "#222222", fontStyle: "italic", marginTop: "0.2rem" }}>
                       Tools: {exp.toolsUsed.join(", ")}
                     </div>
                   )}
@@ -134,17 +134,17 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               </h3>
               {education.map((edu) => (
                 <div key={edu.id} style={{ marginBottom: "0.6rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: `${fontSize * 0.82}pt`, color: "#333333" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: `${fontSize * 0.82}pt`, color: "#111111" }}>
                     <div>
                       <strong style={{ color: "#222222" }}>{edu.degree || "Degree"}{edu.field ? ` in ${edu.field}` : ""}</strong>
                       {edu.boardOrUniversity ? ` | ${edu.boardOrUniversity}` : ""}
                       {edu.institution ? ` — ${edu.institution}` : ""}
-                      {edu.gpa && <span style={{ color: "#555", fontWeight: 600 }}> ({getScoreLabel(edu)})</span>}
+                      {edu.gpa && <span style={{ color: "#333", fontWeight: 600 }}> ({getScoreLabel(edu)})</span>}
                     </div>
-                    <span style={{ fontSize: `${fontSize * 0.78}pt`, color: "#666666" }}>{edu.startDate} {edu.endDate ? `- ${edu.endDate}` : ""}</span>
+                    <span style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222" }}>{edu.startDate} {edu.endDate ? `- ${edu.endDate}` : ""}</span>
                   </div>
                   {(edu.distinction || edu.topper || edu.scholarship || edu.academicAchievements) && (
-                    <div style={{ fontSize: `${fontSize * 0.75}pt`, color: "#555", marginTop: "0.15rem", paddingLeft: "0.5rem", borderLeft: "2px solid #ccc" }}>
+                    <div style={{ fontSize: `${fontSize * 0.75}pt`, color: "#333", marginTop: "0.15rem", paddingLeft: "0.5rem", borderLeft: "2px solid #ccc" }}>
                       {[
                         edu.distinction ? "Graduated with Distinction" : "",
                         edu.topper ? "Class Topper" : "",
@@ -165,12 +165,12 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 Skills Inventory
               </h3>
               {skills.technical.length > 0 && (
-                <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#444444", marginBottom: "0.3rem", lineHeight: spacing }}>
+                <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222", marginBottom: "0.3rem", lineHeight: spacing }}>
                   <strong>Technical Competencies:</strong> {skills.technical.join(", ")}
                 </p>
               )}
               {skills.soft.length > 0 && (
-                <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#444444", margin: 0, lineHeight: spacing }}>
+                <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222", margin: 0, lineHeight: spacing }}>
                   <strong>Soft Skills:</strong> {skills.soft.join(", ")}
                 </p>
               )}
@@ -193,7 +193,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                       </span>
                     )}
                   </div>
-                  <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#444444", margin: "0.15rem 0 0.3rem", lineHeight: spacing }}>{proj.description}</p>
+                  <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222", margin: "0.15rem 0 0.3rem", lineHeight: spacing }}>{proj.description}</p>
                   {proj.techStack && proj.techStack.length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
                       {proj.techStack.map((tech, ti) => tech && <span key={ti} style={{ fontSize: "0.65rem", background: "#f3f4f6", color: "#4b5563", padding: "1px 6px", borderRadius: "3px" }}>{tech}</span>)}
@@ -212,7 +212,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               </h3>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 0.8rem" }}>
                 {certifications.map((c) => c.name && (
-                  <div key={c.id} style={{ fontSize: `${fontSize * 0.78}pt`, color: "#444444" }}>
+                  <div key={c.id} style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222" }}>
                     • <strong>{c.name}</strong> {c.issuer ? `(${c.issuer})` : ""} {c.date && `— ${c.date}`}
                   </div>
                 ))}
@@ -226,12 +226,12 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 0.95}pt`, fontWeight: 700, color: primaryColor, textTransform: "uppercase", borderBottom: "1px solid #dddddd", paddingBottom: "0.2rem", marginBottom: "0.4rem", fontFamily: "'Syne', sans-serif" }}>
                 Languages Known
               </h3>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem", fontSize: `${fontSize * 0.78}pt`, color: "#444444" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem", fontSize: `${fontSize * 0.78}pt`, color: "#222222" }}>
                 {activeLanguages.map((l) => (
                   <div key={l.id}>
                     • <strong>{l.language}</strong> ({l.proficiency})
                     {l.certification && <span style={{ color: "#666" }}> — Cert: {l.certification}</span>}
-                    {l.usageContext && <span style={{ color: "#777", fontStyle: "italic" }}> ({l.usageContext})</span>}
+                    {l.usageContext && <span style={{ color: "#333", fontStyle: "italic" }}> ({l.usageContext})</span>}
                   </div>
                 ))}
               </div>
@@ -254,7 +254,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               {hasExams && (
                 <div style={{ marginBottom: "0.6rem" }}>
                   <div style={{ fontWeight: 700, fontSize: `${fontSize * 0.8}pt`, color: "#222" }}>Competitive Exams Marks:</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 0.8rem", fontSize: `${fontSize * 0.78}pt`, color: "#444444", marginTop: "0.15rem" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 0.8rem", fontSize: `${fontSize * 0.78}pt`, color: "#222222", marginTop: "0.15rem" }}>
                     {activeExams.map((ex, i) => (
                       <span key={i}>• {ex.exam}: <strong>{ex.score}</strong> ({ex.year})</span>
                     ))}
@@ -312,24 +312,24 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
     };
 
     return (
-      <div style={{ fontFamily: selectedFont, color: "#333333" }}>
+      <div style={{ fontFamily: selectedFont, color: "#111111" }}>
         {/* Header Section */}
         <div style={{ borderBottom: `2px solid ${primaryColor}`, paddingBottom: "1.2rem", marginBottom: "1.2rem", textAlign: "center" }}>
           <h1 style={{ fontSize: `${fontSize * 1.8}pt`, color: "#111111", fontWeight: 800, textTransform: "uppercase", marginBottom: "0.4rem", fontFamily: "'Syne', sans-serif" }}>
             {personalInfo.fullName || "Your Full Name"}
           </h1>
-          <div style={{ fontSize: `${fontSize * 0.82}pt`, color: "#666666", display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "0.8rem" }}>
+          <div style={{ fontSize: `${fontSize * 0.82}pt`, color: "#222222", display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "0.8rem" }}>
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>• {personalInfo.phone}</span>}
             {personalInfo.location && <span>• {personalInfo.location}</span>}
             {personalInfo.linkedin && (
               <span>
-                • <a href={personalInfo.linkedin.startsWith("http") ? personalInfo.linkedin : `https://${personalInfo.linkedin}`} target="_blank" rel="noopener noreferrer" style={{ color: "#666666", textDecoration: "none" }}>{personalInfo.linkedin.replace(/^(https?:\/\/)?(www\.)?/, "")}</a>
+                • <a href={personalInfo.linkedin.startsWith("http") ? personalInfo.linkedin : `https://${personalInfo.linkedin}`} target="_blank" rel="noopener noreferrer" style={{ color: "#222222", textDecoration: "none" }}>{personalInfo.linkedin.replace(/^(https?:\/\/)?(www\.)?/, "")}</a>
               </span>
             )}
             {personalInfo.website && (
               <span>
-                • <a href={personalInfo.website.startsWith("http") ? personalInfo.website : `https://${personalInfo.website}`} target="_blank" rel="noopener noreferrer" style={{ color: "#666666", textDecoration: "none" }}>{personalInfo.website.replace(/^(https?:\/\/)?(www\.)?/, "")}</a>
+                • <a href={personalInfo.website.startsWith("http") ? personalInfo.website : `https://${personalInfo.website}`} target="_blank" rel="noopener noreferrer" style={{ color: "#222222", textDecoration: "none" }}>{personalInfo.website.replace(/^(https?:\/\/)?(www\.)?/, "")}</a>
               </span>
             )}
           </div>
@@ -370,7 +370,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 <div key={exp.id} style={{ marginBottom: "1rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: `${fontSize * 0.88}pt`, color: "#111111", marginBottom: "0.2rem" }}>
                     <span>{exp.role ? exp.role.toUpperCase() : "ROLE"} {exp.company ? `| ${exp.company}` : ""}</span>
-                    <span style={{ fontStyle: "italic", fontWeight: "normal", fontSize: `${fontSize * 0.8}pt`, color: "#555555" }}>{exp.startDate} {exp.endDate ? `- ${exp.endDate}` : ""}</span>
+                    <span style={{ fontStyle: "italic", fontWeight: "normal", fontSize: `${fontSize * 0.8}pt`, color: "#111111" }}>{exp.startDate} {exp.endDate ? `- ${exp.endDate}` : ""}</span>
                   </div>
                   <div style={{ fontSize: `${fontSize * 0.78}pt`, color: "#666", fontStyle: "italic", marginBottom: "0.2rem" }}>
                     {[exp.city, exp.industry, exp.employmentType, exp.reportingManager ? `Reports to: ${exp.reportingManager}` : ""].filter(Boolean).join(" • ")}
@@ -399,12 +399,12 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     {edu.boardOrUniversity ? ` (${edu.boardOrUniversity})` : ""}
                     {edu.gpa && <span> ({getScoreLabel(edu)})</span>}
                     {(edu.distinction || edu.topper || edu.scholarship) && (
-                      <div style={{ fontSize: `${fontSize * 0.78}pt`, color: "#555", marginTop: "0.1rem" }}>
+                      <div style={{ fontSize: `${fontSize * 0.78}pt`, color: "#333", marginTop: "0.1rem" }}>
                         {[edu.distinction ? "Distinction" : "", edu.topper ? "Class Topper" : "", edu.scholarship ? `Scholarship: ${edu.scholarship}` : ""].filter(Boolean).join(", ")}
                       </div>
                     )}
                   </div>
-                  <span style={{ fontSize: `${fontSize * 0.8}pt`, color: "#555555", fontStyle: "italic" }}>{edu.startDate} {edu.endDate ? `- ${edu.endDate}` : ""}</span>
+                  <span style={{ fontSize: `${fontSize * 0.8}pt`, color: "#111111", fontStyle: "italic" }}>{edu.startDate} {edu.endDate ? `- ${edu.endDate}` : ""}</span>
                 </div>
               ))}
             </div>
@@ -443,7 +443,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                   </div>
                   <p style={{ fontSize: `${fontSize * 0.82}pt`, margin: "0.2rem 0", lineHeight: spacing }}>{proj.description}</p>
                   {proj.techStack && proj.techStack.length > 0 && (
-                    <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#666666", margin: 0 }}>
+                    <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222", margin: 0 }}>
                       <em>Technologies: {proj.techStack.join(", ")}</em>
                     </p>
                   )}
@@ -525,7 +525,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           <h1 style={{ fontSize: `${fontSize * 2}pt`, color: "#000000", fontWeight: "bold", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "0.5rem" }}>
             {personalInfo.fullName || "Your Full Name"}
           </h1>
-          <div style={{ fontSize: `${fontSize * 0.85}pt`, color: "#555555", display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "1rem", fontStyle: "italic" }}>
+          <div style={{ fontSize: `${fontSize * 0.85}pt`, color: "#111111", display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "1rem", fontStyle: "italic" }}>
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>{personalInfo.phone}</span>}
             {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -569,11 +569,11 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 <div key={exp.id} style={{ marginBottom: "1.2rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: `${fontSize * 0.92}pt`, color: "#000000", marginBottom: "0.25rem" }}>
                     <span>{exp.company || "Company Name"}</span>
-                    <span style={{ fontSize: `${fontSize * 0.85}pt`, color: "#555555", fontWeight: "normal" }}>{exp.startDate} {exp.endDate ? `— ${exp.endDate}` : ""}</span>
+                    <span style={{ fontSize: `${fontSize * 0.85}pt`, color: "#111111", fontWeight: "normal" }}>{exp.startDate} {exp.endDate ? `— ${exp.endDate}` : ""}</span>
                   </div>
                   <div style={{ fontStyle: "italic", fontSize: `${fontSize * 0.88}pt`, color: primaryColor, marginBottom: "0.2rem", fontWeight: 600 }}>
                     {exp.role || "Executive Position"}
-                    {exp.city && <span style={{ color: "#777", fontWeight: "normal", fontSize: "0.8rem" }}> • {exp.city}</span>}
+                    {exp.city && <span style={{ color: "#333", fontWeight: "normal", fontSize: "0.8rem" }}> • {exp.city}</span>}
                   </div>
                   <ul style={{ paddingLeft: "1.2rem", margin: 0 }}>
                     {exp.bullets.map((b, bi) => (
@@ -595,9 +595,9 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 <div key={edu.id} style={{ marginBottom: "0.6rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: `${fontSize * 0.88}pt`, fontWeight: "bold" }}>
                     <span>{edu.degree || "Degree"}{edu.field ? ` in ${edu.field}` : ""} {edu.boardOrUniversity ? `| ${edu.boardOrUniversity}` : ""}</span>
-                    <span style={{ fontWeight: "normal", fontSize: `${fontSize * 0.85}pt`, color: "#555555" }}>{edu.startDate} {edu.endDate ? `— ${edu.endDate}` : ""}</span>
+                    <span style={{ fontWeight: "normal", fontSize: `${fontSize * 0.85}pt`, color: "#111111" }}>{edu.startDate} {edu.endDate ? `— ${edu.endDate}` : ""}</span>
                   </div>
-                  <div style={{ fontSize: `${fontSize * 0.85}pt`, color: "#444444" }}>
+                  <div style={{ fontSize: `${fontSize * 0.85}pt`, color: "#222222" }}>
                     {edu.institution || "Institution"} {edu.gpa && `• ${getScoreLabel(edu)}`}
                     {edu.scholarship && ` • Scholarship: ${edu.scholarship}`}
                   </div>
@@ -643,7 +643,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                   </div>
                   <p style={{ fontSize: `${fontSize * 0.85}pt`, margin: "0.2rem 0", lineHeight: spacing }}>{proj.description}</p>
                   {proj.techStack && proj.techStack.length > 0 && (
-                    <div style={{ fontSize: `${fontSize * 0.78}pt`, color: "#666666" }}>Technology Focus: {proj.techStack.join(", ")}</div>
+                    <div style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222" }}>Technology Focus: {proj.techStack.join(", ")}</div>
                   )}
                 </div>
               ))}
@@ -707,7 +707,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           <h1 style={{ fontSize: `${fontSize * 2.2}pt`, color: primaryColor, fontWeight: "500", letterSpacing: "0.02em", marginBottom: "0.6rem" }}>
             {personalInfo.fullName || "Your Full Name"}
           </h1>
-          <div style={{ fontSize: `${fontSize * 0.88}pt`, color: "#444444", display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
+          <div style={{ fontSize: `${fontSize * 0.88}pt`, color: "#222222", display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>| {personalInfo.phone}</span>}
             {personalInfo.location && <span>| {personalInfo.location}</span>}
@@ -737,7 +737,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 0.82}pt`, fontWeight: "700", color: "#111111", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>
                 Summary
               </h3>
-              <p style={{ margin: 0, color: "#555555", fontSize: `${fontSize * 0.82}pt` }}>{summary}</p>
+              <p style={{ margin: 0, color: "#111111", fontSize: `${fontSize * 0.82}pt` }}>{summary}</p>
             </div>
           );
         case "work":
@@ -753,7 +753,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     <span>{exp.role || "Role"} @ {exp.company || "Company"} {exp.city ? `(${exp.city})` : ""}</span>
                     <span style={{ fontWeight: "normal", color: "#888888", fontSize: `${fontSize * 0.78}pt` }}>{exp.startDate} {exp.endDate ? `– ${exp.endDate}` : ""}</span>
                   </div>
-                  <ul style={{ paddingLeft: "1rem", margin: 0, color: "#555555", fontSize: `${fontSize * 0.78}pt` }}>
+                  <ul style={{ paddingLeft: "1rem", margin: 0, color: "#111111", fontSize: `${fontSize * 0.78}pt` }}>
                     {exp.bullets.map((b, bi) => (
                       b && <li key={bi} style={{ lineHeight: spacing, marginBottom: "0.15rem" }}>{b}</li>
                     ))}
@@ -770,7 +770,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 Education
               </h3>
               {education.map((edu) => (
-                <div key={edu.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem", color: "#555555", fontSize: `${fontSize * 0.82}pt` }}>
+                <div key={edu.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem", color: "#111111", fontSize: `${fontSize * 0.82}pt` }}>
                   <div>
                     <strong style={{ color: "#222" }}>{edu.degree || "Degree"}</strong> {edu.field ? `in ${edu.field}` : ""} • {edu.institution || "Institution"}
                     {edu.gpa && <span> ({getScoreLabel(edu)})</span>}
@@ -812,7 +812,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     <span>{proj.name}</span>
                     {proj.link && <span style={{ fontWeight: "normal", fontSize: `${fontSize * 0.78}pt`, color: primaryColor }}>{proj.link}</span>}
                   </div>
-                  <p style={{ margin: "0.15rem 0", color: "#555555", lineHeight: spacing }}>{proj.description}</p>
+                  <p style={{ margin: "0.15rem 0", color: "#111111", lineHeight: spacing }}>{proj.description}</p>
                 </div>
               ))}
             </div>
@@ -824,7 +824,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 0.82}pt`, fontWeight: "700", color: "#111111", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>
                 Certifications
               </h3>
-              <p style={{ margin: 0, color: "#555555", fontSize: `${fontSize * 0.8}pt` }}>
+              <p style={{ margin: 0, color: "#111111", fontSize: `${fontSize * 0.8}pt` }}>
                 {certifications.map((c, i) => c.name && (
                   <span key={c.id}>
                     {i > 0 && " • "}{c.name} {c.issuer ? `(${c.issuer})` : ""}
@@ -840,7 +840,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 0.82}pt`, fontWeight: "700", color: "#111111", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>
                 Languages
               </h3>
-              <p style={{ margin: 0, color: "#555555", fontSize: `${fontSize * 0.8}pt` }}>
+              <p style={{ margin: 0, color: "#111111", fontSize: `${fontSize * 0.8}pt` }}>
                 {activeLanguages.map((l) => `${l.language} (${l.proficiency})`).join(", ")}
               </p>
             </div>
@@ -852,7 +852,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 0.82}pt`, fontWeight: "700", color: "#111111", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>
                 Activities & Honors
               </h3>
-              <p style={{ margin: 0, color: "#555", fontSize: `${fontSize * 0.8}pt`, lineHeight: spacing }}>
+              <p style={{ margin: 0, color: "#333", fontSize: `${fontSize * 0.8}pt`, lineHeight: spacing }}>
                 {[
                   activeExams.map(ex => `${ex.exam}: AIR ${ex.score}`).join(", "),
                   hackathons.join(", "),
@@ -867,7 +867,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
     };
 
     return (
-      <div style={{ fontFamily: selectedFont, color: "#444444", fontSize: `${fontSize * 0.82}pt`, lineHeight: spacing }}>
+      <div style={{ fontFamily: selectedFont, color: "#222222", fontSize: `${fontSize * 0.82}pt`, lineHeight: spacing }}>
         {/* Minimal left aligned header with side contact */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: "1px solid #eaeaea", paddingBottom: "1.2rem", marginBottom: "1.5rem" }}>
           <div>
@@ -907,7 +907,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
             <h4 style={{ fontSize: `${fontSize * 0.78}pt`, fontWeight: 800, color: primaryColor, textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: `1px solid ${primaryColor}30`, paddingBottom: "0.2rem", marginBottom: "0.5rem" }}>
               Contact
             </h4>
-            <div style={{ display: "grid", gap: "0.4rem", fontSize: `${fontSize * 0.74}pt`, color: "#555555" }}>
+            <div style={{ display: "grid", gap: "0.4rem", fontSize: `${fontSize * 0.74}pt`, color: "#111111" }}>
               {personalInfo.email && <div style={{ overflowWrap: "anywhere" }}>✉ {personalInfo.email}</div>}
               {personalInfo.phone && <div>☎ {personalInfo.phone}</div>}
               {personalInfo.location && <div>📍 {personalInfo.location}</div>}
@@ -940,7 +940,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h4 style={{ fontSize: `${fontSize * 0.78}pt`, fontWeight: 800, color: primaryColor, textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: `1px solid ${primaryColor}30`, paddingBottom: "0.2rem", marginBottom: "0.5rem" }}>
                 Languages
               </h4>
-              <div style={{ display: "grid", gap: "0.3rem", fontSize: `${fontSize * 0.74}pt`, color: "#555" }}>
+              <div style={{ display: "grid", gap: "0.3rem", fontSize: `${fontSize * 0.74}pt`, color: "#333" }}>
                 {activeLanguages.map((l) => (
                   <div key={l.id}>• {l.language} ({l.proficiency})</div>
                 ))}
@@ -960,7 +960,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 0.9}pt`, fontWeight: 800, color: primaryColor, textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #eaeaea", paddingBottom: "0.2rem", marginBottom: "0.4rem", fontFamily: "'Syne', sans-serif" }}>
                 Profile Overview
               </h3>
-              <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#444444", lineHeight: spacing, margin: 0 }}>{summary}</p>
+              <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222", lineHeight: spacing, margin: 0 }}>{summary}</p>
             </div>
           );
         case "work":
@@ -974,9 +974,9 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 <div key={exp.id} style={{ marginBottom: "0.75rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: `${fontSize * 0.8}pt`, color: "#222222", marginBottom: "0.1rem" }}>
                     <span>{exp.role || "Role"} <span style={{ color: primaryColor }}>@ {exp.company || "Company"}</span></span>
-                    <span style={{ fontSize: `${fontSize * 0.74}pt`, color: "#666666", fontWeight: "normal" }}>{exp.startDate} {exp.endDate ? `– ${exp.endDate}` : ""}</span>
+                    <span style={{ fontSize: `${fontSize * 0.74}pt`, color: "#222222", fontWeight: "normal" }}>{exp.startDate} {exp.endDate ? `– ${exp.endDate}` : ""}</span>
                   </div>
-                  <ul style={{ paddingLeft: "1rem", margin: 0, fontSize: `${fontSize * 0.76}pt`, color: "#444444" }}>
+                  <ul style={{ paddingLeft: "1rem", margin: 0, fontSize: `${fontSize * 0.76}pt`, color: "#222222" }}>
                     {exp.bullets.map((b, bi) => (
                       b && <li key={bi} style={{ lineHeight: spacing, marginBottom: "0.15rem" }}>{b}</li>
                     ))}
@@ -993,12 +993,12 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 Education
               </h3>
               {education.map((edu) => (
-                <div key={edu.id} style={{ display: "flex", justifyContent: "space-between", fontSize: `${fontSize * 0.78}pt`, color: "#444444", marginBottom: "0.25rem" }}>
+                <div key={edu.id} style={{ display: "flex", justifyContent: "space-between", fontSize: `${fontSize * 0.78}pt`, color: "#222222", marginBottom: "0.25rem" }}>
                   <div>
                     <strong style={{ color: "#222222" }}>{edu.degree || "Degree"}</strong> {edu.field ? `in ${edu.field}` : ""} <br />
                     <span style={{ fontSize: `${fontSize * 0.74}pt`, color: "#666" }}>{edu.boardOrUniversity || ""} {edu.institution || ""} {edu.gpa && `• Score: ${edu.gpa}`}</span>
                   </div>
-                  <span style={{ fontSize: `${fontSize * 0.74}pt`, color: "#666666" }}>{edu.startDate} {edu.endDate ? `– ${edu.endDate}` : ""}</span>
+                  <span style={{ fontSize: `${fontSize * 0.74}pt`, color: "#222222" }}>{edu.startDate} {edu.endDate ? `– ${edu.endDate}` : ""}</span>
                 </div>
               ))}
             </div>
@@ -1016,7 +1016,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     <span>{proj.name}</span>
                     {proj.link && <span style={{ fontSize: `${fontSize * 0.74}pt` }}>Link</span>}
                   </div>
-                  <p style={{ fontSize: `${fontSize * 0.74}pt`, color: "#555555", margin: "0.1rem 0", lineHeight: spacing }}>{proj.description}</p>
+                  <p style={{ fontSize: `${fontSize * 0.74}pt`, color: "#111111", margin: "0.1rem 0", lineHeight: spacing }}>{proj.description}</p>
                 </div>
               ))}
             </div>
@@ -1054,7 +1054,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
     };
 
     return (
-      <div style={{ display: "flex", minHeight: "285mm", fontFamily: selectedFont, color: "#333333" }}>
+      <div style={{ display: "flex", minHeight: "285mm", fontFamily: selectedFont, color: "#111111" }}>
         {/* Left Column (Sidebar) */}
         <div style={{ width: "35%", background: `${primaryColor}0d`, borderRight: `1px solid ${primaryColor}1a`, padding: "1.5rem 1rem 1rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           
@@ -1122,7 +1122,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     <span>{exp.company} — {exp.role}</span>
                     <span>{exp.startDate} – {exp.endDate}</span>
                   </div>
-                  <div style={{ fontSize: "8.5pt", fontStyle: "italic", color: "#555" }}>
+                  <div style={{ fontSize: "8.5pt", fontStyle: "italic", color: "#333" }}>
                     {[exp.city, exp.industry, exp.employmentType].filter(Boolean).join(" • ")}
                   </div>
                   <ul style={{ paddingLeft: "15px", margin: "2px 0 0" }}>
@@ -1413,7 +1413,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 {projects.map((proj) => (
                   <div key={proj.id} style={{ background: "#fff5f5", padding: "0.6rem", borderRadius: "6px", fontSize: `${fontSize * 0.78}pt` }}>
                     <div style={{ fontWeight: 700, color: "#111" }}>{proj.name}</div>
-                    <p style={{ margin: "2px 0", color: "#555", lineHeight: spacing }}>{proj.description}</p>
+                    <p style={{ margin: "2px 0", color: "#333", lineHeight: spacing }}>{proj.description}</p>
                   </div>
                 ))}
               </div>
@@ -1602,7 +1602,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           return (
             <div style={{ marginBottom: "1.2rem" }}>
               <h3 style={{ fontSize: `${fontSize * 0.85}pt`, fontWeight: 600, color: "#111", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "0.3rem" }}>Profile</h3>
-              <p style={{ fontSize: `${fontSize * 0.8}pt`, color: "#555", margin: 0, lineHeight: spacing }}>{summary}</p>
+              <p style={{ fontSize: `${fontSize * 0.8}pt`, color: "#333", margin: 0, lineHeight: spacing }}>{summary}</p>
             </div>
           );
         case "work":
@@ -1614,7 +1614,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 <div key={exp.id} style={{ marginBottom: "0.75rem", fontSize: `${fontSize * 0.8}pt` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
                     <span>{exp.role} @ {exp.company}</span>
-                    <span style={{ fontWeight: "normal", color: "#888" }}>{exp.startDate} - {exp.endDate}</span>
+                    <span style={{ fontWeight: "normal", color: "#444" }}>{exp.startDate} - {exp.endDate}</span>
                   </div>
                   <ul style={{ margin: "2px 0 0", paddingLeft: "15px", color: "#444" }}>
                     {exp.bullets.map((b, bi) => <li key={bi} style={{ lineHeight: spacing }}>{b}</li>)}
@@ -1654,25 +1654,25 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           if (!summary) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Professional Summary</h3>
-              <p style={{ fontSize: `${fontSize * 0.85}pt`, margin: 0, lineHeight: 1.5, color: "var(--text)" }}>{summary}</p>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #cccccc", paddingBottom: "2px", marginBottom: "0.5rem", color: "#111111" }}>Professional Summary</h3>
+              <p style={{ fontSize: `${fontSize * 0.85}pt`, margin: 0, lineHeight: 1.5, color: "#333333" }}>{summary}</p>
             </div>
           );
         case "work":
           if (workExperience.length === 0) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Work Experience</h3>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #cccccc", paddingBottom: "2px", marginBottom: "0.5rem", color: "#111111" }}>Work Experience</h3>
               {workExperience.map((exp) => (
                 <div key={exp.id} style={{ marginBottom: "1rem", fontSize: `${fontSize * 0.85}pt` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.15rem" }}>
-                    <span style={{ color: "var(--text-primary)" }}><strong>{exp.role || "Role"}</strong> {exp.company ? `– ${exp.company}` : ""}</span>
-                    <span style={{ fontStyle: "italic", color: "var(--text-muted)" }}>
+                    <span style={{ color: "#111111" }}><strong>{exp.role || "Role"}</strong> {exp.company ? `– ${exp.company}` : ""}</span>
+                    <span style={{ fontStyle: "italic", color: "#555555" }}>
                       {exp.startDate} {exp.endDate ? `– ${exp.endDate}` : ""} 
                       {exp.city ? ` | ${exp.city}` : ""}
                     </span>
                   </div>
-                  <ul style={{ margin: "4px 0 0", paddingLeft: "1.2rem", color: "var(--text)" }}>
+                  <ul style={{ margin: "4px 0 0", paddingLeft: "1.2rem", color: "#333333" }}>
                     {exp.bullets.filter(b => b.trim()).map((b, bi) => <li key={bi} style={{ marginBottom: "4px", lineHeight: 1.5 }}>{b}</li>)}
                   </ul>
                 </div>
@@ -1683,18 +1683,18 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           if (education.length === 0) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Education</h3>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #cccccc", paddingBottom: "2px", marginBottom: "0.5rem", color: "#111111" }}>Education</h3>
               {education.map((edu) => (
                 <div key={edu.id} style={{ marginBottom: "0.8rem", fontSize: `${fontSize * 0.85}pt` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.15rem" }}>
-                    <span style={{ color: "var(--text-primary)" }}><strong>{edu.degree || "Degree"}{edu.field ? ` in ${edu.field}` : ""}</strong></span>
-                    <span style={{ fontStyle: "italic", color: "var(--text-muted)" }}>
+                    <span style={{ color: "#111111" }}><strong>{edu.degree || "Degree"}{edu.field ? ` in ${edu.field}` : ""}</strong></span>
+                    <span style={{ fontStyle: "italic", color: "#555555" }}>
                       {edu.startDate} {edu.endDate ? `– ${edu.endDate}` : ""}
                     </span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: "#333333" }}>
                     <span>{edu.institution || "Institution"}{edu.boardOrUniversity ? ` – ${edu.boardOrUniversity}` : ""}</span>
-                    {edu.gpa && <span style={{ color: "var(--text-muted)" }}>GPA: {edu.gpa}</span>}
+                    {edu.gpa && <span style={{ color: "#555555" }}>GPA: {edu.gpa}</span>}
                   </div>
                 </div>
               ))}
@@ -1704,13 +1704,13 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           if (skills.technical.length === 0 && skills.soft.length === 0) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Skills</h3>
-              <div style={{ fontSize: `${fontSize * 0.85}pt`, lineHeight: 1.5, display: "grid", gap: "0.2rem", color: "var(--text)" }}>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #cccccc", paddingBottom: "2px", marginBottom: "0.5rem", color: "#111111" }}>Skills</h3>
+              <div style={{ fontSize: `${fontSize * 0.85}pt`, lineHeight: 1.5, display: "grid", gap: "0.2rem", color: "#333333" }}>
                 {skills.technical.length > 0 && (
-                  <div><strong style={{ color: "var(--text-primary)" }}>Technical:</strong> {skills.technical.join(", ")}</div>
+                  <div><strong style={{ color: "#111111" }}>Technical:</strong> {skills.technical.join(", ")}</div>
                 )}
                 {skills.soft.length > 0 && (
-                  <div><strong style={{ color: "var(--text-primary)" }}>Soft:</strong> {skills.soft.join(", ")}</div>
+                  <div><strong style={{ color: "#111111" }}>Soft:</strong> {skills.soft.join(", ")}</div>
                 )}
               </div>
             </div>
@@ -1719,15 +1719,15 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           if (projects.length === 0) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Projects</h3>
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #cccccc", paddingBottom: "2px", marginBottom: "0.5rem", color: "#111111" }}>Projects</h3>
               {projects.map((proj) => (
                 <div key={proj.id} style={{ marginBottom: "1rem", fontSize: `${fontSize * 0.85}pt` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.15rem" }}>
-                    <span style={{ fontWeight: "bold", color: "var(--text-primary)" }}>
+                    <span style={{ fontWeight: "bold", color: "#111111" }}>
                       {proj.link ? <a href={proj.link} style={{ color: "inherit", textDecoration: "none" }}>{proj.name}</a> : proj.name}
                     </span>
                   </div>
-                  <ul style={{ margin: "4px 0 0", paddingLeft: "1.2rem", color: "var(--text)" }}>
+                  <ul style={{ margin: "4px 0 0", paddingLeft: "1.2rem", color: "#333333" }}>
                     {proj.description.split("\n").filter(b => b.trim()).map((b, bi) => <li key={bi} style={{ marginBottom: "4px", lineHeight: 1.5 }}>{b.replace(/^- /, '')}</li>)}
                   </ul>
                 </div>
@@ -1738,9 +1738,9 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           if (certifications.length === 0) return null;
           return (
             <div style={{ marginBottom: "1.2rem" }}>
-              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid var(--border)", paddingBottom: "2px", marginBottom: "0.5rem", color: "var(--text-primary)" }}>Certifications</h3>
-              <ul style={{ margin: 0, paddingLeft: "1.2rem", fontSize: `${fontSize * 0.85}pt`, lineHeight: 1.5, color: "var(--text)" }}>
-                {certifications.map((c) => <li key={c.id}><strong style={{ color: "var(--text-primary)" }}>{c.name}</strong> {c.issuer ? `— ${c.issuer}` : ""} {c.date ? `(${c.date})` : ""}</li>)}
+              <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #cccccc", paddingBottom: "2px", marginBottom: "0.5rem", color: "#111111" }}>Certifications</h3>
+              <ul style={{ margin: 0, paddingLeft: "1.2rem", fontSize: `${fontSize * 0.85}pt`, lineHeight: 1.5, color: "#333333" }}>
+                {certifications.map((c) => <li key={c.id}><strong style={{ color: "#111111" }}>{c.name}</strong> {c.issuer ? `— ${c.issuer}` : ""} {c.date ? `(${c.date})` : ""}</li>)}
               </ul>
             </div>
           );
@@ -1750,10 +1750,10 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
     };
 
     return (
-      <div style={{ fontFamily: "Arial, Helvetica, sans-serif", color: "var(--text-primary)", fontSize: `${fontSize * 0.85}pt` }}>
+      <div style={{ fontFamily: "Arial, Helvetica, sans-serif", color: "#111111", fontSize: `${fontSize * 0.85}pt` }}>
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          <h1 style={{ fontSize: `${fontSize * 2.2}pt`, fontWeight: "bold", margin: "0 0 0.4rem 0" }}>{personalInfo.fullName}</h1>
-          <div style={{ fontSize: `${fontSize * 0.75}pt`, display: "flex", justifyContent: "center", gap: "1.2rem", flexWrap: "wrap", color: "var(--text-muted)" }}>
+          <h1 style={{ fontSize: `${fontSize * 2.2}pt`, fontWeight: "bold", margin: "0 0 0.4rem 0", color: "#111111" }}>{personalInfo.fullName}</h1>
+          <div style={{ fontSize: `${fontSize * 0.75}pt`, display: "flex", justifyContent: "center", gap: "1.2rem", flexWrap: "wrap", color: "#555555" }}>
             {personalInfo.email && <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>✉ {personalInfo.email}</span>}
             {personalInfo.phone && <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>✆ {personalInfo.phone}</span>}
             {personalInfo.location && <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>📍 {personalInfo.location}</span>}

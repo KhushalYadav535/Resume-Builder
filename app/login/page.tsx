@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Box, Mail, Phone, Lock, Smartphone } from "lucide-react";
+import ParticleBackground from "@/components/ui/ParticleBackground";
+import { Card } from "@/components/ui/Card";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -111,35 +113,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg-surface)] relative">
-      <div className="absolute top-6 right-6 z-50">
+    <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', overflow: 'hidden', background: 'var(--bg-page)' }}>
+      <ParticleBackground count={50} connectionDist={110} />
+      
+      <div style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 50 }}>
         <ThemeToggle />
       </div>
-      {/* Left Decorative Panel */}
-      <div className="hidden lg:flex flex-col relative w-[40%] bg-[var(--accent-grad)] p-12 overflow-hidden text-white">
-        <Link href="/" className="flex items-center gap-2 mb-16 relative z-10 w-fit no-underline">
-          <Box size={28} className="text-white" />
-          <span className="text-2xl font-[800] tracking-tight text-white font-['Syne',sans-serif]">
-            ResumeOptimizer
+      <div style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 50 }}>
+        <Link href="/" className="flex items-center gap-2 no-underline">
+          <Box size={24} className="text-[var(--accent)]" />
+          <span className="text-[18px] font-[800] tracking-tight text-[var(--text-primary)]" style={{ fontFamily: "var(--font-inter)" }}>
+            Resume<span className="gradient-text">Optimizer</span>
           </span>
         </Link>
-        <div className="relative z-10 flex flex-col justify-center flex-1 pr-12">
-          <h1 className="text-4xl lg:text-5xl font-extrabold font-['Syne',sans-serif] leading-tight mb-6 text-white">
-            Unlock your career potential.
-          </h1>
-          <p className="text-white/80 text-lg leading-relaxed">
-            Build ATS-friendly resumes, analyze job descriptions, and let AI help you land your dream job faster.
-          </p>
-        </div>
-        
-        {/* Animated Background Blobs */}
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 mix-blend-overlay animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4 mix-blend-overlay" />
       </div>
 
-      {/* Right Form Panel */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-[420px]">
+      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '420px' }}>
+        <Card glowColor="var(--accent-glow)" className="p-8">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-extrabold font-['Syne',sans-serif] text-[var(--text-primary)] mb-2">
               Welcome back
@@ -306,7 +296,7 @@ export default function LoginPage() {
               Sign up
             </Link>
           </p>
-        </div>
+        </Card>
       </div>
     </div>
   );

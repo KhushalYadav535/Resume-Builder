@@ -6,6 +6,7 @@ import ResumeDocument from "@/components/ResumeDocument";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ResumeData } from "@/types";
 
 const templates = [
@@ -342,16 +343,19 @@ function TemplatesContent() {
 
 export default function TemplatesPage() {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <Navbar />
-      <Suspense fallback={
-        <div style={{ display: "flex", minHeight: "80vh", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "1rem" }}>
-          <div className="spinner" style={{ width: 32, height: 32 }} />
-          <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>Loading templates...</p>
-        </div>
-      }>
-        <TemplatesContent />
-      </Suspense>
+    <div className="min-h-screen bg-[var(--bg-page)] relative overflow-hidden">
+      <ParticleBackground count={50} connectionDist={110} />
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <Navbar />
+        <Suspense fallback={
+          <div style={{ display: "flex", minHeight: "80vh", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "1rem" }}>
+            <div className="spinner" style={{ width: 32, height: 32 }} />
+            <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>Loading templates...</p>
+          </div>
+        }>
+          <TemplatesContent />
+        </Suspense>
+      </div>
     </div>
   );
 }

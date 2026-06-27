@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import ParticleBackground from "@/components/ui/ParticleBackground";
 import { useAuth } from "@/hooks/useAuth";
 
 export interface JobApplication {
@@ -250,17 +251,19 @@ export default function JobTracker() {
 
   if (authLoading || !user) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
         <div className="spinner" style={{ width: 40, height: 40 }} />
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <Navbar />
+    <div className="min-h-screen bg-[var(--bg-page)] relative overflow-hidden">
+      <ParticleBackground count={50} connectionDist={110} />
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <Navbar />
 
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
+        <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
         {/* HEADER AREA */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", borderBottom: "1px solid var(--border)", paddingBottom: "1.5rem" }}>
           <div>
@@ -707,6 +710,7 @@ export default function JobTracker() {
             </form>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
