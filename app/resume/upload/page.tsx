@@ -384,7 +384,7 @@ export default function UploadPage() {
 
         {/* STEP 3: Results */}
         {step === "results" && atsScore && (
-          <div style={{ display: "flex", flexDirection: "col", gap: "2rem", animation: "fadeInUp 0.4s ease" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "2rem", animation: "fadeInUp 0.4s ease" }}>
             <div className="flex-1 w-full">
               {/* Score Header */}
               <div className="card mb-6 border-l-4 border-[#43e97b] bg-[rgba(67,233,123,0.02)]">
