@@ -1,9 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { calculateDynamicATS } from "@/lib/ats";
-import { sanitizeObject, sanitizeInput } from "@/lib/sanitization";
 
 export const dynamic = "force-dynamic";
+
+// Simple server-side sanitizer that doesn't depend on DOM
+function sanitizeStr(input: string | undefined | null): string {
+  if (!input) return "";
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/on\w+="[^"]*"/gi, "")
+    .replace(/javascript:/gi, "");
+}
+
+function sanitizeDeep<T>(obj: T): T {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === "string") return sanitizeStr(obj) as any;
+  if (Array.isArray(obj)) return obj.map(item => sanitizeDeep(item)) as any;
+  if (typeof obj === "object") {
+    const result: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = sanitizeDeep(value);
+    }
+    return result as T;
+  }
+  return obj;
+}
 
 /**
  * Consolidated API route to save or update resumes.
@@ -21,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     // If no authenticated user exists, block saving and return error
     if (!user) {
-      throw new Error("User not authenticated");
+      return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
     }
 
     const body = await req.json();
@@ -34,9 +56,9 @@ export async function POST(req: NextRequest) {
       content_review, jd_match, template_id 
     } = body;
 
-    const fileName = sanitizeInput(rawFileName || file_name || "Untitled Resume");
-    const resumeText = sanitizeInput(rawResumeText || raw_text || "");
-    const structuredResume = sanitizeObject(rawStructuredResume || resume_data || {});
+    const fileName = sanitizeStr(rawFileName || file_name || "Untitled Resume");
+    const resumeText = sanitizeStr(rawResumeText || raw_text || "");
+    const structuredResume = sanitizeDeep(rawStructuredResume || resume_data || {});
     
     // Auto-calculate ATS score if omitted (bridges the Builder ATS score gap)
     let atsScore = rawAtsScore !== undefined ? rawAtsScore : (ats_score !== undefined ? ats_score : null);
@@ -48,43 +70,42 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const payload = {
+      file_name: fileName,
+      raw_text: resumeText,
+      resume_data: structuredResume,
+      ats_score: atsScore,
+      content_review: content_review || null,
+      jd_match: jd_match || null,
+      template_id: template_id || "standard",
+      updated_at: new Date().toISOString()
+    };
+
     let resultData;
 
     if (id) {
       // OVERWRITE EXISTING RECORD (Enforces owner-RLS check)
       const { data, error } = await supabase
         .from("resumes")
-        .update({
-          file_name: fileName,
-          raw_text: resumeText,
-          resume_data: structuredResume,
-          ats_score: atsScore,
-          content_review: content_review || null,
-          jd_match: jd_match || null,
-          template_id: template_id || "standard",
-          updated_at: new Date().toISOString()
-        })
+        .update(payload)
         .eq("id", id)
         .eq("user_id", user.id)
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase update error:", error.message, error.details, error.hint);
+        throw error;
+      }
       if (!data || data.length === 0) {
+        // ID didn't match any owned row — insert as new
         const { data: insertData, error: insertError } = await supabase
           .from("resumes")
-          .insert([{
-            user_id: user.id,
-            file_name: fileName,
-            raw_text: resumeText,
-            resume_data: structuredResume,
-            ats_score: atsScore,
-            content_review: content_review || null,
-            jd_match: jd_match || null,
-            template_id: template_id || "standard",
-            updated_at: new Date().toISOString()
-          }])
+          .insert([{ user_id: user.id, ...payload }])
           .select();
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("Supabase insert (fallback) error:", insertError.message, insertError.details, insertError.hint);
+          throw insertError;
+        }
         resultData = insertData;
       } else {
         resultData = data;
@@ -93,28 +114,15 @@ export async function POST(req: NextRequest) {
       // INSERT NEW RECORD
       const { data, error } = await supabase
         .from("resumes")
-        .insert([
-          {
-            user_id: user.id,
-            file_name: fileName,
-            raw_text: resumeText,
-            resume_data: structuredResume,
-            ats_score: atsScore,
-            content_review: content_review || null,
-            jd_match: jd_match || null,
-            template_id: template_id || "standard",
-            updated_at: new Date().toISOString()
-          }
-        ])
+        .insert([{ user_id: user.id, ...payload }])
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase insert error:", error.message, error.details, error.hint);
+        throw error;
+      }
       resultData = data;
     }
-
-    // Add Debug Logs
-    console.log("Logged user:", user?.id);
-    console.log("Save operation complete. Row count:", resultData?.length);
 
     // Return the saved row data
     const savedRecord = resultData && resultData.length > 0 ? resultData[0] : null;
@@ -124,9 +132,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(savedRecord);
   } catch (err: any) {
-    console.error("Failed to save resume:", err);
+    console.error("Failed to save resume:", err?.message || err, err?.stack || "");
     return NextResponse.json(
-      { error: "An unexpected error occurred while saving the resume." },
+      { error: err?.message || "An unexpected error occurred while saving the resume." },
       { status: 500 }
     );
   }
