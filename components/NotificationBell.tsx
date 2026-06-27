@@ -18,15 +18,15 @@ export default function NotificationBell() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = async () => {
-    if (!user) return;
+    if (!user || typeof window === "undefined" || !window.navigator.onLine) return;
     try {
       const res = await fetch("/api/notifications");
       if (res.ok) {
         const data = await res.json();
         setNotifications(Array.isArray(data) ? data : []);
       }
-    } catch (err) {
-      console.error("Error fetching notifications:", err);
+    } catch {
+      // Silently ignore network polling drops/aborts to prevent dev overlays
     }
   };
 

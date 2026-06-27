@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import ConcentricLoader, { ClassicLoader } from "@/components/ui/Loader";
 import ResumeRenderer from "@/components/ResumeRenderer";
 import { useAuth } from "@/hooks/useAuth";
 import { Resume, ResumeData, JDMatch } from "@/types";
@@ -348,8 +349,8 @@ export default function TailorPage() {
           </h2>
 
           {loading ? (
-            <div style={{ textAlign: "center", padding: "2rem" }}>
-              <div className="spinner" style={{ margin: "0 auto" }} />
+            <div style={{ textAlign: "center", padding: "1rem" }}>
+              <ConcentricLoader text="Fetching saved resumes..." />
             </div>
           ) : resumes.length === 0 ? (
             <div style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
