@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import ParticleBackground from "@/components/ui/ParticleBackground";
+import ConcentricLoader, { ClassicLoader } from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
 import { ResumeData, WorkExperience, Education, Project, Certification, ATSScore, LanguagesKnown, JDMatch } from "@/types";
 import { calculateATS } from "@/lib/calculateATS";
@@ -2323,72 +2324,80 @@ function BuilderContent() {
                 </button>
               </div>
 
-              {importOption === "paste" ? (
-                <div>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "0.8rem" }}>
-                    Go to your LinkedIn profile → click <strong>More</strong> → <strong>Save to PDF</strong> → open the PDF → select all text (Ctrl+A) → copy → paste here.<br />
-                    Or, select all text directly on your LinkedIn profile page and paste it below.
-                  </p>
-                  <textarea
-                    className="input"
-                    style={{ minHeight: "12rem", width: "100%", fontFamily: "monospace", fontSize: "0.82rem", background: "var(--bg-elevated)", color: "var(--text-primary)" }}
-                    placeholder="Paste copied LinkedIn profile text here..."
-                    value={pasteText}
-                    onChange={(e) => setPasteText(e.target.value)}
-                    disabled={linkedinLoading}
-                  />
+              {linkedinLoading ? (
+                <div className="py-8">
+                  <ConcentricLoader text="AI is parsing & extracting your profile details..." />
                 </div>
               ) : (
-                <div>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "0.8rem" }}>
-                    Get your complete profile imported with AI extraction:
-                  </p>
-                  <ol style={{ fontSize: "0.85rem", color: "var(--text-muted)", paddingLeft: "1.2rem", marginBottom: "1rem", lineHeight: 1.6 }}>
-                    <li>On your LinkedIn profile page, click <strong>More</strong> → <strong>Save to PDF</strong></li>
-                    <li>Upload the downloaded PDF below</li>
-                  </ol>
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-                    style={{
-                      width: "100%",
-                      padding: "1rem",
-                      background: "var(--bg-elevated)",
-                      border: "1px dashed var(--border)",
-                      borderRadius: "8px",
-                      color: "var(--text-primary)",
-                      cursor: "pointer",
-                    }}
-                    disabled={linkedinLoading}
-                  />
-                </div>
-              )}
+                <>
+                  {importOption === "paste" ? (
+                    <div>
+                      <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "0.8rem" }}>
+                        Go to your LinkedIn profile → click <strong>More</strong> → <strong>Save to PDF</strong> → open the PDF → select all text (Ctrl+A) → copy → paste here.<br />
+                        Or, select all text directly on your LinkedIn profile page and paste it below.
+                      </p>
+                      <textarea
+                        className="input"
+                        style={{ minHeight: "12rem", width: "100%", fontFamily: "monospace", fontSize: "0.82rem", background: "var(--bg-elevated)", color: "var(--text-primary)" }}
+                        placeholder="Paste copied LinkedIn profile text here..."
+                        value={pasteText}
+                        onChange={(e) => setPasteText(e.target.value)}
+                        disabled={linkedinLoading}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "0.8rem" }}>
+                        Get your complete profile imported with AI extraction:
+                      </p>
+                      <ol style={{ fontSize: "0.85rem", color: "var(--text-muted)", paddingLeft: "1.2rem", marginBottom: "1rem", lineHeight: 1.6 }}>
+                        <li>On your LinkedIn profile page, click <strong>More</strong> → <strong>Save to PDF</strong></li>
+                        <li>Upload the downloaded PDF below</li>
+                      </ol>
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                        style={{
+                          width: "100%",
+                          padding: "1rem",
+                          background: "var(--bg-elevated)",
+                          border: "1px dashed var(--border)",
+                          borderRadius: "8px",
+                          color: "var(--text-primary)",
+                          cursor: "pointer",
+                        }}
+                        disabled={linkedinLoading}
+                      />
+                    </div>
+                  )}
 
-              {validationError && (
-                <div style={{ color: "#ff6584", fontSize: "0.82rem", background: "rgba(255,101,132,0.1)", padding: "0.6rem", borderRadius: "6px", marginTop: "1rem" }}>
-                  {validationError}
-                </div>
-              )}
+                  {validationError && (
+                    <div style={{ color: "#ff6584", fontSize: "0.82rem", background: "rgba(255,101,132,0.1)", padding: "0.6rem", borderRadius: "6px", marginTop: "1rem" }}>
+                      {validationError}
+                    </div>
+                  )}
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "1.2rem", marginTop: "1.5rem" }}>
-                <button
-                  type="button"
-                  onClick={() => { setShowLinkedinModal(false); setValidationError(""); }}
-                  className="btn-secondary"
-                  disabled={linkedinLoading}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleLinkedInImport}
-                  className="btn-primary"
-                  disabled={linkedinLoading || (importOption === "paste" ? !pasteText.trim() : !pdfFile)}
-                >
-                  {linkedinLoading ? "Parsing..." : "✦ Import"}
-                </button>
-              </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: "1.2rem", marginTop: "1.5rem" }}>
+                    <button
+                      type="button"
+                      onClick={() => { setShowLinkedinModal(false); setValidationError(""); }}
+                      className="btn-secondary"
+                      disabled={linkedinLoading}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleLinkedInImport}
+                      className="btn-primary"
+                      disabled={linkedinLoading || (importOption === "paste" ? !pasteText.trim() : !pdfFile)}
+                    >
+                      ✦ Import
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
         </div>
       )}
@@ -2444,7 +2453,7 @@ function BuilderContent() {
             ))}
             {coachLoading && (
               <div style={{ alignSelf: "flex-start", background: "var(--bg-elevated)", padding: "0.75rem 1rem", borderRadius: "12px 12px 12px 2px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.8rem", color: "var(--text-primary)" }}>
-                <span className="spinner" style={{ width: 14, height: 14 }}></span>
+                <ClassicLoader className="h-4 w-4 border-2" />
                 <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Coach is writing...</span>
               </div>
             )}

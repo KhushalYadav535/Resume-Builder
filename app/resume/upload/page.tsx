@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import ConcentricLoader, { ClassicLoader } from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
 import { ATSScore, ContentReview, JDMatch } from "@/types";
 
@@ -299,7 +300,7 @@ export default function UploadPage() {
               <input ref={fileRef} type="file" accept=".pdf,.txt" style={{ display: "none" }} onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} disabled={parsing} />
               {parsing ? (
                 <>
-                  <div className="spinner" style={{ margin: "0 auto 1.2rem", width: 36, height: 36 }} />
+                  <ClassicLoader className="mx-auto mb-4 h-9 w-9" />
                   <div style={{ fontWeight: 600, fontSize: "1.05rem", marginBottom: "0.25rem" }}>Extracting document layout...</div>
                   <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Reading text from {fileName}</div>
                 </>
@@ -357,8 +358,8 @@ export default function UploadPage() {
 
         {/* STEP 2: Custom Multi-Stage Loading Pipeline */}
         {step === "analyzing" && (
-          <div style={{ textAlign: "center", padding: "7rem 2rem", background: "var(--card)", borderRadius: "20px", border: "1px solid var(--border)", animation: "fadeInUp 0.3s ease" }}>
-            <div className="spinner" style={{ margin: "0 auto 2rem", width: 44, height: 44, borderWidth: 3 }} />
+          <div style={{ textAlign: "center", padding: "5rem 2rem", background: "var(--card)", borderRadius: "20px", border: "1px solid var(--border)", animation: "fadeInUp 0.3s ease" }}>
+            <ConcentricLoader className="mb-4" />
             
             <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.6rem", marginBottom: "0.5rem" }}>
               Hybrid Engine Analyzing
@@ -465,8 +466,8 @@ export default function UploadPage() {
 
             {/* DEEP AI ANALYZING PROGRESS COMPONENT */}
             {deepLoading && (
-              <div style={{ padding: "2.5rem", border: "1px solid var(--accent)", background: "rgba(108,99,255,0.06)", borderRadius: "16px", textAlign: "center", animation: "pulse 2s infinite" }}>
-                <div className="spinner" style={{ margin: "0 auto 1.2rem", width: 32, height: 32 }} />
+              <div style={{ padding: "2.5rem", border: "1px solid var(--accent)", background: "rgba(108,99,255,0.06)", borderRadius: "16px", textAlign: "center" }}>
+                <ConcentricLoader className="mb-2" />
                 <h4 style={{ fontFamily: "Syne, sans-serif", color: "var(--text)", fontWeight: 700, fontSize: "1.1rem", marginBottom: "0.4rem" }}>
                   Injecting Deep AI Knowledge
                 </h4>
