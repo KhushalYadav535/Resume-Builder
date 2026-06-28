@@ -137,8 +137,12 @@ body {
   min-height: 100vh;
 }
 
-.hero-bg-mockup { opacity: 0.10; }
-.dark .hero-bg-mockup { opacity: 0.08; }
+.hero-bg-mockup {
+  opacity: 1;
+}
+[data-theme="dark"] .hero-bg-mockup, .dark .hero-bg-mockup {
+  opacity: 1;
+}
 
 
 /* ── Scroll bar ───────────────────────────────────── */
