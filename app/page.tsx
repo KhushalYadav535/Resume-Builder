@@ -48,25 +48,25 @@ export default function Home() {
           <div style={{ position: 'absolute', bottom: '-80px', right: '-60px', width: '420px', height: '420px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124, 58, 237, 0.10) 0%, transparent 70%)', animation: 'orbDrift 13s ease-in-out infinite reverse', pointerEvents: 'none', zIndex: 1 }} />
 
           {/* Resume mockup card (background decoration) */}
-          <div className="hidden md:block hero-bg-mockup" style={{ position: 'absolute', right: 'clamp(-40px, 4vw, 60px)', top: '50%', transform: 'translateY(-50%)', width: 'clamp(280px, 28vw, 380px)', zIndex: 2, pointerEvents: 'none', filter: 'blur(1px)', animation: 'float 5s ease-in-out infinite' }}>
-            <div className="relative w-full aspect-[4/3] rounded-2xl bg-[var(--bg-glass)] border border-[var(--border)] shadow-[var(--shadow-3d)] backdrop-blur-xl p-6 overflow-hidden transform rotate-y-[-10deg] rotate-x-[5deg] hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-[800ms] ease-out">
+          <div className="hidden md:block hero-bg-mockup" style={{ position: 'absolute', right: 'clamp(-40px, 4vw, 60px)', top: '50%', transform: 'translateY(-50%)', width: 'clamp(280px, 28vw, 380px)', zIndex: 2, pointerEvents: 'none', animation: 'float 5s ease-in-out infinite' }}>
+            <div className="relative w-full aspect-[4/3] rounded-2xl bg-[var(--bg-surface)] border-2 border-[var(--accent)] shadow-[var(--accent-glow)] backdrop-blur-xl p-6 overflow-hidden transform rotate-y-[-10deg] rotate-x-[5deg] hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-[800ms] ease-out">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-[var(--accent-grad)]" />
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <div className="h-6 w-48 bg-[var(--bg-elevated)] rounded-md mb-2 skeleton" />
-                  <div className="h-4 w-32 bg-[var(--bg-elevated)] rounded-md skeleton" />
+                  <div className="h-6 w-48 bg-[var(--border-strong)] rounded-md mb-2 opacity-60" />
+                  <div className="h-4 w-32 bg-[var(--border-strong)] rounded-md opacity-40" />
                 </div>
-                <div className="w-12 h-12 rounded-full border-[3px] border-[var(--score-high)] flex items-center justify-center font-mono font-bold text-[var(--score-high)] text-sm">
+                <div className="w-12 h-12 rounded-full border-[3px] border-[var(--score-high)] flex items-center justify-center font-mono font-bold text-[var(--score-high)] text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                   98
                 </div>
               </div>
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex gap-4">
-                    <div className="w-2 h-2 rounded-full bg-[var(--accent)] mt-2" />
+                    <div className="w-2 h-2 rounded-full bg-[var(--accent)] mt-2 shadow-[0_0_10px_var(--accent)]" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 w-full bg-[var(--bg-elevated)] rounded-md skeleton" />
-                      <div className="h-4 w-5/6 bg-[var(--bg-elevated)] rounded-md skeleton" />
+                      <div className="h-4 w-full bg-[var(--border-strong)] rounded-md opacity-40" />
+                      <div className="h-4 w-5/6 bg-[var(--border-strong)] rounded-md opacity-30" />
                     </div>
                   </div>
                 ))}
@@ -75,9 +75,9 @@ export default function Home() {
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                className="absolute bottom-6 right-6 bg-[var(--bg-surface)] px-4 py-2 rounded-full shadow-[var(--shadow-lg)] border border-[var(--border)] flex items-center gap-2 text-sm font-semibold"
+                className="absolute bottom-6 right-6 bg-[var(--bg-surface)] px-4 py-2 rounded-full shadow-[0_0_20px_var(--accent)] border border-[var(--accent)] flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]"
               >
-                <Sparkles size={16} className="text-[var(--accent)]" />
+                <Sparkles size={16} className="text-[var(--accent)] animate-pulse" />
                 <span>ATS Optimized</span>
               </motion.div>
             </div>
@@ -91,18 +91,17 @@ export default function Home() {
             </div>
 
             <h1 className="font-['Syne',sans-serif]" style={{ fontSize: 'clamp(42px, 7vw, 78px)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.025em', textAlign: 'center', color: 'var(--text-primary)', animation: 'heroFadeUp 0.9s 0.1s var(--ease-out) both' }}>
-              Land your dream job with a{" "}
+              Outsmart the ATS.{" "}
               <span className="gradient-text relative inline-block">
-                resume that works
+                Land the Interview.
                 <svg className="absolute w-full h-3 -bottom-1 left-0 text-[var(--accent)] opacity-40" viewBox="0 0 100 10" preserveAspectRatio="none">
                   <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="none" />
                 </svg>
               </span>
             </h1>
 
-            <p style={{ fontSize: 'clamp(16px, 2.2vw, 19px)', color: 'var(--text-secondary)', maxWidth: '520px', textAlign: 'center', lineHeight: 1.65, animation: 'heroFadeUp 0.9s 0.2s var(--ease-out) both' }}>
-              Build from scratch, optimize for ATS, match job descriptions, and get
-              AI-powered content improvements — all in one platform.
+            <p style={{ fontSize: 'clamp(16px, 2vw, 20px)', color: 'var(--text-muted)', fontWeight: 400, lineHeight: 1.6, maxWidth: '520px', animation: 'heroFadeUp 0.9s 0.2s var(--ease-out) both' }}>
+              Stop guessing what recruiters want. Let our elite AI engine perfect, optimize, and score your resume in seconds.
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '14px', animation: 'heroFadeUp 0.9s 0.3s var(--ease-out) both' }}>
