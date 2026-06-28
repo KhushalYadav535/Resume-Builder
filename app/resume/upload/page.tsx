@@ -486,22 +486,22 @@ export default function UploadPage() {
 
             {/* Sticky Actions Footer */}
             {suggestions.length > 0 && (
-              <div className="fixed bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-md border-t border-border/50 z-40">
+              <div className="fixed bottom-0 left-0 right-0 p-5 bg-[var(--bg-glass-nav)] backdrop-blur-xl border-t border-[var(--border)] z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">
-                  <div className="text-sm text-muted-foreground hidden sm:block">
-                    <span className="text-white font-bold">{selectedSuggestionIds.size}</span> / {suggestions.length} selected
+                  <div className="text-sm font-medium text-[var(--text-muted)] hidden sm:block">
+                    <span className="text-[var(--text-primary)] font-bold">{selectedSuggestionIds.size}</span> / {suggestions.length} selected
                   </div>
                   <div className="flex gap-3 w-full sm:w-auto">
                     <button 
                       onClick={() => { setStep("upload"); setAtsScore(null); setResumeText(""); }}
-                      className="px-5 py-2.5 rounded-lg font-medium text-sm bg-white/5 hover:bg-white/10 transition-colors border border-white/10 flex-1 sm:flex-none"
+                      className="px-6 py-2.5 rounded-xl font-medium text-sm bg-[var(--bg-2)] hover:bg-[var(--bg-3)] transition-colors border border-[var(--border)] flex-1 sm:flex-none"
                     >
                       Skip
                     </button>
                     <button 
                       onClick={handleApplySuggestions}
                       disabled={selectedSuggestionIds.size === 0 || isApplying}
-                      className="px-6 py-2.5 rounded-lg font-bold text-sm bg-accent text-white hover:bg-accent-focus transition-colors shadow-lg shadow-accent/20 disabled:opacity-50 flex-1 sm:flex-none"
+                      className="px-8 py-2.5 rounded-xl font-bold text-sm bg-[var(--accent)] text-white hover:opacity-90 transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] disabled:opacity-50 disabled:shadow-none flex-1 sm:flex-none"
                     >
                       {isApplying ? "Applying..." : `Apply & Preview (${selectedSuggestionIds.size})`}
                     </button>

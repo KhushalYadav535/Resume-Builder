@@ -25,15 +25,15 @@ export function ImprovementSuggestionCard({ suggestion, isSelected, onToggle }: 
     <div 
       className={`group border rounded-xl p-4 transition-all ${
         isSelected 
-          ? "border-accent bg-accent/5 shadow-[0_0_15px_rgba(67,233,123,0.1)]" 
-          : "border-border/50 hover:border-border bg-card"
+          ? "border-[var(--accent)] bg-[var(--accent-soft)] shadow-[0_0_15px_rgba(67,233,123,0.1)]" 
+          : "border-[var(--border)] hover:border-[var(--accent)] bg-[var(--card)]"
       }`}
     >
       <div className="flex gap-4 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
         {/* Checkbox */}
         <div className="pt-1" onClick={(e) => { e.stopPropagation(); onToggle(suggestion.id); }}>
-          <div className={`w-6 h-6 rounded border flex items-center justify-center transition-colors ${
-            isSelected ? 'bg-accent border-accent text-white' : 'border-muted-foreground'
+          <div className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${
+            isSelected ? 'bg-[var(--accent)] border-none text-white' : 'border-2 border-[var(--border-strong)]'
           }`}>
             {isSelected && <span className="text-sm font-bold">✓</span>}
           </div>

@@ -52,9 +52,9 @@ export function ImprovementCategory({
         <div className="flex items-start sm:items-center gap-3 flex-1">
           <div className="text-2xl">{emoji}</div>
           <div>
-            <h3 className="font-bold text-lg text-white flex items-center gap-2">
+            <h3 className="font-bold text-lg text-[var(--text-primary)] flex items-center gap-2">
               {title}
-              <span className="text-xs bg-white/10 text-muted-foreground px-2 py-0.5 rounded-full font-normal">
+              <span className="text-xs bg-[var(--bg-2)] text-[var(--text-muted)] border border-[var(--border)] px-2 py-0.5 rounded-full font-normal">
                 {suggestions.length}
               </span>
             </h3>
@@ -74,7 +74,7 @@ export function ImprovementCategory({
               e.stopPropagation();
               onAcceptAll(allIds);
             }}
-            className="text-xs font-bold px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-white transition-colors border border-white/10"
+            className="text-xs font-bold px-3 py-1.5 rounded bg-[var(--bg-2)] hover:bg-[var(--bg-3)] text-[var(--text-primary)] transition-colors border border-[var(--border)]"
           >
             {isAllSelected ? "Deselect All" : "Select All"}
           </button>
