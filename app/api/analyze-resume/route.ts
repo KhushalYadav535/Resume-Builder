@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       .insert([
         {
           user_id: user.id,
-          file_name: fileName || (structuredResume.personalInfo.fullName ? `${structuredResume.personalInfo.fullName}'s Resume` : "Untitled Resume"),
+          file_name: fileName ? fileName : (structuredResume.personalInfo.fullName ? `${structuredResume.personalInfo.fullName}'s Resume` : "Untitled Resume"),
           raw_text: resumeText,
           resume_data: structuredResume,
           ats_score: atsScore,
