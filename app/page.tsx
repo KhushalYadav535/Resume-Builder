@@ -72,7 +72,7 @@ export default function Home() {
                 ))}
               </div>
               {/* Floating optimization chip */}
-              <motion.div 
+              <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
                 className="absolute bottom-6 right-6 bg-[var(--bg-surface)] px-4 py-2 rounded-full shadow-[var(--shadow-lg)] border border-[var(--border)] flex items-center gap-2 text-sm font-semibold"
@@ -120,128 +120,128 @@ export default function Home() {
           </div>
         </section>
 
-      {/* Stats Section */}
-      <section className="border-y border-[var(--border)] bg-[var(--bg-surface)] py-16 relative z-10">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 divide-y md:divide-y-0 md:divide-x divide-[var(--border)]">
+        {/* Stats Section */}
+        <section className="border-y border-[var(--border)] bg-[var(--bg-surface)] py-16 relative z-10">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 divide-y md:divide-y-0 md:divide-x divide-[var(--border)]">
+              {[
+                { value: 75, suffix: "%", label: "Resumes rejected by ATS" },
+                { value: 6, suffix: " sec", label: "Average recruiter screen time" },
+                { value: 250, suffix: "+", label: "Applications per job posting" },
+              ].map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="text-center pt-8 md:pt-0 flex flex-col items-center justify-center"
+                >
+                  <div className="font-['Syne',sans-serif] text-4xl lg:text-5xl font-extrabold gradient-text mb-3">
+                    <Counter value={stat.value} suffix={stat.suffix} />
+                  </div>
+                  <div className="text-[var(--text-secondary)] font-medium">
+                    {stat.label}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Features Grid */}
+        <section className="py-24 max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-16">
+            <Badge variant="neutral" className="mb-4">Features</Badge>
+            <h2 className="font-['Syne',sans-serif] text-3xl md:text-4xl font-extrabold text-[var(--text-primary)]">
+              Everything you need to <span className="text-[var(--accent)]">succeed</span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { value: 75, suffix: "%", label: "Resumes rejected by ATS" },
-              { value: 6, suffix: " sec", label: "Average recruiter screen time" },
-              { value: 250, suffix: "+", label: "Applications per job posting" },
-            ].map((stat, i) => (
-              <motion.div 
-                key={stat.label}
+              {
+                icon: <FileText size={22} />,
+                color: "var(--accent)",
+                title: "Resume Builder",
+                desc: "Build a professional resume from scratch with AI assistance on every section.",
+              },
+              {
+                icon: <CheckCircle size={22} />,
+                color: "var(--score-high)",
+                title: "ATS Score Checker",
+                desc: "Instantly see how your resume performs against Applicant Tracking Systems.",
+              },
+              {
+                icon: <Sparkles size={22} />,
+                color: "var(--score-mid)",
+                title: "Content Reviewer",
+                desc: "AI improves your bullet points, suggests powerful action verbs, and quantifies achievements.",
+              },
+              {
+                icon: <Target size={22} />,
+                color: "var(--info)",
+                title: "JD Matcher",
+                desc: "Paste any job description and get a keyword gap analysis instantly.",
+              },
+              {
+                icon: <Settings size={22} />,
+                color: "var(--accent-2)",
+                title: "ATS-Friendly Templates",
+                desc: "Choose from professionally designed templates that beat ATS filters.",
+              },
+              {
+                icon: <Download size={22} />,
+                color: "var(--success)",
+                title: "Export to PDF",
+                desc: "Download your polished resume as a clean, formatted PDF instantly.",
+              },
+            ].map((feature, i) => (
+              <motion.div
+                key={feature.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="text-center pt-8 md:pt-0 flex flex-col items-center justify-center"
               >
-                <div className="font-['Syne',sans-serif] text-4xl lg:text-5xl font-extrabold gradient-text mb-3">
-                  <Counter value={stat.value} suffix={stat.suffix} />
-                </div>
-                <div className="text-[var(--text-secondary)] font-medium">
-                  {stat.label}
-                </div>
+                <Card hoverable glowColor={feature.color + "33"} className="h-full flex flex-col">
+                  <div
+                    className="w-12 h-12 rounded-[var(--radius-md)] flex items-center justify-center mb-5"
+                    style={{ backgroundColor: `${feature.color}15`, color: feature.color }}
+                  >
+                    {feature.icon}
+                  </div>
+                  <h3 className="font-['Syne',sans-serif] text-xl font-bold mb-3 text-[var(--text-primary)]">
+                    {feature.title}
+                  </h3>
+                  <p className="text-[var(--text-secondary)] text-[15px] leading-relaxed flex-1">
+                    {feature.desc}
+                  </p>
+                </Card>
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Features Grid */}
-      <section className="py-24 max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-16">
-          <Badge variant="neutral" className="mb-4">Features</Badge>
-          <h2 className="font-['Syne',sans-serif] text-3xl md:text-4xl font-extrabold text-[var(--text-primary)]">
-            Everything you need to <span className="text-[var(--accent)]">succeed</span>
-          </h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            {
-              icon: <FileText size={22} />,
-              color: "var(--accent)",
-              title: "Resume Builder",
-              desc: "Build a professional resume from scratch with AI assistance on every section.",
-            },
-            {
-              icon: <CheckCircle size={22} />,
-              color: "var(--score-high)",
-              title: "ATS Score Checker",
-              desc: "Instantly see how your resume performs against Applicant Tracking Systems.",
-            },
-            {
-              icon: <Sparkles size={22} />,
-              color: "var(--score-mid)",
-              title: "Content Reviewer",
-              desc: "AI improves your bullet points, suggests powerful action verbs, and quantifies achievements.",
-            },
-            {
-              icon: <Target size={22} />,
-              color: "var(--info)",
-              title: "JD Matcher",
-              desc: "Paste any job description and get a keyword gap analysis instantly.",
-            },
-            {
-              icon: <Settings size={22} />,
-              color: "var(--accent-2)",
-              title: "ATS-Friendly Templates",
-              desc: "Choose from professionally designed templates that beat ATS filters.",
-            },
-            {
-              icon: <Download size={22} />,
-              color: "var(--success)",
-              title: "Export to PDF",
-              desc: "Download your polished resume as a clean, formatted PDF instantly.",
-            },
-          ].map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-            >
-              <Card hoverable glowColor={feature.color + "33"} className="h-full flex flex-col">
-                <div 
-                  className="w-12 h-12 rounded-[var(--radius-md)] flex items-center justify-center mb-5"
-                  style={{ backgroundColor: `${feature.color}15`, color: feature.color }}
-                >
-                  {feature.icon}
-                </div>
-                <h3 className="font-['Syne',sans-serif] text-xl font-bold mb-3 text-[var(--text-primary)]">
-                  {feature.title}
-                </h3>
-                <p className="text-[var(--text-secondary)] text-[15px] leading-relaxed flex-1">
-                  {feature.desc}
-                </p>
-              </Card>
+        {/* CTA */}
+        <section className="py-24 relative z-10 overflow-hidden">
+          <div className="absolute inset-0 bg-[var(--accent-grad)] opacity-[0.03] pointer-events-none" />
+          <div className="max-w-3xl mx-auto px-6 text-center">
+            <h2 className="font-['Syne',sans-serif] text-3xl md:text-5xl font-extrabold mb-6 text-[var(--text-primary)]">
+              Ready to get more interviews?
+            </h2>
+            <p className="text-lg text-[var(--text-secondary)] mb-10 max-w-xl mx-auto">
+              Free. No credit card. No account needed to start. Join thousands of job seekers landing their dream roles.
+            </p>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="inline-block">
+              <Link href="/resume/builder" className="no-underline">
+                <Button size="lg" icon={<ArrowRight size={18} />} className="shadow-[var(--shadow-lg)]">
+                  Start Building Now
+                </Button>
+              </Link>
             </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-24 relative z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-[var(--accent-grad)] opacity-[0.03] pointer-events-none" />
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="font-['Syne',sans-serif] text-3xl md:text-5xl font-extrabold mb-6 text-[var(--text-primary)]">
-            Ready to get more interviews?
-          </h2>
-          <p className="text-lg text-[var(--text-secondary)] mb-10 max-w-xl mx-auto">
-            Free. No credit card. No account needed to start. Join thousands of job seekers landing their dream roles.
-          </p>
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="inline-block">
-            <Link href="/resume/builder" className="no-underline">
-              <Button size="lg" icon={<ArrowRight size={18} />} className="shadow-[var(--shadow-lg)]">
-                Start Building Now
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
+          </div>
+        </section>
       </div>
     </main>
   );
