@@ -1,20 +1,17 @@
-import DOMPurify from "isomorphic-dompurify";
-
 /**
  * Sanitizes a string input to prevent XSS attacks.
- * Removes malicious script tags, javascript: links, and unsafe HTML.
+ * Since this is primarily used for plain text from PDFs and React escapes by default,
+ * a lightweight HTML escape is sufficient and avoids heavy jsdom dependencies on Vercel.
  * @param input The untrusted user input string
  * @returns A safe, sanitized string
  */
 export const sanitizeInput = (input: string | undefined | null): string => {
   if (!input) return "";
   
-  // Basic configuration to allow text and standard formatting but strip scripts
-  return DOMPurify.sanitize(input, {
-    ALLOWED_TAGS: ["b", "i", "em", "strong", "a", "p", "br", "ul", "ol", "li", "span", "div"],
-    ALLOWED_ATTR: ["href", "target", "rel", "class"],
-    ALLOW_DATA_ATTR: false,
-  });
+  // Basic string escaping for < and > to prevent script injection if ever rendered raw
+  return input
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 };
 
 /**
