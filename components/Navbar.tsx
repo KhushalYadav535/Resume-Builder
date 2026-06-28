@@ -68,8 +68,8 @@ export default function Navbar() {
     <>
       <nav
         className={cn(
-          "glass-nav sticky top-0 z-[100] flex items-center justify-between border-b border-[var(--border)] transition-all duration-300 ease-out",
-          scrolled ? "opacity-35 hover:opacity-100" : "opacity-100"
+          "sticky top-0 z-[100] flex items-center justify-between border-b border-[var(--border)] transition-all duration-300 ease-out",
+          scrolled ? "bg-[var(--bg-glass-nav)] backdrop-blur-xl shadow-sm" : "bg-transparent"
         )}
         style={{
           height: "60px",
