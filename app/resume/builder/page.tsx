@@ -275,6 +275,8 @@ function BuilderContent() {
   // Autosave Ref for debouncing
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isFirstLoad = useRef(true);
+  const initialResumeRef = useRef<string | null>(null);
+  const initialTemplateRef = useRef<string | null>(null);
 
   // Fetch or restore existing resume
   useEffect(() => {
@@ -302,12 +304,15 @@ function BuilderContent() {
             skills: { ...defaultEmptyResume.skills, ...found.resume_data.skills },
             placementChecklist: { ...defaultEmptyResume.placementChecklist, ...found.resume_data.placementChecklist },
           };
+          
+          initialResumeRef.current = JSON.stringify(merged);
           setResume(merged);
           
           if (editId) {
             setResumeId(found.id);
           }
           if (found.template_id && !searchParams.has("template")) {
+            initialTemplateRef.current = found.template_id;
             setSelectedTemplate(found.template_id);
           }
         }
@@ -368,6 +373,14 @@ function BuilderContent() {
   useEffect(() => {
     if (isFirstLoad.current) {
       isFirstLoad.current = false;
+      return;
+    }
+
+    // Skip autosave if nothing has changed from the initial autofill load
+    if (
+      initialResumeRef.current === JSON.stringify(resume) &&
+      (initialTemplateRef.current === selectedTemplate || initialTemplateRef.current === null)
+    ) {
       return;
     }
 
