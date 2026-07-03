@@ -183,7 +183,7 @@ function BuilderContent() {
 
   const [showCoach, setShowCoach] = useState(false);
   const [coachMessages, setCoachMessages] = useState<{ role: "user" | "coach"; content: string }[]>([
-    { role: "coach", content: "👋 Namaste! I am your AI Career Coach. Ask me anything about improving your resume, explaining career gaps (like UPSC prep, personal reasons), or how to frame your salary package in ₹ LPA. How can I help you today?" }
+    { role: "coach", content: "👋 Namaste! I am **ResumeAI**, your product guide and career coach. I can help you navigate the platform, generate cover letters, improve your ATS score, or answer career questions. How can I help you today?" }
   ]);
   const [coachInput, setCoachInput] = useState("");
   const [coachLoading, setCoachLoading] = useState(false);
@@ -203,7 +203,8 @@ function BuilderContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: updatedMessages,
-          resumeData: resume
+          resumeData: resume,
+          currentStep: activeStep
         })
       });
 
@@ -2525,9 +2526,9 @@ function BuilderContent() {
             <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginBottom: "1rem" }}>
               <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Common Topics:</span>
               {[
-                "Suggest a Hinglish resume summary",
-                "How to frame UPSC gap years?",
-                "Frame current CTC (₹8 LPA) & expected (₹14 LPA)",
+                "How do I generate a cover letter?",
+                "Where can I see my ATS score analysis?",
+                "How do I frame UPSC gap years?",
                 "Improve technical project bullet points"
               ].map((topic, i) => (
                 <button
