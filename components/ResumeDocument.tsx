@@ -31,9 +31,10 @@ const fontFamilies: Record<string, string> = {
 interface ResumeDocumentProps {
   data: ResumeData;
   templateId: string;
+  highlightKeywords?: string[];
 }
 
-export default function ResumeDocument({ data, templateId }: ResumeDocumentProps) {
+export default function ResumeDocument({ data, templateId, highlightKeywords = [] }: ResumeDocumentProps) {
   const {
     personalInfo = { fullName: "", email: "", phone: "", linkedin: "", location: "", website: "" },
     summary = "",
@@ -54,6 +55,33 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
     spacing = 1.2,
     sectionOrder = ["summary", "work", "education", "skills", "projects", "certifications", "languages", "fresher"]
   } = data;
+
+
+  const HighlightText = ({ text, keywords }: { text: string, keywords: string[] }) => {
+    if (!text) return <>{text}</>;
+    if (!keywords || keywords.length === 0) return <>{text}</>;
+    
+    const sortedKeywords = [...keywords].sort((a, b) => b.length - a.length);
+    const escaped = sortedKeywords.map(k => k.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\  const primaryColor = templateColors[templateId] || "#6c63ff";'));
+    const regex = new RegExp(`(\${escaped.join('|')})`, 'gi');
+    
+    const parts = text.split(regex);
+    
+    return (
+      <>
+        {parts.map((part, i) => {
+          const isMatch = sortedKeywords.some(k => k.toLowerCase() === part.toLowerCase());
+          return isMatch ? (
+            <mark key={i} style={{ backgroundColor: 'var(--success, #10b981)', color: 'white', padding: '0 2px', borderRadius: '2px', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone' }} className="print-no-mark">
+              {part}
+            </mark>
+          ) : (
+            <span key={i}>{part}</span>
+          );
+        })}
+      </>
+    );
+  };
 
   const primaryColor = templateColors[templateId] || "#6c63ff";
   const selectedFont = fontFamilies[fontFamily] || "'Inter', sans-serif";
@@ -87,7 +115,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 0.95}pt`, fontWeight: 700, color: primaryColor, textTransform: "uppercase", borderBottom: "1px solid #dddddd", paddingBottom: "0.2rem", marginBottom: "0.5rem", fontFamily: "'Syne', sans-serif" }}>
                 Professional Summary
               </h3>
-              <p style={{ fontSize: `${fontSize * 0.82}pt`, color: "#222222", lineHeight: spacing, margin: 0 }}>{summary}</p>
+              <p style={{ fontSize: `${fontSize * 0.82}pt`, color: "#222222", lineHeight: spacing, margin: 0 }}><HighlightText text={summary} keywords={highlightKeywords} /></p>
             </div>
           );
         case "work":
@@ -113,7 +141,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                   </div>
                   <ul style={{ paddingLeft: "1.1rem", margin: 0 }}>
                     {exp.bullets.map((b, bi) => (
-                      b && <li key={bi} style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222", lineHeight: spacing, marginBottom: "0.2rem" }}>{b}</li>
+                      b && <li key={bi} style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222", lineHeight: spacing, marginBottom: "0.2rem" }}><HighlightText text={b} keywords={highlightKeywords} /></li>
                     ))}
                   </ul>
                   {exp.toolsUsed && exp.toolsUsed.length > 0 && (
@@ -356,7 +384,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 1.05}pt`, fontWeight: "bold", color: primaryColor, textTransform: "uppercase", borderBottom: "1px solid #bbbbbb", paddingBottom: "0.2rem", marginBottom: "0.5rem", letterSpacing: "0.05em" }}>
                 Profile Statement
               </h3>
-              <p style={{ fontSize: `${fontSize * 0.85}pt`, lineHeight: spacing, margin: 0, textAlign: "justify" }}>{summary}</p>
+              <p style={{ fontSize: `${fontSize * 0.85}pt`, lineHeight: spacing, margin: 0, textAlign: "justify" }}><HighlightText text={summary} keywords={highlightKeywords} /></p>
             </div>
           );
         case "work":
@@ -378,7 +406,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                   </div>
                   <ul style={{ paddingLeft: "1.2rem", margin: 0 }}>
                     {exp.bullets.map((b, bi) => (
-                      b && <li key={bi} style={{ fontSize: `${fontSize * 0.82}pt`, lineHeight: spacing, marginBottom: "0.25rem", textAlign: "justify" }}>{b}</li>
+                      b && <li key={bi} style={{ fontSize: `${fontSize * 0.82}pt`, lineHeight: spacing, marginBottom: "0.25rem", textAlign: "justify" }}><HighlightText text={b} keywords={highlightKeywords} /></li>
                     ))}
                   </ul>
                 </div>
@@ -555,7 +583,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 1.05}pt`, fontWeight: "bold", color: "#333", textTransform: "uppercase", borderBottom: `2px solid ${primaryColor}`, paddingBottom: "0.15rem", marginBottom: "0.6rem" }}>
                 Executive Profile
               </h3>
-              <p style={{ fontSize: `${fontSize * 0.88}pt`, lineHeight: spacing, margin: 0, fontStyle: "italic", textAlign: "justify", textIndent: "1.5rem" }}>{summary}</p>
+              <p style={{ fontSize: `${fontSize * 0.88}pt`, lineHeight: spacing, margin: 0, fontStyle: "italic", textAlign: "justify", textIndent: "1.5rem" }}><HighlightText text={summary} keywords={highlightKeywords} /></p>
             </div>
           );
         case "work":
@@ -577,7 +605,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                   </div>
                   <ul style={{ paddingLeft: "1.2rem", margin: 0 }}>
                     {exp.bullets.map((b, bi) => (
-                      b && <li key={bi} style={{ fontSize: `${fontSize * 0.85}pt`, lineHeight: spacing, marginBottom: "0.3rem", textAlign: "justify" }}>{b}</li>
+                      b && <li key={bi} style={{ fontSize: `${fontSize * 0.85}pt`, lineHeight: spacing, marginBottom: "0.3rem", textAlign: "justify" }}><HighlightText text={b} keywords={highlightKeywords} /></li>
                     ))}
                   </ul>
                 </div>
@@ -737,7 +765,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 0.82}pt`, fontWeight: "700", color: "#111111", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>
                 Summary
               </h3>
-              <p style={{ margin: 0, color: "#111111", fontSize: `${fontSize * 0.82}pt` }}>{summary}</p>
+              <p style={{ margin: 0, color: "#111111", fontSize: `${fontSize * 0.82}pt` }}><HighlightText text={summary} keywords={highlightKeywords} /></p>
             </div>
           );
         case "work":
@@ -755,7 +783,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                   </div>
                   <ul style={{ paddingLeft: "1rem", margin: 0, color: "#111111", fontSize: `${fontSize * 0.78}pt` }}>
                     {exp.bullets.map((b, bi) => (
-                      b && <li key={bi} style={{ lineHeight: spacing, marginBottom: "0.15rem" }}>{b}</li>
+                      b && <li key={bi} style={{ lineHeight: spacing, marginBottom: "0.15rem" }}><HighlightText text={b} keywords={highlightKeywords} /></li>
                     ))}
                   </ul>
                 </div>
@@ -960,7 +988,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
               <h3 style={{ fontSize: `${fontSize * 0.9}pt`, fontWeight: 800, color: primaryColor, textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #eaeaea", paddingBottom: "0.2rem", marginBottom: "0.4rem", fontFamily: "'Syne', sans-serif" }}>
                 Profile Overview
               </h3>
-              <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222", lineHeight: spacing, margin: 0 }}>{summary}</p>
+              <p style={{ fontSize: `${fontSize * 0.78}pt`, color: "#222222", lineHeight: spacing, margin: 0 }}><HighlightText text={summary} keywords={highlightKeywords} /></p>
             </div>
           );
         case "work":
@@ -978,7 +1006,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                   </div>
                   <ul style={{ paddingLeft: "1rem", margin: 0, fontSize: `${fontSize * 0.76}pt`, color: "#222222" }}>
                     {exp.bullets.map((b, bi) => (
-                      b && <li key={bi} style={{ lineHeight: spacing, marginBottom: "0.15rem" }}>{b}</li>
+                      b && <li key={bi} style={{ lineHeight: spacing, marginBottom: "0.15rem" }}><HighlightText text={b} keywords={highlightKeywords} /></li>
                     ))}
                   </ul>
                 </div>
@@ -1108,7 +1136,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           return (
             <div style={{ marginBottom: "1rem" }}>
               <h2 style={{ fontSize: "10pt", fontWeight: "bold", borderBottom: "1px solid #000", paddingBottom: "1px", textTransform: "uppercase", marginBottom: "4px" }}>Professional Summary</h2>
-              <p style={{ fontSize: "9.5pt", margin: 0, lineHeight: 1.15, textAlign: "justify" }}>{summary}</p>
+              <p style={{ fontSize: "9.5pt", margin: 0, lineHeight: 1.15, textAlign: "justify" }}><HighlightText text={summary} keywords={highlightKeywords} /></p>
             </div>
           );
         case "work":
@@ -1127,7 +1155,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                   </div>
                   <ul style={{ paddingLeft: "15px", margin: "2px 0 0" }}>
                     {exp.bullets.map((b, bi) => (
-                      b && <li key={bi} style={{ fontSize: "9.5pt", marginBottom: "2px", lineHeight: 1.15 }}>{b}</li>
+                      b && <li key={bi} style={{ fontSize: "9.5pt", marginBottom: "2px", lineHeight: 1.15 }}><HighlightText text={b} keywords={highlightKeywords} /></li>
                     ))}
                   </ul>
                 </div>
@@ -1340,7 +1368,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                 <div key={exp.id} style={{ marginBottom: "0.6rem", fontSize: `${fontSize * 0.8}pt` }}>
                   <strong style={{ color: "#222" }}>{exp.role} — {exp.company}</strong> ({exp.startDate} - {exp.endDate})
                   <ul style={{ margin: "2px 0 0", paddingLeft: "15px" }}>
-                    {exp.bullets.map((b, bi) => <li key={bi}>{b}</li>)}
+                    {exp.bullets.map((b, bi) => <li key={bi}><HighlightText text={b} keywords={highlightKeywords} /></li>)}
                   </ul>
                 </div>
               ))}
@@ -1383,7 +1411,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           return (
             <div style={{ marginBottom: "1.2rem" }}>
               <h3 style={{ fontSize: `${fontSize * 0.92}pt`, fontWeight: 800, color: primaryColor, textTransform: "uppercase", marginBottom: "0.4rem" }}>Elevator Pitch</h3>
-              <p style={{ fontSize: `${fontSize * 0.8}pt`, color: "#3f3f46", margin: 0, lineHeight: spacing }}>{summary}</p>
+              <p style={{ fontSize: `${fontSize * 0.8}pt`, color: "#3f3f46", margin: 0, lineHeight: spacing }}><HighlightText text={summary} keywords={highlightKeywords} /></p>
             </div>
           );
         case "work":
@@ -1398,7 +1426,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     <span style={{ fontSize: `${fontSize * 0.76}pt`, color: "#666" }}>{exp.startDate} - {exp.endDate}</span>
                   </div>
                   <ul style={{ margin: "2px 0 0", paddingLeft: "15px", fontSize: `${fontSize * 0.78}pt` }}>
-                    {exp.bullets.map((b, bi) => <li key={bi} style={{ marginBottom: "2px", lineHeight: spacing }}>{b}</li>)}
+                    {exp.bullets.map((b, bi) => <li key={bi} style={{ marginBottom: "2px", lineHeight: spacing }}><HighlightText text={b} keywords={highlightKeywords} /></li>)}
                   </ul>
                 </div>
               ))}
@@ -1486,7 +1514,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     <span style={{ fontWeight: "normal", color: "#666" }}>{exp.startDate} - {exp.endDate}</span>
                   </div>
                   <ul style={{ margin: "2px 0 0", paddingLeft: "15px" }}>
-                    {exp.bullets.map((b, bi) => <li key={bi} style={{ marginBottom: "1px", lineHeight: spacing }}>{b}</li>)}
+                    {exp.bullets.map((b, bi) => <li key={bi} style={{ marginBottom: "1px", lineHeight: spacing }}><HighlightText text={b} keywords={highlightKeywords} /></li>)}
                   </ul>
                   {exp.toolsUsed && exp.toolsUsed.length > 0 && (
                     <div style={{ fontSize: "0.72rem", color: "#666", marginTop: "2px" }}>
@@ -1554,7 +1582,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     <span>{exp.startDate} - {exp.endDate}</span>
                   </div>
                   <ul style={{ margin: "2px 0 0", paddingLeft: "15px" }}>
-                    {exp.bullets.map((b, bi) => <li key={bi} style={{ marginBottom: "1px", lineHeight: spacing }}>{b}</li>)}
+                    {exp.bullets.map((b, bi) => <li key={bi} style={{ marginBottom: "1px", lineHeight: spacing }}><HighlightText text={b} keywords={highlightKeywords} /></li>)}
                   </ul>
                 </div>
               ))}
@@ -1602,7 +1630,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           return (
             <div style={{ marginBottom: "1.2rem" }}>
               <h3 style={{ fontSize: `${fontSize * 0.85}pt`, fontWeight: 600, color: "#111", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "0.3rem" }}>Profile</h3>
-              <p style={{ fontSize: `${fontSize * 0.8}pt`, color: "#333", margin: 0, lineHeight: spacing }}>{summary}</p>
+              <p style={{ fontSize: `${fontSize * 0.8}pt`, color: "#333", margin: 0, lineHeight: spacing }}><HighlightText text={summary} keywords={highlightKeywords} /></p>
             </div>
           );
         case "work":
@@ -1617,7 +1645,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     <span style={{ fontWeight: "normal", color: "#444" }}>{exp.startDate} - {exp.endDate}</span>
                   </div>
                   <ul style={{ margin: "2px 0 0", paddingLeft: "15px", color: "#444" }}>
-                    {exp.bullets.map((b, bi) => <li key={bi} style={{ lineHeight: spacing }}>{b}</li>)}
+                    {exp.bullets.map((b, bi) => <li key={bi} style={{ lineHeight: spacing }}><HighlightText text={b} keywords={highlightKeywords} /></li>)}
                   </ul>
                 </div>
               ))}
@@ -1655,7 +1683,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
           return (
             <div style={{ marginBottom: "1.2rem" }}>
               <h3 style={{ fontSize: `${fontSize * 1.1}pt`, fontWeight: "bold", borderBottom: "1px solid #cccccc", paddingBottom: "2px", marginBottom: "0.5rem", color: "#111111" }}>Professional Summary</h3>
-              <p style={{ fontSize: `${fontSize * 0.85}pt`, margin: 0, lineHeight: 1.5, color: "#333333" }}>{summary}</p>
+              <p style={{ fontSize: `${fontSize * 0.85}pt`, margin: 0, lineHeight: 1.5, color: "#333333" }}><HighlightText text={summary} keywords={highlightKeywords} /></p>
             </div>
           );
         case "work":
@@ -1673,7 +1701,7 @@ export default function ResumeDocument({ data, templateId }: ResumeDocumentProps
                     </span>
                   </div>
                   <ul style={{ margin: "4px 0 0", paddingLeft: "1.2rem", color: "#333333" }}>
-                    {exp.bullets.filter(b => b.trim()).map((b, bi) => <li key={bi} style={{ marginBottom: "4px", lineHeight: 1.5 }}>{b}</li>)}
+                    {exp.bullets.filter(b => b.trim()).map((b, bi) => <li key={bi} style={{ marginBottom: "4px", lineHeight: 1.5 }}><HighlightText text={b} keywords={highlightKeywords} /></li>)}
                   </ul>
                 </div>
               ))}

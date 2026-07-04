@@ -685,8 +685,39 @@ function BuilderContent() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    const element = document.getElementById("resume-print-area");
+    if (!element) return;
+    
+    // Temporarily hide highlights for export
+    const marks = element.querySelectorAll('mark.print-no-mark');
+    marks.forEach((m: any) => {
+      m.style.backgroundColor = 'transparent';
+      m.style.color = 'inherit';
+    });
+
+    try {
+      // @ts-ignore
+      const html2pdf = (await import("html2pdf.js")).default;
+      const opt = {
+        margin:       0,
+        filename:     `${resume.personalInfo?.fullName?.replace(/\\s+/g, "_") || "resume"}.pdf`,
+        image:        { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' as const }
+      };
+      
+      await html2pdf().set(opt).from(element).save();
+    } catch (e) {
+      console.error("PDF generation failed:", e);
+      window.print(); // Fallback
+    } finally {
+      // Restore highlights
+      marks.forEach((m: any) => {
+        m.style.backgroundColor = 'var(--success, #10b981)';
+        m.style.color = 'white';
+      });
+    }
   };
 
   // Filter steps based on Fresher Mode toggle
@@ -2305,7 +2336,7 @@ function BuilderContent() {
               borderRadius: "4px",
               transition: "transform 0.15s ease-out",
             }}>
-              <ResumeDocument data={resume} templateId={selectedTemplate} />
+              <ResumeDocument data={resume} templateId={selectedTemplate} highlightKeywords={localATS?.matchedKeywords || []} />
             </div>
           </div>
         </div>
@@ -2591,10 +2622,9 @@ function BuilderContent() {
         </div>
       )}
       
-      {/* PRINT-ONLY RESUME CONTAINER */}
       <div className="print-only">
-        <div className="resume-paper resume-print-area" style={{ background: "#ffffff", color: "#333333", padding: "40px", width: "100%" }}>
-          <ResumeDocument data={resume} templateId={selectedTemplate} />
+        <div className="resume-paper resume-print-area" id="resume-print-area" style={{ background: "#ffffff", color: "#333333", padding: "40px", width: "100%" }}>
+          <ResumeDocument data={resume} templateId={selectedTemplate} highlightKeywords={localATS?.matchedKeywords || []} />
         </div>
       </div>
 
