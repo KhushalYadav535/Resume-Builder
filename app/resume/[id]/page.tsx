@@ -46,7 +46,7 @@ export default function ResumeDetailPage() {
   
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"ats" | "content" | "jd" | "suggestions" | "interview" | "skillgap">("ats");
+  const [activeTab, setActiveTab] = useState<"suggestions" | "interview" | "skillgap">("suggestions");
   
   // Custom toolbar states
   const [selectedTemplate, setSelectedTemplate] = useState("standard");
@@ -88,6 +88,8 @@ export default function ResumeDetailPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [suggestionsFetched, setSuggestionsFetched] = useState(false);
+  const [addingKeywords, setAddingKeywords] = useState(false);
+
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [estimatedNewScore, setEstimatedNewScore] = useState(0);
 
@@ -175,6 +177,74 @@ export default function ResumeDetailPage() {
       alert("Error exporting Word document.");
     } finally {
       setDocxLoading(false);
+    }
+  };
+
+  
+  const handleAddMissingKeywords = async () => {
+    if (!resume || !resume.ats_score) return;
+    
+    const details = resume.ats_score.missingKeywordDetails || [];
+    const strings = resume.ats_score.missingKeywords || [];
+    const keywordsToAdd = details.length > 0 ? details.map((k) => k.keyword) : strings;
+      
+    if (keywordsToAdd.length === 0) return;
+
+    setAddingKeywords(true);
+    
+    try {
+      const currentSkills = resume.resume_data?.skills?.technical || [];
+      const newSkills = [...new Set([...currentSkills, ...keywordsToAdd])];
+      
+      const updatedResumeData = {
+        ...resume.resume_data,
+        skills: {
+          ...resume.resume_data?.skills,
+          technical: newSkills
+        }
+      };
+
+      const updatedAtsScore = {
+        ...resume.ats_score,
+        missingKeywordDetails: [],
+        missingKeywords: [],
+        keywordMatches: [
+          ...(resume.ats_score.keywordMatches || []),
+          ...(resume.ats_score.missingKeywordDetails || [])
+        ],
+        matchedKeywords: [
+          ...(resume.ats_score.matchedKeywords || []),
+          ...(resume.ats_score.missingKeywords || [])
+        ]
+      };
+
+      const res = await fetch("/api/save-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: resume.id,
+          file_name: resume.file_name,
+          raw_text: resume.raw_text,
+          resume_data: updatedResumeData,
+          template_id: resume.template_id,
+          ats_score: updatedAtsScore,
+          content_review: resume.content_review,
+          jd_match: resume.jd_match,
+        }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setResume(updated);
+        alert(`Successfully injected ${keywordsToAdd.length} missing keywords into your Technical Skills section!`);
+      } else {
+        alert("Failed to save updated resume.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error adding missing keywords.");
+    } finally {
+      setAddingKeywords(false);
     }
   };
 
@@ -352,10 +422,10 @@ export default function ResumeDetailPage() {
   }, [authLoading, user, params.id]);
 
   useEffect(() => {
-    if (activeTab === "ats" && resume) {
+    if (resume && !naukriFetched) {
       fetchNaukriTips();
     }
-  }, [activeTab, resume]);
+  }, [resume, naukriFetched]);
 
   const handleTemplateChange = async (tplId: string) => {
     setSelectedTemplate(tplId);
@@ -427,7 +497,7 @@ export default function ResumeDetailPage() {
 
       setTimeout(() => {
         setDeepLoading(false);
-        setActiveTab("content");
+        setActiveTab("suggestions");
       }, 350);
 
     } catch (err: any) {
@@ -650,27 +720,7 @@ export default function ResumeDetailPage() {
                 <div style={{ fontSize: "0.74rem", color: "var(--text-muted)" }}>sections completed</div>
               </div>
 
-              <div className="card" style={{ textAlign: "center", padding: "1.2rem" }}>
-                <p className="section-label" style={{ marginBottom: "0.3rem" }}>AI JD Match</p>
-                {resume.jd_match ? (
-                  <>
-                    <div style={{ fontSize: "2.2rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: getScoreColor(resume.jd_match.matchScore) }}>
-                      {resume.jd_match.matchScore}%
-                    </div>
-                    <div style={{ fontSize: "0.74rem", color: "var(--text-muted)" }}>alignment score</div>
-                  </>
-                ) : (
-                  <>
-                    <div style={{ fontSize: "1.3rem", fontWeight: 800, fontFamily: "Syne, sans-serif", margin: "0.6rem 0", color: "var(--text-muted)", opacity: 0.65 }}>
-                      🔒 Locked
-                    </div>
-                    <div style={{ fontSize: "0.74rem", color: "var(--text-muted)" }}>Activate Deep AI</div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Public Link Generator widget */}
+              {/* Public Link Generator widget */}
             <div className="card" style={{ display: "grid", gap: "0.8rem", textAlign: "left" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>🔗 Public Web Link Sharing</span>
@@ -735,122 +785,10 @@ export default function ResumeDetailPage() {
                 </div>
               )}
             </div>
-
-            {/* Deep AI analysis activation banner */}
-            {!hasDeepAnalysis && !deepLoading && (
-              <div 
-                className="card glow" 
-                style={{ 
-                  border: "1px dashed var(--accent)", 
-                  background: "linear-gradient(135deg, rgba(108, 99, 255, 0.08) 0%, rgba(19, 19, 30, 0.9) 100%)", 
-                  padding: "1.5rem", 
-                  borderRadius: "16px",
-                  boxShadow: "0 0 30px rgba(108, 99, 255, 0.08)"
-                }}
-              >
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
-                      <span style={{ background: "var(--accent)", color: "#fff", fontSize: "0.65rem", fontWeight: 800, padding: "0.15rem 0.5rem", borderRadius: "4px", textTransform: "uppercase" }}>
-                        Stage 4 AI
-                      </span>
-                      <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 850, fontSize: "1.1rem" }}>
-                        Upgrade with Deep AI Enhancements
-                      </h3>
-                    </div>
-                    <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", lineHeight: 1.5 }}>
-                      Optimize experience bullets, analyze readability gaps, and align keyword metrics against a targeted Job Description.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700, color: "var(--text-muted)", marginBottom: "0.3rem" }}>
-                      Target Job Description (Required for matching)
-                    </label>
-                    <textarea
-                      className="input"
-                      rows={3}
-                      placeholder="Paste target job post here..."
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                      style={{ background: "rgba(0,0,0,0.25)", borderColor: "var(--border-light)", fontSize: "0.82rem", marginBottom: "0.8rem" }}
-                    />
-                    <button 
-                      onClick={runDeepAI}
-                      className="btn-primary"
-                      style={{ 
-                        width: "100%",
-                        justifyContent: "center",
-                        padding: "0.6rem 1rem", 
-                        fontSize: "0.85rem", 
-                        background: "linear-gradient(135deg, #6c63ff 0%, #ff6584 100%)",
-                        border: "none",
-                        fontWeight: 700
-                      }}
-                    >
-                      ✦ Run Deep AI Analysis
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Deep progress status */}
-            {deepLoading && (
-              <div style={{ padding: "2rem", border: "1px solid var(--accent)", background: "rgba(108,99,255,0.06)", borderRadius: "16px", textAlign: "center", animation: "pulse 2s infinite" }}>
-                <div className="spinner" style={{ margin: "0 auto 1rem", width: 28, height: 28 }} />
-                <h4 style={{ fontFamily: "Syne, sans-serif", color: "var(--text)", fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.3rem" }}>
-                  Activating Executive AI Audit
-                </h4>
-                <p style={{ color: "var(--accent)", fontSize: "0.8rem", fontWeight: 500, marginBottom: "1rem" }}>
-                  {deepText}
-                </p>
-                <div style={{ width: "100%", maxWidth: "300px", margin: "0 auto", height: "5px", background: "var(--bg-3)", borderRadius: "3px", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${deepProgress}%`, background: "var(--accent)", transition: "width 0.2s ease" }} />
-                </div>
-              </div>
-            )}
-
-            {deepError && (
-              <div style={{ color: "#ff6584", fontSize: "0.82rem", padding: "0.8rem 1rem", background: "rgba(255,101,132,0.08)", borderRadius: "10px", borderLeft: "4px solid #ff6584" }}>
-                {deepError}
-              </div>
-            )}
-
-            {/* Tab Navigation */}
-            <div className="flex gap-2 border-b border-[var(--border)] mt-4 pb-4 overflow-x-auto whitespace-nowrap scrollbar-hide">
-              {[
-                { key: "ats", label: "ATS Analysis" },
-                { key: "content", label: "Content Review (Deep AI)" },
-                { key: "jd", label: "JD Match (Deep AI)" },
-                { key: "suggestions", label: "Suggested Improvements" },
-                { key: "interview", label: "Interview Prep" },
-                { key: "skillgap", label: "Skill Gap & Career" },
-              ].map((tab) => {
-                const isDeepLocked = (tab.key === "content" || tab.key === "jd") && !hasDeepAnalysis;
-                return (
-                  <button 
-                    key={tab.key} 
-                    onClick={() => setActiveTab(tab.key as any)} 
-                    className={`px-4 py-2 rounded-full font-semibold text-sm flex items-center gap-2 transition-all duration-200 shrink-0 ${
-                      activeTab === tab.key 
-                        ? "bg-[var(--accent)] text-white shadow-md shadow-[var(--accent)]/20" 
-                        : isDeepLocked 
-                          ? "bg-[var(--bg-elevated)] text-[var(--text-dim)] cursor-not-allowed opacity-60 hover:bg-[var(--bg-elevated)]"
-                          : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:bg-[var(--bg-3)] hover:text-[var(--text-primary)]"
-                    }`}
-                    disabled={isDeepLocked}
-                    title={isDeepLocked ? "Requires Deep AI Analysis" : ""}
-                  >
-                    {isDeepLocked && <span className="text-xs opacity-75">🔒</span>}
-                    {tab.label}
-                  </button>
-                );
-              })}
             </div>
 
             {/* ATS ANALYSIS PANEL */}
-            {activeTab === "ats" && resume.ats_score && (
+            {resume.ats_score && (
               <div className="grid gap-6 animate-fade-in-up mt-6">
                 <Card className="p-6">
                   <h3 className="section-label mb-6">Score Breakdown</h3>
@@ -882,7 +820,17 @@ export default function ResumeDetailPage() {
 
                 {((resume.ats_score.missingKeywordDetails || resume.ats_score.missingKeywords)?.length ?? 0) > 0 && (
                   <Card className="p-6">
-                    <p className="section-label mb-4 text-[var(--danger)]">Missing High-Value Keywords</p>
+                                        <div className="flex justify-between items-center mb-4">
+                      <p className="section-label text-[var(--danger)] mb-0">Missing High-Value Keywords</p>
+                      <button 
+                         onClick={handleAddMissingKeywords}
+                         disabled={addingKeywords}
+                         className="btn-secondary" 
+                         style={{ padding: "0.3rem 0.8rem", fontSize: "0.75rem", background: "var(--bg-elevated)", borderColor: "var(--border)" }}
+                      >
+                         {addingKeywords ? "Adding..." : "+ Auto-Add to Resume"}
+                      </button>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {resume.ats_score.missingKeywordDetails ? (
                         [...resume.ats_score.missingKeywordDetails].sort((a: any, b: any) => b.weight - a.weight).map((kw: any, i: number) => (
@@ -987,182 +935,34 @@ export default function ResumeDetailPage() {
               </div>
             )}
 
-            {/* CONTENT REVIEW PANEL (Deep AI) */}
-            {activeTab === "content" && (
-              <div style={{ display: "grid", gap: "1rem", animation: "fadeInUp 0.3s ease" }}>
-                {/* Grammar Check Widget */}
-                <div className="card" style={{ display: "grid", gap: "0.8rem" }}>
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1rem", fontWeight: 700, margin: 0 }}>✍️ Quick Grammar & Weakness Check</h3>
-                  <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>Audit resume bullet points or summary text for grammatical correctness and weak voice.</p>
-                  
-                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "start" }}>
-                    <textarea
-                      className="input"
-                      rows={2}
-                      placeholder="Paste sentence or bullet point to check..."
-                      id="grammar-input-box"
-                      style={{ fontSize: "0.8rem" }}
-                    />
-                    <button
-                      className="btn-primary"
-                      style={{ padding: "0.5rem 1rem", fontSize: "0.82rem", whiteSpace: "nowrap", height: "42px" }}
-                      onClick={async (e) => {
-                        const textarea = document.getElementById("grammar-input-box") as HTMLTextAreaElement;
-                        const textVal = textarea?.value;
-                        if (!textVal?.trim()) return;
-                        
-                        const btn = e.currentTarget;
-                        btn.innerText = "Checking...";
-                        btn.disabled = true;
-                        try {
-                          const res = await fetch("/api/check-grammar", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ text: textVal })
-                          });
-                          const data = await res.json();
-                          if (data.hasIssues && data.suggestions?.length > 0) {
-                            alert("Grammar Issues Detected!\n\n" + data.suggestions.map((s: any) => `• Original: "${s.original}"\n  Corrected: "${s.corrected}"\n  Reason: ${s.explanation}`).join("\n\n"));
-                          } else {
-                            alert("Looks clean! No major grammar issues found.");
-                          }
-                        } catch (err) {
-                          console.error(err);
-                          alert("Grammar check failed.");
-                        } finally {
-                          btn.innerText = "Check";
-                          btn.disabled = false;
-                        }
-                      }}
-                    >
-                      Check
-                    </button>
-                  </div>
-                </div>
-
-                {!hasDeepAnalysis ? (
-                  <div className="card" style={{ textAlign: "center", padding: "3rem 1.5rem", border: "1px dashed var(--border)" }}>
-                    <div style={{ fontSize: "2.4rem", marginBottom: "0.8rem" }}>✍️</div>
-                    <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1rem", marginBottom: "0.4rem" }}>Deep AI Content Review Locked</h3>
-                    <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", maxWidth: "380px", margin: "0 auto 1.2rem", lineHeight: 1.5 }}>
-                      Execute the Deep AI Audit above to check grammar strength, active verb densities, and get high-quality bullet rewrites.
-                    </p>
-                  </div>
-                ) : (
-                  <div style={{ display: "grid", gap: "1rem" }}>
-                    <div className="card" style={{ borderLeft: "4px solid var(--accent)", padding: "1.2rem" }}>
-                      <p className="section-label" style={{ marginBottom: "0.4rem" }}>Overall Feedback & Strategic Audit</p>
-                      <p style={{ color: "var(--text-muted)", lineHeight: 1.5, fontSize: "0.85rem" }}>{resume.content_review.overallFeedback}</p>
-                    </div>
-
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
-                      <div className="card" style={{ padding: "1.2rem" }}>
-                        <p className="section-label" style={{ marginBottom: "0.6rem", color: "var(--accent)" }}>Executive Action Verbs</p>
-                        {resume.content_review.actionVerbSuggestions?.map((s, i) => (
-                          <div key={i} style={{ display: "flex", gap: "0.4rem", marginBottom: "0.4rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
-                            <span>•</span> <span>{s}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="card" style={{ padding: "1.2rem" }}>
-                        <p className="section-label" style={{ marginBottom: "0.6rem", color: "var(--accent-2)" }}>Quantified Impact tips</p>
-                        {resume.content_review.quantificationTips?.map((s, i) => (
-                          <div key={i} style={{ display: "flex", gap: "0.4rem", marginBottom: "0.4rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
-                            <span>•</span> <span>{s}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {resume.content_review.sections.map((sec, i) => (
-                      <div key={i} className="card" style={{ padding: "1.2rem" }}>
-                        <h4 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.6rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.3rem" }}>
-                          {sec.section}
-                        </h4>
-                        {sec.issues.length > 0 && (
-                          <div style={{ marginBottom: "0.6rem" }}>
-                            <p className="section-label" style={{ marginBottom: "0.25rem", color: "#ff6584" }}>Weaknesses Identified</p>
-                            {sec.issues.map((issue, j) => <div key={j} style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "0.2rem" }}>• {issue}</div>)}
-                          </div>
-                        )}
-                        {sec.suggestions.length > 0 && (
-                          <div style={{ marginBottom: "0.6rem" }}>
-                            <p className="section-label" style={{ marginBottom: "0.25rem", color: "#43e97b" }}>Optimization Steps</p>
-                            {sec.suggestions.map((sug, j) => <div key={j} style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "0.2rem" }}>→ {sug}</div>)}
-                          </div>
-                        )}
-                        {sec.improvedVersion && (
-                          <div style={{ marginTop: "0.8rem", padding: "0.8rem", background: "rgba(108,99,255,0.06)", borderRadius: 8, borderLeft: "3px solid var(--accent)" }}>
-                            <p className="section-label" style={{ marginBottom: "0.25rem", color: "var(--accent)" }}>Rewritten Professional Draft</p>
-                            <p style={{ fontSize: "0.8rem", color: "var(--text)", lineHeight: 1.4, fontStyle: "italic" }}>"{sec.improvedVersion}"</p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* JD MATCH TAB PANEL */}
-            {activeTab === "jd" && (
-              !hasDeepAnalysis ? (
-                <div className="card" style={{ textAlign: "center", padding: "3rem 1.5rem", border: "1px dashed var(--border)" }}>
-                  <div style={{ fontSize: "2.4rem", marginBottom: "0.8rem" }}>🎯</div>
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1rem", marginBottom: "0.4rem" }}>Job Description Match Locked</h3>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", maxWidth: "380px", margin: "0 auto 1.2rem", lineHeight: 1.5 }}>
-                    Enter job details at the top and activate the Deep AI Audit to compute priority keywords matching and gap checks.
-                  </p>
-                </div>
-              ) : !resume.jd_match ? (
-                <div className="card" style={{ textAlign: "center", padding: "2.5rem" }}>
-                  <div style={{ fontSize: "1.8rem", marginBottom: "0.4rem" }}>💡</div>
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.4rem" }}>No Job Description Found</h3>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginBottom: "1rem" }}>
-                    Please supply a target job description inside the panel at the top and click Deep AI Audit.
-                  </p>
-                </div>
-              ) : (
-                <div style={{ display: "grid", gap: "1rem", animation: "fadeInUp 0.3s ease" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
-                    <div className="card" style={{ padding: "1.2rem" }}>
-                      <p className="section-label" style={{ marginBottom: "0.5rem", color: "var(--accent-2)" }}>Priority Keywords Missing</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                        {resume.jd_match.priorityAdditions?.map((kw, i) => <span key={`${kw}-${i}`} className="tag tag-red" style={{ fontSize: "0.72rem" }}>{kw}</span>)}
-                        {resume.jd_match.priorityAdditions?.length === 0 && <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>0 critical skills missing!</span>}
-                      </div>
-                    </div>
-
-                    <div className="card" style={{ padding: "1.2rem" }}>
-                      <p className="section-label" style={{ marginBottom: "0.5rem", color: "var(--accent-3)" }}>Matched Keywords</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                        {resume.jd_match.matchedKeywords?.map((kw, i) => <span key={`${kw}-${i}`} className="tag tag-green" style={{ fontSize: "0.72rem" }}>{kw}</span>)}
-                        {resume.jd_match.matchedKeywords?.length === 0 && <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>No matching keywords.</span>}
-                      </div>
-                    </div>
-                  </div>
-
-                  {resume.jd_match.missingKeywords?.length > 0 && (
-                    <div className="card" style={{ padding: "1.2rem" }}>
-                      <p className="section-label" style={{ marginBottom: "0.5rem" }}>All Detected JD Skill Gaps</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                        {resume.jd_match.missingKeywords.map((kw, i) => <span key={`${kw}-${i}`} className="tag tag-yellow" style={{ fontSize: "0.72rem" }}>{kw}</span>)}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="card" style={{ padding: "1.2rem" }}>
-                    <p className="section-label" style={{ marginBottom: "0.5rem" }}>Alignment Recommendations</p>
-                    {resume.jd_match.suggestions.map((s, i) => (
-                      <div key={i} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.4rem", alignItems: "flex-start" }}>
-                        <span style={{ color: "var(--accent)", marginTop: "1px", fontSize: "0.8rem" }}>→</span>
-                        <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.4 }}>{s}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-            )}
+            
+            {/* Tab Navigation */}
+            <div className="flex flex-wrap gap-2 border-b border-[var(--border)] mt-4 pb-4">
+              {[                { key: "suggestions", label: "Suggested Improvements" },
+                { key: "interview", label: "Interview Prep" },
+                { key: "skillgap", label: "Skill Gap & Career" },
+              ].map((tab) => {
+                const isDeepLocked = (tab.key === "content" || tab.key === "jd") && !hasDeepAnalysis;
+                return (
+                  <button 
+                    key={tab.key} 
+                    onClick={() => setActiveTab(tab.key as any)} 
+                    className={`px-4 py-2 rounded-full font-semibold text-sm flex items-center gap-2 transition-all duration-200 shrink-0 ${
+                      activeTab === tab.key 
+                        ? "bg-[var(--accent)] text-white shadow-md shadow-[var(--accent)]/20" 
+                        : isDeepLocked 
+                          ? "bg-[var(--bg-elevated)] text-[var(--text-dim)] cursor-not-allowed opacity-60 hover:bg-[var(--bg-elevated)]"
+                          : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:bg-[var(--bg-3)] hover:text-[var(--text-primary)]"
+                    }`}
+                    disabled={isDeepLocked}
+                    title={isDeepLocked ? "Requires Deep AI Analysis" : ""}
+                  >
+                    {isDeepLocked && <span className="text-xs opacity-75">🔒</span>}
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
 
             {/* SUGGESTED IMPROVEMENTS TAB */}
             {activeTab === "suggestions" && (

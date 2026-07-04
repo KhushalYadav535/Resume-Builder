@@ -24,6 +24,7 @@ export default function ResizablePanels({
 
   // On window resize, if window is too small, we disable dragging (handled by CSS/layout mostly, but we can reset)
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -110,10 +111,50 @@ export default function ResizablePanels({
 
   if (isMobile) {
     return (
-      <>
-        {leftPanel}
-        {rightPanel}
-      </>
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+        <div style={{ display: "flex", padding: "0.5rem", background: "var(--bg-surface)", borderBottom: "1px solid var(--border)", gap: "0.5rem", zIndex: 10 }}>
+          <button
+            onClick={() => setMobileTab("edit")}
+            style={{
+              flex: 1,
+              padding: "0.5rem",
+              borderRadius: "var(--radius-md)",
+              fontSize: "0.85rem",
+              fontWeight: mobileTab === "edit" ? 600 : 400,
+              background: mobileTab === "edit" ? "var(--accent-soft)" : "transparent",
+              color: mobileTab === "edit" ? "var(--accent)" : "var(--text-muted)",
+              border: mobileTab === "edit" ? "1px solid var(--accent)" : "1px solid transparent",
+              transition: "all 0.2s"
+            }}
+          >
+            ✏️ Edit Form
+          </button>
+          <button
+            onClick={() => setMobileTab("preview")}
+            style={{
+              flex: 1,
+              padding: "0.5rem",
+              borderRadius: "var(--radius-md)",
+              fontSize: "0.85rem",
+              fontWeight: mobileTab === "preview" ? 600 : 400,
+              background: mobileTab === "preview" ? "var(--accent-soft)" : "transparent",
+              color: mobileTab === "preview" ? "var(--accent)" : "var(--text-muted)",
+              border: mobileTab === "preview" ? "1px solid var(--accent)" : "1px solid transparent",
+              transition: "all 0.2s"
+            }}
+          >
+            📄 Preview
+          </button>
+        </div>
+        <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <div style={{ display: mobileTab === "edit" ? "block" : "none", height: "100%", overflowY: "auto" }}>
+            {leftPanel}
+          </div>
+          <div style={{ display: mobileTab === "preview" ? "block" : "none", height: "100%", overflowY: "auto", background: "var(--bg-elevated)" }}>
+            {rightPanel}
+          </div>
+        </div>
+      </div>
     );
   }
 
