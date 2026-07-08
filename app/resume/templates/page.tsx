@@ -38,6 +38,27 @@ const templates = [
     color: "#e94560",
     tags: ["Marketing", "Design", "UX", "Modern"],
   },
+  {
+    id: "deedy-cs",
+    name: "Deedy CS",
+    desc: "Legendary 2-column layout designed for high information density. Highly popular among CS students and Software Engineers.",
+    color: "#005cc5",
+    tags: ["SWE", "Undergrad", "2-Column", "Dense"],
+  },
+  {
+    id: "awesome-corporate",
+    name: "Awesome Corporate",
+    desc: "Clean, premium, and perfectly structured single-column layout. Ideal for corporate professionals and executives.",
+    color: "#dc3522",
+    tags: ["Corporate", "Clean", "Professional", "ATS-100%"],
+  },
+  {
+    id: "plasmati-academic",
+    name: "Plasmati Academic",
+    desc: "Classic serif typography with a spacious, highly readable layout. Designed for early-career grads and academics.",
+    color: "#2e475d",
+    tags: ["Academic", "Graduate", "Spacious", "Classic"],
+  },
 ];
 
 function TemplatesContent() {
