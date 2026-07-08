@@ -1909,7 +1909,10 @@ function BuilderContent() {
                       { id: "jakes-resume", name: "Jake's Resume ⭐", desc: "Gold standard SWE template. Compact, right-aligned dates. 100% ATS." },
                       { id: "altacv-modern", name: "AltaCV Modern", desc: "2-column asymmetric with colored sidebar & pill skill tags." },
                       { id: "curve-timeline", name: "CurVe Timeline", desc: "Marginal-date grid with academic serif font. Best for academics & finance." },
-                      { id: "hipster-sidebar", name: "Hipster Sidebar", desc: "Bold dark header + sidebar skill bars. Best for creative & marketing." }
+                      { id: "hipster-sidebar", name: "Hipster Sidebar", desc: "Bold dark header + sidebar skill bars. Best for creative & marketing." },
+                      { id: "deedy-cs", name: "Deedy CS", desc: "Legendary dense 2-column layout. Top choice for CS students." },
+                      { id: "awesome-corporate", name: "Awesome Corporate", desc: "Extremely clean, premium 1-column corporate layout." },
+                      { id: "plasmati-academic", name: "Plasmati Academic", desc: "Classic serif, spacious layout. Perfect for early-career/academics." }
                     ].map((tpl) => (
                       <div
                         key={tpl.id}

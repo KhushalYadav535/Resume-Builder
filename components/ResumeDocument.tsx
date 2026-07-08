@@ -16,6 +16,9 @@ const TEMPLATE_ACCENT: Record<string, string> = {
   "altacv-modern":    "#8B1A1A",
   "curve-timeline":   "#1a4a7a",
   "hipster-sidebar":  "#e94560",
+  "deedy-cs":         "#005cc5",
+  "awesome-corporate":"#dc3522",
+  "plasmati-academic":"#2e475d",
 };
 
 // ─── Safe font map (ATS + browser safe) ──────────────────────────────────────
@@ -57,15 +60,7 @@ function HL({ text, kw }: { text: string; kw: string[] }) {
       {parts.map((part, i) => {
         const hit = sorted.some((k) => k.toLowerCase() === part.toLowerCase());
         return hit ? (
-          <mark
-            key={i}
-            style={{
-              background: "#16a34a",
-              color: "#fff",
-              padding: "0 2px",
-              borderRadius: "2px",
-            }}
-          >
+          <mark key={i} className="kw-highlight">
             {part}
           </mark>
         ) : (
@@ -1585,12 +1580,387 @@ export default function ResumeDocument({
     );
   };
 
+  
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 5 — Deedy CS (2-column asymmetric dense)
+  // Target: CS Students, Software Engineers, Undergrads
+  // ═══════════════════════════════════════════════════════════════════════════
+  const renderDeedyCS = () => {
+    const accentCol = "#005cc5";
+    
+    const Hdr = ({ title, left }: { title: string, left?: boolean }) => (
+      <div style={{ marginBottom: "6px", marginTop: "12px" }}>
+        <span style={{
+          fontFamily: font,
+          fontSize: `${fs + 1}pt`,
+          fontWeight: 300,
+          textTransform: "uppercase",
+          letterSpacing: "2px",
+          color: "#444",
+        }}>
+          {title}
+        </span>
+      </div>
+    );
+
+    return (
+      <div
+        style={{
+          fontFamily: font,
+          fontSize: `${fs}pt`,
+          lineHeight: lh,
+          color: "#333",
+          background: "#fff",
+          padding: "0.5in",
+          maxWidth: "8.5in",
+          margin: "0 auto",
+          boxSizing: "border-box",
+        }}
+      >
+        {/* ── Header ── */}
+        <div style={{ marginBottom: "16px", borderBottom: "1px solid #ccc", paddingBottom: "12px" }}>
+          <div style={{ fontSize: `${fs + 16}pt`, fontWeight: 300, color: "#111" }}>
+            {personalInfo.fullName.split(" ")[0]} <span style={{ fontWeight: 700 }}>{personalInfo.fullName.split(" ").slice(1).join(" ")}</span>
+          </div>
+          <div style={{ fontSize: `${fs - 1}pt`, color: "#555", marginTop: "4px" }}>
+            {contactParts.join(" • ")}
+          </div>
+        </div>
+
+        {/* ── Two-column body ── */}
+        <div style={{ display: "flex", gap: "24px" }}>
+          {/* Left Column ─ 32% */}
+          <div style={{ flex: "0 0 32%" }}>
+            {education.length > 0 && (
+              <div>
+                <Hdr title="Education" left />
+                {education.map((e, i) => (
+                  <div key={i} style={{ marginBottom: "10px" }}>
+                    <div style={{ fontWeight: 700, fontSize: `${fs}pt` }}>{e.institution}</div>
+                    <div style={{ fontSize: `${fs - 1}pt`, fontStyle: "italic", color: "#555" }}>
+                      {e.degree} {e.field && `in ${e.field}`}
+                    </div>
+                    <div style={{ fontSize: `${fs - 1.5}pt`, color: "#888", marginTop: "2px" }}>{e.endDate}</div>
+                    {gpaLabel(e) && <div style={{ fontSize: `${fs - 1}pt`, marginTop: "2px" }}>{gpaLabel(e)}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {skills.technical.length > 0 && (
+              <div>
+                <Hdr title="Skills" left />
+                <div style={{ fontSize: `${fs - 0.5}pt`, lineHeight: "1.6" }}>
+                  <strong>Languages/Tech:</strong>
+                  <br />
+                  <HL text={skills.technical.join(", ")} kw={kw} />
+                </div>
+              </div>
+            )}
+            
+            {(languagesKnown || []).filter((l) => l.language).length > 0 && (
+              <div>
+                <Hdr title="Languages" left />
+                <div style={{ fontSize: `${fs - 1}pt` }}>
+                  {(languagesKnown || []).filter((l) => l.language).map((l, i) => (
+                    <div key={i}>{l.language} <span style={{ color: "#777" }}>({l.proficiency})</span></div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column ─ 68% */}
+          <div style={{ flex: "0 0 68%" }}>
+            {summary && (
+              <div>
+                <Hdr title="Profile" />
+                <p style={{ margin: 0, fontSize: `${fs - 0.5}pt`, textAlign: "justify" }}>
+                  <HL text={summary} kw={kw} />
+                </p>
+              </div>
+            )}
+
+            {workExperience.length > 0 && (
+              <div>
+                <Hdr title="Experience" />
+                {workExperience.map((w, i) => (
+                  <div key={i} style={{ marginBottom: "12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                      <span style={{ fontWeight: 700, fontSize: `${fs + 1}pt` }}>{w.company}</span>
+                      <span style={{ fontSize: `${fs - 1}pt`, color: "#666" }}>{dateStr(w)}</span>
+                    </div>
+                    <div style={{ fontSize: `${fs - 0.5}pt`, fontStyle: "italic", color: "#555", marginBottom: "4px" }}>
+                      {w.role} {w.city && `| ${w.city}`}
+                    </div>
+                    {w.bullets && w.bullets.length > 0 && (
+                      <ul style={{ margin: 0, paddingLeft: "16px" }}>
+                        {w.bullets.map((b, bi) => (
+                          <li key={bi} style={{ fontSize: `${fs - 0.5}pt`, marginBottom: "2px", textAlign: "justify" }}>
+                            <HL text={b} kw={kw} />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {projects.length > 0 && (
+              <div>
+                <Hdr title="Projects" />
+                {projects.map((p, i) => (
+                  <div key={i} style={{ marginBottom: "10px" }}>
+                    <div style={{ fontWeight: 700 }}>
+                      {p.name}
+                      {p.techStack.length > 0 && <span style={{ fontWeight: 400, color: "#666", fontSize: `${fs - 1}pt` }}> | {p.techStack.join(", ")}</span>}
+                    </div>
+                    {p.description && (
+                      <div style={{ fontSize: `${fs - 0.5}pt`, marginTop: "2px", textAlign: "justify" }}>
+                        <HL text={p.description} kw={kw} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 6 — Awesome Corporate
+  // Target: General Professionals, Corporate, Senior Devs
+  // ═══════════════════════════════════════════════════════════════════════════
+  const renderAwesomeCorporate = () => {
+    const accentCol = "#dc3522";
+    
+    const Hdr = ({ title }: { title: string }) => (
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "10px", marginTop: "16px" }}>
+        <div style={{ 
+          background: accentCol, 
+          color: "#fff", 
+          padding: "2px 8px", 
+          borderRadius: "4px",
+          fontWeight: 700,
+          fontSize: `${fs}pt`,
+          textTransform: "uppercase",
+          letterSpacing: "1px"
+        }}>
+          {title}
+        </div>
+        <div style={{ flex: 1, height: "2px", background: "#eee", marginLeft: "10px" }} />
+      </div>
+    );
+
+    return (
+      <div
+        style={{
+          fontFamily: font,
+          fontSize: `${fs}pt`,
+          lineHeight: lh,
+          color: "#222",
+          background: "#fff",
+          padding: "0.5in 0.6in",
+          maxWidth: "8.5in",
+          margin: "0 auto",
+          boxSizing: "border-box",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <div style={{ fontSize: `${fs + 14}pt`, fontWeight: 700, letterSpacing: "1.5px", color: "#111" }}>
+            {personalInfo.fullName}
+          </div>
+          {workExperience[0] && (
+            <div style={{ fontSize: `${fs + 1}pt`, color: accentCol, marginTop: "4px", fontWeight: 600 }}>
+              {workExperience[0].role}
+            </div>
+          )}
+          <div style={{ fontSize: `${fs - 0.5}pt`, color: "#555", marginTop: "6px" }}>
+            {contactParts.join(" | ")}
+          </div>
+        </div>
+
+        {summary && (
+          <div>
+            <Hdr title="Summary" />
+            <p style={{ margin: 0, fontSize: `${fs - 0.5}pt`, textAlign: "justify" }}>
+              <HL text={summary} kw={kw} />
+            </p>
+          </div>
+        )}
+
+        {workExperience.length > 0 && (
+          <div>
+            <Hdr title="Work Experience" />
+            {workExperience.map((w, i) => (
+              <div key={i} style={{ marginBottom: "12px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <span style={{ fontWeight: 700, fontSize: `${fs + 0.5}pt` }}>{w.role}</span>
+                  <span style={{ fontSize: `${fs - 1}pt`, color: accentCol, fontWeight: 600 }}>{dateStr(w)}</span>
+                </div>
+                <div style={{ fontSize: `${fs - 0.5}pt`, color: "#555", marginBottom: "4px" }}>
+                  {w.company} {w.city && `, ${w.city}`}
+                </div>
+                {w.bullets && w.bullets.length > 0 && (
+                  <ul style={{ margin: 0, paddingLeft: "16px" }}>
+                    {w.bullets.map((b, bi) => (
+                      <li key={bi} style={{ fontSize: `${fs - 0.5}pt`, marginBottom: "3px", textAlign: "justify" }}>
+                        <HL text={b} kw={kw} />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {education.length > 0 && (
+          <div>
+            <Hdr title="Education" />
+            {education.map((e, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <div>
+                  <div style={{ fontWeight: 700 }}>{e.degree} {e.field && `in ${e.field}`}</div>
+                  <div style={{ fontSize: `${fs - 0.5}pt`, color: "#555" }}>{e.institution} {gpaLabel(e) && `| ${gpaLabel(e)}`}</div>
+                </div>
+                <div style={{ fontSize: `${fs - 1}pt`, color: accentCol, fontWeight: 600, textAlign: "right" }}>
+                  {e.endDate}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {skills.technical.length > 0 && (
+          <div>
+            <Hdr title="Skills" />
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", fontSize: `${fs - 0.5}pt` }}>
+              {skills.technical.map((s, i) => (
+                <span key={i} style={{ background: "#f4f4f4", padding: "3px 8px", borderRadius: "4px", color: "#333", fontWeight: 500 }}>
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 7 — Plasmati Academic
+  // Target: Early Career, Graduates, Academics
+  // ═══════════════════════════════════════════════════════════════════════════
+  const renderPlasmatiAcademic = () => {
+    const Hdr = ({ title }: { title: string }) => (
+      <div style={{ marginBottom: "12px", marginTop: "20px" }}>
+        <span style={{
+          fontFamily: `"Georgia", serif`,
+          fontSize: `${fs + 4}pt`,
+          fontWeight: 400,
+          fontStyle: "italic",
+          borderBottom: "1px solid #111",
+          paddingBottom: "2px",
+          display: "inline-block",
+          minWidth: "200px"
+        }}>
+          {title}
+        </span>
+      </div>
+    );
+
+    return (
+      <div
+        style={{
+          fontFamily: `"Georgia", serif`,
+          fontSize: `${fs}pt`,
+          lineHeight: lh,
+          color: "#222",
+          background: "#fff",
+          padding: "0.6in 0.8in",
+          maxWidth: "8.5in",
+          margin: "0 auto",
+          boxSizing: "border-box",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <div style={{ fontSize: `${fs + 20}pt`, fontWeight: 400, letterSpacing: "2px", fontFamily: `"Georgia", serif` }}>
+            {personalInfo.fullName.toUpperCase()}
+          </div>
+          <div style={{ fontSize: `${fs - 0.5}pt`, marginTop: "8px", color: "#444" }}>
+            {contactParts.join("  |  ")}
+          </div>
+        </div>
+
+        {summary && (
+          <div>
+            <Hdr title="Overview" />
+            <p style={{ margin: 0, textAlign: "justify", fontSize: `${fs}pt` }}>
+              <HL text={summary} kw={kw} />
+            </p>
+          </div>
+        )}
+
+        {education.length > 0 && (
+          <div>
+            <Hdr title="Education" />
+            {education.map((e, i) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "100px 1fr", gap: "16px", marginBottom: "12px" }}>
+                <div style={{ fontSize: `${fs - 1}pt`, fontStyle: "italic", color: "#555", paddingTop: "2px" }}>
+                  {e.endDate}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700 }}>{e.degree} {e.field && `in ${e.field}`}</div>
+                  <div style={{ color: "#333" }}>{e.institution}</div>
+                  {gpaLabel(e) && <div style={{ fontSize: `${fs - 0.5}pt`, color: "#555", marginTop: "2px" }}>{gpaLabel(e)}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {workExperience.length > 0 && (
+          <div>
+            <Hdr title="Experience" />
+            {workExperience.map((w, i) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "100px 1fr", gap: "16px", marginBottom: "14px" }}>
+                <div style={{ fontSize: `${fs - 1}pt`, fontStyle: "italic", color: "#555", paddingTop: "2px" }}>
+                  {dateStr(w)}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700 }}>{w.role} <span style={{ fontWeight: 400, fontStyle: "italic", color: "#555" }}>at {w.company}</span></div>
+                  {w.bullets && w.bullets.length > 0 && (
+                    <ul style={{ margin: "4px 0 0 0", paddingLeft: "16px" }}>
+                      {w.bullets.map((b, bi) => (
+                        <li key={bi} style={{ fontSize: `${fs - 0.5}pt`, marginBottom: "3px", textAlign: "justify" }}>
+                          <HL text={b} kw={kw} />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // ─── Route to correct template ────────────────────────────────────────────
-  switch (templateId) {
+    switch (templateId) {
     case "jakes-resume":      return renderJakesResume();
     case "altacv-modern":     return renderAltaCVModern();
     case "curve-timeline":    return renderCurVeTimeline();
     case "hipster-sidebar":   return renderHipsterSidebar();
+    case "deedy-cs":          return renderDeedyCS();
+    case "awesome-corporate": return renderAwesomeCorporate();
+    case "plasmati-academic": return renderPlasmatiAcademic();
     // Legacy fallbacks
     case "classic-professional":
     case "modern-minimalist":

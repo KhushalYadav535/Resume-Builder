@@ -421,6 +421,14 @@ textarea.input {
   font-family: 'Syne', sans-serif;
 }
 
+/* Keyword Highlights (Resume) */
+.kw-highlight {
+  background: #16a34a;
+  color: #fff;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
 /* Print Media Styles for High-Fidelity PDF Export */
 @media print {
   body, html {
@@ -450,6 +458,12 @@ textarea.input {
     color: #000000 !important;
     background: transparent !important;
     box-shadow: none !important;
+  }
+
+  .kw-highlight {
+    background: transparent !important;
+    color: inherit !important;
+    padding: 0 !important;
   }
 
   .section-heading-print {
