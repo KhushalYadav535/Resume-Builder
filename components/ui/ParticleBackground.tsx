@@ -157,6 +157,7 @@ export default function ParticleBackground({
     <canvas
       ref={canvasRef}
       aria-hidden="true"
+      className="print-hidden"
       style={{
         position: 'fixed',
         inset: 0,

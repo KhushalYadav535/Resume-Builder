@@ -697,20 +697,10 @@ function BuilderContent() {
     });
 
     try {
-      // @ts-ignore
-      const html2pdf = (await import("html2pdf.js")).default;
-      const opt = {
-        margin:       0,
-        filename:     `${resume.personalInfo?.fullName?.replace(/\\s+/g, "_") || "resume"}.pdf`,
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' as const }
-      };
-      
-      await html2pdf().set(opt).from(element).save();
+      alert("Pro Tip: To ensure your resume is 100% ATS-friendly and readable by recruiters, we use your browser's native PDF engine.\n\nPlease select 'Save as PDF' in the Destination dropdown.");
+      window.print();
     } catch (e) {
       console.error("PDF generation failed:", e);
-      window.print(); // Fallback
     } finally {
       // Restore highlights
       marks.forEach((m: any) => {
