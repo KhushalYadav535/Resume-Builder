@@ -87,7 +87,7 @@ export default function Navbar() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 no-underline">
+          <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2 no-underline">
             <Box size={24} className="text-[var(--accent)]" />
             <span
               className="text-[18px] font-[800] tracking-tight text-[var(--text-primary)]"
