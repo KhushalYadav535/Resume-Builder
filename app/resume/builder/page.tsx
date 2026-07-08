@@ -107,7 +107,7 @@ function BuilderContent() {
   const searchParams = useSearchParams();
 
   // URL Query States
-  const initialTemplate = searchParams.get("template") || "standard";
+  const initialTemplate = searchParams.get("template") || "jakes-resume";
   const editId = searchParams.get("id");
 
   // Primary States
@@ -1906,18 +1906,10 @@ function BuilderContent() {
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Select Design Template</h2>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
                     {[
-                      { id: "standard", name: "Standard (Recommended)", desc: "Highly recommended ATS-friendly, clean and professional layout." },
-                      { id: "modern", name: "Modern ATS", desc: "Minimal design with standard sections - highly compatible." },
-                      { id: "professional", name: "Professional", desc: "Classic layout styled with prominent timeline dividers." },
-                      { id: "executive", name: "Executive", desc: "Structured top headers best for senior management." },
-                      { id: "minimal", name: "Minimal", desc: "Elegant layout maximizing whitespace utilization." },
-                      { id: "creative", name: "Creative", desc: "Features left tag sidebar and striking highlights." },
-                      { id: "ats-safe", name: "ATS Safe", desc: "Times New Roman clean 1-column layout - maximum parse rates." },
-                      { id: "fresher", name: "Fresher Mode", desc: "Highlighted education, GATE scores, hackathons." },
-                      { id: "startup", name: "Startup Growth", desc: "Rose red impact styling, projects and metrics grids." },
-                      { id: "it-tech", name: "IT Tech", desc: "Monospace coding font, Top tech stack blocks." },
-                      { id: "bfsi-risk", name: "BFSI Corporate", desc: "CFA, FRM, RBI, SEBI compliance structured navy layout." },
-                      { id: "minimal-2", name: "Minimalist Teal", desc: "Teal accents, elegant spacing." }
+                      { id: "jakes-resume", name: "Jake's Resume ⭐", desc: "Gold standard SWE template. Compact, right-aligned dates. 100% ATS." },
+                      { id: "altacv-modern", name: "AltaCV Modern", desc: "2-column asymmetric with colored sidebar & pill skill tags." },
+                      { id: "curve-timeline", name: "CurVe Timeline", desc: "Marginal-date grid with academic serif font. Best for academics & finance." },
+                      { id: "hipster-sidebar", name: "Hipster Sidebar", desc: "Bold dark header + sidebar skill bars. Best for creative & marketing." }
                     ].map((tpl) => (
                       <div
                         key={tpl.id}

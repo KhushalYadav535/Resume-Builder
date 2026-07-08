@@ -11,89 +11,33 @@ import { ResumeData } from "@/types";
 
 const templates = [
   {
-    id: "standard",
-    name: "Standard (Recommended)",
-    desc: "Highly recommended ATS-friendly, clean and professional layout modeled after the industry standard.",
-    color: "#0f172a",
-    tags: ["Recommended", "ATS-Standard", "Professional"],
+    id: "jakes-resume",
+    name: "Jake's Resume",
+    desc: "The gold standard for Software Engineers. Compact, perfectly right-aligned dates, LaTeX-style typographic system. 100% ATS.",
+    color: "#111111",
+    tags: ["Recommended", "SWE", "ATS-100%", "LaTeX-Style"],
   },
   {
-    id: "modern",
-    name: "Modern ATS",
-    desc: "Clean, standard structure — best for tech and software engineering roles",
-    color: "#6c63ff",
-    tags: ["ATS-Friendly", "Tech", "Structured"],
+    id: "altacv-modern",
+    name: "AltaCV Modern",
+    desc: "Asymmetric 2-column layout with colored sidebar, pill-shaped skill tags, and warm accent colors. Best for senior and creative roles.",
+    color: "#8B1A1A",
+    tags: ["2-Column", "Creative", "Senior", "ATS-85%"],
   },
   {
-    id: "professional",
-    name: "Professional",
-    desc: "Classic structure with prominent divider lines — best for corporate and finance",
-    color: "#2563eb",
-    tags: ["ATS-Friendly", "Corporate", "Classic"],
+    id: "curve-timeline",
+    name: "CurVe Timeline",
+    desc: "Marginal-date grid layout with Georgia serif font and academic blue accents. Perfect for academics, finance, and law.",
+    color: "#1a4a7a",
+    tags: ["Academic", "Finance", "Law", "ATS-99%"],
   },
   {
-    id: "executive",
-    name: "Executive",
-    desc: "Leadership-focused layout with centered typography — best for senior and C-suite",
-    color: "#1e293b",
-    tags: ["ATS-Friendly", "Leadership", "Senior"],
+    id: "hipster-sidebar",
+    name: "Hipster Sidebar",
+    desc: "Bold dark banner header with sidebar skill progress bars. Striking and modern for marketing, branding, and UX roles.",
+    color: "#e94560",
+    tags: ["Marketing", "Design", "UX", "Modern"],
   },
-  {
-    id: "minimal",
-    name: "Minimal",
-    desc: "Elegant layout maximizing whitespace — clean and distraction-free",
-    color: "#71717a",
-    tags: ["Minimalist", "Academic", "Clean"],
-  },
-  {
-    id: "creative",
-    name: "Creative",
-    desc: "Bold two-column layout with left tag sidebar — best for design and media",
-    color: "#ec4899",
-    tags: ["Visual", "Marketing", "Two-Column"],
-  },
-  {
-    id: "ats-safe",
-    name: "ATS Safe",
-    desc: "Times New Roman clean 1-column layout — maximum parse rates",
-    color: "#10b981",
-    tags: ["Standard-Compliance", "High-Compatibility"],
-  },
-  {
-    id: "fresher",
-    name: "Fresher Mode",
-    desc: "Highlighted education, GATE/JEE scores, hackathons, and placement checklist",
-    color: "#f59e0b",
-    tags: ["Fresher", "Academia", "Exams"],
-  },
-  {
-    id: "startup",
-    name: "Startup Growth",
-    desc: "Rose red impact styling focusing on projects, metrics, and key achievements",
-    color: "#f43f5e",
-    tags: ["High-Impact", "Projects"],
-  },
-  {
-    id: "it-tech",
-    name: "IT Tech",
-    desc: "Monospace coding font with top technical stack blocks",
-    color: "#3b82f6",
-    tags: ["Monospace", "Developer", "IT"],
-  },
-  {
-    id: "bfsi-risk",
-    name: "BFSI Corporate",
-    desc: "CFA, FRM, RBI, SEBI compliance structured navy layout",
-    color: "#1e3a8a",
-    tags: ["Navy-Corporate", "Compliance", "Finance"],
-  },
-  {
-    id: "minimal-2",
-    name: "Minimalist Teal",
-    desc: "Teal accents, elegant spacing and typography styling",
-    color: "#0d9488",
-    tags: ["Elegant", "Teal-Accents", "Clean"],
-  }
 ];
 
 function TemplatesContent() {
@@ -175,7 +119,7 @@ function TemplatesContent() {
           Standard & Highly Recommended
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
-          {templates.filter(t => t.id === "standard").map((t) => (
+          {templates.filter(t => t.id === "jakes-resume").map((t) => (
             <Card
               key={t.id}
               className="cursor-pointer transition-all duration-300 flex flex-col h-full hover:-translate-y-1 hover:shadow-xl ring-2 ring-[var(--accent)] bg-[var(--accent-soft)]"
@@ -254,7 +198,7 @@ function TemplatesContent() {
           Other Templates
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
-          {templates.filter(t => t.id !== "standard").map((t) => (
+          {templates.filter(t => t.id !== "jakes-resume").map((t) => (
             <Card
               key={t.id}
               className="cursor-pointer transition-all duration-300 flex flex-col h-full hover:-translate-y-1 hover:shadow-xl"
