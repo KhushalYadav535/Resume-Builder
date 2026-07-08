@@ -461,7 +461,7 @@ textarea.input {
   }
 
   .kw-highlight {
-    background: transparent !important;
+    background-color: transparent !important;
     color: inherit !important;
     padding: 0 !important;
   }
@@ -486,8 +486,8 @@ textarea.input {
   }
 
   @page {
-    size: A4 portrait;
-    margin: 0.75in;
+    size: auto;
+    margin: 0;
   }
 }
 
@@ -516,6 +516,11 @@ textarea.input {
 
 @media print {
   .print-only {
+    display: block !important;
+  }
+  .builder-workspace {
+    padding: 0 !important;
+    margin: 0 !important;
     display: block !important;
   }
 }

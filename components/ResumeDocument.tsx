@@ -60,9 +60,9 @@ function HL({ text, kw }: { text: string; kw: string[] }) {
       {parts.map((part, i) => {
         const hit = sorted.some((k) => k.toLowerCase() === part.toLowerCase());
         return hit ? (
-          <mark key={i} className="kw-highlight">
+          <span key={i} className="kw-highlight">
             {part}
-          </mark>
+          </span>
         ) : (
           <span key={i}>{part}</span>
         );
