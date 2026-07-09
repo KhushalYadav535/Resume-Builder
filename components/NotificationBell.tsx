@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { Bell } from "lucide-react";
 
 interface Notification {
   id: string;
@@ -107,7 +108,7 @@ export default function NotificationBell() {
           transition: "all 0.2s",
         }}
       >
-        <span style={{ fontSize: "1.2rem" }}>🔔</span>
+        <Bell size={20} />
         {unreadCount > 0 && (
           <span
             style={{

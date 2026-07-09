@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import ConcentricLoader, { ClassicLoader } from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
 import { ATSScore } from "@/types";
+import { UploadCloud, CheckCircle2 } from "lucide-react";
 
 // New Comprehensive Architecture Imports
 import { ResumeSuggestion } from "@/lib/types/comprehensive-suggestions";
@@ -326,12 +327,12 @@ export default function UploadPage() {
                 </>
               ) : resumeText ? (
                 <>
-                  <div style={{ fontSize: "3rem", marginBottom: "0.5rem" }}>✨</div>
+                  <CheckCircle2 className="mx-auto text-[#43e97b] mb-3" size={40} />
                   <div style={{ fontWeight: 700, fontSize: "1.1rem", color: "#43e97b" }}>{fileName} loaded!</div>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: "3.2rem", marginBottom: "0.75rem" }}>📥</div>
+                  <UploadCloud className="mx-auto text-[var(--text-muted)] mb-3 opacity-80" size={44} />
                   <div style={{ fontWeight: 700, fontSize: "1.15rem" }}>Drag & Drop Resume</div>
                   <div style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>Supports PDF or TXT</div>
                 </>

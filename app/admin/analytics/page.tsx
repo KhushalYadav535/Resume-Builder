@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
+import { TrendingUp, FileText } from "lucide-react";
 
 interface ActivityItem {
   id: string;
@@ -100,8 +101,9 @@ export default function AdminAnalyticsPage() {
         {/* Title */}
         <div style={{ marginBottom: "2rem" }}>
           <p className="section-label" style={{ marginBottom: "0.5rem" }}>System Performance Monitor</p>
-          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800 }}>
-            📈 Portfolio Analytics
+          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <TrendingUp size={30} className="text-[var(--accent)]" />
+            Portfolio Analytics
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.25rem" }}>
             Comprehensive overview of your resume templates, ATS average scores, and creation timelines.
@@ -125,8 +127,8 @@ export default function AdminAnalyticsPage() {
             {/* Global Aggregates Cards Row */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem", flexWrap: "wrap" }}>
               <div className="card" style={{ display: "flex", alignItems: "center", gap: "1.2rem", padding: "2rem" }}>
-                <div style={{ width: 50, height: 50, borderRadius: 12, background: "rgba(108,99,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", color: "var(--accent)" }}>
-                  📄
+                <div style={{ width: 50, height: 50, borderRadius: 12, background: "rgba(108,99,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
+                  <FileText size={22} />
                 </div>
                 <div>
                   <div style={{ fontSize: "2.2rem", fontWeight: 800, fontFamily: "Syne, sans-serif" }}>
@@ -137,8 +139,8 @@ export default function AdminAnalyticsPage() {
               </div>
 
               <div className="card" style={{ display: "flex", alignItems: "center", gap: "1.2rem", padding: "2rem" }}>
-                <div style={{ width: 50, height: 50, borderRadius: 12, background: "rgba(67,233,123,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", color: "#43e97b" }}>
-                  📈
+                <div style={{ width: 50, height: 50, borderRadius: 12, background: "rgba(67,233,123,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#43e97b" }}>
+                  <TrendingUp size={22} />
                 </div>
                 <div>
                   <div style={{ fontSize: "2.2rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: getScoreColor(stats.averageATS) }}>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { ShieldCheck, TrendingUp } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 interface SignupHistoryItem {
@@ -204,8 +205,9 @@ export default function AnalyticsDashboardPage() {
                 ← Dashboard
               </Link>
               <span style={{ color: "var(--border)" }}>/</span>
-              <span className="tag tag-red" style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase" }}>
-                🛡️ System Admin Panel
+              <span className="tag tag-red" style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                <ShieldCheck size={13} />
+                System Admin Panel
               </span>
             </div>
             <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, marginTop: "0.2rem" }}>
@@ -278,8 +280,8 @@ export default function AnalyticsDashboardPage() {
 
               {/* Avg ATS */}
               <div className="card" style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
-                <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(246,211,101,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
-                  📈
+                <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(246,211,101,0.12)", display: "flex", alignItems: "center", justifyContent: "center", color: "#f6d365" }}>
+                  <TrendingUp size={22} />
                 </div>
                 <div>
                   <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: getScoreColor(stats.averageATS) }}>
