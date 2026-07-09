@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 interface UserProfile {
   id: string;
@@ -16,6 +17,11 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [roleConfirm, setRoleConfirm] = useState<{
+    userId: string;
+    currentRole: string;
+    confirmMsg: string;
+  } | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -34,14 +40,15 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleRoleChange = async (userId: string, currentRole: string) => {
-    const newRole = currentRole === "admin" ? "user" : "admin";
+  const handleRoleChangeTrigger = (userId: string, currentRole: string) => {
     const confirmMsg = currentRole === "admin" 
       ? "Are you sure you want to demote this administrator to user? They will lose access to all admin dashboards."
       : "Are you sure you want to promote this user to administrator? They will gain full platform metrics and log visibility.";
+    setRoleConfirm({ userId, currentRole, confirmMsg });
+  };
 
-    if (!window.confirm(confirmMsg)) return;
-
+  const executeRoleChange = async (userId: string, currentRole: string) => {
+    const newRole = currentRole === "admin" ? "user" : "admin";
     setUpdatingId(userId);
     try {
       const res = await fetch("/api/admin/users", {
@@ -152,7 +159,7 @@ export default function AdminUsersPage() {
                     </td>
                     <td style={{ padding: "1rem 1.2rem", textAlign: "right" }}>
                       <button
-                        onClick={() => handleRoleChange(profile.id, profile.role)}
+                        onClick={() => handleRoleChangeTrigger(profile.id, profile.role)}
                         disabled={updatingId === profile.id}
                         className="btn-secondary"
                         style={{
@@ -177,6 +184,21 @@ export default function AdminUsersPage() {
         )}
 
       </div>
+      <ConfirmationModal
+        isOpen={roleConfirm !== null}
+        title="Change User Role?"
+        message={roleConfirm ? roleConfirm.confirmMsg : ""}
+        confirmLabel="Proceed"
+        cancelLabel="Cancel"
+        isDanger={roleConfirm ? roleConfirm.currentRole === "admin" : false}
+        onConfirm={() => {
+          if (roleConfirm) {
+            executeRoleChange(roleConfirm.userId, roleConfirm.currentRole);
+            setRoleConfirm(null);
+          }
+        }}
+        onCancel={() => setRoleConfirm(null)}
+      />
     </div>
   );
 }

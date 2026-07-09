@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/toast-1";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 export interface JobApplication {
   id: string;
@@ -29,6 +30,7 @@ export default function JobTracker() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Job data states
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -177,9 +179,11 @@ export default function JobTracker() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this job application from your tracker?")) return;
+  const handleDeleteTrigger = (id: string) => {
+    setDeleteConfirmId(id);
+  };
 
+  const executeDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/job-applications?id=${id}`, {
         method: "DELETE",
@@ -189,6 +193,7 @@ export default function JobTracker() {
       setApplications((prev) => prev.filter((app) => app.id !== id));
       setShowEditModal(false);
       setSelectedApp(null);
+      showToast("Application deleted successfully.", "success");
     } catch (err) {
       console.error(err);
       showToast("Failed to delete application.", "error");
@@ -614,7 +619,7 @@ export default function JobTracker() {
                 <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.3rem", margin: 0 }}>Edit Job Details</h3>
                 <button 
                   type="button" 
-                  onClick={() => handleDelete(selectedApp.id)} 
+                  onClick={() => handleDeleteTrigger(selectedApp.id)} 
                   style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "0.85rem", fontWeight: 700 }}
                 >
                   🗑️ Delete
@@ -714,6 +719,21 @@ export default function JobTracker() {
         )}
       </div>
       </div>
+      <ConfirmationModal
+        isOpen={deleteConfirmId !== null}
+        title="Delete Job Application?"
+        message="Are you sure you want to delete this job application from your tracker? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isDanger={true}
+        onConfirm={() => {
+          if (deleteConfirmId) {
+            executeDelete(deleteConfirmId);
+            setDeleteConfirmId(null);
+          }
+        }}
+        onCancel={() => setDeleteConfirmId(null)}
+      />
     </div>
   );
 }
