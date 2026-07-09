@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { Plus, Upload, Target, LayoutTemplate, FileText, Search, Trash2, Calendar, TrendingUp, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 export default function Dashboard() {
   const { user, role, loading: authLoading } = useAuth();
@@ -28,6 +29,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "ats">("newest");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -72,14 +74,13 @@ export default function Dashboard() {
     fetchResumesList();
   }, [authLoading, user]);
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const handleDeleteTrigger = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setDeleteConfirmId(id);
+  };
 
-    if (!window.confirm("Are you sure you want to permanently delete this resume from your history? This action cannot be undone.")) {
-      return;
-    }
-
+  const executeDelete = async (id: string) => {
     setDeletingId(id);
     try {
       const res = await fetch("/api/delete-resume", {
@@ -93,6 +94,7 @@ export default function Dashboard() {
       }
 
       setResumes((prev) => prev.filter((r) => r.id !== id));
+      showToast("Resume deleted successfully.", "success");
     } catch (err) {
       console.error(err);
       showToast("Error deleting resume. Please try again.", "error");
@@ -326,7 +328,7 @@ export default function Dashboard() {
                           </div>
                           
                           <button
-                            onClick={(e) => handleDelete(resumeItem.id, e)}
+                            onClick={(e) => handleDeleteTrigger(resumeItem.id, e)}
                             disabled={deletingId === resumeItem.id}
                             className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 transition-colors z-10"
                             title="Delete resume"
@@ -380,6 +382,21 @@ export default function Dashboard() {
         </div>
       </main>
       </div>
+      <ConfirmationModal
+        isOpen={deleteConfirmId !== null}
+        title="Delete Resume?"
+        message="Are you sure you want to permanently delete this resume from your history? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isDanger={true}
+        onConfirm={() => {
+          if (deleteConfirmId) {
+            executeDelete(deleteConfirmId);
+            setDeleteConfirmId(null);
+          }
+        }}
+        onCancel={() => setDeleteConfirmId(null)}
+      />
     </div>
   );
 }

@@ -4,11 +4,13 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/utils/supabase/client";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 export default function AdminKeywordsPage() {
   const { user, loading: authLoading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<"scan" | "pending" | "active">("scan");
+  const [approveAllConfirmOpen, setApproveAllConfirmOpen] = useState(false);
 
   const [scanIndustry, setScanIndustry] = useState("software_engineering");
   const [scanLoading, setScanLoading] = useState(false);
@@ -98,8 +100,11 @@ export default function AdminKeywordsPage() {
     }
   };
 
-  const handleApproveAllPending = async () => {
-    if (!confirm("Are you sure you want to approve all pending keywords?")) return;
+  const handleApproveAllPendingTrigger = () => {
+    setApproveAllConfirmOpen(true);
+  };
+
+  const executeApproveAllPending = async () => {
     setPendingLoading(true);
     let successCount = 0;
     for (const kw of pendingKeywords) {
@@ -238,7 +243,7 @@ export default function AdminKeywordsPage() {
                 <button 
                   className="btn-primary" 
                   style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", background: "#43e97b", color: "#000", border: "none" }} 
-                  onClick={handleApproveAllPending}
+                  onClick={handleApproveAllPendingTrigger}
                   disabled={pendingLoading}
                 >
                   {pendingLoading ? "Processing..." : "Approve All"}
@@ -294,6 +299,19 @@ export default function AdminKeywordsPage() {
           </div>
         )}
       </div>
+      <ConfirmationModal
+        isOpen={approveAllConfirmOpen}
+        title="Approve All Pending Keywords?"
+        message="Are you sure you want to approve all pending keywords in the queue? This will instantly make them active for resume scanners."
+        confirmLabel="Approve All"
+        cancelLabel="Cancel"
+        isDanger={false}
+        onConfirm={() => {
+          setApproveAllConfirmOpen(false);
+          executeApproveAllPending();
+        }}
+        onCancel={() => setApproveAllConfirmOpen(false)}
+      />
     </div>
   );
 }
