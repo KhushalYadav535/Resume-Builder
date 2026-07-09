@@ -5,9 +5,11 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/utils/supabase/client";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
+import { useToast } from "@/components/ui/toast-1";
 
 export default function AdminKeywordsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { showToast } = useToast();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<"scan" | "pending" | "active">("scan");
   const [approveAllConfirmOpen, setApproveAllConfirmOpen] = useState(false);
@@ -68,12 +70,12 @@ export default function AdminKeywordsPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setScanResults(data.suggestions || []);
-        alert("Found " + (data.suggestions?.length || 0) + " new suggestions!");
+        showToast("Found " + (data.suggestions?.length || 0) + " new suggestions!", "success");
       } else {
-        alert("Failed to scan: " + data.error);
+        showToast("Failed to scan: " + data.error, "error");
       }
     } catch (e) {
-      alert("Error running scan");
+      showToast("Error running scan", "error");
     }
     setScanLoading(false);
   };
@@ -91,12 +93,12 @@ export default function AdminKeywordsPage() {
         } else {
           setPendingKeywords(prev => prev.filter(k => k.id !== id));
         }
-        alert(`Successfully ${action}d!`);
+        showToast(`Successfully ${action}d!`, "success");
       } else {
-        alert(`Failed to ${action}`);
+        showToast(`Failed to ${action}`, "error");
       }
     } catch (e) {
-      alert("Error performing action");
+      showToast("Error performing action", "error");
     }
   };
 
@@ -119,7 +121,7 @@ export default function AdminKeywordsPage() {
         console.error("Failed to approve keyword:", kw.id);
       }
     }
-    alert(`Successfully approved ${successCount} out of ${pendingKeywords.length} keywords.`);
+    showToast(`Successfully approved ${successCount} out of ${pendingKeywords.length} keywords.`, "success");
     fetchPending();
   };
 
