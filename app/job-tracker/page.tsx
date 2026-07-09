@@ -9,6 +9,7 @@ import ParticleBackground from "@/components/ui/ParticleBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/toast-1";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
+import { Trash2 } from "lucide-react";
 
 export interface JobApplication {
   id: string;
@@ -620,9 +621,10 @@ export default function JobTracker() {
                 <button 
                   type="button" 
                   onClick={() => handleDeleteTrigger(selectedApp.id)} 
-                  style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "0.85rem", fontWeight: 700 }}
+                  style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "0.85rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
                 >
-                  🗑️ Delete
+                  <Trash2 size={13} />
+                  Delete
                 </button>
               </div>
 

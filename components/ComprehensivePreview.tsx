@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { ResumeSuggestion } from "@/lib/types/comprehensive-suggestions";
+import { Sparkles } from "lucide-react";
 
 interface Props {
   appliedSuggestions: ResumeSuggestion[];
@@ -19,7 +20,9 @@ export function ComprehensivePreview({ appliedSuggestions }: Props) {
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <div className="text-xl">✨</div>
+          <div className="text-amber-500 flex items-center justify-center">
+            <Sparkles size={20} />
+          </div>
           <div>
             <h3 className="font-bold text-lg text-foreground">Preview of Improvements</h3>
             <p className="text-sm text-muted-foreground">{appliedSuggestions.length} changes applied successfully</p>

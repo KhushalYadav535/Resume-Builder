@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/utils/supabase/client";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { useToast } from "@/components/ui/toast-1";
+import { ShieldCheck, BarChart2, Users as LucideUsers, Bot, Brain } from "lucide-react";
 
 export default function AdminKeywordsPage() {
   const { user, loading: authLoading } = useAuth();

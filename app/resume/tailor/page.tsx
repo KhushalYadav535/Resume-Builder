@@ -6,7 +6,7 @@ import ConcentricLoader, { ClassicLoader } from "@/components/ui/Loader";
 import ResumeRenderer from "@/components/ResumeRenderer";
 import { useAuth } from "@/hooks/useAuth";
 import { Resume, ResumeData, JDMatch } from "@/types";
-import { Target } from "lucide-react";
+import { Target, Eye, Sparkles, CheckCircle2, Edit3, FileText, Maximize2, Minimize2 } from "lucide-react";
 
 export default function TailorPage() {
   const { user, loading: authLoading } = useAuth();
@@ -283,9 +283,19 @@ export default function TailorPage() {
             <button 
               className="btn-secondary" 
               onClick={() => setShowPreview(!showPreview)}
-              style={{ fontSize: "0.85rem", padding: "0.5rem 1rem", whiteSpace: "nowrap" }}
+              style={{ fontSize: "0.85rem", padding: "0.5rem 1.2rem", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
             >
-              {showPreview ? "🗔 Hide Preview" : "🗔 See Preview"}
+              {showPreview ? (
+                <>
+                  <Minimize2 size={14} />
+                  Hide Preview
+                </>
+              ) : (
+                <>
+                  <Maximize2 size={14} />
+                  See Preview
+                </>
+              )}
             </button>
           )}
         </div>
@@ -346,8 +356,8 @@ export default function TailorPage() {
 
         {/* ============ STEP 1: SELECT RESUME ============ */}
         <div className="card" style={{ display: "grid", gap: "1rem", marginBottom: "1.5rem" }}>
-          <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.15rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span style={{ opacity: currentStep >= 1 ? 1 : 0.4 }}>📄</span> Step 1: Select Resume
+          <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.15rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ opacity: currentStep >= 1 ? 1 : 0.4, display: "inline-flex", alignItems: "center", color: "var(--accent)" }}><FileText size={16} /></span> Step 1: Select Resume
           </h2>
 
           {loading ? (
@@ -412,8 +422,8 @@ export default function TailorPage() {
         {/* ============ STEP 2: PASTE JD & ANALYZE ============ */}
         {currentStep >= 2 && selectedResume && (
           <div className="card" style={{ display: "grid", gap: "1rem", marginBottom: "1.5rem", opacity: currentStep >= 2 ? 1 : 0.5, transition: "opacity 0.3s" }}>
-            <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.15rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              📋 Step 2: Paste Job Description
+            <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.15rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span style={{ opacity: currentStep >= 2 ? 1 : 0.4, display: "inline-flex", alignItems: "center", color: "var(--accent)" }}><Target size={16} /></span> Step 2: Paste Job Description
             </h2>
             <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", margin: 0 }}>
               Paste the full job description you're applying for. Our AI will analyze keyword gaps and generate targeted rewrites.
@@ -526,8 +536,9 @@ export default function TailorPage() {
             {/* AI Rewrite Section */}
             <div className="card" style={{ display: "grid", gap: "1.2rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.15rem", margin: 0 }}>
-                  ✨ AI-Powered Rewrites
+                <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.15rem", margin: 0, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <Sparkles size={18} className="text-amber-500" />
+                  AI-Powered Rewrites
                 </h2>
                 <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
                   {acceptedRewrites.size} / {rewriteTargets.length} sections updated
@@ -535,7 +546,7 @@ export default function TailorPage() {
               </div>
 
               <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", margin: 0, lineHeight: 1.5 }}>
-                Click <strong>"✨ Generate Rewrites"</strong> on any section below. The AI will create 3 variations tailored to the job description. Click <strong>"✅ Accept"</strong> to instantly update your resume.
+                Click <strong>"Generate Rewrites"</strong> on any section below. The AI will create 3 variations tailored to the job description. Click <strong>"Accept"</strong> to instantly update your resume.
               </p>
 
               {rewriteTargets.length === 0 && (
@@ -590,7 +601,10 @@ export default function TailorPage() {
                               Generating...
                             </span>
                           ) : (
-                            "✨ Generate Rewrites"
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                              <Sparkles size={12} />
+                              Generate Rewrites
+                            </span>
                           )}
                         </button>
                       )}
@@ -657,7 +671,10 @@ export default function TailorPage() {
                                 handleAccept(target, suggestion);
                               }}
                             >
-                              ✅ Accept
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                                <CheckCircle2 size={12} />
+                                Accept
+                              </span>
                             </button>
                           </div>
                         ))}
@@ -682,7 +699,14 @@ export default function TailorPage() {
               }}>
                 <div>
                   <h3 style={{ fontWeight: 700, fontSize: "1rem", margin: "0 0 0.2rem" }}>
-                    {saveSuccess ? "✅ Resume Updated!" : `${acceptedRewrites.size} section(s) rewritten`}
+                    {saveSuccess ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                        <CheckCircle2 size={16} className="text-emerald-500" />
+                        Resume Updated!
+                      </span>
+                    ) : (
+                      `${acceptedRewrites.size} section(s) rewritten`
+                    )}
                   </h3>
                   <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", margin: 0 }}>
                     {saveSuccess
@@ -703,9 +727,10 @@ export default function TailorPage() {
                     <button
                       className="btn-secondary"
                       onClick={() => router.push(`/resume/builder?id=${selectedResume.id}`)}
-                      style={{ padding: "0.6rem 1.2rem", fontSize: "0.88rem" }}
+                      style={{ padding: "0.6rem 1.5rem", fontSize: "0.88rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
                     >
-                      ✏️ Edit in Builder
+                      <Edit3 size={14} />
+                      Edit in Builder
                     </button>
                   )}
                 </div>

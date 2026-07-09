@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import { ShieldCheck, TrendingUp } from "lucide-react";
+import { ShieldCheck, TrendingUp, User, FileText } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 interface SignupHistoryItem {
@@ -252,8 +252,8 @@ export default function AnalyticsDashboardPage() {
 
               {/* Total Resumes */}
               <div className="card" style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
-                <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(67,233,123,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
-                  📄
+                <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(67,233,123,0.12)", display: "flex", alignItems: "center", justifyContent: "center", color: "#43e97b" }}>
+                  <FileText size={20} />
                 </div>
                 <div>
                   <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif" }}>
@@ -324,7 +324,10 @@ export default function AnalyticsDashboardPage() {
               
               {/* Signups Chart */}
               <div className="card">
-                <p className="section-label" style={{ marginBottom: "1rem" }}>👤 User Signups Trend (Last 7 Days)</p>
+                <p className="section-label" style={{ marginBottom: "1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <User size={14} className="text-emerald-500" />
+                  User Signups Trend (Last 7 Days)
+                </p>
                 <div style={{ marginTop: "1rem", padding: "0.5rem" }}>
                   {renderSVGChart(stats.signupsHistory, "Signups", "#43e97b")}
                 </div>
@@ -332,7 +335,10 @@ export default function AnalyticsDashboardPage() {
 
               {/* Uploads Chart */}
               <div className="card">
-                <p className="section-label" style={{ marginBottom: "1rem" }}>📄 Resume Activity Trend (Last 7 Days)</p>
+                <p className="section-label" style={{ marginBottom: "1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <FileText size={14} className="text-purple-500" />
+                  Resume Activity Trend (Last 7 Days)
+                </p>
                 <div style={{ marginTop: "1rem", padding: "0.5rem" }}>
                   {renderSVGChart(stats.uploadsHistory, "Uploads", "#6c63ff")}
                 </div>

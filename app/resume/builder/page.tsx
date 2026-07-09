@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { AiChangesHistoryModal } from "@/components/AiChangesHistoryModal";
 import { useToast } from "@/components/ui/toast-1";
-import { Edit3, Printer, BookOpen, Sparkles, Share2, Eye } from "lucide-react";
+import { Edit3, Printer, BookOpen, Sparkles, Share2, Eye, Briefcase, Maximize2, Minimize2, Check, Lightbulb } from "lucide-react";
 
 
 const defaultEmptyResume: ResumeData = {
@@ -760,11 +760,34 @@ function BuilderContent() {
             <button onClick={() => setShowCoach(prev => !prev)} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderColor: "var(--accent)", color: "var(--accent)", fontWeight: 600, background: "var(--accent-soft)", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
               ✦ AI Career Coach
             </button>
-            <button onClick={() => setShowLinkedinModal(true)} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderColor: "#a89fff", color: "#a89fff", background: "rgba(168, 159, 255, 0.1)", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
-              💼 Import LinkedIn
+            <button 
+              onClick={() => setShowLinkedinModal(true)} 
+              className="btn-secondary" 
+              style={{ fontSize: "0.85rem", padding: "0.4rem 1.2rem", borderColor: "#a89fff", color: "#a89fff", background: "rgba(168, 159, 255, 0.1)", borderRadius: "var(--radius-full)", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} 
+              onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} 
+              onMouseOut={e => e.currentTarget.style.transform = "none"}
+            >
+              <Briefcase size={14} />
+              Import LinkedIn
             </button>
-            <button onClick={() => setIsFullscreen(prev => !prev)} className="btn-primary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
-              {isFullscreen ? "🗔 Hide Preview" : "🗔 See Preview"}
+            <button 
+              onClick={() => setIsFullscreen(prev => !prev)} 
+              className="btn-primary" 
+              style={{ fontSize: "0.85rem", padding: "0.4rem 1.2rem", borderRadius: "var(--radius-full)", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} 
+              onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} 
+              onMouseOut={e => e.currentTarget.style.transform = "none"}
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 size={14} />
+                  Hide Preview
+                </>
+              ) : (
+                <>
+                  <Maximize2 size={14} />
+                  See Preview
+                </>
+              )}
             </button>
             <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1.2rem", borderRadius: "var(--radius-full)", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
               <Printer size={14} />
@@ -783,7 +806,7 @@ function BuilderContent() {
       {/* TOAST NOTIFICATION FOR SUGGESTIONS */}
       <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${showSuggestionsGlow ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
         <div className="bg-green-500/10 border border-green-500/50 backdrop-blur-md text-green-400 px-6 py-3 rounded-full shadow-[0_0_20px_rgba(34,197,94,0.3)] flex items-center gap-3">
-          <span className="text-xl">✨</span>
+          <span className="text-amber-500 flex items-center justify-center"><Sparkles size={18} /></span>
           <span className="font-semibold">{searchParams.get("suggestionsApplied")} improvements applied to your resume. Review and refine below</span>
         </div>
       </div>
@@ -1054,7 +1077,12 @@ function BuilderContent() {
                         <span className="flex items-center gap-2">
                           <span className="w-3 h-3 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" /> Rewriting...
                         </span>
-                      ) : "✨ AI Rewrite"}
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <Sparkles size={12} />
+                          AI Rewrite
+                        </span>
+                      )}
                     </Button>
 
                     {inlineRewriteKey === "summary" && inlineRewriteSuggestions.length > 0 && (
@@ -1074,7 +1102,10 @@ function BuilderContent() {
                           >
                             <div className="flex justify-between items-start gap-4">
                               <span className="text-[var(--text-primary)]">{s}</span>
-                              <span className="text-xs text-sky-500 font-bold whitespace-nowrap shrink-0">✅ Accept</span>
+                              <span className="text-xs text-sky-500 font-bold whitespace-nowrap shrink-0 flex items-center gap-1">
+                                <Check size={12} />
+                                Accept
+                              </span>
                             </div>
                           </div>
                         ))}
@@ -1327,7 +1358,12 @@ function BuilderContent() {
                                         onClick={() => handleInlineRewrite(bullet, `Work Experience at ${exp.company} — ${exp.role}`, `work-${idx}-${bi}`)}
                                         style={{ fontSize: "0.7rem", padding: "0.2rem 0.5rem", borderColor: "#0ea5e9", color: "#0ea5e9" }}
                                       >
-                                        {inlineRewriteLoading && inlineRewriteKey === `work-${idx}-${bi}` ? "Rewriting..." : "✨ AI Rewrite"}
+                                        {inlineRewriteLoading && inlineRewriteKey === `work-${idx}-${bi}` ? "Rewriting..." : (
+                                          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                                            <Sparkles size={11} />
+                                            AI Rewrite
+                                          </span>
+                                        )}
                                       </button>
 
                                       {inlineRewriteKey === `work-${idx}-${bi}` && inlineRewriteSuggestions.length > 0 && (
@@ -1350,7 +1386,10 @@ function BuilderContent() {
                                               onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(14, 165, 233, 0.15)"; }}
                                             >
                                               <span>{s}</span>
-                                              <span style={{ fontSize: "0.68rem", color: "#0ea5e9", fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>✅ Accept</span>
+                                              <span style={{ fontSize: "0.68rem", color: "#0ea5e9", fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                                                <Check size={11} />
+                                                Accept
+                                              </span>
                                             </div>
                                           ))}
                                         </div>
@@ -1358,8 +1397,9 @@ function BuilderContent() {
                                     </div>
                                   )}
                                   {!hasMetric && bullet.trim().length > 0 && (
-                                    <span style={{ fontSize: "0.72rem", color: "#f6d365", paddingLeft: "4px" }}>
-                                      💡 tip: Add numerical results (e.g. ₹ 5 Lakhs saved, 30% speedup) to satisfy ATS metrics audit.
+                                    <span style={{ fontSize: "0.72rem", color: "#f6d365", paddingLeft: "4px", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                                      <Lightbulb size={11} />
+                                      tip: Add numerical results (e.g. ₹ 5 Lakhs saved, 30% speedup) to satisfy ATS metrics audit.
                                     </span>
                                   )}
                                 </div>
@@ -2078,12 +2118,13 @@ function BuilderContent() {
                 {localATS && localATS.missingKeywords && localATS.missingKeywords.length > 0 && (
                   <div className="card" style={{ display: "grid", gap: "1.2rem" }}>
                     <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.15rem", margin: 0 }}>
-                        ✨ ATS Keyword Injector
+                      <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.15rem", margin: 0, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                        <Sparkles size={18} className="text-amber-500" />
+                        ATS Keyword Injector
                       </h2>
                     </div>
                     <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", margin: 0, lineHeight: 1.5 }}>
-                      Click <strong>"✨ Inject Keywords"</strong> to let AI seamlessly weave your missing ATS keywords into your existing content.
+                      Click <strong>"Inject Keywords"</strong> to let AI seamlessly weave your missing ATS keywords into your existing content.
                     </p>
                     
                     <div style={{ display: "grid", gap: "1.5rem" }}>
@@ -2098,7 +2139,12 @@ function BuilderContent() {
                               onClick={() => handleInlineRewrite(resume.summary, "Professional Summary", "ats-summary")}
                               style={{ fontSize: "0.78rem", padding: "0.35rem 0.8rem", borderColor: "var(--accent)", color: "var(--accent)" }}
                             >
-                              {inlineRewriteLoading && inlineRewriteKey === "ats-summary" ? "Generating..." : "✨ Inject Keywords"}
+                              {inlineRewriteLoading && inlineRewriteKey === "ats-summary" ? "Generating..." : (
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                                  <Sparkles size={11} />
+                                  Inject Keywords
+                                </span>
+                              )}
                             </button>
                           </div>
                           <div style={{ fontSize: "0.85rem", color: "var(--text)", lineHeight: 1.5 }}>{resume.summary}</div>
@@ -2109,11 +2155,14 @@ function BuilderContent() {
                                 {inlineRewriteSuggestions.map((sug, i) => (
                                   <div key={i} style={{ padding: "0.8rem", background: "var(--bg-3)", borderLeft: "3px solid var(--accent)", borderRadius: "6px" }}>
                                     <p style={{ fontSize: "0.85rem", margin: "0 0 0.8rem", lineHeight: 1.5 }}>{sug}</p>
-                                    <button className="btn-primary" style={{ fontSize: "0.75rem", padding: "0.3rem 0.8rem" }} onClick={() => {
+                                    <button className="btn-primary" style={{ fontSize: "0.75rem", padding: "0.3rem 0.8rem", display: "inline-flex", alignItems: "center", gap: "0.2rem" }} onClick={() => {
                                       setResume(r => ({ ...r, summary: sug }));
                                       setInlineRewriteSuggestions([]);
                                       setInlineRewriteKey("");
-                                    }}>✅ Accept</button>
+                                    }}>
+                                      <Check size={12} />
+                                      Accept
+                                    </button>
                                   </div>
                                 ))}
                             </div>
@@ -2135,7 +2184,12 @@ function BuilderContent() {
                                   onClick={() => handleInlineRewrite(bullet, `Work Experience at ${exp.company} — ${exp.role}`, key)}
                                   style={{ fontSize: "0.78rem", padding: "0.35rem 0.8rem", borderColor: "var(--accent)", color: "var(--accent)" }}
                                 >
-                                  {inlineRewriteLoading && inlineRewriteKey === key ? "Generating..." : "✨ Inject Keywords"}
+                                  {inlineRewriteLoading && inlineRewriteKey === key ? "Generating..." : (
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
+                                      <Sparkles size={11} />
+                                      Inject Keywords
+                                    </span>
+                                  )}
                                 </button>
                               </div>
                               <div style={{ fontSize: "0.85rem", color: "var(--text)", lineHeight: 1.5 }}>{bullet}</div>
@@ -2146,7 +2200,7 @@ function BuilderContent() {
                                     {inlineRewriteSuggestions.map((sug, i) => (
                                       <div key={i} style={{ padding: "0.8rem", background: "var(--bg-3)", borderLeft: "3px solid var(--accent)", borderRadius: "6px" }}>
                                         <p style={{ fontSize: "0.85rem", margin: "0 0 0.8rem", lineHeight: 1.5 }}>{sug}</p>
-                                        <button className="btn-primary" style={{ fontSize: "0.75rem", padding: "0.3rem 0.8rem" }} onClick={() => {
+                                        <button className="btn-primary" style={{ fontSize: "0.75rem", padding: "0.3rem 0.8rem", display: "inline-flex", alignItems: "center", gap: "0.2rem" }} onClick={() => {
                                           const newExp = [...resume.workExperience];
                                           if (newExp[expIdx].bullets) {
                                             newExp[expIdx].bullets[bulletIdx] = sug;
@@ -2154,7 +2208,10 @@ function BuilderContent() {
                                           setResume(r => ({ ...r, workExperience: newExp }));
                                           setInlineRewriteSuggestions([]);
                                           setInlineRewriteKey("");
-                                        }}>✅ Accept</button>
+                                        }}>
+                                          <Check size={12} />
+                                          Accept
+                                        </button>
                                       </div>
                                     ))}
                                 </div>
@@ -2501,7 +2558,8 @@ function BuilderContent() {
           zIndex: 1000
         }}
       >
-        <span style={{ fontSize: "1.1rem" }}>✨</span> View AI Edits
+        <Sparkles size={14} className="text-amber-500" />
+        View AI Edits
       </button>
 
       {showAiHistory && resumeId && (

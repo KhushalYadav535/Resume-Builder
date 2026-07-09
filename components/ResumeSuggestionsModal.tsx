@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { ResumeSuggestion } from "@/lib/types/suggestions";
 import { ClassicLoader } from "@/components/ui/Loader";
 import { useRouter } from "next/navigation";
+import { Sparkles } from "lucide-react";
 
 interface ResumeSuggestionsModalProps {
   resumeId: string;
@@ -112,7 +113,8 @@ export default function ResumeSuggestionsModal({
           <div className="flex justify-between items-start mb-4">
             <div>
               <h2 className="text-2xl font-bold flex items-center gap-2 text-white">
-                ✨ Resume Improvement Suggestions
+                <Sparkles className="text-amber-500" size={24} />
+                Resume Improvement Suggestions
               </h2>
               <p className="text-muted-foreground mt-1 text-sm">
                 We scanned your resume and found these high-value missing keywords and skills.

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { ResumeSuggestion } from "@/lib/types/comprehensive-suggestions";
 import { Button } from "./ui/Button";
+import { Sparkles, FileText } from "lucide-react";
 
 interface AiChangesHistoryModalProps {
   resumeId: string;
@@ -58,7 +59,8 @@ export function AiChangesHistoryModal({ resumeId, isOpen, onClose }: AiChangesHi
         >
           <div>
             <h2 className="text-xl font-bold font-syne text-[var(--text-primary)] flex items-center gap-2">
-              <span className="text-2xl">✨</span> AI Edits History
+              <Sparkles size={20} className="text-amber-500" />
+              AI Edits History
             </h2>
             <p className="text-sm text-[var(--text-muted)] mt-1">Review changes applied by the Complete Resume Engine</p>
           </div>
@@ -82,8 +84,8 @@ export function AiChangesHistoryModal({ resumeId, isOpen, onClose }: AiChangesHi
               {error}
             </div>
           ) : suggestions.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <div className="text-4xl mb-4">📝</div>
+            <div className="text-center py-12 text-muted-foreground flex flex-col items-center justify-center">
+              <FileText size={40} className="mb-4 text-muted-foreground opacity-60" />
               <p>No AI changes have been applied to this resume yet.</p>
             </div>
           ) : (
