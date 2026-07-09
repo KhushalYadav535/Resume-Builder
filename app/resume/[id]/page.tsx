@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/Badge";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ATSRing } from "@/components/ui/ATSRing";
 import ResumeSuggestionsModal from "@/components/ResumeSuggestionsModal";
-import { Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock } from "lucide-react";
+import { Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock, Copy } from "lucide-react";
+import { useToast } from "@/components/ui/toast-1";
 
 interface LoadingStage {
   label: string;
@@ -42,6 +43,7 @@ const emptyResumeData = {
 
 export default function ResumeDetailPage() {
   const { user, loading: authLoading } = useAuth();
+  const { showToast } = useToast();
   const router = useRouter();
   const params = useParams();
   
@@ -168,14 +170,14 @@ export default function ResumeDetailPage() {
         
         // Show success banner if they applied suggestions recently
         if (estimatedNewScore > 0 || (resume.ats_score && resume.ats_score.overall > 70)) {
-          alert(`Download complete! 🎉\nYour optimized resume has an ATS score of ${resume.ats_score?.overall || 100}/100.`);
+          showToast(`Download complete! 🎉\nYour optimized resume has an ATS score of ${resume.ats_score?.overall || 100}/100.`, "success");
         }
       } else {
-        alert("Failed to export Word document.");
+        showToast("Failed to export Word document.", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Error exporting Word document.");
+      showToast("Error exporting Word document.", "error");
     } finally {
       setDocxLoading(false);
     }
@@ -237,13 +239,13 @@ export default function ResumeDetailPage() {
       if (res.ok) {
         const updated = await res.json();
         setResume(updated);
-        alert(`Successfully injected ${keywordsToAdd.length} missing keywords into your Technical Skills section!`);
+        showToast(`Successfully injected ${keywordsToAdd.length} missing keywords into your Technical Skills section!`, "success");
       } else {
-        alert("Failed to save updated resume.");
+        showToast("Failed to save updated resume.", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Error adding missing keywords.");
+      showToast("Error adding missing keywords.", "error");
     } finally {
       setAddingKeywords(false);
     }
@@ -264,11 +266,11 @@ export default function ResumeDetailPage() {
           setQuestions(data.questions);
         }
       } else {
-        alert("Failed to predict questions. Please try again.");
+        showToast("Failed to predict questions. Please try again.", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Error predicting questions.");
+      showToast("Error predicting questions.", "error");
     } finally {
       setQuestionsLoading(false);
     }
@@ -290,11 +292,11 @@ export default function ResumeDetailPage() {
           setShowStoryModal(true);
         }
       } else {
-        alert("Failed to generate career story script.");
+        showToast("Failed to generate career story script.", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Error generating career story.");
+      showToast("Error generating career story.", "error");
     } finally {
       setCareerStoryLoading(false);
     }
@@ -302,7 +304,7 @@ export default function ResumeDetailPage() {
 
   const fetchSkillGap = async () => {
     if (!resume || !targetRole.trim()) {
-      alert("Please enter a target role first.");
+      showToast("Please enter a target role first.", "warning");
       return;
     }
     setSkillGapLoading(true);
@@ -316,11 +318,11 @@ export default function ResumeDetailPage() {
         const data = await res.json();
         setSkillGapData(data);
       } else {
-        alert("Failed to compute skill gap. Please try again.");
+        showToast("Failed to compute skill gap. Please try again.", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Error analyzing skill gap.");
+      showToast("Error analyzing skill gap.", "error");
     } finally {
       setSkillGapLoading(false);
     }
@@ -341,11 +343,11 @@ export default function ResumeDetailPage() {
           setCareerRecommendations(data.recommendations);
         }
       } else {
-        alert("Failed to get career recommendations.");
+        showToast("Failed to get career recommendations.", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Error getting career recommendations.");
+      showToast("Error getting career recommendations.", "error");
     } finally {
       setRecommendationsLoading(false);
     }
@@ -386,7 +388,7 @@ export default function ResumeDetailPage() {
       }
     } catch (err) {
       console.error(err);
-      alert("Error toggling resume share status.");
+      showToast("Error toggling resume share status.", "error");
     } finally {
       setShareLoading(false);
     }
@@ -762,7 +764,7 @@ export default function ResumeDetailPage() {
                       onClick={() => {
                         if (typeof window !== "undefined") {
                           navigator.clipboard.writeText(window.location.origin + "/share/" + shareToken);
-                          alert("Link copied to clipboard!");
+                          showToast("Link copied to clipboard!", "success");
                         }
                       }}
                       className="btn-primary"
@@ -1395,12 +1397,13 @@ export default function ResumeDetailPage() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(careerStory);
-                  alert("Copied elevator pitch to clipboard!");
+                  showToast("Copied elevator pitch to clipboard!", "success");
                 }}
                 className="btn-primary"
-                style={{ padding: "0.5rem 1.2rem", fontSize: "0.85rem" }}
+                style={{ padding: "0.5rem 1.2rem", fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
               >
-                📋 Copy Script
+                <Copy size={14} />
+                Copy Script
               </button>
               <button
                 onClick={() => setShowStoryModal(false)}

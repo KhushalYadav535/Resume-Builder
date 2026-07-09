@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
+import { useToast } from "@/components/ui/toast-1";
 
 interface UserProfile {
   id: string;
@@ -13,6 +14,7 @@ interface UserProfile {
 }
 
 export default function AdminUsersPage() {
+  const { showToast } = useToast();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
@@ -66,7 +68,7 @@ export default function AdminUsersPage() {
         prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
       );
     } catch (err: any) {
-      alert(err.message || "Error updating role.");
+      showToast(err.message || "Error updating role.", "error");
     } finally {
       setUpdatingId(null);
     }

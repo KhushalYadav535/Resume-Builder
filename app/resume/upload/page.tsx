@@ -7,6 +7,7 @@ import ConcentricLoader, { ClassicLoader } from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
 import { ATSScore } from "@/types";
 import { UploadCloud, CheckCircle2 } from "lucide-react";
+import { useToast } from "@/components/ui/toast-1";
 
 // New Comprehensive Architecture Imports
 import { ResumeSuggestion } from "@/lib/types/comprehensive-suggestions";
@@ -32,6 +33,7 @@ const localStages: LoadingStage[] = [
 export default function UploadPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { showToast } = useToast();
   const [step, setStep] = useState<Step>("upload");
   const [resumeText, setResumeText] = useState("");
   const [fileName, setFileName] = useState("");
@@ -240,7 +242,7 @@ export default function UploadPage() {
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to apply suggestions. Please try again.");
+      showToast("Failed to apply suggestions. Please try again.", "error");
     } finally {
       setIsApplying(false);
     }

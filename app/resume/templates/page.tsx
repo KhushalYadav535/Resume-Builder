@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ResumeData } from "@/types";
+import { useToast } from "@/components/ui/toast-1";
 
 const templates = [
   {
@@ -63,6 +64,7 @@ const templates = [
 
 function TemplatesContent() {
   const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id") || searchParams.get("resumeId");
 
@@ -109,11 +111,11 @@ function TemplatesContent() {
         if (res.ok) {
           router.push(`/resume/${editId}`);
         } else {
-          alert("Failed to update template.");
+          showToast("Failed to update template.", "error");
         }
       } catch (err) {
         console.error(err);
-        alert("Error saving template.");
+        showToast("Error saving template.", "error");
       }
     } else {
       router.push(`/resume/builder?template=${tplId}`);

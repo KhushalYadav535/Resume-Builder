@@ -3,9 +3,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/components/ui/toast-1";
 
 export default function OnboardingPage() {
   const { user, loading: authLoading } = useAuth();
+  const { showToast } = useToast();
   const router = useRouter();
 
   const [role, setRole] = useState("Software Engineer");
@@ -33,11 +35,11 @@ export default function OnboardingPage() {
       if (res.ok) {
         router.push("/dashboard");
       } else {
-        alert("Onboarding failed. Please try again.");
+        showToast("Onboarding failed. Please try again.", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Error setting up onboarding details.");
+      showToast("Error setting up onboarding details.", "error");
     } finally {
       setSubmitting(false);
     }
