@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Menu, X, Box } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -87,14 +88,10 @@ export default function Navbar() {
           </button>
 
           {/* Logo */}
-          <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2 no-underline">
-            <Box size={24} className="text-[var(--accent)]" />
-            <span
-              className="text-[18px] font-[800] tracking-tight text-[var(--text-primary)]"
-              style={{ fontFamily: "var(--font-inter)" }}
-            >
-              UP<span className="gradient-text">ROLE</span>
-            </span>
+          <Link href={user ? "/dashboard" : "/"} className="flex items-center no-underline">
+            <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2.5 dark:rounded-[8px] flex items-center">
+              <Image src="/UpRole logo.png" alt="UPROLE" width={120} height={32} style={{ objectFit: 'contain' }} />
+            </div>
           </Link>
         </div>
 
@@ -196,12 +193,9 @@ export default function Navbar() {
         }}
       >
         <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
-          <span
-            className="text-[18px] font-[800] tracking-tight text-[var(--text-primary)]"
-            style={{ fontFamily: "var(--font-inter)" }}
-          >
-            UP<span className="gradient-text">ROLE</span>
-          </span>
+          <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2 dark:rounded-[6px] flex items-center">
+            <Image src="/UpRole logo.png" alt="UPROLE" width={110} height={28} style={{ objectFit: 'contain' }} />
+          </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
             className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1"

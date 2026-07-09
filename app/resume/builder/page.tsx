@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { AiChangesHistoryModal } from "@/components/AiChangesHistoryModal";
+import { useToast } from "@/components/ui/toast-1";
 
 
 const defaultEmptyResume: ResumeData = {
@@ -105,6 +106,7 @@ function BuilderContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { showToast } = useToast();
 
   // URL Query States
   const initialTemplate = searchParams.get("template") || "jakes-resume";
@@ -266,7 +268,7 @@ function BuilderContent() {
       }
     } catch (err) {
       console.error(err);
-      alert("Error toggling resume share status.");
+      showToast("Error toggling resume share status.", "error");
     } finally {
       setShareLoading(false);
     }
@@ -517,7 +519,7 @@ function BuilderContent() {
       setShowLinkedinModal(false);
       setPasteText("");
       setPdfFile(null);
-      alert("LinkedIn import successful!");
+      showToast("LinkedIn import successful!", "success");
     } catch (err: any) {
       console.error(err);
       setValidationError(err.message || "Unable to auto import LinkedIn.");
@@ -697,7 +699,7 @@ function BuilderContent() {
     });
 
     try {
-      alert("Pro Tip: To ensure your resume is 100% ATS-friendly and readable by recruiters, we use your browser's native PDF engine.\n\nPlease select 'Save as PDF' in the Destination dropdown.");
+      showToast("Pro Tip: Select 'Save as PDF' to ensure ATS readability.", "info");
       window.print();
     } catch (e) {
       console.error("PDF generation failed:", e);
@@ -2205,7 +2207,7 @@ function BuilderContent() {
                             onClick={() => {
                               if (typeof window !== "undefined") {
                                 navigator.clipboard.writeText(window.location.origin + "/share/" + shareToken);
-                                alert("Link copied to clipboard!");
+                                showToast("Link copied to clipboard!", "success");
                               }
                             }}
                             className="btn-primary"

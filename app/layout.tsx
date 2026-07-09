@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { AuthProvider } from "@/components/AuthProvider";
-import { ToastProvider } from "@/components/ui/Toast";
+import { ToastProvider } from "@/components/ui/toast-1";
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import "./globals.css";
 
@@ -19,6 +20,10 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "UPROLE — Build & Optimize Your Resume",
   description: "AI-powered resume builder, ATS scorer, and job description matcher. Land your dream job faster.",
+  icons: {
+    icon: "/logo symbol.png",
+    apple: "/UpRole logo.jpeg",
+  },
 };
 
 export default function RootLayout({
@@ -29,12 +34,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <script
+        <link rel="icon" type="image/png" href="/logo symbol.png" />
+      </head>
+      <body>
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  const theme = localStorage.getItem('resume-optimizer-theme') || 'dark';
+                  var theme = localStorage.getItem('resume-optimizer-theme') || 'dark';
                   document.documentElement.setAttribute('data-theme', theme);
                   document.documentElement.style.colorScheme = theme;
                 } catch (e) {
@@ -44,8 +54,6 @@ export default function RootLayout({
             `,
           }}
         />
-      </head>
-      <body>
         <AuthProvider>
           <ToastProvider>
             {children}

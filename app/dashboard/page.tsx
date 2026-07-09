@@ -8,6 +8,7 @@ import ParticleBackground from "@/components/ui/ParticleBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { Resume } from "@/types";
 import { createClient } from "@/utils/supabase/client";
+import { useToast } from "@/components/ui/toast-1";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ATSRing } from "@/components/ui/ATSRing";
@@ -20,6 +21,7 @@ export default function Dashboard() {
   const { user, role, loading: authLoading } = useAuth();
   const router = useRouter();
   const [resumes, setResumes] = useState<Resume[]>([]);
+  const { showToast } = useToast();
   const [fetchingResumes, setFetchingResumes] = useState(true);
 
   // Search & Sort states
@@ -93,7 +95,7 @@ export default function Dashboard() {
       setResumes((prev) => prev.filter((r) => r.id !== id));
     } catch (err) {
       console.error(err);
-      alert("Error deleting resume. Please try again.");
+      showToast("Error deleting resume. Please try again.", "error");
     } finally {
       setDeletingId(null);
     }

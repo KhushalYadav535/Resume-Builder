@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/components/ui/toast-1";
 
 export interface JobApplication {
   id: string;
@@ -27,6 +28,7 @@ export interface JobApplication {
 export default function JobTracker() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { showToast } = useToast();
 
   // Job data states
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -135,7 +137,7 @@ export default function JobTracker() {
       setShowAddModal(false);
     } catch (err) {
       console.error(err);
-      alert("Error adding application. Make sure the database migration has been run.");
+      showToast("Error adding application. Make sure the database migration has been run.", "error");
     }
   };
 
@@ -171,7 +173,7 @@ export default function JobTracker() {
       setSelectedApp(null);
     } catch (err) {
       console.error(err);
-      alert("Error updating application.");
+      showToast("Error updating application.", "error");
     }
   };
 
@@ -189,7 +191,7 @@ export default function JobTracker() {
       setSelectedApp(null);
     } catch (err) {
       console.error(err);
-      alert("Failed to delete application.");
+      showToast("Failed to delete application.", "error");
     }
   };
 
