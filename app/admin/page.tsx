@@ -4,6 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { Card } from "@/components/ui/Card";
 import ParticleBackground from "@/components/ui/ParticleBackground";
+import { ShieldCheck, FileText, TrendingUp, User, BarChart2, Users, Bot, Brain } from "lucide-react";
 
 interface SignupHistoryItem {
   date: string;
@@ -161,8 +162,9 @@ export default function AdminDashboardPage() {
         {/* Title */}
         <div style={{ marginBottom: "2rem" }}>
           <p className="section-label" style={{ marginBottom: "0.5rem" }}>System Performance Monitor</p>
-          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800 }}>
-            🛡️ Administrative Dashboard
+          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+            <ShieldCheck size={32} className="text-indigo-500" />
+            Administrative Dashboard
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.25rem" }}>
             Real-time platform statistics, user roles management, and OpenRouter API diagnostics.
@@ -172,23 +174,27 @@ export default function AdminDashboardPage() {
         {/* Navigation Tabs */}
         <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--border)", marginBottom: "2rem", overflowX: "auto", whiteSpace: "nowrap" }}>
           <Link href="/admin" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "rgba(108,99,255,0.08)", border: "none", borderBottom: "2px solid var(--accent)", color: "var(--accent)", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}>
-              📊 Analytics Overview
+            <button style={{ padding: "0.6rem 1.2rem", background: "rgba(108,99,255,0.08)", border: "none", borderBottom: "2px solid var(--accent)", color: "var(--accent)", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <BarChart2 size={14} />
+              Analytics Overview
             </button>
           </Link>
           <Link href="/admin/users" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer" }}>
-              👥 User Management
+            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <Users size={14} />
+              User Management
             </button>
           </Link>
           <Link href="/admin/ai-usage" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer" }}>
-              🤖 AI Usage Log
+            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <Bot size={14} />
+              AI Usage Log
             </button>
           </Link>
           <Link href="/admin/keywords" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer" }}>
-              🧠 ATS Keywords
+            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <Brain size={14} />
+              ATS Keywords
             </button>
           </Link>
         </div>
@@ -225,8 +231,8 @@ export default function AdminDashboardPage() {
 
               {/* Total Resumes */}
               <Card style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
-                <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(67,233,123,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
-                  📄
+                <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(67,233,123,0.12)", display: "flex", alignItems: "center", justifyContent: "center", color: "#43e97b" }}>
+                  <FileText size={20} />
                 </div>
                 <div>
                   <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif" }}>
@@ -238,8 +244,8 @@ export default function AdminDashboardPage() {
 
               {/* AI Usage */}
               <Card style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
-                <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(255,101,132,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
-                  ✦
+                <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(255,101,132,0.12)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ff6584" }}>
+                  <Sparkles size={20} />
                 </div>
                 <div>
                   <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: "var(--accent-2)" }}>
@@ -253,8 +259,8 @@ export default function AdminDashboardPage() {
 
               {/* Avg ATS */}
               <Card style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
-                <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(246,211,101,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>
-                  📈
+                <div style={{ width: 45, height: 45, borderRadius: 10, background: "rgba(246,211,101,0.12)", display: "flex", alignItems: "center", justifyContent: "center", color: "#f6d365" }}>
+                  <TrendingUp size={20} />
                 </div>
                 <div>
                   <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: getScoreColor(stats.averageATS) }}>
@@ -297,7 +303,10 @@ export default function AdminDashboardPage() {
               
               {/* Signups Chart */}
               <Card>
-                <p className="section-label" style={{ marginBottom: "1rem" }}>👤 User Signups Trend (Last 7 Days)</p>
+                <p className="section-label" style={{ marginBottom: "1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <User size={14} className="text-emerald-500" />
+                  User Signups Trend (Last 7 Days)
+                </p>
                 <div style={{ marginTop: "1rem", padding: "0.5rem" }}>
                   {renderSVGChart(stats.signupsHistory, "Signups", "#43e97b")}
                 </div>
@@ -305,7 +314,10 @@ export default function AdminDashboardPage() {
 
               {/* Uploads Chart */}
               <Card>
-                <p className="section-label" style={{ marginBottom: "1rem" }}>📄 Resume Activity Trend (Last 7 Days)</p>
+                <p className="section-label" style={{ marginBottom: "1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <FileText size={14} className="text-purple-500" />
+                  Resume Activity Trend (Last 7 Days)
+                </p>
                 <div style={{ marginTop: "1rem", padding: "0.5rem" }}>
                   {renderSVGChart(stats.uploadsHistory, "Uploads", "#6c63ff")}
                 </div>

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ATSRing } from "@/components/ui/ATSRing";
 import ResumeSuggestionsModal from "@/components/ResumeSuggestionsModal";
-import { Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock, Copy } from "lucide-react";
+import { Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock, Copy, Maximize2, Minimize2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
 
 interface LoadingStage {
@@ -734,10 +734,14 @@ export default function ResumeDetailPage() {
               {/* Public Link Generator widget */}
             <div className="card" style={{ display: "grid", gap: "0.8rem", textAlign: "left" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>🔗 Public Web Link Sharing</span>
+                <span style={{ fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <Share2 size={14} className="text-purple-500" />
+                  Public Web Link Sharing
+                </span>
                 {shareToken && (
-                  <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
-                    👁️ Views: <strong>{shareViews}</strong>
+                  <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                    <Eye size={12} className="text-blue-500" />
+                    Views: <strong>{shareViews}</strong>
                   </span>
                 )}
               </div>
@@ -981,7 +985,10 @@ export default function ResumeDetailPage() {
                 <div className="card" style={{ display: "grid", gap: "1rem", padding: "1.5rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>✨ Interactive Improvements</h3>
+                      <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.1rem", fontWeight: 700, margin: 0, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                        <Sparkles size={18} className="text-amber-500" />
+                        Interactive Improvements
+                      </h3>
                       <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: "0.2rem 0 0 0" }}>
                         Generate AI suggestions to improve your ATS score by adding missing keywords and skills.
                       </p>
@@ -1181,7 +1188,10 @@ export default function ResumeDetailPage() {
                 <div className="card" style={{ display: "grid", gap: "1rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
                     <div>
-                      <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.05rem", fontWeight: 700, margin: 0 }}>🚀 Next-Step Career Path Recommendations</h3>
+                      <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.05rem", fontWeight: 700, margin: 0, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                        <TrendingUp size={16} className="text-emerald-500" />
+                        Next-Step Career Path Recommendations
+                      </h3>
                       <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: "0.2rem 0 0" }}>Discover alternative or progressive career paths based on your experience profile.</p>
                     </div>
                     {careerRecommendations.length > 0 && (
@@ -1289,8 +1299,22 @@ export default function ResumeDetailPage() {
             
             {/* Screen layout option */}
             <div style={{ display: "flex", gap: "0.4rem" }}>
-              <button onClick={() => setIsFullscreen(prev => !prev)} className="btn-secondary" style={{ padding: "0.25rem 0.6rem", fontSize: "0.78rem", borderRadius: "6px" }}>
-                {isFullscreen ? "🗖 Back to Critique" : "🗔 Fullscreen Preview"}
+              <button 
+                onClick={() => setIsFullscreen(prev => !prev)} 
+                className="btn-secondary" 
+                style={{ padding: "0.25rem 0.6rem", fontSize: "0.78rem", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+              >
+                {isFullscreen ? (
+                  <>
+                    <Minimize2 size={13} />
+                    Back to Critique
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 size={13} />
+                    Fullscreen Preview
+                  </>
+                )}
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, ReactNode } from "react";
+import { Edit3, FileText } from "lucide-react";
 
 interface ResizablePanelsProps {
   leftPanel: ReactNode;
@@ -127,7 +128,7 @@ export default function ResizablePanels({
               transition: "all 0.2s"
             }}
           >
-            ✏️ Edit Form
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", justifyContent: "center", width: "100%" }}><Edit3 size={14} /> Edit Form</span>
           </button>
           <button
             onClick={() => setMobileTab("preview")}
@@ -143,7 +144,7 @@ export default function ResizablePanels({
               transition: "all 0.2s"
             }}
           >
-            📄 Preview
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", justifyContent: "center", width: "100%" }}><FileText size={14} /> Preview</span>
           </button>
         </div>
         <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>

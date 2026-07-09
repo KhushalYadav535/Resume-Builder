@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import ResumeDocument from "@/components/ResumeDocument";
+import { Printer } from "lucide-react";
 
 interface SharedResume {
   file_name: string;
@@ -108,8 +109,9 @@ export default function SharedResumePage() {
               <button onClick={() => setZoomFactor(prev => Math.min(1.2, prev + 0.05))} className="btn-secondary" style={{ padding: "0.2rem 0.5rem", fontSize: "0.75rem" }}>+</button>
             </div>
 
-            <button onClick={handlePrint} className="btn-primary" style={{ fontSize: "0.8rem", padding: "0.5rem 1rem" }}>
-              📥 Download PDF / Print
+            <button onClick={handlePrint} className="btn-primary" style={{ fontSize: "0.8rem", padding: "0.5rem 1.2rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <Printer size={14} />
+              Download PDF / Print
             </button>
             
             <Link href="/signup" style={{ textDecoration: "none" }}>

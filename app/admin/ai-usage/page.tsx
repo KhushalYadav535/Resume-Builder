@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { ShieldCheck, BarChart2, Users as LucideUsers, Bot, Brain } from "lucide-react";
 
 interface RequestLog {
   id: string;
@@ -63,8 +64,9 @@ export default function AdminAIUsagePage() {
         {/* Title */}
         <div style={{ marginBottom: "2rem" }}>
           <p className="section-label" style={{ marginBottom: "0.5rem" }}>LLM Telemetry</p>
-          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800 }}>
-            🤖 AI API Usage Tracker
+          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+            <Bot size={32} className="text-indigo-500" />
+            AI API Usage Tracker
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.25rem" }}>
             Track token estimations, cascading failover success rates, and monitor API traffic for Gemini & OpenRouter.

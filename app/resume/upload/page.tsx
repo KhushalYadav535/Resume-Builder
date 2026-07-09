@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import ConcentricLoader, { ClassicLoader } from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
 import { ATSScore } from "@/types";
-import { UploadCloud, CheckCircle2 } from "lucide-react";
+import { UploadCloud, CheckCircle2, Sparkles, TrendingUp } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
 
 // New Comprehensive Architecture Imports
@@ -394,7 +394,8 @@ export default function UploadPage() {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                   <div>
                     <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                      ✅ Comprehensive Analysis Complete
+                      <CheckCircle2 className="text-[#43e97b]" size={22} />
+                      Comprehensive Analysis Complete
                     </h2>
                     <p className="text-sm text-muted-foreground">
                       Impact: {suggestions.length} improvements found across multiple dimensions.
@@ -481,7 +482,7 @@ export default function UploadPage() {
 
               {suggestions.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground bg-card rounded-xl border border-border/50">
-                  <div className="text-4xl mb-4">🎉</div>
+                  <div className="text-amber-500 mb-4 flex justify-center"><Sparkles size={40} /></div>
                   <p>Your resume is in excellent shape! No major AI suggestions found.</p>
                 </div>
               )}
@@ -519,7 +520,9 @@ export default function UploadPage() {
         {step === "applied" && (
           <div className="animate-in fade-in zoom-in-95 duration-400">
             <div className="text-center py-8">
-              <div className="text-6xl mb-4 animate-bounce">🚀</div>
+              <div className="text-[var(--accent)] mb-4 flex justify-center animate-bounce">
+                <TrendingUp size={56} />
+              </div>
               <h2 className="text-3xl font-black font-syne text-white mb-2">Upgrades Applied!</h2>
               <p className="text-muted-foreground">Your resume has been successfully enhanced with AI intelligence.</p>
             </div>

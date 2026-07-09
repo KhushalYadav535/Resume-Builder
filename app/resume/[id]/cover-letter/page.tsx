@@ -5,6 +5,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/Card";
+import { Copy, Check, Printer } from "lucide-react";
 export default function CoverLetterPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -148,11 +149,22 @@ export default function CoverLetterPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", color: "var(--text-muted)" }}>Generated Letter</span>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <button onClick={handleCopy} className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.8rem" }}>
-                    {copied ? "✓ Copied!" : "📋 Copy"}
+                  <button onClick={handleCopy} className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.8rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                    {copied ? (
+                      <>
+                        <Check size={13} className="text-emerald-500" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={13} />
+                        Copy
+                      </>
+                    )}
                   </button>
-                  <button onClick={handlePrint} className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.8rem" }}>
-                    📥 Print / PDF
+                  <button onClick={handlePrint} className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.8rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                    <Printer size={13} />
+                    Print / PDF
                   </button>
                 </div>
               </div>
