@@ -93,7 +93,7 @@ export default function Navbar() {
               className="text-[18px] font-[800] tracking-tight text-[var(--text-primary)]"
               style={{ fontFamily: "var(--font-inter)" }}
             >
-              Resume<span className="gradient-text">Optimizer</span>
+              UP<span className="gradient-text">ROLE</span>
             </span>
           </Link>
         </div>
@@ -200,7 +200,7 @@ export default function Navbar() {
             className="text-[18px] font-[800] tracking-tight text-[var(--text-primary)]"
             style={{ fontFamily: "var(--font-inter)" }}
           >
-            Resume<span className="gradient-text">Optimizer</span>
+            UP<span className="gradient-text">ROLE</span>
           </span>
           <button
             onClick={() => setMobileMenuOpen(false)}

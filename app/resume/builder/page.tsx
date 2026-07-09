@@ -183,7 +183,7 @@ function BuilderContent() {
 
   const [showCoach, setShowCoach] = useState(false);
   const [coachMessages, setCoachMessages] = useState<{ role: "user" | "coach"; content: string }[]>([
-    { role: "coach", content: "👋 Namaste! I am **ResumeAI**, your product guide and career coach. I can help you navigate the platform, generate cover letters, improve your ATS score, or answer career questions. How can I help you today?" }
+    { role: "coach", content: "👋 Namaste! I am **UPROLE**, your product guide and career coach. I can help you navigate the platform, generate cover letters, improve your ATS score, or answer career questions. How can I help you today?" }
   ]);
   const [coachInput, setCoachInput] = useState("");
   const [coachLoading, setCoachLoading] = useState(false);

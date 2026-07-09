@@ -17,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ResumeAI — Build & Optimize Your Resume",
+  title: "UPROLE — Build & Optimize Your Resume",
   description: "AI-powered resume builder, ATS scorer, and job description matcher. Land your dream job faster.",
 };
 
