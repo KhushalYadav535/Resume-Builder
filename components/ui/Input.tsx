@@ -73,7 +73,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               error && "border-[var(--danger)] focus:border-[var(--danger)] focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]",
               icon ? "pl-11" : "pl-3.5",
               isPassword ? "pr-11" : "pr-3.5",
-              variant === "floating" ? "pt-[18px] pb-1.5" : "py-2.5"
+              variant === "floating" ? "pt-[22px] pb-[6px] h-[52px]" : "py-2.5 min-h-[44px]"
             )}
             {...props}
             placeholder={variant === "floating" && label && !active ? "" : props.placeholder}
@@ -81,10 +81,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {label && variant === "floating" && (
             <label
               className={cn(
-                "absolute left-3.5 transition-all duration-[var(--dur-fast)] ease-[var(--ease-out)] pointer-events-none",
-                icon && !active ? "left-11" : "",
+                "absolute transition-all duration-[var(--dur-fast)] ease-[var(--ease-out)] pointer-events-none",
+                icon ? "left-11" : "left-3.5",
                 active
-                  ? "top-2 transform-none text-[11px] font-semibold text-[var(--accent)] tracking-[0.04em] uppercase"
+                  ? "top-[6px] transform-none text-[11px] font-semibold text-[var(--accent)] tracking-[0.04em] uppercase"
                   : "top-1/2 -translate-y-1/2 text-[15px] text-[var(--text-muted)]",
                 error && active && "text-[var(--danger)]"
               )}
