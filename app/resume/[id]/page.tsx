@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ATSRing } from "@/components/ui/ATSRing";
 import ResumeSuggestionsModal from "@/components/ResumeSuggestionsModal";
+import { Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock } from "lucide-react";
 
 interface LoadingStage {
   label: string;
@@ -554,7 +555,10 @@ export default function ResumeDetailPage() {
         <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.5rem" }}>Resume record not found</h2>
         <p style={{ color: "var(--text-muted)", marginTop: "0.5rem" }}>Ensure you are logged into the correct user workspace account.</p>
         <Link href="/dashboard" style={{ display: "inline-block", marginTop: "1.5rem" }}>
-          <button className="btn-secondary">← Back to Dashboard</button>
+          <button className="btn-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 inline-block mr-1.5 align-text-bottom" style={{ verticalAlign: 'middle', marginTop: '-2px' }}><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Dashboard
+          </button>
         </Link>
       </div>
     </div>
@@ -601,8 +605,9 @@ export default function ResumeDetailPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1400px", margin: "0 auto", flexWrap: "wrap", gap: "1rem" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <Link href="/dashboard" style={{ textDecoration: "none", color: "var(--text-muted)", fontSize: "0.82rem" }}>
-                ← Dashboard
+              <Link href="/dashboard" style={{ textDecoration: "none", color: "var(--text-muted)", fontSize: "0.82rem", display: 'inline-flex', alignItems: 'center' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 inline-block mr-1" style={{ verticalAlign: 'middle' }}><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Dashboard
               </Link>
               <span style={{ color: "var(--border-light)" }}>/</span>
               <span className="tag tag-purple" style={{ fontSize: "0.72rem" }}>
@@ -616,25 +621,29 @@ export default function ResumeDetailPage() {
 
           <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
             <Link href={`/resume/builder?id=${resume.id}&template=${selectedTemplate}`}>
-              <button className="btn-primary" style={{ fontSize: "0.85rem" }}>
-                ✏️ Edit in Builder
+              <button className="btn-primary" style={{ fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                <Edit3 size={15} />
+                Edit in Builder
               </button>
             </Link>
             <Link href={`/resume/${resume.id}/cover-letter`}>
-              <button className="btn-secondary" style={{ fontSize: "0.85rem", borderColor: "var(--accent-2)", color: "var(--accent-2)" }}>
-                ✉️ Cover Letter
+              <button className="btn-secondary" style={{ fontSize: "0.85rem", borderColor: "var(--accent-2)", color: "var(--accent-2)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                <Mail size={15} />
+                Cover Letter
               </button>
             </Link>
-            <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.85rem" }}>
-              📥 Print / Export PDF
+            <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <Printer size={15} />
+              Print / Export PDF
             </button>
             <button 
               onClick={handleDownloadDocx} 
               disabled={docxLoading} 
               className="btn-secondary" 
-              style={{ fontSize: "0.85rem", borderColor: "var(--accent-3)", color: "var(--accent-3)" }}
+              style={{ fontSize: "0.85rem", borderColor: "var(--accent-3)", color: "var(--accent-3)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
             >
-              {docxLoading ? "Downloading DOCX..." : "📝 Download DOCX"}
+              <FileDown size={15} />
+              {docxLoading ? "Downloading DOCX..." : "Download DOCX"}
             </button>
           </div>
         </div>
@@ -644,28 +653,28 @@ export default function ResumeDetailPage() {
       <div className="no-print" style={{ background: "var(--bg-3)", borderBottom: "1px solid var(--border)", padding: "0.75rem 2rem" }}>
         <div style={{ display: "flex", gap: "2rem", alignItems: "center", maxWidth: "1400px", margin: "0 auto", flexWrap: "wrap", fontSize: "0.8rem", color: "var(--text-muted)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span>📈</span>
+            <TrendingUp size={14} className="text-indigo-500" />
             <span>ATS Score:</span>
             <strong style={{ color: resume.ats_score ? getScoreColor(resume.ats_score.overall) : "var(--text)" }}>
               {resume.ats_score ? `${resume.ats_score.overall}/100` : "Not computed"}
             </strong>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span>🔗</span>
+            <Share2 size={14} className="text-purple-500" />
             <span>Sharing Status:</span>
             <strong style={{ color: shareToken && isSharePublic ? "#43e97b" : "#ff6584" }}>
               {shareToken && isSharePublic ? "Public (Active)" : "Private (Off)"}
             </strong>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span>👁️</span>
+            <Eye size={14} className="text-blue-500" />
             <span>Public Link Views:</span>
             <strong style={{ color: "var(--text)" }}>
               {shareViews}
             </strong>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span>📅</span>
+            <Clock size={14} className="text-green-500" />
             <span>Last Audit:</span>
             <strong style={{ color: "var(--text)" }}>
               {resume.updated_at ? new Date(resume.updated_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Never"}

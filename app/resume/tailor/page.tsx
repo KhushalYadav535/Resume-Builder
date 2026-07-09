@@ -6,6 +6,7 @@ import ConcentricLoader, { ClassicLoader } from "@/components/ui/Loader";
 import ResumeRenderer from "@/components/ResumeRenderer";
 import { useAuth } from "@/hooks/useAuth";
 import { Resume, ResumeData, JDMatch } from "@/types";
+import { Target } from "lucide-react";
 
 export default function TailorPage() {
   const { user, loading: authLoading } = useAuth();
@@ -270,8 +271,9 @@ export default function TailorPage() {
         {/* Header */}
         <div style={{ marginBottom: "2rem", borderBottom: "1px solid var(--border)", paddingBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
           <div>
-            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              🎯 Tailor Resume for a Job
+            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.6rem" }}>
+              <Target size={24} className="text-pink-500" />
+              Tailor Resume for a Job
             </h1>
             <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.4rem" }}>
               Select a resume, paste a job description, and let AI tailor your content with one-click rewrites.

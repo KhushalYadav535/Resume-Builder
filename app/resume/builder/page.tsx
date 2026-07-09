@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { AiChangesHistoryModal } from "@/components/AiChangesHistoryModal";
 import { useToast } from "@/components/ui/toast-1";
+import { Edit3, Printer, BookOpen, Sparkles, Share2, Eye } from "lucide-react";
 
 
 const defaultEmptyResume: ResumeData = {
@@ -728,7 +729,12 @@ function BuilderContent() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1550px", margin: "0 auto", flexWrap: "wrap", gap: "1.5rem" }}>
           <div>
             <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.6rem", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.8rem" }}>
-              {resumeId ? "✏️ Premium Resume Editor" : "✦ Interactive Resume Builder"}
+              {resumeId ? (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+                  <Edit3 size={20} className="text-[var(--accent)]" />
+                  Premium Resume Editor
+                </span>
+              ) : "✦ Interactive Resume Builder"}
               {resume.fresherMode && <span style={{ fontSize: "0.75rem", background: "var(--accent-3)", color: "#000", padding: "2px 8px", borderRadius: "20px", fontWeight: 700 }}>FRESHER</span>}
             </h1>
             <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", marginTop: "0.2rem", flexWrap: "wrap" }}>
@@ -760,12 +766,14 @@ function BuilderContent() {
             <button onClick={() => setIsFullscreen(prev => !prev)} className="btn-primary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
               {isFullscreen ? "🗔 Hide Preview" : "🗔 See Preview"}
             </button>
-            <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
-              📥 Export PDF
+            <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1.2rem", borderRadius: "var(--radius-full)", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
+              <Printer size={14} />
+              Export PDF
             </button>
             <Link href="/dashboard">
-              <button className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
-                ← Close
+              <button className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1.2rem", borderRadius: "var(--radius-full)", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5" style={{ verticalAlign: 'middle' }}><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Close
               </button>
             </Link>
           </div>
@@ -1737,7 +1745,10 @@ function BuilderContent() {
                 {/* Competitive Exams */}
                 <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
                   <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ fontWeight: 700, fontSize: "1rem" }}>📝 Competitive Exams (JEE, GATE, CAT, UPSC)</h3>
+                    <h3 style={{ fontWeight: 700, fontSize: "1rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                      <BookOpen size={18} className="text-indigo-500" />
+                      Competitive Exams (JEE, GATE, CAT, UPSC)
+                    </h3>
                     <button
                       className="btn-secondary"
                       style={{ fontSize: "0.78rem", padding: "0.3rem 0.7rem" }}
@@ -2157,19 +2168,23 @@ function BuilderContent() {
                 )}
 
                 <div className="card" style={{ textAlign: "center", padding: "2.5rem 2rem", display: "grid", gap: "1.2rem" }}>
-                  <div style={{ fontSize: "2.5rem" }}>🎉</div>
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    <Sparkles size={44} className="text-amber-500 animate-pulse" />
+                  </div>
                   <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.3rem", margin: 0 }}>Your Resume is Ready!</h3>
                   <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", maxWidth: "400px", margin: "0 auto 0.2rem", lineHeight: 1.5 }}>
                     Export it as an A4 print sheet PDF, create a public link to share with recruiters, or track application logs.
                   </p>
                   
                   <div style={{ display: "flex", gap: "1.2rem", justifyContent: "center", flexWrap: "wrap" }}>
-                    <button onClick={handlePrint} className="btn-primary" style={{ padding: "0.65rem 1.4rem" }}>
-                      📥 Print / Save PDF
+                    <button onClick={handlePrint} className="btn-primary" style={{ padding: "0.65rem 1.4rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                      <Printer size={16} />
+                      Print / Save PDF
                     </button>
                     <Link href="/dashboard" style={{ textDecoration: "none" }}>
-                      <button className="btn-secondary" style={{ padding: "0.65rem 1.4rem" }}>
-                        ← Dashboard
+                      <button className="btn-secondary" style={{ padding: "0.65rem 1.4rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" style={{ verticalAlign: 'middle' }}><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Dashboard
                       </button>
                     </Link>
                   </div>
@@ -2177,10 +2192,14 @@ function BuilderContent() {
                   {/* Public Link Generator widget */}
                   <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1.2rem", marginTop: "0.5rem", display: "grid", gap: "1.2rem", textAlign: "left" }}>
                     <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.82rem", fontWeight: 700 }}>🔗 Public Web Link Sharing</span>
+                      <span style={{ fontSize: "0.82rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                        <Share2 size={16} className="text-purple-500" />
+                        Public Web Link Sharing
+                      </span>
                       {shareToken && (
-                        <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
-                          👁️ Views: <strong>{shareViews}</strong>
+                        <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                          <Eye size={14} className="text-blue-500" />
+                          Views: <strong>{shareViews}</strong>
                         </span>
                       )}
                     </div>
