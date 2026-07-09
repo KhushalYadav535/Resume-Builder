@@ -83,7 +83,7 @@ export default function OnboardingPage() {
             display: "block",
             marginBottom: "0.5rem"
           }}>
-            ResumeAI
+            UPROLE
           </span>
           <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.5rem", fontWeight: 800, margin: 0 }}>Onboarding Profile Setup</h2>
           <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginTop: "0.25rem" }}>

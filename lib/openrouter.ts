@@ -51,7 +51,7 @@ async function fetchOpenRouter(messages: any[], temperature: number, maxTokens: 
           "Authorization": `Bearer ${openRouterKey}`,
           "Content-Type": "application/json",
           "HTTP-Referer": "https://resume-optimizer.vercel.app",
-          "X-Title": "Resume Optimizer",
+          "X-Title": "UPROLE",
         },
         body: JSON.stringify({
           model,
