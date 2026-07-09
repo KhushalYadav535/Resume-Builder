@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { SignupSchema } from "@/lib/validation/auth";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Box, Mail, Phone, Lock, Smartphone } from "lucide-react";
+import { Mail, Phone, Lock, Smartphone } from "lucide-react";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { Card } from "@/components/ui/Card";
 
@@ -156,11 +157,10 @@ export default function SignupPage() {
         <ThemeToggle />
       </div>
       <div style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 50 }}>
-        <Link href="/" className="flex items-center gap-2 no-underline">
-          <Box size={24} className="text-[var(--accent)]" />
-          <span className="text-[18px] font-[800] tracking-tight text-[var(--text-primary)]" style={{ fontFamily: "var(--font-inter)" }}>
-            UP<span className="gradient-text">ROLE</span>
-          </span>
+        <Link href="/" className="flex items-center no-underline">
+          <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2.5 dark:rounded-[8px] flex items-center">
+            <Image src="/UpRole logo.png" alt="UPROLE" width={120} height={32} style={{ objectFit: 'contain' }} />
+          </div>
         </Link>
       </div>
 

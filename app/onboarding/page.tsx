@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function OnboardingPage() {
@@ -73,18 +74,11 @@ export default function OnboardingPage() {
       }}>
         
         <div style={{ textAlign: "center" }}>
-          <span style={{
-            fontFamily: "Syne, sans-serif",
-            fontWeight: 800,
-            fontSize: "1.4rem",
-            background: "linear-gradient(135deg, #6c63ff, #ff6584)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            display: "block",
-            marginBottom: "0.5rem"
-          }}>
-            UPROLE
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
+            <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2.5 dark:rounded-[8px] flex items-center">
+              <Image src="/UpRole logo.png" alt="UPROLE" width={130} height={32} style={{ objectFit: 'contain' }} />
+            </div>
+          </div>
           <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.5rem", fontWeight: 800, margin: 0 }}>Onboarding Profile Setup</h2>
           <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginTop: "0.25rem" }}>
             Let's configure your career preferences to personalize ATS scoring, keyword mapping, and salary benchmarks.

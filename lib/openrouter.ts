@@ -140,7 +140,36 @@ export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promi
     console.log(rawResponse);
     console.log("-------------------------------------");
 
-    const clean = rawResponse.replace(/```json|```/g, "").trim();
+    let clean = rawResponse.replace(/```json|```/g, "").trim();
+    
+    // Extract the JSON object or array substring if there is surrounding conversational text
+    const firstBrace = clean.indexOf('{');
+    const firstBracket = clean.indexOf('[');
+    let startIndex = -1;
+    if (firstBrace !== -1 && firstBracket !== -1) {
+      startIndex = Math.min(firstBrace, firstBracket);
+    } else if (firstBrace !== -1) {
+      startIndex = firstBrace;
+    } else if (firstBracket !== -1) {
+      startIndex = firstBracket;
+    }
+
+    if (startIndex !== -1) {
+      const lastBrace = clean.lastIndexOf('}');
+      const lastBracket = clean.lastIndexOf(']');
+      let endIndex = -1;
+      if (lastBrace !== -1 && lastBracket !== -1) {
+        endIndex = Math.max(lastBrace, lastBracket);
+      } else if (lastBrace !== -1) {
+        endIndex = lastBrace;
+      } else if (lastBracket !== -1) {
+        endIndex = lastBracket;
+      }
+
+      if (endIndex !== -1 && endIndex > startIndex) {
+        clean = clean.substring(startIndex, endIndex + 1);
+      }
+    }
     
     // Helper to fix common AI trailing comma errors
     const sanitizeJSON = (str: string) => str.replace(/,\s*([\]}])/g, '$1');
