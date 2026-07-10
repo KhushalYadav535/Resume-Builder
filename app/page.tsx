@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import LandingFeatureTour from "@/components/LandingFeatureTour";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -148,78 +149,19 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Features Grid */}
+        {/* Interactive Features Tour */}
         <section className="py-24 max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
             <Badge variant="neutral" className="mb-4">Features</Badge>
-            <h2 className="font-['Syne',sans-serif] text-3xl md:text-4xl font-extrabold text-[var(--text-primary)]">
-              Everything you need to <span className="text-[var(--accent)]">succeed</span>
+            <h2 className="font-['Syne',sans-serif] text-3xl md:text-5xl font-extrabold text-[var(--text-primary)]">
+              How Uprole helps you <span className="text-[var(--accent)]">get noticed</span>
             </h2>
+            <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", marginTop: "0.5rem" }}>
+              Everything you need to build a stronger, tailored application
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                icon: <FileText size={22} />,
-                color: "var(--accent)",
-                title: "Resume Builder",
-                desc: "Build a professional resume from scratch with AI assistance on every section.",
-              },
-              {
-                icon: <CheckCircle size={22} />,
-                color: "var(--score-high)",
-                title: "ATS Score Checker",
-                desc: "Instantly see how your resume performs against Applicant Tracking Systems.",
-              },
-              {
-                icon: <Sparkles size={22} />,
-                color: "var(--score-mid)",
-                title: "Content Reviewer",
-                desc: "AI improves your bullet points, suggests powerful action verbs, and quantifies achievements.",
-              },
-              {
-                icon: <Target size={22} />,
-                color: "var(--info)",
-                title: "JD Matcher",
-                desc: "Paste any job description and get a keyword gap analysis instantly.",
-              },
-              {
-                icon: <Settings size={22} />,
-                color: "var(--accent-2)",
-                title: "ATS-Friendly Templates",
-                desc: "Choose from professionally designed templates that beat ATS filters.",
-              },
-              {
-                icon: <Download size={22} />,
-                color: "var(--success)",
-                title: "Export to PDF",
-                desc: "Download your polished resume as a clean, formatted PDF instantly.",
-              },
-            ].map((feature, i) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-              >
-                <Card hoverable glowColor={feature.color + "33"} className="h-full flex flex-col">
-                  <div
-                    className="w-12 h-12 rounded-[var(--radius-md)] flex items-center justify-center mb-5"
-                    style={{ backgroundColor: `${feature.color}15`, color: feature.color }}
-                  >
-                    {feature.icon}
-                  </div>
-                  <h3 className="font-['Syne',sans-serif] text-xl font-bold mb-3 text-[var(--text-primary)]">
-                    {feature.title}
-                  </h3>
-                  <p className="text-[var(--text-secondary)] text-[15px] leading-relaxed flex-1">
-                    {feature.desc}
-                  </p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          <LandingFeatureTour />
         </section>
 
         {/* CTA */}
