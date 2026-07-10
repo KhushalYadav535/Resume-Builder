@@ -4,7 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { Card } from "@/components/ui/Card";
 import ParticleBackground from "@/components/ui/ParticleBackground";
-import { ShieldCheck, FileText, TrendingUp, User, BarChart2, Users, Bot, Brain } from "lucide-react";
+import { ShieldCheck, FileText, TrendingUp, User, BarChart2, Users, Bot, Brain, Sparkles } from "lucide-react";
 
 interface SignupHistoryItem {
   date: string;

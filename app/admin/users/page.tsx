@@ -4,7 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { useToast } from "@/components/ui/toast-1";
-import { ShieldCheck, BarChart2, Users as LucideUsers, Bot, Brain } from "lucide-react";
+import { ShieldCheck, BarChart2, Users, Bot, Brain } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -88,7 +88,7 @@ export default function AdminUsersPage() {
         <div style={{ marginBottom: "2rem" }}>
           <p className="section-label" style={{ marginBottom: "0.5rem" }}>System Directory</p>
           <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
-            <LucideUsers size={32} className="text-indigo-500" />
+            <Users size={32} className="text-indigo-500" />
             User Management
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.25rem" }}>
@@ -106,7 +106,7 @@ export default function AdminUsersPage() {
           </Link>
           <Link href="/admin/users" style={{ textDecoration: "none" }}>
             <button style={{ padding: "0.6rem 1.2rem", background: "rgba(108,99,255,0.08)", border: "none", borderBottom: "2px solid var(--accent)", color: "var(--accent)", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <LucideUsers size={14} />
+              <Users size={14} />
               User Management
             </button>
           </Link>

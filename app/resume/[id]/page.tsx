@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ATSRing } from "@/components/ui/ATSRing";
 import ResumeSuggestionsModal from "@/components/ResumeSuggestionsModal";
-import { Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock, Copy, Maximize2, Minimize2 } from "lucide-react";
+import { Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock, Copy, Maximize2, Minimize2, Sparkles } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
 
 interface LoadingStage {
