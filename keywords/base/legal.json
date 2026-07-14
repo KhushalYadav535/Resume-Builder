@@ -1,0 +1,19 @@
+{
+  "industry": "legal",
+  "version": "1.0",
+  "last_updated": "2026-07-14",
+  "keywords": [
+    { "keyword": "Legal Research", "weight": 9, "aliases": ["Case Research", "Manupatra", "SCC Online", "Legal Database"] },
+    { "keyword": "Contract Drafting", "weight": 9, "aliases": ["Contract Management", "Agreement Drafting", "MOU", "NDA"] },
+    { "keyword": "Corporate Law", "weight": 8, "aliases": ["Companies Act", "Corporate Governance", "M&A"] },
+    { "keyword": "Litigation", "weight": 8, "aliases": ["Dispute Resolution", "Court Proceedings", "Legal Proceedings"] },
+    { "keyword": "Regulatory Compliance", "weight": 8, "aliases": ["Compliance Management", "SEBI", "RBI Compliance"] },
+    { "keyword": "Intellectual Property", "weight": 8, "aliases": ["IP", "Patents", "Trademarks", "Copyright"] },
+    { "keyword": "Labour Law", "weight": 7, "aliases": ["Employment Law", "Industrial Disputes", "Factory Act"] },
+    { "keyword": "Due Diligence", "weight": 8, "aliases": ["Legal Due Diligence", "Audit", "Risk Assessment"] },
+    { "keyword": "GST", "weight": 7, "aliases": ["Goods and Services Tax", "Indirect Tax", "GST Compliance"] },
+    { "keyword": "Alternative Dispute Resolution", "weight": 7, "aliases": ["ADR", "Arbitration", "Mediation"] },
+    { "keyword": "Legal Documentation", "weight": 6, "aliases": ["Document Drafting", "Pleadings", "Legal Notices"] },
+    { "keyword": "GDPR", "weight": 7, "aliases": ["Data Protection", "Privacy Law", "Data Privacy", "IT Act"] }
+  ]
+}

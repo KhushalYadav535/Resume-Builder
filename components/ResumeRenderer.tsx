@@ -40,7 +40,7 @@ export default function ResumeRenderer({ data }: ResumeRendererProps) {
       width: "100%",
       backgroundColor: "#ffffff",
       color: "#000000",
-      fontFamily: "Arial, Inter, sans-serif",
+      fontFamily: "Arial, 'Plus Jakarta Sans', sans-serif",
       fontSize: "14px",
       lineHeight: "1.5",
       textAlign: "left",

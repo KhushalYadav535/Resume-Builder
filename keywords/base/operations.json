@@ -1,0 +1,22 @@
+{
+  "industry": "operations",
+  "version": "1.0",
+  "last_updated": "2026-07-14",
+  "keywords": [
+    { "keyword": "Supply Chain Management", "weight": 9, "aliases": ["SCM", "Supply Chain", "Logistics"] },
+    { "keyword": "Inventory Management", "weight": 8, "aliases": ["Stock Management", "Warehouse Management", "WMS"] },
+    { "keyword": "Process Improvement", "weight": 8, "aliases": ["Process Optimization", "Lean", "Six Sigma", "Kaizen"] },
+    { "keyword": "Operations Management", "weight": 8, "aliases": ["Ops", "Business Operations", "Operational Excellence"] },
+    { "keyword": "Vendor Management", "weight": 7, "aliases": ["Supplier Management", "Vendor Negotiation", "Procurement"] },
+    { "keyword": "SLA Management", "weight": 7, "aliases": ["Service Level Agreement", "SLA", "KPI Monitoring"] },
+    { "keyword": "ERP", "weight": 8, "aliases": ["SAP", "Oracle ERP", "Microsoft Dynamics", "NetSuite"] },
+    { "keyword": "Quality Assurance", "weight": 7, "aliases": ["QA", "Quality Control", "QC", "ISO", "5S"] },
+    { "keyword": "Cost Reduction", "weight": 8, "aliases": ["Cost Optimization", "Cost Cutting", "Budget Management"] },
+    { "keyword": "Logistics Coordination", "weight": 7, "aliases": ["Last Mile Delivery", "Fleet Management", "3PL"] },
+    { "keyword": "Demand Forecasting", "weight": 7, "aliases": ["Demand Planning", "Forecasting", "S&OP"] },
+    { "keyword": "P&L Management", "weight": 8, "aliases": ["Profit & Loss", "P&L", "Financial Management"] },
+    { "keyword": "Cross-functional Collaboration", "weight": 6, "aliases": ["Stakeholder Management", "Coordination"] },
+    { "keyword": "Standard Operating Procedure", "weight": 6, "aliases": ["SOP", "SOPs", "Work Instructions"] },
+    { "keyword": "Project Management", "weight": 7, "aliases": ["PMP", "PRINCE2", "Project Coordination"] }
+  ]
+}

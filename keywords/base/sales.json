@@ -1,0 +1,22 @@
+{
+  "industry": "sales",
+  "version": "1.0",
+  "last_updated": "2026-07-14",
+  "keywords": [
+    { "keyword": "B2B Sales", "weight": 9, "aliases": ["Business Development", "Enterprise Sales", "B2B"] },
+    { "keyword": "CRM", "weight": 8, "aliases": ["Salesforce", "Zoho CRM", "HubSpot", "Freshsales"] },
+    { "keyword": "Lead Generation", "weight": 8, "aliases": ["Lead Nurturing", "Prospecting", "Cold Calling"] },
+    { "keyword": "Revenue Target", "weight": 8, "aliases": ["Sales Target", "Quota Achievement", "Revenue Growth"] },
+    { "keyword": "Key Account Management", "weight": 9, "aliases": ["KAM", "Account Management", "Client Relationship"] },
+    { "keyword": "Sales Pipeline", "weight": 7, "aliases": ["Pipeline Management", "Deal Closure", "Sales Funnel"] },
+    { "keyword": "Channel Sales", "weight": 7, "aliases": ["Dealer Management", "Distribution", "Channel Partner"] },
+    { "keyword": "Inside Sales", "weight": 7, "aliases": ["Tele Sales", "Telesales", "Phone Sales"] },
+    { "keyword": "Negotiation", "weight": 8, "aliases": ["Closing Skills", "Deal Negotiation", "Contract Negotiation"] },
+    { "keyword": "Sales Strategy", "weight": 7, "aliases": ["Go-to-Market", "GTM Strategy", "Sales Planning"] },
+    { "keyword": "Customer Acquisition", "weight": 8, "aliases": ["New Business", "Client Acquisition", "Customer Onboarding"] },
+    { "keyword": "Product Demo", "weight": 6, "aliases": ["Product Presentation", "Demo", "Sales Presentation"] },
+    { "keyword": "Upselling", "weight": 7, "aliases": ["Cross-selling", "Up-sell", "Revenue Expansion"] },
+    { "keyword": "Sales Analytics", "weight": 7, "aliases": ["Sales Reporting", "MIS", "Sales Dashboard"] },
+    { "keyword": "Territory Management", "weight": 6, "aliases": ["Territory Planning", "Region Management"] }
+  ]
+}

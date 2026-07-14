@@ -42,24 +42,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Resume record not found." }, { status: 404 });
     }
 
-    const prompt = `You are an expert recruiter specialized in the Indian job market, particularly Naukri.com, Shine.com, and LinkedIn India.
-Analyze the following resume details and generate 4-5 actionable tips to optimize recruiter search rankings (indexing), resume headline matching, and key skills tags for Indian job portals.
+    const resumeRole = (resume.resume_data as any)?.workExperience?.[0]?.role || "professional";
+    const resumeName = (resume.resume_data as any)?.personalInfo?.fullName || "the candidate";
+
+    const prompt = `You are a senior recruiter with 10+ years of experience in the Indian job market across IT, BFSI, Marketing, HR, Operations, Healthcare, and other sectors. You specialize in optimizing profiles on Naukri.com, Shine.com, Monster India, and LinkedIn India.
+
+Analyze the resume below and generate 5 highly specific, actionable tips to help ${resumeName} (a ${resumeRole}) get more recruiter calls. Focus on:
+- Making the profile appear in more recruiter searches (keyword indexing)
+- Writing a stronger Naukri headline that immediately shows value
+- Optimizing Key Skills tags for Indian ATS systems
+- Formatting notice period / availability for Indian recruiters
+- Salary expectations and location preferences that Indian portals favor
+
+IMPORTANT: Be specific to the candidate's actual role and industry. Do NOT give generic advice. Mention actual keywords, phrases, or skills they should add based on their background.
 
 RESUME CONTENT:
 ${resume.raw_text}
 
-Respond ONLY with a JSON object in this exact format:
+Respond ONLY with a JSON object:
 {
   "tips": [
     {
-      "area": "Area of Profile (e.g. Profile Summary, Key Skills tags, Notice Period, Headline)",
-      "tip": "Actionable advice on how to improve indexing or formatting",
+      "area": "Specific area (e.g. Naukri Headline, Key Skills, Notice Period, Profile Summary, Location Preference)",
+      "tip": "Specific, actionable advice with example text if possible",
       "priority": "High" or "Medium" or "Low"
     }
   ]
 }`;
 
-    const systemPrompt = "You are an Indian recruitment expert. You write actionable portal tips. You output ONLY valid JSON.";
+    const systemPrompt = `You are a senior Indian recruitment expert who helps job seekers across all industries — IT, BFSI, Marketing, Sales, HR, Operations, Healthcare — get more recruiter calls on Indian portals like Naukri.com. You give specific, practical advice tailored to the candidate's actual background. You output ONLY valid JSON.`;
     const result = await askAIJSON<NaukriTipsResult>(prompt, systemPrompt);
 
     return NextResponse.json(result);
