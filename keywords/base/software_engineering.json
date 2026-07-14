@@ -1,24 +1,146 @@
-{
-  "industry": "software_engineering",
-  "version": "1.0",
-  "last_updated": "2026-06-01",
-  "keywords": [
-    { "keyword": "JavaScript", "weight": 8, "aliases": ["JS", "Node.js", "NodeJS"] },
-    { "keyword": "TypeScript", "weight": 9, "aliases": ["TS"] },
-    { "keyword": "React", "weight": 9, "aliases": ["ReactJS", "React.js"] },
-    { "keyword": "Python", "weight": 8, "aliases": [] },
-    { "keyword": "Java", "weight": 7, "aliases": ["J2EE", "Spring Boot"] },
-    { "keyword": "SQL", "weight": 7, "aliases": ["MySQL", "PostgreSQL", "Postgres"] },
-    { "keyword": "Git", "weight": 5, "aliases": ["GitHub", "GitLab", "Bitbucket"] },
-    { "keyword": "REST API", "weight": 7, "aliases": ["RESTful", "REST", "API Design"] },
-    { "keyword": "Docker", "weight": 8, "aliases": ["containerization"] },
-    { "keyword": "AWS", "weight": 8, "aliases": ["Amazon Web Services", "EC2", "S3"] },
-    { "keyword": "CI/CD", "weight": 7, "aliases": ["continuous integration", "Jenkins", "GitHub Actions"] },
-    { "keyword": "Microservices", "weight": 7, "aliases": ["microservice architecture"] },
-    { "keyword": "Agile", "weight": 5, "aliases": ["Scrum", "Kanban", "Sprint"] },
-    { "keyword": "System Design", "weight": 8, "aliases": ["distributed systems", "software architecture"] },
-    { "keyword": "Data Structures", "weight": 6, "aliases": ["algorithms", "DSA"] },
-    { "keyword": "C++", "weight": 7, "aliases": ["CPP"] },
-    { "keyword": "Kubernetes", "weight": 9, "aliases": ["k8s", "container orchestration"] }
-  ]
+﻿{
+    "industry":  "software_engineering",
+    "version":  "1.0",
+    "last_updated":  "2026-06-01",
+    "keywords":  [
+                     {
+                         "keyword":  "JavaScript",
+                         "weight":  8,
+                         "aliases":  [
+                                         "JS",
+                                         "Node.js",
+                                         "NodeJS"
+                                     ]
+                     },
+                     {
+                         "keyword":  "TypeScript",
+                         "weight":  9,
+                         "aliases":  [
+                                         "TS"
+                                     ]
+                     },
+                     {
+                         "keyword":  "React",
+                         "weight":  9,
+                         "aliases":  [
+                                         "ReactJS",
+                                         "React.js"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Python",
+                         "weight":  8,
+                         "aliases":  [
+
+                                     ]
+                     },
+                     {
+                         "keyword":  "Java",
+                         "weight":  7,
+                         "aliases":  [
+                                         "J2EE",
+                                         "Spring Boot"
+                                     ]
+                     },
+                     {
+                         "keyword":  "SQL",
+                         "weight":  7,
+                         "aliases":  [
+                                         "MySQL",
+                                         "PostgreSQL",
+                                         "Postgres"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Git",
+                         "weight":  5,
+                         "aliases":  [
+                                         "GitHub",
+                                         "GitLab",
+                                         "Bitbucket"
+                                     ]
+                     },
+                     {
+                         "keyword":  "REST API",
+                         "weight":  7,
+                         "aliases":  [
+                                         "RESTful",
+                                         "REST",
+                                         "API Design"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Docker",
+                         "weight":  8,
+                         "aliases":  [
+                                         "containerization"
+                                     ]
+                     },
+                     {
+                         "keyword":  "AWS",
+                         "weight":  8,
+                         "aliases":  [
+                                         "Amazon Web Services",
+                                         "EC2",
+                                         "S3"
+                                     ]
+                     },
+                     {
+                         "keyword":  "CI/CD",
+                         "weight":  7,
+                         "aliases":  [
+                                         "continuous integration",
+                                         "Jenkins",
+                                         "GitHub Actions"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Microservices",
+                         "weight":  7,
+                         "aliases":  [
+                                         "microservice architecture"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Agile",
+                         "weight":  5,
+                         "aliases":  [
+                                         "Scrum",
+                                         "Kanban",
+                                         "Sprint"
+                                     ]
+                     },
+                     {
+                         "keyword":  "System Design",
+                         "weight":  8,
+                         "aliases":  [
+                                         "distributed systems",
+                                         "software architecture"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Data Structures",
+                         "weight":  6,
+                         "aliases":  [
+                                         "algorithms",
+                                         "DSA"
+                                     ]
+                     },
+                     {
+                         "keyword":  "C++",
+                         "weight":  7,
+                         "aliases":  [
+                                         "CPP"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Kubernetes",
+                         "weight":  9,
+                         "aliases":  [
+                                         "k8s",
+                                         "container orchestration"
+                                     ]
+                     }
+                 ],
+    "display_name":  "Software Engineering"
 }

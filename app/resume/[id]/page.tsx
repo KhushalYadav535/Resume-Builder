@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ATSRing } from "@/components/ui/ATSRing";
 import ResumeSuggestionsModal from "@/components/ResumeSuggestionsModal";
-import { Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock, Copy, Maximize2, Minimize2, Sparkles } from "lucide-react";
+import { Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock, Copy, Maximize2, Minimize2, Sparkles, Save, CheckCircle2, Wand2, X } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
 
 interface LoadingStage {
@@ -95,6 +95,22 @@ export default function ResumeDetailPage() {
 
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [estimatedNewScore, setEstimatedNewScore] = useState(0);
+
+  // === NEW: Inline Apply & Save-as-New state ===
+  // Holds a working copy of resume_data that can be patched by applying suggestions/tips
+  const [modifiedResumeData, setModifiedResumeData] = useState<any | null>(null);
+  const [hasUnappliedChanges, setHasUnappliedChanges] = useState(false);
+  const [showSaveNewModal, setShowSaveNewModal] = useState(false);
+  const [saveNewName, setSaveNewName] = useState("");
+  const [savingNew, setSavingNew] = useState(false);
+  const [savedNewResumeId, setSavedNewResumeId] = useState<string | null>(null);
+  const [highlightedChanges, setHighlightedChanges] = useState<string[]>([]);
+
+  // Naukri tip apply state
+  const [applyingTipIdx, setApplyingTipIdx] = useState<number | null>(null);
+  const [appliedTipPatches, setAppliedTipPatches] = useState<Record<number, any>>({});
+  const [selectedTipIdxs, setSelectedTipIdxs] = useState<Set<number>>(new Set());
+  const [naukriApplyMode, setNaukriApplyMode] = useState(false);
 
   const fetchSuggestions = async () => {
     if (!resume || suggestionsFetched || suggestionsLoading) return;
@@ -404,6 +420,7 @@ export default function ResumeDetailPage() {
         const found = data.find((r) => r.id === params.id);
         if (found) {
           setResume(found);
+          setModifiedResumeData(JSON.parse(JSON.stringify(found.resume_data || {})));
           if (found.template_id) {
             setSelectedTemplate(found.template_id);
           }
@@ -411,6 +428,137 @@ export default function ResumeDetailPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+  };
+
+  // === Inline Apply Suggestions → update preview without navigating ===
+  const handleApplySuggestionsInline = (selectedSuggestions: any[]) => {
+    if (!resume) return;
+    const base = JSON.parse(JSON.stringify(modifiedResumeData || resume.resume_data || {}));
+    for (const s of selectedSuggestions) {
+      const text = s.suggestedText || s.suggested_text || "";
+      const where = s.whereToAdd || (s.category === "technical" ? "skills" : "experience");
+      const category = s.category || "technical";
+      if (where === "skills" || where === "skills_technical") {
+        if (!base.skills) base.skills = { technical: [], soft: [] };
+        const type = category === "soft_skill" ? "soft" : "technical";
+        if (!base.skills[type]) base.skills[type] = [];
+        if (text && !base.skills[type].includes(text)) base.skills[type].push(text);
+      } else if (where === "summary") {
+        base.summary = text + (base.summary ? " " + base.summary : "");
+      } else if (where === "experience") {
+        if (!base.workExperience) base.workExperience = [];
+        if (base.workExperience.length > 0) {
+          if (!base.workExperience[0].bullets) base.workExperience[0].bullets = [];
+          if (text && !base.workExperience[0].bullets.includes(text)) base.workExperience[0].bullets.push(text);
+        }
+      } else if (where === "certifications") {
+        if (!base.certifications) base.certifications = [];
+        base.certifications.push({ id: Date.now().toString(), name: text, issuer: "", date: "" });
+      }
+    }
+    setModifiedResumeData(base);
+    setHasUnappliedChanges(true);
+    setHighlightedChanges(prev => [
+      ...prev,
+      ...selectedSuggestions.map(s => s.suggestedText || s.suggested_text || "")
+    ].filter(Boolean));
+    setShowSuggestionsModal(false);
+    showToast(`✅ ${selectedSuggestions.length} change(s) applied! Check the preview on the right, then click "Save as New Resume".`, "success");
+  };
+
+  // === Apply a single Naukri tip AI patch to the live preview ===
+  const handleApplyNaukriTipPatch = (idx: number, patch: any) => {
+    const base = JSON.parse(JSON.stringify(modifiedResumeData || resume?.resume_data || {}));
+    if (patch.field === "summary") {
+      base.summary = patch.suggestedValue;
+    } else if (patch.field === "skills_technical") {
+      const skills = patch.suggestedValue.split(",").map((s: string) => s.trim()).filter(Boolean);
+      if (!base.skills) base.skills = { technical: [], soft: [] };
+      base.skills.technical = [...new Set([...(base.skills.technical || []), ...skills])];
+    } else if (patch.field === "skills_soft") {
+      const skills = patch.suggestedValue.split(",").map((s: string) => s.trim()).filter(Boolean);
+      if (!base.skills) base.skills = { technical: [], soft: [] };
+      base.skills.soft = [...new Set([...(base.skills.soft || []), ...skills])];
+    }
+    setModifiedResumeData(base);
+    setHasUnappliedChanges(true);
+    setAppliedTipPatches(prev => ({ ...prev, [idx]: patch }));
+    
+    // Track highlight
+    const newChanges = patch.field.startsWith("skills") 
+      ? patch.suggestedValue.split(",").map((s: string) => s.trim()) 
+      : [patch.suggestedValue];
+    setHighlightedChanges(prev => [...prev, ...newChanges].filter(Boolean));
+    
+    showToast("✅ Tip applied to preview! Save as new resume to keep this version.", "success");
+  };
+
+  // === Fetch AI-generated concrete patch for a Naukri tip ===
+  const handleGenerateNaukriTipFix = async (idx: number, tip: { area: string; tip: string }) => {
+    if (!resume) return;
+    setApplyingTipIdx(idx);
+    try {
+      const res = await fetch("/api/naukri-tips/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeId: resume.id, tipArea: tip.area, tipText: tip.tip })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.patch) handleApplyNaukriTipPatch(idx, data.patch);
+      } else {
+        showToast("Could not generate a fix for this tip. Please try again.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error applying tip.", "error");
+    } finally {
+      setApplyingTipIdx(null);
+    }
+  };
+
+  // === Save Modified Resume as a Brand New Record ===
+  const handleSaveAsNewResume = async () => {
+    if (!resume || !modifiedResumeData) return;
+    setSavingNew(true);
+    try {
+      const rawText = [
+        modifiedResumeData.personalInfo?.fullName || "",
+        modifiedResumeData.personalInfo?.email || "",
+        modifiedResumeData.summary || "",
+        ...(modifiedResumeData.workExperience?.flatMap((w: any) => [w.company, w.role, ...(w.bullets || [])]) || []),
+        ...(modifiedResumeData.skills?.technical || []),
+        ...(modifiedResumeData.skills?.soft || []),
+        ...(modifiedResumeData.certifications?.map((c: any) => c.name) || []),
+      ].join("\n");
+      const res = await fetch("/api/save-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file_name: saveNewName.trim() || `${resume.file_name} (Optimized)`,
+          raw_text: rawText,
+          resume_data: modifiedResumeData,
+          template_id: selectedTemplate,
+          ats_score: resume.ats_score,
+          content_review: resume.content_review,
+          jd_match: resume.jd_match,
+        }),
+      });
+      if (res.ok) {
+        const newResume = await res.json();
+        setSavedNewResumeId(newResume.id);
+        setShowSaveNewModal(false);
+        setHasUnappliedChanges(false);
+        showToast(`🎉 Saved as "${saveNewName.trim() || resume.file_name + " (Optimized)"}"! View it on your Dashboard.`, "success");
+      } else {
+        showToast("Failed to save. Please try again.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving new resume.", "error");
+    } finally {
+      setSavingNew(false);
+    }
   };
 
   useEffect(() => {
@@ -584,22 +732,51 @@ export default function ResumeDetailPage() {
           potentialScore={estimatedNewScore}
           onClose={() => setShowSuggestionsModal(false)}
           onApply={async (selectedIds) => {
-            setShowSuggestionsModal(false);
-            try {
-              const res = await fetch("/api/resume/suggestions/apply", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ resumeId: resume.id, applySuggestionIds: selectedIds })
-              });
-              if (res.ok) {
-                // Navigate to builder with a query param to trigger the toast/highlight
-                router.push(`/resume/builder?id=${resume.id}&suggestionsApplied=true`);
-              }
-            } catch (err) {
-              console.error("Failed to apply suggestions:", err);
-            }
+            // Apply inline: find the full suggestion objects by ID and patch resume data in state
+            const selectedSuggs = suggestions.filter(s => selectedIds.includes(s.id));
+            handleApplySuggestionsInline(selectedSuggs);
           }}
         />
+      )}
+
+      {/* Save-as-New Resume Modal */}
+      {showSaveNewModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem", backdropFilter: "blur(6px)" }}>
+          <div className="card" style={{ maxWidth: "480px", width: "100%", background: "var(--bg-2)", borderRadius: "20px", padding: "2rem", display: "grid", gap: "1.2rem", boxShadow: "0 24px 60px rgba(0,0,0,0.5)", border: "1px solid var(--accent)/30" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.2rem", fontWeight: 800, margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <Save size={18} className="text-emerald-400" />
+                Save as New Resume
+              </h3>
+              <button onClick={() => setShowSaveNewModal(false)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "1.2rem" }}><X size={18} /></button>
+            </div>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", margin: 0, lineHeight: 1.5 }}>
+              Your original resume stays unchanged. This saves a <strong>new copy</strong> with your applied improvements.
+            </p>
+            <div>
+              <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-muted)", display: "block", marginBottom: "0.4rem" }}>New Resume Name</label>
+              <input
+                className="input"
+                value={saveNewName}
+                onChange={e => setSaveNewName(e.target.value)}
+                placeholder={`${resume.file_name} (Optimized)`}
+                onKeyDown={e => e.key === "Enter" && handleSaveAsNewResume()}
+                autoFocus
+              />
+            </div>
+            <div style={{ display: "flex", gap: "0.8rem", justifyContent: "flex-end" }}>
+              <button onClick={() => setShowSaveNewModal(false)} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.5rem 1.2rem" }}>Cancel</button>
+              <button
+                onClick={handleSaveAsNewResume}
+                disabled={savingNew}
+                className="btn-primary"
+                style={{ fontSize: "0.85rem", padding: "0.5rem 1.5rem", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", border: "none" }}
+              >
+                {savingNew ? "Saving..." : "💾 Save New Resume"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       
       {/* HEADER WIDGET (Hidden on print) */}
@@ -695,6 +872,42 @@ export default function ResumeDetailPage() {
         {!isFullscreen && (
           <div className="no-print detail-left-column">
             
+            {/* === Save-as-New sticky banner when changes are applied === */}
+            {hasUnappliedChanges && (
+              <div style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(5,150,105,0.08) 100%)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "12px", padding: "0.9rem 1.1rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.8rem", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <CheckCircle2 size={18} className="text-emerald-400" style={{ flexShrink: 0 }} />
+                  <div>
+                    <strong style={{ fontSize: "0.85rem", color: "#10b981", display: "block" }}>Changes Applied to Preview</strong>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Review the right panel, then save as a new resume to keep them.</span>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <button
+                    onClick={() => {
+                      setSaveNewName("");
+                      setShowSaveNewModal(true);
+                    }}
+                    className="btn-primary"
+                    style={{ fontSize: "0.8rem", padding: "0.45rem 1rem", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", border: "none", whiteSpace: "nowrap" }}
+                  >
+                    <Save size={13} style={{ marginRight: "0.3rem" }} />
+                    Save as New Resume
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* === Link to newly saved resume === */}
+            {savedNewResumeId && (
+              <div style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.25)", borderRadius: "12px", padding: "0.75rem 1rem", display: "flex", alignItems: "center", gap: "0.6rem", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "0.82rem", color: "#10b981", fontWeight: 600 }}>🎉 New resume saved!</span>
+                <Link href={`/resume/${savedNewResumeId}`} style={{ textDecoration: "none" }}>
+                  <button className="btn-secondary" style={{ fontSize: "0.78rem", padding: "0.3rem 0.8rem", borderColor: "#10b981", color: "#10b981" }}>View New Resume →</button>
+                </Link>
+              </div>
+            )}
+
             {/* Real-time missing sections alerts */}
             {missingSecs.length > 0 && (
               <div style={{ background: "rgba(246, 211, 101, 0.08)", borderLeft: "4px solid #f6d365", padding: "1rem", borderRadius: "12px", border: "1px solid rgba(246,211,101,0.15)" }}>
@@ -712,234 +925,263 @@ export default function ResumeDetailPage() {
             )}
 
             {/* Score Grid Cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.2rem" }}>
+              
+              {/* ATS Score Card */}
               {resume.ats_score && (
-                <div className="card" style={{ textAlign: "center", background: "linear-gradient(180deg, var(--card) 0%, rgba(20,20,30,0.8) 100%)", padding: "1.2rem" }}>
-                  <p className="section-label" style={{ marginBottom: "0.3rem" }}>ATS score</p>
-                  <div style={{ fontSize: "2.2rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: getScoreColor(resume.ats_score.overall) }}>
+                <div className="card hover-glow" style={{ position: "relative", overflow: "hidden", textAlign: "center", background: "var(--bg-2)", border: "1px solid var(--border)", padding: "1.8rem 1.2rem", display: "flex", flexDirection: "column", justifyContent: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: `linear-gradient(90deg, ${getScoreColor(resume.ats_score.overall)}, transparent)` }} />
+                  <p style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.8rem" }}>ATS Match Score</p>
+                  <div style={{ fontSize: "3rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: getScoreColor(resume.ats_score.overall), lineHeight: 1, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.1))" }}>
                     {resume.ats_score.overall}
                   </div>
-                  <div style={{ fontSize: "0.74rem", color: "var(--text-muted)" }}>out of 100</div>
+                  <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.6rem", fontWeight: 500 }}>out of 100</div>
                 </div>
               )}
 
-              <div className="card" style={{ textAlign: "center", padding: "1.2rem" }}>
-                <p className="section-label" style={{ marginBottom: "0.3rem" }}>Completion Profile</p>
-                <div style={{ fontSize: "2.2rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: completionPercent >= 70 ? "#43e97b" : completionPercent >= 45 ? "#f6d365" : "#ff6584" }}>
+              {/* Completion Profile Card */}
+              <div className="card hover-glow" style={{ position: "relative", overflow: "hidden", textAlign: "center", background: "var(--bg-2)", border: "1px solid var(--border)", padding: "1.8rem 1.2rem", display: "flex", flexDirection: "column", justifyContent: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: `linear-gradient(90deg, ${completionPercent >= 70 ? "#43e97b" : completionPercent >= 45 ? "#f6d365" : "#ff6584"}, transparent)` }} />
+                <p style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.8rem" }}>Profile Completion</p>
+                <div style={{ fontSize: "3rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: completionPercent >= 70 ? "#43e97b" : completionPercent >= 45 ? "#f6d365" : "#ff6584", lineHeight: 1, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.1))" }}>
                   {completionPercent}%
                 </div>
-                <div style={{ fontSize: "0.74rem", color: "var(--text-muted)" }}>sections completed</div>
+                <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.6rem", fontWeight: 500 }}>sections completed</div>
               </div>
 
               {/* Public Link Generator widget */}
-            <div className="card" style={{ display: "grid", gap: "0.8rem", textAlign: "left" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                  <Share2 size={14} className="text-purple-500" />
-                  Public Web Link Sharing
-                </span>
-                {shareToken && (
-                  <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                    <Eye size={12} className="text-blue-500" />
-                    Views: <strong>{shareViews}</strong>
+              <div className="card hover-glow" style={{ position: "relative", overflow: "hidden", background: "var(--bg-2)", border: "1px solid var(--border)", padding: "1.5rem 1.2rem", display: "flex", flexDirection: "column", justifyContent: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg, #8b5cf6, transparent)" }} />
+                
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
+                  <span style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                    <Share2 size={14} color="#8b5cf6" />
+                    Public Link
                   </span>
+                  {shareToken && (
+                    <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text)", background: "rgba(139, 92, 246, 0.1)", padding: "0.25rem 0.6rem", borderRadius: "20px", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                      <Eye size={12} color="#8b5cf6" />
+                      {shareViews} Views
+                    </span>
+                  )}
+                </div>
+
+                {!shareToken ? (
+                  <button 
+                    onClick={handleToggleShare} 
+                    className="btn-primary hover-glow" 
+                    style={{ width: "100%", justifyContent: "center", padding: "0.7rem", fontSize: "0.85rem", background: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)", color: "#fff", border: "none", borderRadius: "8px" }}
+                    disabled={shareLoading}
+                  >
+                    {shareLoading ? "Generating Link..." : "✨ Generate Share Link"}
+                  </button>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+                    <div style={{ display: "flex", gap: "0.4rem" }}>
+                      <input 
+                        readOnly 
+                        className="input" 
+                        style={{ fontSize: "0.78rem", padding: "0.5rem 0.6rem", flex: 1, background: "var(--bg-3)", border: "1px solid var(--border)", borderRadius: "6px", color: "var(--text)", outline: "none" }} 
+                        value={typeof window !== "undefined" ? window.location.origin + "/share/" + shareToken : ""}
+                        onFocus={(e) => e.target.select()}
+                      />
+                      <button 
+                        onClick={() => {
+                          if (typeof window !== "undefined") {
+                            navigator.clipboard.writeText(window.location.origin + "/share/" + shareToken);
+                            showToast("Link copied to clipboard!", "success");
+                          }
+                        }}
+                        className="btn-primary"
+                        style={{ padding: "0 0.8rem", fontSize: "0.8rem", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: "6px" }}
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.78rem", cursor: "pointer", color: "var(--text-muted)", fontWeight: 500 }}>
+                        <input
+                          type="checkbox"
+                          checked={isSharePublic}
+                          onChange={handleToggleShare}
+                          disabled={shareLoading}
+                          style={{ accentColor: "#8b5cf6", width: "14px", height: "14px" }}
+                        />
+                        Link is Active
+                      </label>
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {!shareToken ? (
-                <button 
-                  onClick={handleToggleShare} 
-                  className="btn-secondary" 
-                  style={{ width: "100%", justifyContent: "center", padding: "0.55rem", fontSize: "0.82rem", borderColor: "var(--accent)", color: "var(--accent)" }}
-                  disabled={shareLoading}
-                >
-                  {shareLoading ? "Generating Link..." : "✦ Generate Shareable Public Link"}
-                </button>
-              ) : (
-                <div style={{ display: "grid", gap: "0.5rem" }}>
-                  <div style={{ display: "flex", gap: "0.4rem" }}>
-                    <input 
-                      readOnly 
-                      className="input" 
-                      style={{ fontSize: "0.8rem", padding: "0.5rem", flex: 1, background: "var(--bg-3)" }} 
-                      value={typeof window !== "undefined" ? window.location.origin + "/share/" + shareToken : ""}
-                    />
-                    <button 
-                      onClick={() => {
-                        if (typeof window !== "undefined") {
-                          navigator.clipboard.writeText(window.location.origin + "/share/" + shareToken);
-                          showToast("Link copied to clipboard!", "success");
-                        }
-                      }}
-                      className="btn-primary"
-                      style={{ padding: "0 1rem", fontSize: "0.8rem" }}
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.2rem" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.78rem", cursor: "pointer", color: "var(--text-muted)" }}>
-                      <input
-                        type="checkbox"
-                        checked={isSharePublic}
-                        onChange={handleToggleShare}
-                        disabled={shareLoading}
-                        style={{ accentColor: "var(--accent)" }}
-                      />
-                      Link is Active (Public)
-                    </label>
-                    <a 
-                      href={`/share/${shareToken}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      style={{ fontSize: "0.78rem", color: "var(--accent)", textDecoration: "none" }}
-                    >
-                      Open Link ↗
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
             </div>
 
             {/* ATS ANALYSIS PANEL */}
             {resume.ats_score && (
               <div className="grid gap-6 animate-fade-in-up mt-6">
-                <Card className="p-6">
-                  <h3 className="section-label mb-6">Score Breakdown</h3>
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 lg:p-8">
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-6">Score Breakdown</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
                     {Object.entries(resume.ats_score.breakdown).map(([key, val]) => (
-                      <div key={key} className="flex items-center gap-4">
+                      <div key={key} className="flex items-center gap-5 p-4 rounded-xl border border-gray-100 bg-gray-50/80">
                         <div className="w-[54px] shrink-0">
                           <ATSRing score={val as number} size={54} strokeWidth={5} />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold capitalize text-[var(--text-primary)] mb-1">{key}</p>
-                          <p className="text-xs text-[var(--text-muted)]">{(val as number) >= 70 ? 'Excellent' : (val as number) >= 40 ? 'Average' : 'Needs Work'}</p>
+                          <p className="text-[15px] font-bold capitalize text-gray-900 mb-1">{key}</p>
+                          <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{(val as number) >= 70 ? 'Excellent' : (val as number) >= 40 ? 'Average' : 'Needs Work'}</p>
                         </div>
                       </div>
                     ))}
                   </div>
-                </Card>
+                </div>
 
                 {resume.ats_score.detectedRole && (
-                  <Card glowColor="var(--accent)" className="p-5 border-[var(--accent)]/30 bg-[var(--accent)]/5">
-                    <p className="section-label mb-3">Detected Role Configuration</p>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="accent">{resume.ats_score.detectedRole}</Badge>
-                      <Badge variant="neutral">{resume.ats_score.detectedIndustry}</Badge>
-                      <Badge variant="warning">{resume.ats_score.confidence}% confidence</Badge>
+                  <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl shadow-sm p-6 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 bottom-0 w-1 bg-indigo-500" />
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-indigo-600 mb-4">AI Role Inference</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="px-3.5 py-1.5 rounded-lg bg-indigo-100 text-indigo-800 font-bold text-[13px] border border-indigo-200">{resume.ats_score.detectedRole}</span>
+                      <span className="px-3.5 py-1.5 rounded-lg bg-white text-gray-700 font-medium text-[13px] border border-gray-200 shadow-sm">{resume.ats_score.detectedIndustry}</span>
+                      <span className="px-2.5 py-1.5 rounded-md bg-amber-100 text-amber-800 font-bold text-[11px] border border-amber-200 flex items-center gap-1">
+                        <Sparkles size={12} className="text-amber-600" />
+                        {resume.ats_score.confidence}% match confidence
+                      </span>
                     </div>
-                  </Card>
+                  </div>
                 )}
 
                 {((resume.ats_score.missingKeywordDetails || resume.ats_score.missingKeywords)?.length ?? 0) > 0 && (
-                  <Card className="p-6">
-                                        <div className="flex justify-between items-center mb-4">
-                      <p className="section-label text-[var(--danger)] mb-0">Missing High-Value Keywords</p>
+                  <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 lg:p-8">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                      <p className="text-sm font-bold uppercase tracking-widest text-red-500 flex items-center gap-2 m-0">
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                        High-Value Missing Keywords
+                      </p>
                       <button 
                          onClick={handleAddMissingKeywords}
                          disabled={addingKeywords}
-                         className="btn-secondary" 
-                         style={{ padding: "0.3rem 0.8rem", fontSize: "0.75rem", background: "var(--bg-elevated)", borderColor: "var(--border)" }}
+                         className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold rounded-lg text-[13px] transition-colors border border-indigo-200 shadow-sm disabled:opacity-50"
                       >
-                         {addingKeywords ? "Adding..." : "+ Auto-Add to Resume"}
+                         {addingKeywords ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Processing...</> : <><Sparkles size={14} className="text-indigo-500" /> Auto-Add to Resume</>}
                       </button>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2.5">
                       {resume.ats_score.missingKeywordDetails ? (
                         [...resume.ats_score.missingKeywordDetails].sort((a: any, b: any) => b.weight - a.weight).map((kw: any, i: number) => (
-                          <Badge key={`${kw.keyword}-${i}`} variant="danger" className="flex items-center gap-1.5">
-                            {kw.keyword} <span className="bg-[var(--danger)]/20 px-1.5 py-0.5 rounded text-[10px]">{kw.weight}</span>
-                          </Badge>
+                          <span key={`${kw.keyword}-${i}`} className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-red-50/50 border border-red-100 text-red-700 text-[13px] font-semibold hover:bg-red-50 transition-colors">
+                            {kw.keyword} <span className="bg-red-100/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-red-700">{kw.weight}</span>
+                          </span>
                         ))
                       ) : (
-                        resume.ats_score.missingKeywords?.map((kw: string, i: number) => <Badge key={`${kw}-${i}`} variant="danger">{kw}</Badge>)
+                        resume.ats_score.missingKeywords?.map((kw: string, i: number) => (
+                          <span key={`${kw}-${i}`} className="px-3.5 py-1.5 rounded-lg bg-red-50/50 border border-red-100 text-red-700 text-[13px] font-semibold">{kw}</span>
+                        ))
                       )}
                     </div>
-                  </Card>
+                  </div>
                 )}
 
                 {((resume.ats_score.keywordMatches || resume.ats_score.matchedKeywords)?.length ?? 0) > 0 && (
-                  <Card className="p-6">
-                    <p className="section-label mb-4 text-[var(--success)]">Matched Keywords</p>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 lg:p-8">
+                    <p className="text-sm font-bold uppercase tracking-widest text-emerald-600 mb-6 flex items-center gap-2">
+                      <CheckCircle2 size={16} /> Verified Matched Keywords
+                    </p>
+                    <div className="flex flex-wrap gap-2.5">
                       {resume.ats_score.keywordMatches ? (
                         [...resume.ats_score.keywordMatches].sort((a: any, b: any) => b.weight - a.weight).map((kw: any, i: number) => (
-                          <Badge key={`${kw.keyword}-${i}`} variant="success" className="flex items-center gap-1.5">
-                            {kw.keyword} <span className="bg-[var(--success)]/20 px-1.5 py-0.5 rounded text-[10px]">{kw.weight}</span>
-                          </Badge>
+                          <span key={`${kw.keyword}-${i}`} className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-emerald-50/50 border border-emerald-100 text-emerald-700 text-[13px] font-semibold">
+                            {kw.keyword} <span className="bg-emerald-100/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-emerald-700">{kw.weight}</span>
+                          </span>
                         ))
                       ) : (
-                        resume.ats_score.matchedKeywords?.map((kw: string, i: number) => <Badge key={`${kw}-${i}`} variant="success">{kw}</Badge>)
+                        resume.ats_score.matchedKeywords?.map((kw: string, i: number) => (
+                          <span key={`${kw}-${i}`} className="px-3.5 py-1.5 rounded-lg bg-emerald-50/50 border border-emerald-100 text-emerald-700 text-[13px] font-semibold">{kw}</span>
+                        ))
                       )}
                     </div>
-                  </Card>
+                  </div>
                 )}
 
-                <div className="text-xs text-[var(--text-muted)] text-center mt-2">
-                  Keywords are updated periodically by our market intelligence system
+                <div className="text-[12px] font-medium text-gray-400 text-center mt-2 mb-2">
+                  Keywords are cross-referenced with live market data for your detected role.
                 </div>
 
-                <Card className="p-6">
-                  <p className="section-label mb-4">Improvement Suggestions</p>
-                  <div className="space-y-3">
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 lg:p-8">
+                  <p className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-6 flex items-center gap-2">
+                    <Sparkles size={16} className="text-gray-400" /> Strategic Suggestions
+                  </p>
+                  <div className="space-y-4">
                     {resume.ats_score.suggestions.map((s, i) => (
-                      <div key={i} className="flex gap-3 items-start">
-                        <span className="text-[var(--accent)] text-sm font-bold mt-0.5">→</span>
-                        <span className="text-sm text-[var(--text-muted)] leading-relaxed">{s}</span>
+                      <div key={i} className="flex gap-4 items-start bg-gray-50/80 p-4 rounded-xl border border-gray-100">
+                        <div className="bg-white p-1 rounded-md border border-gray-200 shadow-sm mt-0.5">
+                          <CheckCircle2 size={14} className="text-indigo-500" />
+                        </div>
+                        <span className="text-[14px] text-gray-700 leading-relaxed font-medium">{s}</span>
                       </div>
                     ))}
                   </div>
-                </Card>
+                </div>
 
                 {/* Naukri / Portal Tips Card */}
-                <div className="card" style={{ display: "grid", gap: "0.8rem" }}>
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 lg:p-8" style={{ display: "grid", gap: "1rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.05rem", fontWeight: 700, margin: 0, display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.1rem", fontWeight: 800, margin: 0, display: "flex", alignItems: "center", gap: "0.5rem", color: "#111827" }}>
                       🇮🇳 Indian Portals (Naukri/LinkedIn) SEO Tips
                     </h3>
-                    {naukriLoading && <div className="spinner" style={{ width: 14, height: 14 }} />}
+                    {naukriLoading && <div className="spinner" style={{ width: 16, height: 16 }} />}
                   </div>
-                  <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>
-                    Maximize your indexing keyword matches and search visibility for Indian HR consultants.
+                  <p style={{ fontSize: "0.85rem", color: "#4b5563", margin: 0 }}>
+                    Boost your visibility on Naukri.com and LinkedIn India. Click <strong>"Apply Fix"</strong> on any tip to instantly update your resume preview.
                   </p>
                   
                   {naukriTips.length === 0 && !naukriLoading && (
-                    <button onClick={fetchNaukriTips} className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.78rem", alignSelf: "start" }}>
+                    <button onClick={fetchNaukriTips} className="px-5 py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold rounded-lg text-sm transition-colors border border-indigo-200 shadow-sm" style={{ alignSelf: "start" }}>
                       Load Visibility Tips
                     </button>
                   )}
 
                   {naukriTips.length > 0 && (
-                    <div style={{ display: "grid", gap: "0.8rem", marginTop: "0.4rem" }}>
+                    <div style={{ display: "grid", gap: "1rem", marginTop: "0.5rem" }}>
                       {naukriTips.map((tip, i) => {
                         const priColors: Record<string, string> = {
-                          High: "rgba(255, 101, 132, 0.12)",
-                          Medium: "rgba(246, 211, 101, 0.12)",
-                          Low: "rgba(108, 99, 255, 0.12)"
+                          High: "bg-red-50 text-red-600 border-red-100",
+                          Medium: "bg-amber-50 text-amber-600 border-amber-100",
+                          Low: "bg-indigo-50 text-indigo-600 border-indigo-100"
                         };
-                        const textColors: Record<string, string> = {
-                          High: "#ff6584",
-                          Medium: "#f6d365",
-                          Low: "#6c63ff"
-                        };
+                        const isApplied = !!appliedTipPatches[i];
+                        const isApplyingThis = applyingTipIdx === i;
                         return (
-                          <div key={i} style={{ padding: "0.8rem", background: "rgba(255,255,255,0.015)", border: "1px solid var(--border)", borderRadius: "8px" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
-                              <strong style={{ fontSize: "0.82rem", color: "var(--text)" }}>{tip.area}</strong>
-                              <span style={{ 
-                                fontSize: "0.65rem", 
-                                fontWeight: 700, 
-                                padding: "2px 6px", 
-                                borderRadius: "4px",
-                                background: priColors[tip.priority] || "rgba(255,255,255,0.08)",
-                                color: textColors[tip.priority] || "var(--text-muted)"
-                              }}>
-                                {tip.priority} Priority
+                          <div key={i} className={`p-5 rounded-xl border transition-all duration-200 ${isApplied ? 'bg-emerald-50/50 border-emerald-200 shadow-sm' : 'bg-gray-50/80 border-gray-200 hover:border-indigo-300 hover:bg-white hover:shadow-md'}`}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.6rem", marginBottom: "0.6rem" }}>
+                              <strong className={`text-[14.5px] font-bold flex items-center gap-1.5 ${isApplied ? 'text-emerald-700' : 'text-gray-900'}`}>
+                                {isApplied && <CheckCircle2 size={16} />}
+                                {tip.area}
+                              </strong>
+                              <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md border ${priColors[tip.priority] || "bg-gray-100 text-gray-600 border-gray-200"}`}>
+                                {tip.priority}
                               </span>
                             </div>
-                            <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.4 }}>{tip.tip}</p>
+                            <p style={{ margin: "0 0 1rem", fontSize: "0.85rem", color: "#4b5563", lineHeight: 1.5 }}>{tip.tip}</p>
+                            
+                            {isApplied && appliedTipPatches[i] && (
+                              <div className="text-[13px] text-emerald-700 bg-emerald-100/50 rounded-lg p-3 mb-2 border border-emerald-200 font-semibold shadow-inner">
+                                ✓ {appliedTipPatches[i].explanation || "Applied to preview"}
+                              </div>
+                            )}
+                            
+                            {!isApplied && (
+                              <button
+                                onClick={() => handleGenerateNaukriTipFix(i, tip)}
+                                disabled={isApplyingThis}
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 font-bold rounded-lg text-[12px] transition-colors disabled:opacity-50 shadow-sm"
+                              >
+                                {isApplyingThis ? (
+                                  <><div className="spinner" style={{ width: 14, height: 14 }} /> Generating Fix...</>
+                                ) : (
+                                  <><Wand2 size={14} className="text-indigo-400" /> Apply Fix to Preview</>
+                                )}
+                              </button>
+                            )}
                           </div>
                         );
                       })}
@@ -1319,32 +1561,50 @@ export default function ResumeDetailPage() {
             </div>
           </div>
 
+          {/* Preview modified indicator */}
+          {hasUnappliedChanges && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", padding: "0.4rem 0.8rem", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)", borderRadius: "8px", fontSize: "0.75rem", color: "#10b981", fontWeight: 600 }}>
+              <CheckCircle2 size={13} />
+              Preview showing your applied changes
+            </div>
+          )}
+
           {/* Sticky preview paper container */}
           <div style={{ 
             flex: 1, 
-            overflowY: "auto", 
-            background: "var(--bg-3)", 
+            overflow: "auto", 
+            background: "var(--bg-2)", 
             borderRadius: "12px", 
             border: "1px solid var(--border)", 
             display: "flex", 
             justifyContent: "center", 
             alignItems: "start",
-            padding: "2rem 1rem"
+            padding: "2rem 1rem",
+            position: "relative"
           }}>
             
-            <div className="resume-paper resume-print-area" style={{ 
+            <div style={{
               transform: `scale(${zoomFactor})`, 
               transformOrigin: "top center",
-              background: "#ffffff", 
-              color: "#333333", 
-              padding: "40px", 
-              width: "100%",
-              maxWidth: "800px",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-              borderRadius: "4px",
-              transition: "transform 0.15s ease-out",
+              transition: "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
             }}>
-              <ResumeDocument data={(resume as any).structured_data || resume.resume_data || emptyResumeData} templateId={selectedTemplate} />
+              <div className="resume-paper resume-print-area" style={{ 
+                background: "#ffffff", 
+                color: "#333333", 
+                padding: "40px", 
+                width: "210mm",
+                minHeight: "297mm",
+                boxShadow: hasUnappliedChanges ? "0 10px 40px rgba(16,185,129,0.3)" : "0 8px 30px rgba(0,0,0,0.12)",
+                borderRadius: "4px",
+                transition: "box-shadow 0.3s",
+                outline: hasUnappliedChanges ? "2px solid #10b981" : "1px solid #e5e7eb",
+              }}>
+                <ResumeDocument 
+                  data={modifiedResumeData || (resume as any).structured_data || resume.resume_data || emptyResumeData} 
+                  templateId={selectedTemplate} 
+                  highlightChanges={highlightedChanges}
+                />
+              </div>
             </div>
 
           </div>
@@ -1355,7 +1615,7 @@ export default function ResumeDetailPage() {
       {/* PRINT-ONLY RESUME CONTAINER */}
       <div className="print-only">
         <div className="resume-paper resume-print-area" style={{ background: "#ffffff", color: "#333333", padding: "40px", width: "100%" }}>
-          <ResumeDocument data={(resume as any).structured_data || resume.resume_data || emptyResumeData} templateId={selectedTemplate} />
+          <ResumeDocument data={modifiedResumeData || (resume as any).structured_data || resume.resume_data || emptyResumeData} templateId={selectedTemplate} />
         </div>
       </div>
 
