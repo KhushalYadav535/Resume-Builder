@@ -42,7 +42,7 @@ const defaultEmptyResume: ResumeData = {
     linkedinUpdated: false,
   },
   industryMode: "IT",
-  fontFamily: "Inter",
+  fontFamily: "Plus Jakarta Sans",
   fontSize: 10,
   spacing: 1.2,
   sectionOrder: ["summary", "work", "education", "skills", "projects", "certifications", "languages", "fresher"],

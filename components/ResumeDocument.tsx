@@ -23,6 +23,7 @@ const TEMPLATE_ACCENT: Record<string, string> = {
 
 // ─── Safe font map (ATS + browser safe) ──────────────────────────────────────
 const FONT_MAP: Record<string, string> = {
+  "Plus Jakarta Sans":  "'Plus Jakarta Sans', sans-serif",
   "Inter":              "'Inter', sans-serif",
   "DM Sans":            "'DM Sans', sans-serif",
   "Space Grotesk":      "'Space Grotesk', sans-serif",
