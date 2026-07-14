@@ -648,7 +648,7 @@ export default function ResumeDetailPage() {
 
       setTimeout(() => {
         setDeepLoading(false);
-        setActiveTab("suggestions");
+        setActiveTab("interview");
       }, 350);
 
     } catch (err: any) {
