@@ -92,7 +92,7 @@ export default function CoverLetterPage() {
             padding: 0 !important;
             box-shadow: none !important;
             white-space: pre-wrap !important;
-            font-family: 'Inter', sans-serif !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
             font-size: 11pt !important;
             line-height: 1.6 !important;
           }
@@ -180,7 +180,7 @@ export default function CoverLetterPage() {
                   fontSize: "0.92rem", 
                   lineHeight: 1.6, 
                   whiteSpace: "pre-wrap", 
-                  fontFamily: "Inter, sans-serif" 
+                  fontFamily: "'Plus Jakarta Sans', sans-serif" 
                 }}
               >
                 {coverLetter}
