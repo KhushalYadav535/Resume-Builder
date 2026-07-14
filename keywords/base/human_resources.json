@@ -1,0 +1,22 @@
+{
+  "industry": "human_resources",
+  "version": "1.0",
+  "last_updated": "2026-07-14",
+  "keywords": [
+    { "keyword": "Talent Acquisition", "weight": 9, "aliases": ["Recruitment", "Hiring", "Talent Sourcing"] },
+    { "keyword": "HRMS", "weight": 8, "aliases": ["HRIS", "HR Software", "SAP HR", "Workday", "Darwinbox"] },
+    { "keyword": "Onboarding", "weight": 7, "aliases": ["Employee Onboarding", "Induction"] },
+    { "keyword": "Payroll Management", "weight": 8, "aliases": ["Payroll Processing", "Salary Processing"] },
+    { "keyword": "Performance Management", "weight": 8, "aliases": ["PMS", "Appraisals", "KPI Tracking"] },
+    { "keyword": "Employee Relations", "weight": 7, "aliases": ["Industrial Relations", "IR", "Labour Relations"] },
+    { "keyword": "Learning & Development", "weight": 7, "aliases": ["L&D", "Training and Development", "T&D"] },
+    { "keyword": "HR Policy", "weight": 6, "aliases": ["HR Policies", "HR Compliance", "Labour Law"] },
+    { "keyword": "Statutory Compliance", "weight": 8, "aliases": ["PF", "ESI", "Gratuity", "PT", "Compliance"] },
+    { "keyword": "Workforce Planning", "weight": 7, "aliases": ["Manpower Planning", "Headcount Planning"] },
+    { "keyword": "Compensation & Benefits", "weight": 8, "aliases": ["C&B", "Total Rewards", "Salary Benchmarking"] },
+    { "keyword": "Applicant Tracking System", "weight": 7, "aliases": ["ATS", "Recruitment Software", "Taleo"] },
+    { "keyword": "HR Analytics", "weight": 8, "aliases": ["People Analytics", "HR Data", "Attrition Analysis"] },
+    { "keyword": "Grievance Handling", "weight": 6, "aliases": ["Grievance Redressal", "Employee Grievances"] },
+    { "keyword": "Exit Interviews", "weight": 5, "aliases": ["Attrition Management", "Retention Strategy"] }
+  ]
+}

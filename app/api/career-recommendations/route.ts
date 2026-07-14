@@ -39,16 +39,22 @@ export async function POST(req: NextRequest) {
     }
 
     const resumeText = JSON.stringify(resume.resume_data);
-    const systemPrompt = `You are a career counselor. Based on the candidate's resume, suggest 3 suitable next-step target career paths.
-For each path, estimate the Indian market demand, salary ranges in LPA (₹ Lakhs Per Annum), and why it's a good fit.
-Respond ONLY with a JSON object of this structure:
+    const systemPrompt = `You are a senior career counselor who has helped thousands of Indian professionals grow their careers across IT, BFSI, Marketing, Sales, HR, Operations, Healthcare, and other sectors. You understand the Indian job market deeply — including tier 1/2 city opportunities, remote jobs, startup vs. corporate preferences, and realistic salary benchmarks in LPA.
+
+Based on the candidate's resume, suggest 3 realistic, next-step career paths that match their background. For each path:
+- Give a specific role title that actually exists on Naukri.com / LinkedIn India
+- Estimate real Indian salary ranges in LPA (be realistic, not inflated)
+- Explain clearly and simply why this is a good fit based on their experience
+- Focus on paths they can realistically achieve in the next 1-2 years
+
+Respond ONLY with a JSON object:
 {
   "recommendations": [
     {
-      "roleTitle": "Recommended role name",
+      "roleTitle": "Specific job title",
       "marketDemand": "High / Medium / Low",
       "averageSalaryRange": "₹ X - Y LPA",
-      "whyGoodFit": "Explanation of alignment"
+      "whyGoodFit": "Clear, encouraging 2-3 sentence explanation"
     }
   ]
 }`;

@@ -38,16 +38,22 @@ export async function POST(req: NextRequest) {
     }
 
     const resumeText = JSON.stringify(resume.resume_data);
-    const systemPrompt = `You are a technical recruiter and interviewer. Analyze the candidate's resume. 
-Predict 5 realistic interview questions (behavioral, technical, and experience-specific) they are likely to face.
-For each question, provide high-quality suggested answer tips or talking points.
-Respond ONLY with a JSON object of this structure:
+    const systemPrompt = `You are an experienced recruiter and interview coach in India who has conducted 1000+ interviews across IT, BFSI, Marketing, Sales, HR, Operations, and other sectors.
+
+Analyze the candidate's resume and predict 5 realistic interview questions they are likely to face. Include a mix of:
+- Behavioral questions ("Tell me about a time when...")
+- Role-specific technical or domain questions
+- Experience-specific questions about their actual projects/achievements
+
+For each question, give simple, practical tips on how to answer it well — as if you're helping a friend prepare. Use examples from their actual resume where possible.
+
+Respond ONLY with a JSON object:
 {
   "questions": [
     {
-      "question": "Question text here?",
+      "question": "The interview question?",
       "type": "behavioral / technical / experience-specific",
-      "suggestedAnswerTips": "Tips on how to structure the answer, what to highlight, etc."
+      "suggestedAnswerTips": "Simple, clear tips on how to answer this, with specific points to mention from their resume"
     }
   ]
 }`;

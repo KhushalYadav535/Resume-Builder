@@ -41,6 +41,7 @@ interface ResumeDocumentProps {
   data: ResumeData;
   templateId: string;
   highlightKeywords?: string[];
+  highlightChanges?: string[];   // NEW: green diff highlight for applied suggestions
 }
 
 // ─── Keyword Highlight Helper ─────────────────────────────────────────────────
@@ -71,11 +72,48 @@ function HL({ text, kw }: { text: string; kw: string[] }) {
   );
 }
 
+// ─── Diff / Change Highlight Helper (green) ──────────────────────────────────
+function DiffHL({ text, changes }: { text: string; changes: string[] }) {
+  if (!text || !changes || changes.length === 0) return <>{text}</>;
+
+  const sorted = [...changes]
+    .filter(c => c && c.length > 0)
+    .sort((a, b) => b.length - a.length);
+  if (sorted.length === 0) return <>{text}</>;
+
+  const escaped = sorted.map(k => k.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&"));
+  const regex = new RegExp(`(${escaped.join("|")})`, "gi");
+  const parts = text.split(regex);
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        const hit = sorted.some(k => k.toLowerCase() === part.toLowerCase());
+        return hit ? (
+          <span key={i} style={{
+            background: "rgba(16, 185, 129, 0.18)",
+            color: "inherit",
+            borderRadius: "2px",
+            padding: "0 2px",
+            outline: "1px solid rgba(16, 185, 129, 0.35)",
+            fontWeight: 600,
+          }}>
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        );
+      })}
+    </>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ResumeDocument({
   data,
   templateId,
   highlightKeywords = [],
+  highlightChanges = [],
 }: ResumeDocumentProps) {
   const {
     personalInfo = {
@@ -108,6 +146,10 @@ export default function ResumeDocument({
   } = data;
 
   const kw = highlightKeywords;
+  const ch = highlightChanges; // green diff changes
+  // Convenience: renders text with green diff highlight if changes exist, else plain
+  const Chg = ({ text }: { text: string }) =>
+    ch.length > 0 ? <DiffHL text={text} changes={ch} /> : <>{text}</>;
   const font = FONT_MAP[fontFamily] || "Arial, sans-serif";
   const fs = fontSize;           // base font size in pt
   const lh = spacing;            // line-height
@@ -220,7 +262,7 @@ export default function ResumeDocument({
                   textAlign: "justify",
                 }}
               >
-                <HL text={b} kw={kw} />
+                {ch.length > 0 ? <DiffHL text={b} changes={ch} /> : <HL text={b} kw={kw} />}
               </li>
             ))}
           </ul>
@@ -279,7 +321,7 @@ export default function ResumeDocument({
                       textAlign: "justify",
                     }}
                   >
-                    <HL text={summary} kw={kw} />
+                    {ch.length > 0 ? <DiffHL text={summary} changes={ch} /> : <HL text={summary} kw={kw} />}
                   </p>
                 </div>
               ) : null;
@@ -337,13 +379,29 @@ export default function ResumeDocument({
                     {skills.technical.length > 0 && (
                       <div>
                         <strong>Languages &amp; Tools: </strong>
-                        <HL text={skills.technical.join(", ")} kw={kw} />
+                        {ch.length > 0
+                          ? skills.technical.map((s, si) => (
+                              <span key={si}>
+                                {si > 0 && <span>, </span>}
+                                <DiffHL text={s} changes={ch} />
+                              </span>
+                            ))
+                          : <HL text={skills.technical.join(", ")} kw={kw} />
+                        }
                       </div>
                     )}
                     {skills.soft.length > 0 && (
                       <div>
                         <strong>Soft Skills: </strong>
-                        <HL text={skills.soft.join(", ")} kw={kw} />
+                        {ch.length > 0
+                          ? skills.soft.map((s, si) => (
+                              <span key={si}>
+                                {si > 0 && <span>, </span>}
+                                <DiffHL text={s} changes={ch} />
+                              </span>
+                            ))
+                          : <HL text={skills.soft.join(", ")} kw={kw} />
+                        }
                       </div>
                     )}
                   </div>

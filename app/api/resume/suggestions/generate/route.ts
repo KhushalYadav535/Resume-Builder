@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     const topMissing = missingKeywords.slice(0, 8);
 
     // 2. Call AI via OpenRouter
-    const prompt = `You are a professional resume coach analyzing a resume for ${industryToUse || 'software engineering'} roles.
+    const prompt = `You are a professional resume coach helping job seekers in India across all industries — IT, Software, BFSI, Marketing, Sales, HR, Operations, Healthcare, and more.
 
 Resume text:
 ---
@@ -63,25 +63,26 @@ ${resumeText}
 ---
 
 Current detected role: ${roleToUse || 'General'}
+Industry: ${industryToUse || 'General'}
 
 These high-value keywords are MISSING from the resume:
 ${topMissing.map(k => `- ${k.keyword} (weight: ${k.weight})`).join('\n')}
 
-For each missing keyword/skill, suggest a specific way the candidate could add it to their resume. 
-The suggestions should be:
-1. Authentic (not fabricated experience)
-2. Actionable (user can easily add it to their resume)
-3. Specific (show exactly where and how)
-4. Prioritized (most impactful first)
+For each missing keyword/skill, suggest a SPECIFIC way this candidate can add it to their resume. The advice must:
+1. Be authentic — based on what the candidate actually seems to have done (don't fabricate)
+2. Be actionable — show exactly what sentence to add and where
+3. Use simple, natural language — avoid overly corporate/buzzword-heavy phrasing
+4. Be relevant to the Indian job market — mention Indian tools, platforms, or contexts where appropriate
+5. Be encouraging and human — remember this is a real person trying to improve their career
 
-Return ONLY a valid JSON array with no preamble or markdown:
+Return ONLY a valid JSON array:
 [
   {
     "type": "missing_keyword" | "missing_skill" | "experience_gap" | "skill_enhancement" | "formatting_improvement",
     "keyword": "the missing keyword or skill name",
-    "title": "short title for this suggestion (5-10 words)",
-    "description": "1-2 sentence explanation of why this is valuable",
-    "suggestedText": "the exact text to add to the resume (1-2 sentences max)",
+    "title": "short, friendly title for this suggestion (5-10 words)",
+    "description": "1-2 sentence explanation of why this matters for Indian recruiters",
+    "suggestedText": "the exact text to add to the resume (1-2 sentences, in first person, achievement-focused)",
     "category": "technical" | "soft_skill" | "experience" | "education" | "certification",
     "priority": 1-5,
     "whereToAdd": "experience" | "skills" | "summary" | "education" | "certifications"
@@ -89,15 +90,15 @@ Return ONLY a valid JSON array with no preamble or markdown:
 ]
 
 Examples of good suggestions:
-- type: "missing_skill", keyword: "RAG", suggestedText: "Implemented Retrieval-Augmented Generation (RAG) pipelines for LLM applications"
-- type: "skill_enhancement", keyword: "System Design", suggestedText: "Designed scalable distributed systems handling 100K+ concurrent users"
-- type: "experience_gap", keyword: "Leadership", suggestedText: "Led a team of 3 engineers in architecting the payment microservice"
+- type: "missing_skill", keyword: "MS Excel", suggestedText: "Advanced proficiency in MS Excel including pivot tables, VLOOKUP, and data visualization for MIS reporting"
+- type: "experience_gap", keyword: "Team Management", suggestedText: "Led a team of 5 associates, assigning tasks, tracking KPIs, and conducting weekly review meetings"
+- type: "skill_enhancement", keyword: "Customer Relationship", suggestedText: "Managed relationships with 50+ enterprise clients resulting in 92% renewal rate"
 
 Return ONLY the JSON array.`;
 
     const aiResponse = await askAIJSON<any[]>(
       prompt,
-      "You are a professional resume coach. You only respond with JSON arrays."
+      "You are a professional resume coach helping Indian job seekers across all industries. You write clear, practical, authentic improvement suggestions. You output ONLY valid JSON arrays."
     );
 
     if (!Array.isArray(aiResponse) || aiResponse.length === 0) {

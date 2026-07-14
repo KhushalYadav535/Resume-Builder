@@ -38,6 +38,8 @@ export default function TailorPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [savedNewId, setSavedNewId] = useState<string | null>(null);
+  const [saveAsNewName, setSaveAsNewName] = useState("");
   const [error, setError] = useState("");
   const [zoomFactor, setZoomFactor] = useState(0.85);
   const [showPreview, setShowPreview] = useState(false);
@@ -205,7 +207,7 @@ export default function TailorPage() {
     });
   };
 
-  // Save updated resume to database
+  // Save tailored resume as a NEW record (never overwrites original)
   const handleSave = async () => {
     if (!selectedResume) return;
     setSaving(true);
@@ -222,12 +224,16 @@ export default function TailorPage() {
         ...selectedResume.resume_data.skills.technical,
       ].join("\n");
 
+      // Determine job role from JD match or resume
+      const jobRole = jdMatchResult?.matchedKeywords?.[0] || selectedResume.resume_data.workExperience?.[0]?.role || "Job";
+      const defaultName = `${selectedResume.file_name} (Tailored — ${jobRole})`;
+
       const res = await fetch("/api/save-resume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: selectedResume.id,
-          file_name: selectedResume.file_name,
+          // NO id: creates a brand new record, original stays untouched
+          file_name: saveAsNewName.trim() || defaultName,
           raw_text: rawText,
           resume_data: selectedResume.resume_data,
           template_id: selectedResume.template_id,
@@ -237,6 +243,8 @@ export default function TailorPage() {
       });
 
       if (!res.ok) throw new Error("Save failed");
+      const newRecord = await res.json();
+      setSavedNewId(newRecord.id);
       setSaveSuccess(true);
       setCurrentStep(4);
     } catch (err: any) {
@@ -688,52 +696,74 @@ export default function TailorPage() {
             {/* Save & Download */}
             {acceptedRewrites.size > 0 && (
               <div className="card" style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
+                display: "grid",
+                gap: "1rem",
                 padding: "1.2rem 1.5rem",
                 background: "linear-gradient(135deg, rgba(108, 99, 255, 0.06) 0%, var(--card) 100%)",
                 border: "1px solid rgba(108, 99, 255, 0.2)",
-                flexWrap: "wrap",
-                gap: "1rem",
               }}>
-                <div>
-                  <h3 style={{ fontWeight: 700, fontSize: "1rem", margin: "0 0 0.2rem" }}>
-                    {saveSuccess ? (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                        <CheckCircle2 size={16} className="text-emerald-500" />
-                        Resume Updated!
-                      </span>
-                    ) : (
-                      `${acceptedRewrites.size} section(s) rewritten`
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+                  <div>
+                    <h3 style={{ fontWeight: 700, fontSize: "1rem", margin: "0 0 0.2rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                      {saveSuccess ? (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", color: "#10b981" }}>
+                          <CheckCircle2 size={16} />
+                          New Tailored Resume Saved!
+                        </span>
+                      ) : (
+                        `🎨 ${acceptedRewrites.size} section(s) rewritten — ready to save`
+                      )}
+                    </h3>
+                    <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", margin: 0 }}>
+                      {saveSuccess
+                        ? "Your original resume is untouched. The new tailored copy has been saved to your dashboard."
+                        : "This will save a new resume. Your original stays untouched."}
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+                    {!saveSuccess && (
+                      <button
+                        className="btn-primary"
+                        disabled={saving}
+                        onClick={handleSave}
+                        style={{ padding: "0.6rem 1.5rem", fontSize: "0.88rem" }}
+                      >
+                        {saving ? "Saving..." : "💾 Save as New Resume"}
+                      </button>
                     )}
-                  </h3>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", margin: 0 }}>
-                    {saveSuccess
-                      ? "Your tailored resume has been saved. You can now download or edit it further."
-                      : "Save your tailored resume to persist the changes and download the updated PDF."}
-                  </p>
+                    {saveSuccess && savedNewId && (
+                      <button
+                        className="btn-primary"
+                        onClick={() => router.push(`/resume/${savedNewId}`)}
+                        style={{ padding: "0.6rem 1.5rem", fontSize: "0.88rem", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", border: "none", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+                      >
+                        View New Resume →
+                      </button>
+                    )}
+                    {saveSuccess && savedNewId && (
+                      <button
+                        className="btn-secondary"
+                        onClick={() => router.push(`/resume/builder?id=${savedNewId}`)}
+                        style={{ padding: "0.6rem 1.5rem", fontSize: "0.88rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+                      >
+                        <Edit3 size={14} />
+                        Edit in Builder
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div style={{ display: "flex", gap: "0.6rem" }}>
-                  <button
-                    className="btn-primary"
-                    disabled={saving}
-                    onClick={handleSave}
-                    style={{ padding: "0.6rem 1.5rem", fontSize: "0.88rem" }}
-                  >
-                    {saving ? "Saving..." : saveSuccess ? "✓ Saved" : "💾 Save Tailored Resume"}
-                  </button>
-                  {saveSuccess && (
-                    <button
-                      className="btn-secondary"
-                      onClick={() => router.push(`/resume/builder?id=${selectedResume.id}`)}
-                      style={{ padding: "0.6rem 1.5rem", fontSize: "0.88rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
-                    >
-                      <Edit3 size={14} />
-                      Edit in Builder
-                    </button>
-                  )}
-                </div>
+                {!saveSuccess && (
+                  <div>
+                    <label style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-muted)", display: "block", marginBottom: "0.35rem" }}>Name for the new tailored resume (optional)</label>
+                    <input
+                      className="input"
+                      value={saveAsNewName}
+                      onChange={e => setSaveAsNewName(e.target.value)}
+                      placeholder={`${selectedResume?.file_name || "Resume"} (Tailored)`}
+                      style={{ fontSize: "0.85rem", height: "40px" }}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -1,0 +1,19 @@
+{
+  "industry": "education",
+  "version": "1.0",
+  "last_updated": "2026-07-14",
+  "keywords": [
+    { "keyword": "Curriculum Development", "weight": 9, "aliases": ["Curriculum Design", "Instructional Design", "Course Development"] },
+    { "keyword": "E-Learning", "weight": 8, "aliases": ["Online Learning", "LMS", "Moodle", "EdTech", "SCORM"] },
+    { "keyword": "Pedagogy", "weight": 7, "aliases": ["Teaching Methodology", "Classroom Management", "Active Learning"] },
+    { "keyword": "Student Assessment", "weight": 7, "aliases": ["Evaluation", "Grading", "Formative Assessment", "Summative Assessment"] },
+    { "keyword": "Academic Administration", "weight": 7, "aliases": ["Academic Coordinator", "Programme Management"] },
+    { "keyword": "NAAC", "weight": 8, "aliases": ["Accreditation", "NBA", "UGC", "AICTE Compliance"] },
+    { "keyword": "Corporate Training", "weight": 8, "aliases": ["Training Delivery", "Facilitator", "Soft Skills Training", "Workshop"] },
+    { "keyword": "Instructional Technology", "weight": 7, "aliases": ["Educational Technology", "Blended Learning", "Flipped Classroom"] },
+    { "keyword": "Research Publication", "weight": 7, "aliases": ["Journals", "Research Paper", "Scopus", "Peer Review"] },
+    { "keyword": "Mentoring", "weight": 6, "aliases": ["Coaching", "Student Counselling", "Career Guidance"] },
+    { "keyword": "K-12 Education", "weight": 7, "aliases": ["School Teaching", "CBSE", "ICSE", "IB Curriculum"] },
+    { "keyword": "Higher Education", "weight": 7, "aliases": ["University Teaching", "College Teaching", "Assistant Professor"] }
+  ]
+}

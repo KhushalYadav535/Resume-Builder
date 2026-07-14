@@ -146,13 +146,20 @@ body {
 
 
 /* ── Scroll bar ───────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; border-radius: var(--radius-full); }
 ::-webkit-scrollbar-thumb {
   background: var(--border-strong);
   border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s;
 }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+*:hover { scrollbar-color: var(--text-muted) transparent; }
 
 /* ── Selection ────────────────────────────────────── */
 ::selection {
@@ -621,8 +628,14 @@ textarea.input {
   gap: 1.2rem;
   height: calc(100vh - 220px);
   overflow-y: auto;
-  padding-right: 6px;
+  overflow-x: hidden;
+  padding-right: 10px;
+  scroll-padding-top: 16px;
+  scrollbar-gutter: stable;
 }
+
+/* Smooth scroll for detail panel */
+.detail-left-column, .detail-right-column { scroll-behavior: smooth; }
 
 .detail-right-column {
   position: sticky;
@@ -633,6 +646,10 @@ textarea.input {
   flex-direction: column;
   gap: 0.8rem;
   width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
 }
 
 @media (max-width: 1024px) {

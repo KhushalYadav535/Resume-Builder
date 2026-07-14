@@ -1,19 +1,110 @@
-{
-  "industry": "finance",
-  "version": "1.0",
-  "last_updated": "2026-06-01",
-  "keywords": [
-    { "keyword": "Financial Modeling", "weight": 9, "aliases": ["DCF", "LBO", "Financial Projections"] },
-    { "keyword": "Accounting", "weight": 8, "aliases": ["GAAP", "Ind AS", "IFRS"] },
-    { "keyword": "Corporate Finance", "weight": 7, "aliases": [] },
-    { "keyword": "Valuation", "weight": 8, "aliases": ["Business Valuation"] },
-    { "keyword": "Financial Analysis", "weight": 7, "aliases": ["FP&A", "Financial Planning"] },
-    { "keyword": "Risk Management", "weight": 8, "aliases": ["Credit Risk", "Market Risk", "Operational Risk"] },
-    { "keyword": "Investment Banking", "weight": 8, "aliases": ["M&A", "Mergers and Acquisitions"] },
-    { "keyword": "Excel", "weight": 6, "aliases": ["Advanced Excel", "Financial Modeling in Excel"] },
-    { "keyword": "Portfolio Management", "weight": 7, "aliases": ["Wealth Management"] },
-    { "keyword": "Regulatory Compliance", "weight": 8, "aliases": ["RBI", "SEBI", "FEMA", "KYC", "AML"] },
-    { "keyword": "Taxation", "weight": 7, "aliases": ["Direct Tax", "Indirect Tax", "GST", "Income Tax"] },
-    { "keyword": "Auditing", "weight": 7, "aliases": ["Internal Audit", "Statutory Audit", "Concurrent Audit"] }
-  ]
+﻿{
+    "industry":  "finance",
+    "version":  "1.0",
+    "last_updated":  "2026-06-01",
+    "keywords":  [
+                     {
+                         "keyword":  "Financial Modeling",
+                         "weight":  9,
+                         "aliases":  [
+                                         "DCF",
+                                         "LBO",
+                                         "Financial Projections"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Accounting",
+                         "weight":  8,
+                         "aliases":  [
+                                         "GAAP",
+                                         "Ind AS",
+                                         "IFRS"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Corporate Finance",
+                         "weight":  7,
+                         "aliases":  [
+
+                                     ]
+                     },
+                     {
+                         "keyword":  "Valuation",
+                         "weight":  8,
+                         "aliases":  [
+                                         "Business Valuation"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Financial Analysis",
+                         "weight":  7,
+                         "aliases":  [
+                                         "FP\u0026A",
+                                         "Financial Planning"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Risk Management",
+                         "weight":  8,
+                         "aliases":  [
+                                         "Credit Risk",
+                                         "Market Risk",
+                                         "Operational Risk"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Investment Banking",
+                         "weight":  8,
+                         "aliases":  [
+                                         "M\u0026A",
+                                         "Mergers and Acquisitions"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Excel",
+                         "weight":  6,
+                         "aliases":  [
+                                         "Advanced Excel",
+                                         "Financial Modeling in Excel"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Portfolio Management",
+                         "weight":  7,
+                         "aliases":  [
+                                         "Wealth Management"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Regulatory Compliance",
+                         "weight":  8,
+                         "aliases":  [
+                                         "RBI",
+                                         "SEBI",
+                                         "FEMA",
+                                         "KYC",
+                                         "AML"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Taxation",
+                         "weight":  7,
+                         "aliases":  [
+                                         "Direct Tax",
+                                         "Indirect Tax",
+                                         "GST",
+                                         "Income Tax"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Auditing",
+                         "weight":  7,
+                         "aliases":  [
+                                         "Internal Audit",
+                                         "Statutory Audit",
+                                         "Concurrent Audit"
+                                     ]
+                     }
+                 ],
+    "display_name":  "Finance \u0026 Banking"
 }
