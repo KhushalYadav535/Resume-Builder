@@ -1,17 +1,89 @@
-{
-  "industry": "marketing",
-  "version": "1.0",
-  "last_updated": "2026-06-01",
-  "keywords": [
-    { "keyword": "Digital Marketing", "weight": 8, "aliases": [] },
-    { "keyword": "SEO", "weight": 8, "aliases": ["Search Engine Optimization", "On-page SEO", "Off-page SEO"] },
-    { "keyword": "Content Marketing", "weight": 7, "aliases": ["Content Strategy", "Copywriting"] },
-    { "keyword": "Social Media Marketing", "weight": 7, "aliases": ["SMM", "Social Media Strategy"] },
-    { "keyword": "Email Marketing", "weight": 6, "aliases": ["Mailchimp", "HubSpot"] },
-    { "keyword": "Google Analytics", "weight": 8, "aliases": ["GA4"] },
-    { "keyword": "Brand Management", "weight": 7, "aliases": ["Branding", "Brand Strategy"] },
-    { "keyword": "Market Research", "weight": 7, "aliases": ["Competitor Analysis", "Consumer Insights"] },
-    { "keyword": "Performance Marketing", "weight": 9, "aliases": ["Paid Ads", "Google Ads", "Facebook Ads", "PPC"] },
-    { "keyword": "CRM", "weight": 7, "aliases": ["Customer Relationship Management", "Salesforce"] }
-  ]
+﻿{
+    "industry":  "marketing",
+    "version":  "1.0",
+    "last_updated":  "2026-06-01",
+    "keywords":  [
+                     {
+                         "keyword":  "Digital Marketing",
+                         "weight":  8,
+                         "aliases":  [
+
+                                     ]
+                     },
+                     {
+                         "keyword":  "SEO",
+                         "weight":  8,
+                         "aliases":  [
+                                         "Search Engine Optimization",
+                                         "On-page SEO",
+                                         "Off-page SEO"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Content Marketing",
+                         "weight":  7,
+                         "aliases":  [
+                                         "Content Strategy",
+                                         "Copywriting"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Social Media Marketing",
+                         "weight":  7,
+                         "aliases":  [
+                                         "SMM",
+                                         "Social Media Strategy"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Email Marketing",
+                         "weight":  6,
+                         "aliases":  [
+                                         "Mailchimp",
+                                         "HubSpot"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Google Analytics",
+                         "weight":  8,
+                         "aliases":  [
+                                         "GA4"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Brand Management",
+                         "weight":  7,
+                         "aliases":  [
+                                         "Branding",
+                                         "Brand Strategy"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Market Research",
+                         "weight":  7,
+                         "aliases":  [
+                                         "Competitor Analysis",
+                                         "Consumer Insights"
+                                     ]
+                     },
+                     {
+                         "keyword":  "Performance Marketing",
+                         "weight":  9,
+                         "aliases":  [
+                                         "Paid Ads",
+                                         "Google Ads",
+                                         "Facebook Ads",
+                                         "PPC"
+                                     ]
+                     },
+                     {
+                         "keyword":  "CRM",
+                         "weight":  7,
+                         "aliases":  [
+                                         "Customer Relationship Management",
+                                         "Salesforce"
+                                     ]
+                     }
+                 ],
+    "display_name":  "Marketing \u0026 Growth"
 }

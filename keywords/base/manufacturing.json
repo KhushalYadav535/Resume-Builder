@@ -1,0 +1,19 @@
+{
+  "industry": "manufacturing",
+  "version": "1.0",
+  "last_updated": "2026-07-14",
+  "keywords": [
+    { "keyword": "Production Planning", "weight": 9, "aliases": ["Production Scheduling", "Shop Floor Management", "MRP"] },
+    { "keyword": "Quality Control", "weight": 8, "aliases": ["QC", "Quality Assurance", "Inspection", "PPAP"] },
+    { "keyword": "Lean Manufacturing", "weight": 9, "aliases": ["Lean", "5S", "Kaizen", "Value Stream Mapping", "VSM"] },
+    { "keyword": "AutoCAD", "weight": 8, "aliases": ["CAD", "SolidWorks", "CATIA", "Mechanical Drawing"] },
+    { "keyword": "Manufacturing Process", "weight": 7, "aliases": ["Process Engineering", "Process Improvement", "Production Process"] },
+    { "keyword": "Safety Management", "weight": 8, "aliases": ["EHS", "Safety Officer", "ISO 14001", "OHSAS 18001", "Fire Safety"] },
+    { "keyword": "Mechanical Engineering", "weight": 8, "aliases": ["Mechanical Design", "Maintenance Engineering", "Tool Engineering"] },
+    { "keyword": "ISO Certification", "weight": 7, "aliases": ["ISO 9001", "IATF 16949", "TS 16949", "QMS"] },
+    { "keyword": "Machine Maintenance", "weight": 7, "aliases": ["Preventive Maintenance", "TPM", "Breakdown Maintenance"] },
+    { "keyword": "Supply Chain", "weight": 7, "aliases": ["Raw Material Procurement", "Vendor Development", "BOM"] },
+    { "keyword": "CNC Machining", "weight": 7, "aliases": ["CNC", "VMC", "HMC", "CNC Programming", "G-Code"] },
+    { "keyword": "Cost Reduction", "weight": 8, "aliases": ["Value Engineering", "VE", "Cost Down", "Scrap Reduction"] }
+  ]
+}

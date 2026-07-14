@@ -1,0 +1,19 @@
+{
+  "industry": "healthcare",
+  "version": "1.0",
+  "last_updated": "2026-07-14",
+  "keywords": [
+    { "keyword": "Clinical Research", "weight": 9, "aliases": ["Clinical Trials", "CRO", "GCP", "Protocol"] },
+    { "keyword": "Patient Care", "weight": 8, "aliases": ["Patient Management", "Bedside Manner", "Clinical Care"] },
+    { "keyword": "Hospital Management", "weight": 8, "aliases": ["Healthcare Management", "HIS", "Hospital Information System"] },
+    { "keyword": "Medical Coding", "weight": 8, "aliases": ["ICD-10", "CPT Coding", "CPC", "Medical Billing"] },
+    { "keyword": "Pharmacovigilance", "weight": 9, "aliases": ["Drug Safety", "Adverse Events", "PV"] },
+    { "keyword": "Electronic Health Records", "weight": 7, "aliases": ["EHR", "EMR", "Electronic Medical Records"] },
+    { "keyword": "Healthcare Compliance", "weight": 7, "aliases": ["NABH", "JCI", "HIPAA", "FDA Compliance"] },
+    { "keyword": "Medical Affairs", "weight": 7, "aliases": ["Medical Science Liaison", "MSL", "KOL Management"] },
+    { "keyword": "Diagnostic", "weight": 6, "aliases": ["Pathology", "Radiology", "Lab Management", "Lab Technician"] },
+    { "keyword": "Nursing", "weight": 7, "aliases": ["ICU Nursing", "Staff Nurse", "Critical Care Nursing"] },
+    { "keyword": "Telemedicine", "weight": 8, "aliases": ["Telehealth", "Digital Health", "Remote Patient Monitoring"] },
+    { "keyword": "Public Health", "weight": 7, "aliases": ["Epidemiology", "Community Health", "Preventive Healthcare"] }
+  ]
+}

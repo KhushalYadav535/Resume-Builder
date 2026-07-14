@@ -1,0 +1,19 @@
+{
+  "industry": "hospitality",
+  "version": "1.0",
+  "last_updated": "2026-07-14",
+  "keywords": [
+    { "keyword": "Hotel Management", "weight": 9, "aliases": ["Property Management", "PMS", "Opera", "Hotel Operations"] },
+    { "keyword": "Food & Beverage", "weight": 8, "aliases": ["F&B", "Restaurant Management", "Banquet Operations"] },
+    { "keyword": "Front Office Operations", "weight": 8, "aliases": ["Front Desk", "Guest Services", "Check-in", "Concierge"] },
+    { "keyword": "Revenue Management", "weight": 8, "aliases": ["Yield Management", "Rate Optimization", "OTA Management"] },
+    { "keyword": "Housekeeping Management", "weight": 7, "aliases": ["Housekeeping", "Room Management", "Laundry"] },
+    { "keyword": "Guest Satisfaction", "weight": 8, "aliases": ["CSAT", "Guest Experience", "NPS", "TripAdvisor"] },
+    { "keyword": "Event Management", "weight": 7, "aliases": ["MICE", "Banquet Management", "Conference Management"] },
+    { "keyword": "Tourism Management", "weight": 7, "aliases": ["Travel Management", "Tour Operations", "Destination Marketing"] },
+    { "keyword": "FSSAI", "weight": 6, "aliases": ["Food Safety", "Hygiene Standards", "ISO 22000"] },
+    { "keyword": "Inventory Control", "weight": 6, "aliases": ["Cost Control", "F&B Cost", "Wastage Control"] },
+    { "keyword": "Reservation Management", "weight": 7, "aliases": ["Booking Management", "GDS", "Central Reservation System", "CRS"] },
+    { "keyword": "Customer Service Excellence", "weight": 8, "aliases": ["Hospitality Skills", "Service Delivery", "Guest Relations"] }
+  ]
+}
