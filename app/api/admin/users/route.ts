@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Role validation
-    if (role !== "admin" && role !== "user") {
-      return NextResponse.json({ error: "Invalid role value. Must be 'admin' or 'user'." }, { status: 400 });
+    if (role !== "admin" && role !== "user" && role !== "suspended") {
+      return NextResponse.json({ error: "Invalid role value. Must be 'admin', 'user', or 'suspended'." }, { status: 400 });
     }
 
     const { data, error } = await supabase
@@ -73,5 +73,41 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("Update user role failed:", err);
     return NextResponse.json({ error: err.message || "Failed to update user role." }, { status: 500 });
+  }
+}
+
+/**
+ * DELETE /api/admin/users
+ * Deletes a user profile (Soft-delete / block from frontend view).
+ * Body: { userId: string }
+ */
+export async function DELETE(req: NextRequest) {
+  try {
+    const adminCheck = await isAdmin();
+    if (!adminCheck) {
+      return NextResponse.json({ error: "Forbidden. Admin rights required." }, { status: 403 });
+    }
+
+    const supabase = await createClient();
+    const body = await req.json();
+    const { userId } = body;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Missing required field: userId." }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from("user_profiles")
+      .delete()
+      .eq("id", userId);
+
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    console.error("Delete user failed:", err);
+    return NextResponse.json({ error: err.message || "Failed to delete user." }, { status: 500 });
   }
 }
