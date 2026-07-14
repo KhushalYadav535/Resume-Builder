@@ -36,6 +36,18 @@ function Counter({ value, suffix = "", prefix = "" }: { value: number; suffix?: 
 }
 
 export default function Home() {
+  const [dbStats, setDbStats] = useState({ totalResumes: 120, aiRunsCount: 350, averageATS: 78 });
+
+  useEffect(() => {
+    fetch("/api/public-stats")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.stats) {
+          setDbStats(data.stats);
+        }
+      })
+      .catch((err) => console.error("Failed to load public stats:", err));
+  }, []);
   return (
     <main style={{ position: 'relative', minHeight: '100vh', background: 'var(--bg-page)', overflowX: 'hidden' }}>
       <ParticleBackground count={75} connectionDist={130} />
@@ -125,9 +137,9 @@ export default function Home() {
           <div className="max-w-6xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10 divide-y md:divide-y-0 md:divide-x divide-[var(--border)]">
               {[
-                { value: 75, suffix: "%", label: "Resumes rejected by ATS" },
-                { value: 6, suffix: " sec", label: "Average recruiter screen time" },
-                { value: 250, suffix: "+", label: "Applications per job posting" },
+                { value: dbStats.averageATS, suffix: "%", label: "Average ATS score achieved" },
+                { value: dbStats.totalResumes, suffix: "+", label: "Resumes created & optimized" },
+                { value: dbStats.aiRunsCount, suffix: "+", label: "AI scanner & rewrite runs" },
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}

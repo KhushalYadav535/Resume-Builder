@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import { 
   Search, 
   Briefcase, 
@@ -12,7 +11,8 @@ import {
   Check, 
   Sparkles, 
   ArrowRight, 
-  ChevronRight 
+  ChevronRight,
+  ChevronDown
 } from "lucide-react";
 
 interface StepItem {
@@ -28,6 +28,18 @@ interface StepItem {
 
 export default function LandingFeatureTour() {
   const [activeStep, setActiveStep] = useState<number>(1); // Default active: Resume Tailoring
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth < 850);
+      };
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
 
   const steps: StepItem[] = [
     {
@@ -36,7 +48,7 @@ export default function LandingFeatureTour() {
       title: "Resume Analysis",
       shortTitle: "Analysis",
       icon: <Search size={16} />,
-      color: "#0ea5e9", // Sky Blue
+      color: "#0ea5e9",
       description: "Instantly score your resume against 30+ ATS parameters. Identify formatting flaws, missing sections, and word-count optimization opportunities in one click.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -92,7 +104,7 @@ export default function LandingFeatureTour() {
       title: "Resume Tailoring",
       shortTitle: "Tailoring",
       icon: <Briefcase size={16} />,
-      color: "#3b82f6", // Royal Blue
+      color: "#3b82f6",
       description: "Tailor your resume to any job description in seconds. Uprole aligns your experience with the role, rewrites content to match key requirements, and prioritizes the most relevant information.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -150,7 +162,7 @@ export default function LandingFeatureTour() {
       title: "Resume Agent",
       shortTitle: "AI Agent",
       icon: <MessageSquare size={16} />,
-      color: "#10b981", // Emerald
+      color: "#10b981",
       description: "Unlock personalized coaching with our interactive AI chat assistant. Ask questions like 'How can I make my project bullet sound more senior?' and receive contextual, expert advice.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -214,7 +226,7 @@ export default function LandingFeatureTour() {
       title: "ATS Templates",
       shortTitle: "Templates",
       icon: <Layout size={16} />,
-      color: "#8b5cf6", // Purple
+      color: "#8b5cf6",
       description: "Ditch generic templates that confuse scanners. Choose from elegant layouts optimized with parsing-grade hierarchy, single-column margins, and modern professional typography.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -260,7 +272,7 @@ export default function LandingFeatureTour() {
       title: "Cover Letter",
       shortTitle: "Generator",
       icon: <FileText size={16} />,
-      color: "#f59e0b", // Amber
+      color: "#f59e0b",
       description: "Generate highly matching, contextual cover letters matching your resume style. Tailor the tone of voice and highlight the exact credentials sought in the target job role.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -297,7 +309,7 @@ export default function LandingFeatureTour() {
       title: "Application Tracker",
       shortTitle: "Tracker",
       icon: <TrendingUp size={16} />,
-      color: "#ec4899", // Pink
+      color: "#ec4899",
       description: "Organize your job search pipeline in one place. Log applications, track interview dates, monitor salary packages, and see your overall platform offer/rejection analytics.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -324,9 +336,78 @@ export default function LandingFeatureTour() {
     }
   ];
 
+  if (isMobile) {
+    return (
+      <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "0.8rem", padding: "0.5rem" }}>
+        {steps.map((step, idx) => {
+          const isActive = activeStep === idx;
+          return (
+            <div
+              key={step.id}
+              onClick={() => setActiveStep(idx)}
+              style={{
+                background: "var(--bg-surface)",
+                border: isActive ? `2px solid ${step.color}` : "1px solid var(--border)",
+                borderRadius: "16px",
+                padding: "1.2rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                cursor: "pointer",
+                boxShadow: isActive ? `0 8px 24px ${step.color}10` : "none",
+                transition: "all 0.3s"
+              }}
+            >
+              {/* Header row */}
+              <div style={{ display: "flex", justifySelf: "stretch", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
+                  <div style={{ fontSize: "1.1rem", fontWeight: 800, color: isActive ? step.color : "var(--text-muted)", opacity: isActive ? 1 : 0.6 }}>
+                    {step.num}
+                  </div>
+                  <div style={{ 
+                    width: "28px", 
+                    height: "28px", 
+                    borderRadius: "8px", 
+                    background: isActive ? `${step.color}15` : "var(--bg-3)", 
+                    color: isActive ? step.color : "var(--text-muted)", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center"
+                  }}>
+                    {step.icon}
+                  </div>
+                  <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "0.95rem", fontWeight: 800, margin: 0, color: "var(--text-primary)" }}>
+                    {step.title}
+                  </h3>
+                </div>
+                <div style={{ color: "var(--text-muted)", opacity: 0.6 }}>
+                  {isActive ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                </div>
+              </div>
+
+              {/* Collapsed content container */}
+              {isActive && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.45, margin: 0 }}>
+                    {step.description}
+                  </p>
+                  <div style={{ width: "100%", display: "flex", justifyContent: "center", padding: "0.5rem 0" }}>
+                    <div style={{ width: "100%", maxWidth: "280px" }}>
+                      {step.renderGraphic(true)}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Desktop horizontal view
   return (
     <div style={{ width: "100%", margin: "0 auto" }}>
-      {/* Stepper container */}
       <div 
         className="feature-stepper-row" 
         style={{ 
