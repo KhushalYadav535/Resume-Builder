@@ -24,6 +24,7 @@ export default function AdminUsersPage() {
     userId: string;
     currentRole: string;
     confirmMsg: string;
+    actionType: "role" | "suspend" | "delete";
   } | null>(null);
 
   const fetchUsers = async () => {
@@ -47,31 +48,75 @@ export default function AdminUsersPage() {
     const confirmMsg = currentRole === "admin" 
       ? "Are you sure you want to demote this administrator to user? They will lose access to all admin dashboards."
       : "Are you sure you want to promote this user to administrator? They will gain full platform metrics and log visibility.";
-    setRoleConfirm({ userId, currentRole, confirmMsg });
+    setRoleConfirm({ userId, currentRole, confirmMsg, actionType: "role" });
   };
 
-  const executeRoleChange = async (userId: string, currentRole: string) => {
-    const newRole = currentRole === "admin" ? "user" : "admin";
+  const handleSuspendTrigger = (userId: string, currentRole: string) => {
+    const isSuspended = currentRole === "suspended";
+    const confirmMsg = isSuspended
+      ? "Are you sure you want to activate this user? They will regain access to the platform."
+      : "Are you sure you want to suspend this user? They will immediately lose access to their dashboard and resumes.";
+    setRoleConfirm({ userId, currentRole, confirmMsg, actionType: "suspend" });
+  };
+
+  const handleDeleteTrigger = (userId: string) => {
+    setRoleConfirm({ 
+      userId, 
+      currentRole: "", 
+      confirmMsg: "Are you sure you want to permanently delete this user profile? This action cannot be undone.", 
+      actionType: "delete" 
+    });
+  };
+
+  const executeAction = async () => {
+    if (!roleConfirm) return;
+    const { userId, currentRole, actionType } = roleConfirm;
+    
     setUpdatingId(userId);
     try {
-      const res = await fetch("/api/admin/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, role: newRole }),
-      });
+      if (actionType === "delete") {
+        const res = await fetch("/api/admin/users", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        });
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Failed to update user role.");
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || "Failed to delete user.");
+        }
+
+        setUsers((prev) => prev.filter((u) => u.id !== userId));
+        showToast("User deleted successfully.", "success");
+      } else {
+        let newRole = currentRole;
+        if (actionType === "role") {
+          newRole = currentRole === "admin" ? "user" : "admin";
+        } else if (actionType === "suspend") {
+          newRole = currentRole === "suspended" ? "user" : "suspended";
+        }
+
+        const res = await fetch("/api/admin/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, role: newRole }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || "Failed to update user role.");
+        }
+
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
+        );
+        showToast(`User ${actionType === "suspend" ? (newRole === "suspended" ? "suspended" : "activated") : "role updated"} successfully.`, "success");
       }
-
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
-      );
     } catch (err: any) {
-      showToast(err.message || "Error updating role.", "error");
+      showToast(err.message || "Error performing action.", "error");
     } finally {
       setUpdatingId(null);
+      setRoleConfirm(null);
     }
   };
 
@@ -156,7 +201,7 @@ export default function AdminUsersPage() {
                   <tr key={profile.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", transition: "background 0.2s" }} className="table-row-hover">
                     <td style={{ padding: "1rem 1.2rem", fontWeight: 600, color: "var(--text)" }}>{profile.email}</td>
                     <td style={{ padding: "1rem 1.2rem" }}>
-                      <span className={`tag ${profile.role === "admin" ? "tag-red" : "tag-purple"}`} style={{ fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700 }}>
+                      <span className={`tag ${profile.role === "admin" ? "tag-red" : profile.role === "suspended" ? "tag-amber" : "tag-purple"}`} style={{ fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700 }}>
                         {profile.role}
                       </span>
                     </td>
@@ -171,23 +216,52 @@ export default function AdminUsersPage() {
                       {new Date(profile.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
                     <td style={{ padding: "1rem 1.2rem", textAlign: "right" }}>
-                      <button
-                        onClick={() => handleRoleChangeTrigger(profile.id, profile.role)}
-                        disabled={updatingId === profile.id}
-                        className="btn-secondary"
-                        style={{
-                          padding: "0.35rem 0.8rem",
-                          fontSize: "0.78rem",
-                          borderColor: profile.role === "admin" ? "#ff6584" : "var(--accent)",
-                          color: profile.role === "admin" ? "#ff6584" : "var(--accent)",
-                        }}
-                      >
-                        {updatingId === profile.id 
-                          ? "Saving..." 
-                          : profile.role === "admin" 
-                            ? "Demote to User" 
-                            : "Make Admin"}
-                      </button>
+                      <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+                        <button
+                          onClick={() => handleRoleChangeTrigger(profile.id, profile.role)}
+                          disabled={updatingId === profile.id || profile.role === "suspended"}
+                          className="btn-secondary"
+                          style={{
+                            padding: "0.35rem 0.6rem",
+                            fontSize: "0.7rem",
+                            borderColor: profile.role === "admin" ? "#ff6584" : "var(--accent)",
+                            color: profile.role === "admin" ? "#ff6584" : "var(--accent)",
+                            opacity: profile.role === "suspended" ? 0.5 : 1
+                          }}
+                        >
+                          {profile.role === "admin" ? "Demote" : "Make Admin"}
+                        </button>
+                        
+                        <button
+                          onClick={() => handleSuspendTrigger(profile.id, profile.role)}
+                          disabled={updatingId === profile.id || profile.role === "admin"}
+                          className="btn-secondary"
+                          style={{
+                            padding: "0.35rem 0.6rem",
+                            fontSize: "0.7rem",
+                            borderColor: profile.role === "suspended" ? "#10b981" : "#f59e0b",
+                            color: profile.role === "suspended" ? "#10b981" : "#f59e0b",
+                            opacity: profile.role === "admin" ? 0.5 : 1
+                          }}
+                        >
+                          {profile.role === "suspended" ? "Activate" : "Suspend"}
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteTrigger(profile.id)}
+                          disabled={updatingId === profile.id || profile.role === "admin"}
+                          className="btn-secondary"
+                          style={{
+                            padding: "0.35rem 0.6rem",
+                            fontSize: "0.7rem",
+                            borderColor: "#ff6584",
+                            color: "#ff6584",
+                            opacity: profile.role === "admin" ? 0.5 : 1
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -198,18 +272,25 @@ export default function AdminUsersPage() {
 
       </div>
       <ConfirmationModal
-        isOpen={roleConfirm !== null}
-        title="Change User Role?"
-        message={roleConfirm ? roleConfirm.confirmMsg : ""}
-        confirmLabel="Proceed"
+        isOpen={!!roleConfirm}
+        title={
+          roleConfirm?.actionType === "delete" 
+            ? "Delete User Profile" 
+            : roleConfirm?.actionType === "suspend"
+              ? (roleConfirm?.currentRole === "suspended" ? "Activate User" : "Suspend User")
+              : "Change User Role"
+        }
+        message={roleConfirm?.confirmMsg || ""}
+        confirmLabel={
+          roleConfirm?.actionType === "delete"
+            ? "Yes, Delete"
+            : roleConfirm?.actionType === "suspend"
+              ? (roleConfirm?.currentRole === "suspended" ? "Activate" : "Suspend")
+              : "Confirm Change"
+        }
         cancelLabel="Cancel"
-        isDanger={roleConfirm ? roleConfirm.currentRole === "admin" : false}
-        onConfirm={() => {
-          if (roleConfirm) {
-            executeRoleChange(roleConfirm.userId, roleConfirm.currentRole);
-            setRoleConfirm(null);
-          }
-        }}
+        isDanger={roleConfirm?.actionType === "delete" || (roleConfirm?.actionType === "suspend" && roleConfirm?.currentRole !== "suspended") || roleConfirm?.currentRole === "admin"}
+        onConfirm={executeAction}
         onCancel={() => setRoleConfirm(null)}
       />
     </div>

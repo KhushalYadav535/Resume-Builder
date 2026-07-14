@@ -43,14 +43,21 @@ export default function Dashboard() {
           const supabase = createClient();
           const { data, error } = await supabase
             .from("user_profiles")
-            .select("has_completed_onboarding")
+            .select("has_completed_onboarding, role")
             .eq("id", user.id)
             .single();
-          if (!error && data && data.has_completed_onboarding === false) {
-            router.push("/onboarding");
+            
+          if (!error && data) {
+            if (data.role === "suspended") {
+              router.push("/suspended");
+              return;
+            }
+            if (data.has_completed_onboarding === false) {
+              router.push("/onboarding");
+            }
           }
         } catch (err) {
-          console.error("Onboarding check failed:", err);
+          console.error("Profile check failed:", err);
         }
       };
       checkOnboarding();
