@@ -37,13 +37,20 @@ export async function POST(req: NextRequest) {
     }
 
     const prompt = `Candidate Resume Data:\n${JSON.stringify(resume.resume_data)}\n\nTarget Job Role:\n${targetRole}`;
-    const systemPrompt = `You are a skills development advisor. Compare the candidate's skills against standard requirements for the target role.
-Analyze the matched skills, find critical missing skills, recommend 3 specific topics/courses they should learn, and calculate a gap percentage (0-100%).
-Respond ONLY with a JSON object of this structure:
+    const systemPrompt = `You are a highly experienced technical recruiter and career development advisor. 
+Analyze the candidate's resume data against the standard industry requirements for the provided Target Job Role.
+Perform a rigorous and strict evaluation of their current skills versus what is actually demanded by top-tier employers for this role.
+
+1. Extract matched skills (what they have that is relevant).
+2. Identify critical missing skills (what they lack but is essential for the target role). Be highly critical.
+3. Recommend 3-5 specific, modern learning topics or certifications they should pursue to bridge the gap.
+4. Calculate a strict gap percentage (0-100%, where 0% means perfectly qualified and 100% means completely unqualified).
+
+Respond ONLY with a valid JSON object of this exact structure, with no markdown formatting outside the JSON:
 {
   "matchedSkills": ["skill1", "skill2"],
   "missingSkills": ["missing1", "missing2"],
-  "recommendedCourses": ["course/topic name 1", "course/topic name 2"],
+  "recommendedCourses": ["Specific Certification/Topic 1", "Specific Certification/Topic 2"],
   "gapPercentage": 45
 }`;
 

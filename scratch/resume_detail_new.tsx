@@ -12,8 +12,8 @@ import ResumeSuggestionsModal from "@/components/ResumeSuggestionsModal";
 import {
   Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock,
   Maximize2, Minimize2, Sparkles, Save, CheckCircle2, Wand2, X,
-  ChevronDown, Copy, AlertTriangle, ZoomIn, ZoomOut,
-  LayoutTemplate, Target,
+  ChevronDown, ChevronUp, Copy, AlertTriangle, ZoomIn, ZoomOut,
+  RefreshCw, LayoutTemplate, Target,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
 
@@ -40,110 +40,62 @@ const emptyResumeData = {
 };
 
 const sc = (score: number) => {
-  if (score >= 70) return { color: "#10b981", bg: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.22)", glow: "rgba(16,185,129,0.15)", label: "Excellent", grad: "linear-gradient(135deg,#10b981,#059669)" };
-  if (score >= 45) return { color: "#f59e0b", bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.22)", glow: "rgba(245,158,11,0.15)", label: "Average", grad: "linear-gradient(135deg,#f59e0b,#d97706)" };
-  return { color: "#ef4444", bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.22)", glow: "rgba(239,68,68,0.15)", label: "Needs Work", grad: "linear-gradient(135deg,#ef4444,#dc2626)" };
+  if (score >= 70) return { color: "#10b981", bg: "rgba(16,185,129,0.1)", border: "rgba(16,185,129,0.25)", label: "Excellent" };
+  if (score >= 45) return { color: "#f59e0b", bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.25)", label: "Average" };
+  return { color: "#ef4444", bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)", label: "Needs Work" };
 };
 
 /* ─── collapsible section wrapper ─── */
-function Section({ title, icon: Icon, defaultOpen = true, badge, children, accentColor, step }: {
+function Section({ title, icon: Icon, defaultOpen = true, badge, children, accentColor }: {
   title: string; icon: React.ElementType; defaultOpen?: boolean;
-  badge?: string | number; children: React.ReactNode; accentColor?: string; step?: number;
+  badge?: string | number; children: React.ReactNode; accentColor?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const [hovered, setHovered] = useState(false);
   return (
     <div style={{
-      background: "var(--card)",
-      border: `1px solid ${open ? (accentColor ? `${accentColor}28` : "var(--border-accent)") : hovered ? "var(--border-accent)" : "var(--border)"}`,
-      borderRadius: "16px", overflow: "hidden",
-      boxShadow: open ? `0 6px 24px ${accentColor ? `${accentColor}0c` : "rgba(99,102,241,0.07)"}` : "none",
-      transition: "border-color 0.2s, box-shadow 0.25s",
+      background: "var(--card)", border: "1px solid var(--border)",
+      borderRadius: "14px", overflow: "hidden", transition: "all 0.2s",
     }}>
       <button
         onClick={() => setOpen(o => !o)}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
         style={{
           width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0.85rem 1.1rem",
-          background: open
-            ? `linear-gradient(135deg, ${accentColor ? `${accentColor}07` : "rgba(99,102,241,0.04)"} 0%, transparent 60%)`
-            : "transparent",
-          border: "none", cursor: "pointer",
-          borderBottom: open ? `1px solid ${accentColor ? `${accentColor}15` : "var(--border)"}` : "none",
-          transition: "all 0.18s",
+          padding: "0.85rem 1.1rem", background: "none", border: "none", cursor: "pointer",
+          borderBottom: open ? "1px solid var(--border)" : "none", transition: "all 0.2s",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-          {step !== undefined && (
-            <div style={{
-              width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-              background: open ? (accentColor || "var(--accent)") : "var(--bg-3)",
-              border: `1.5px solid ${open ? (accentColor || "var(--accent)") : "var(--border)"}`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "0.6rem", fontWeight: 800, color: open ? "#fff" : "var(--text-muted)",
-              transition: "all 0.2s", flexDirection: "column",
-            }}>{step}</div>
-          )}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
           <div style={{
-            width: 28, height: 28, borderRadius: "8px", flexShrink: 0,
-            background: open ? (accentColor ? `${accentColor}18` : "var(--accent-soft)") : "var(--bg-2)",
-            border: `1px solid ${open ? (accentColor ? `${accentColor}28` : "var(--border-accent)") : "var(--border)"}`,
+            width: 28, height: 28, borderRadius: "7px", flexShrink: 0,
+            background: accentColor ? `${accentColor}18` : "var(--accent-soft)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "all 0.2s",
           }}>
-            <Icon size={13} color={open ? (accentColor || "var(--accent)") : "var(--text-muted)"} />
+            <Icon size={13} color={accentColor || "var(--accent)"} />
           </div>
-          <span style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "0.86rem", color: open ? "var(--text)" : "var(--text-muted)", letterSpacing: "-0.01em", transition: "color 0.2s" }}>{title}</span>
+          <span style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "0.87rem", color: "var(--text)" }}>{title}</span>
           {badge !== undefined && (
             <span style={{
-              fontSize: "0.62rem", fontWeight: 700, padding: "0.12rem 0.5rem",
-              borderRadius: "9999px",
-              background: accentColor ? `${accentColor}14` : "var(--accent-soft)",
-              color: accentColor || "var(--accent)",
-              border: `1px solid ${accentColor ? `${accentColor}25` : "var(--border-accent)"}`,
+              fontSize: "0.65rem", fontWeight: 700, padding: "0.12rem 0.5rem",
+              borderRadius: "9999px", background: accentColor ? `${accentColor}18` : "var(--accent-soft)",
+              color: accentColor || "var(--accent)", border: `1px solid ${accentColor ? `${accentColor}30` : "var(--border-accent)"}`,
             }}>{badge}</span>
           )}
         </div>
-        <div style={{
-          width: 20, height: 20, borderRadius: "6px", background: "var(--bg-2)", border: "1px solid var(--border)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "transform 0.25s cubic-bezier(0.16,1,0.3,1)",
-          transform: open ? "rotate(180deg)" : "none",
-        }}>
-          <ChevronDown size={11} color="var(--text-muted)" />
-        </div>
+        {open ? <ChevronUp size={14} color="var(--text-muted)" /> : <ChevronDown size={14} color="var(--text-muted)" />}
       </button>
-      <div style={{
-        display: "grid",
-        gridTemplateRows: open ? "1fr" : "0fr",
-        transition: "grid-template-rows 0.28s cubic-bezier(0.16,1,0.3,1)",
-      }}>
-        <div style={{ overflow: "hidden" }}>
-          <div style={{ padding: "1rem 1.1rem" }}>{children}</div>
-        </div>
-      </div>
+      {open && <div style={{ padding: "1rem 1.1rem" }}>{children}</div>}
     </div>
   );
 }
 
 /* ─── keyword pill ─── */
 function Pill({ text, weight, color, border, bg }: { text: string; weight?: number; color: string; border: string; bg: string }) {
-  const [hov, setHov] = useState(false);
   return (
-    <span
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        display: "inline-flex", alignItems: "center", gap: "0.3rem",
-        padding: "0.22rem 0.65rem", borderRadius: "8px", fontSize: "0.72rem",
-        fontWeight: 600, background: hov ? `${color}18` : bg, color,
-        border: `1px solid ${hov ? `${color}50` : border}`,
-        cursor: "default", transition: "all 0.15s",
-        transform: hov ? "translateY(-1px)" : "none",
-        boxShadow: hov ? `0 2px 8px ${color}20` : "none",
-      }}>
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: "0.3rem",
+      padding: "0.18rem 0.6rem", borderRadius: "7px", fontSize: "0.72rem",
+      fontWeight: 600, background: bg, color, border: `1px solid ${border}`,
+    }}>
       {text}
       {weight !== undefined && (
         <span style={{ fontSize: "0.6rem", fontWeight: 700, background: `${color}22`, padding: "0 4px", borderRadius: "4px" }}>{weight}</span>
@@ -560,31 +512,20 @@ export default function ResumeDetailPage() {
         )}
 
         {/* ── TOPBAR ── */}
-        <div className="no-print" style={{
-          background: "linear-gradient(135deg, var(--card) 0%, var(--bg-2) 100%)",
-          borderBottom: "1px solid var(--border)",
-          padding: "1rem 1.8rem",
-          position: "relative", overflow: "hidden",
-        }}>
-          {/* subtle glow orb */}
-          <div style={{ position: "absolute", top: "-60px", right: "100px", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
-          <div style={{ maxWidth: "1500px", margin: "0 auto", position: "relative" }}>
+        <div className="no-print" style={{ background: "var(--card)", borderBottom: "1px solid var(--border)", padding: "1rem 1.8rem" }}>
+          <div style={{ maxWidth: "1500px", margin: "0 auto" }}>
             {/* Breadcrumb */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.55rem" }}>
-              <Link href="/dashboard" style={{ textDecoration: "none", color: "var(--text-muted)", fontSize: "0.78rem", display: "inline-flex", alignItems: "center", gap: "0.3rem", transition: "color 0.15s" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "var(--text)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.5rem" }}>
+              <Link href="/dashboard" style={{ textDecoration: "none", color: "var(--text-muted)", fontSize: "0.78rem", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
                 Dashboard
               </Link>
               <span style={{ color: "var(--border-strong)", fontSize: "0.78rem" }}>/</span>
               <span style={{
-                fontSize: "0.68rem", fontWeight: 700, padding: "0.18rem 0.65rem", borderRadius: "9999px",
+                fontSize: "0.7rem", fontWeight: 700, padding: "0.1rem 0.55rem", borderRadius: "9999px",
                 background: hasDeepAnalysis ? "rgba(99,102,241,0.12)" : "var(--bg-2)",
                 color: hasDeepAnalysis ? "var(--accent)" : "var(--text-muted)",
                 border: `1px solid ${hasDeepAnalysis ? "var(--border-accent)" : "var(--border)"}`,
-                boxShadow: hasDeepAnalysis ? "0 0 12px rgba(99,102,241,0.15)" : "none",
-                letterSpacing: "0.02em",
               }}>
                 {hasDeepAnalysis ? "✦ Deep AI Enhanced" : "⚙ Local Analysis Only"}
               </span>
@@ -592,57 +533,61 @@ export default function ResumeDetailPage() {
 
             {/* Title + Actions row */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.8rem" }}>
-              <h1 style={{
-                fontFamily: "Syne, sans-serif", fontSize: "1.5rem", fontWeight: 800, margin: 0,
-                background: "linear-gradient(135deg, var(--text) 0%, var(--text-muted) 100%)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}>
+              <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.45rem", fontWeight: 800, margin: 0 }}>
                 {resume.file_name}
               </h1>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
                 <Link href={`/resume/builder?id=${resume.id}&template=${selectedTemplate}`}>
-                  <button className="btn-primary" style={{ fontSize: "0.82rem", padding: "0.48rem 1.1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                    <Edit3 size={13} /> Edit in Builder
+                  <button className="btn-primary" style={{ fontSize: "0.83rem", padding: "0.5rem 1.1rem" }}>
+                    <Edit3 size={14} /> Edit in Builder
                   </button>
                 </Link>
                 <Link href={`/resume/${resume.id}/cover-letter`}>
-                  <button className="btn-secondary" style={{ fontSize: "0.82rem", padding: "0.48rem 1.1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                    <Mail size={13} /> Cover Letter
+                  <button className="btn-secondary" style={{ fontSize: "0.83rem", padding: "0.5rem 1.1rem" }}>
+                    <Mail size={14} /> Cover Letter
                   </button>
                 </Link>
-                <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.82rem", padding: "0.48rem 1.1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                  <Printer size={13} /> Print / PDF
+                <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.83rem", padding: "0.5rem 1.1rem" }}>
+                  <Printer size={14} /> Print / PDF
                 </button>
-                <button onClick={handleDownloadDocx} disabled={docxLoading} className="btn-secondary" style={{ fontSize: "0.82rem", padding: "0.48rem 1.1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                  <FileDown size={13} /> {docxLoading ? "Downloading..." : "DOCX"}
+                <button onClick={handleDownloadDocx} disabled={docxLoading} className="btn-secondary" style={{ fontSize: "0.83rem", padding: "0.5rem 1.1rem" }}>
+                  <FileDown size={14} /> {docxLoading ? "Downloading..." : "DOCX"}
                 </button>
               </div>
             </div>
 
             {/* Quick stats strip */}
             <div style={{
-              display: "flex", gap: "0", alignItems: "stretch", flexWrap: "wrap",
-              marginTop: "0.85rem", paddingTop: "0.85rem", borderTop: "1px solid var(--border)",
+              display: "flex", gap: "1.5rem", alignItems: "center", flexWrap: "wrap",
+              marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border)",
+              fontSize: "0.78rem", color: "var(--text-muted)",
             }}>
-              {[
-                resume.ats_score && { icon: TrendingUp, iconColor: "var(--accent)", label: "ATS Score", value: `${resume.ats_score.overall}/100`, valueColor: sc(resume.ats_score.overall).color },
-                { icon: Share2, iconColor: "#8b5cf6", label: "Sharing", value: shareToken && isSharePublic ? "Public" : "Private", valueColor: shareToken && isSharePublic ? "#10b981" : "#ef4444" },
-                { icon: Eye, iconColor: "#3b82f6", label: "Views", value: String(shareViews), valueColor: "var(--text)" },
-                { icon: Clock, iconColor: "#10b981", label: "Last Audit", value: resume.updated_at ? new Date(resume.updated_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Never", valueColor: "var(--text)" },
-              ].filter(Boolean).map((stat: any, i, arr) => (
-                <div key={i} style={{
-                  display: "flex", alignItems: "center", gap: "0.4rem",
-                  paddingRight: i < arr.length - 1 ? "1.2rem" : 0,
-                  marginRight: i < arr.length - 1 ? "1.2rem" : 0,
-                  borderRight: i < arr.length - 1 ? "1px solid var(--border)" : "none",
-                  fontSize: "0.78rem", color: "var(--text-muted)",
-                }}>
-                  <stat.icon size={12} color={stat.iconColor} />
-                  <span>{stat.label}:</span>
-                  <strong style={{ color: stat.valueColor, fontWeight: 700 }}>{stat.value}</strong>
+              {resume.ats_score && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                  <TrendingUp size={13} color="var(--accent)" />
+                  <span>ATS Score:</span>
+                  <strong style={{ color: sc(resume.ats_score.overall).color }}>{resume.ats_score.overall}/100</strong>
                 </div>
-              ))}
+              )}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                <Share2 size={13} color="#8b5cf6" />
+                <span>Sharing:</span>
+                <strong style={{ color: shareToken && isSharePublic ? "#10b981" : "#ef4444" }}>
+                  {shareToken && isSharePublic ? "Public (Active)" : "Private (Off)"}
+                </strong>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                <Eye size={13} color="#3b82f6" />
+                <span>Public Views:</span>
+                <strong style={{ color: "var(--text)" }}>{shareViews}</strong>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                <Clock size={13} color="#10b981" />
+                <span>Last Audit:</span>
+                <strong style={{ color: "var(--text)" }}>
+                  {resume.updated_at ? new Date(resume.updated_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Never"}
+                </strong>
+              </div>
             </div>
           </div>
         </div>
@@ -713,94 +658,46 @@ export default function ResumeDetailPage() {
               )}
 
               {/* ── Score Summary Row ── */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.7rem" }}>
                 {/* ATS Score */}
-                {resume.ats_score && (() => {
-                  const s = sc(resume.ats_score.overall);
-                  return (
-                    <div style={{
-                      background: `linear-gradient(145deg, ${s.bg} 0%, var(--card) 70%)`,
-                      border: `1px solid ${s.border}`,
-                      borderRadius: "14px", padding: "1.1rem 0.9rem",
-                      textAlign: "center", position: "relative", overflow: "hidden",
-                      boxShadow: `0 4px 20px ${s.glow}`,
-                      transition: "box-shadow 0.3s",
-                    }}>
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: s.grad }} />
-                      <div style={{ position: "absolute", bottom: "-20px", right: "-20px", width: 70, height: 70, borderRadius: "50%", background: `radial-gradient(circle, ${s.color}12 0%, transparent 70%)`, pointerEvents: "none" }} />
-                      <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.45rem" }}>ATS Score</div>
-                      <div style={{
-                        fontSize: "2.6rem", fontWeight: 900, fontFamily: "Syne, sans-serif",
-                        color: s.color, lineHeight: 1,
-                        textShadow: `0 0 20px ${s.color}40`,
-                      }}>{resume.ats_score.overall}</div>
-                      <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>/ 100</div>
-                      <div style={{ height: 5, background: "var(--bg-3)", borderRadius: 99, overflow: "hidden", marginTop: "0.6rem" }}>
-                        <div style={{ height: "100%", width: `${resume.ats_score.overall}%`, background: s.grad, borderRadius: 99, transition: "width 1s cubic-bezier(0.16,1,0.3,1)", boxShadow: `0 0 8px ${s.color}60` }} />
-                      </div>
-                      <div style={{ marginTop: "0.45rem", display: "inline-block", fontSize: "0.62rem", fontWeight: 700, padding: "0.1rem 0.5rem", borderRadius: "9999px", background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}30` }}>{s.label}</div>
+                {resume.ats_score && (
+                  <div style={{
+                    background: "var(--card)", border: `1px solid ${sc(resume.ats_score.overall).border}`,
+                    borderRadius: "12px", padding: "1rem", textAlign: "center", position: "relative", overflow: "hidden",
+                  }}>
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, ${sc(resume.ats_score.overall).color}, transparent)` }} />
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.4rem" }}>ATS Score</div>
+                    <div style={{ fontSize: "2.2rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: sc(resume.ats_score.overall).color, lineHeight: 1 }}>
+                      {resume.ats_score.overall}
                     </div>
-                  );
-                })()}
+                    <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>out of 100</div>
+                    {/* mini bar */}
+                    <div style={{ height: 4, background: "var(--bg-3)", borderRadius: 99, overflow: "hidden", marginTop: "0.5rem" }}>
+                      <div style={{ height: "100%", width: `${resume.ats_score.overall}%`, background: sc(resume.ats_score.overall).color, borderRadius: 99, transition: "width 0.8s" }} />
+                    </div>
+                  </div>
+                )}
 
                 {/* Profile Completion */}
-                {(() => {
-                  const s = sc(completionPercent);
-                  return (
-                    <div style={{
-                      background: `linear-gradient(145deg, ${s.bg} 0%, var(--card) 70%)`,
-                      border: `1px solid ${s.border}`,
-                      borderRadius: "14px", padding: "1.1rem 0.9rem",
-                      textAlign: "center", position: "relative", overflow: "hidden",
-                      boxShadow: `0 4px 20px ${s.glow}`,
-                      transition: "box-shadow 0.3s",
-                    }}>
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: s.grad }} />
-                      <div style={{ position: "absolute", bottom: "-20px", left: "-20px", width: 70, height: 70, borderRadius: "50%", background: `radial-gradient(circle, ${s.color}12 0%, transparent 70%)`, pointerEvents: "none" }} />
-                      <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.45rem" }}>Profile Fill</div>
-                      <div style={{
-                        fontSize: "2.6rem", fontWeight: 900, fontFamily: "Syne, sans-serif",
-                        color: s.color, lineHeight: 1,
-                        textShadow: `0 0 20px ${s.color}40`,
-                      }}>{completionPercent}%</div>
-                      <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>completed</div>
-                      <div style={{ height: 5, background: "var(--bg-3)", borderRadius: 99, overflow: "hidden", marginTop: "0.6rem" }}>
-                        <div style={{ height: "100%", width: `${completionPercent}%`, background: s.grad, borderRadius: 99, transition: "width 1s cubic-bezier(0.16,1,0.3,1)", boxShadow: `0 0 8px ${s.color}60` }} />
-                      </div>
-                      <div style={{ marginTop: "0.45rem", display: "inline-block", fontSize: "0.62rem", fontWeight: 700, padding: "0.1rem 0.5rem", borderRadius: "9999px", background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}30` }}>{s.label}</div>
-                    </div>
-                  );
-                })()}
+                <div style={{
+                  background: "var(--card)", border: `1px solid ${sc(completionPercent).border}`,
+                  borderRadius: "12px", padding: "1rem", textAlign: "center", position: "relative", overflow: "hidden",
+                }}>
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, ${sc(completionPercent).color}, transparent)` }} />
+                  <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.4rem" }}>Completion</div>
+                  <div style={{ fontSize: "2.2rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: sc(completionPercent).color, lineHeight: 1 }}>
+                    {completionPercent}%
+                  </div>
+                  <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>sections filled</div>
+                  <div style={{ height: 4, background: "var(--bg-3)", borderRadius: 99, overflow: "hidden", marginTop: "0.5rem" }}>
+                    <div style={{ height: "100%", width: `${completionPercent}%`, background: sc(completionPercent).color, borderRadius: 99, transition: "width 0.8s" }} />
+                  </div>
+                </div>
               </div>
-
-              {/* ── contextual next-action nudge ── */}
-              {resume.ats_score && !hasUnappliedChanges && !savedNewResumeId && (() => {
-                const missing = (resume.ats_score.missingKeywordDetails || resume.ats_score.missingKeywords || []).length;
-                const score = resume.ats_score.overall;
-                if (score >= 80) return (
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.9rem", background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "12px" }}>
-                    <CheckCircle2 size={15} color="#10b981" style={{ flexShrink: 0 }} />
-                    <div>
-                      <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#10b981" }}>Great score! Ready to share</div>
-                      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Generate a public link below and share with recruiters.</div>
-                    </div>
-                  </div>
-                );
-                if (missing > 0) return (
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.9rem", background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "12px" }}>
-                    <Sparkles size={15} color="var(--accent)" style={{ flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>Recommended: Add {missing} missing keyword{missing !== 1 ? "s" : ""}</div>
-                      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Could boost your score by ~{Math.min(30, missing * 3)}pts. Scroll to Keywords →</div>
-                    </div>
-                  </div>
-                );
-                return null;
-              })()}
 
               {/* ── ATS Score Breakdown ── */}
               {resume.ats_score && (
-                <Section title="Score Breakdown" icon={TrendingUp} defaultOpen={false}>
+                <Section title="Score Breakdown" icon={TrendingUp} defaultOpen={true}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
                     {Object.entries(resume.ats_score.breakdown).map(([key, val]) => {
                       const v = val as number;
@@ -1069,105 +966,77 @@ export default function ResumeDetailPage() {
           )}
 
           {/* ── RIGHT PANEL: PREVIEW ── */}
-          <div className="no-print" style={{ display: "flex", flexDirection: "column", gap: "0", overflow: "hidden", minWidth: 0, background: "var(--card)", borderRadius: "16px", border: "1px solid var(--border)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+          <div className="no-print" style={{ display: "flex", flexDirection: "column", gap: "0.7rem", overflow: "hidden", minWidth: 0 }}>
 
-            {/* ── Preview Panel Header ── */}
+            {/* Toolbar */}
             <div style={{
-              padding: "0.75rem 1.1rem", borderBottom: "1px solid var(--border)",
-              display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.7rem", flexWrap: "wrap",
-              background: "linear-gradient(135deg, rgba(99,102,241,0.04) 0%, transparent 100%)",
-              flexShrink: 0,
+              background: "var(--card)", border: "1px solid var(--border)", borderRadius: "12px",
+              padding: "0.65rem 1rem", display: "flex", flexWrap: "wrap",
+              alignItems: "center", justifyContent: "space-between", gap: "0.6rem",
             }}>
-              {/* Left: template */}
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", minWidth: 0 }}>
-                <div style={{ width: 26, height: 26, borderRadius: "7px", background: "var(--accent-soft)", border: "1px solid var(--border-accent)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <LayoutTemplate size={12} color="var(--accent)" />
-                </div>
+              {/* Template selector */}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", minWidth: 0 }}>
+                <LayoutTemplate size={13} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", color: "var(--text-muted)", whiteSpace: "nowrap" }}>Template</span>
                 <select
                   value={selectedTemplate}
                   onChange={(e) => handleTemplateChange(e.target.value)}
-                  style={{
-                    background: "var(--bg-2)", border: "1px solid var(--border)", color: "var(--text)",
-                    borderRadius: "8px", padding: "0.28rem 0.6rem", fontSize: "0.78rem", fontWeight: 600,
-                    cursor: "pointer", outline: "none", height: "30px", maxWidth: "150px",
-                  }}
+                  className="input"
+                  style={{ height: "32px", padding: "0 0.5rem", fontSize: "0.78rem", borderRadius: "7px", minWidth: 0, maxWidth: "140px" }}
                 >
                   {TEMPLATES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
                 <Link href={`/resume/templates?id=${resume.id}`} style={{ textDecoration: "none" }}>
-                  <button style={{
-                    display: "inline-flex", alignItems: "center", gap: "0.3rem",
-                    background: "var(--bg-2)", border: "1px solid var(--border)",
-                    color: "var(--text-muted)", borderRadius: "7px", padding: "0.28rem 0.7rem",
-                    fontSize: "0.72rem", fontWeight: 600, cursor: "pointer", height: "30px", whiteSpace: "nowrap",
-                  }}>
-                    🖼 Gallery
+                  <button className="btn-secondary" style={{ padding: "0.22rem 0.55rem", fontSize: "0.72rem", borderRadius: "6px", height: "32px", whiteSpace: "nowrap" }}>
+                    Gallery
                   </button>
                 </Link>
               </div>
 
-              {/* Center: zoom strip */}
-              <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "var(--bg-2)", border: "1px solid var(--border)", borderRadius: "9px", padding: "0.2rem 0.4rem" }}>
-                <button onClick={() => setZoomFactor(prev => Math.max(0.5, prev - 0.1))}
-                  style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", borderRadius: "5px", transition: "background 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "var(--border)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "none")}>
-                  <ZoomOut size={12} />
+              {/* Zoom */}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <button onClick={() => setZoomFactor(prev => Math.max(0.5, prev - 0.05))} style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-2)", border: "1px solid var(--border)", borderRadius: "6px", cursor: "pointer", color: "var(--text-muted)" }}>
+                  <ZoomOut size={13} />
                 </button>
-                <button onClick={() => setZoomFactor(0.85)}
-                  style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", minWidth: "2.4rem", textAlign: "center", padding: "0 0.2rem" }}
-                  title="Reset to 85%">
-                  {Math.round(zoomFactor * 100)}%
+                <input type="range" min="0.5" max="1.2" step="0.05" value={zoomFactor} onChange={(e) => setZoomFactor(parseFloat(e.target.value))} style={{ width: 70, accentColor: "var(--accent)" }} />
+                <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", minWidth: "2.2rem", textAlign: "center" }}>{Math.round(zoomFactor * 100)}%</span>
+                <button onClick={() => setZoomFactor(prev => Math.min(1.2, prev + 0.05))} style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-2)", border: "1px solid var(--border)", borderRadius: "6px", cursor: "pointer", color: "var(--text-muted)" }}>
+                  <ZoomIn size={13} />
                 </button>
-                <button onClick={() => setZoomFactor(prev => Math.min(1.2, prev + 0.1))}
-                  style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", borderRadius: "5px", transition: "background 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "var(--border)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "none")}>
-                  <ZoomIn size={12} />
+                <button onClick={() => setZoomFactor(0.85)} style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)" }}>
+                  <RefreshCw size={11} />
                 </button>
               </div>
 
-              {/* Right: fullscreen */}
+              {/* Fullscreen */}
               <button
                 onClick={() => setIsFullscreen(prev => !prev)}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: "0.35rem",
                   background: isFullscreen ? "var(--accent-soft)" : "var(--bg-2)",
-                  border: `1px solid ${isFullscreen ? "var(--border-accent)" : "var(--border)"}`,
+                  border: isFullscreen ? "1px solid var(--border-accent)" : "1px solid var(--border)",
                   color: isFullscreen ? "var(--accent)" : "var(--text-muted)",
-                  borderRadius: "8px", padding: "0.28rem 0.8rem", fontSize: "0.74rem",
-                  fontWeight: 600, cursor: "pointer", height: "30px", whiteSpace: "nowrap",
-                  transition: "all 0.2s",
+                  borderRadius: "7px", padding: "0.22rem 0.65rem", fontSize: "0.75rem",
+                  fontWeight: 600, cursor: "pointer", height: "32px", whiteSpace: "nowrap",
                 }}
               >
-                {isFullscreen ? <><Minimize2 size={12} /> Exit</> : <><Maximize2 size={12} /> Expand</>}
+                {isFullscreen ? <><Minimize2 size={12} /> Back to Critique</> : <><Maximize2 size={12} /> Fullscreen</>}
               </button>
             </div>
 
-            {/* changes notice */}
+            {/* Changes badge */}
             {hasUnappliedChanges && (
-              <div style={{
-                display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.45rem 1.1rem",
-                background: "rgba(16,185,129,0.07)", borderBottom: "1px solid rgba(16,185,129,0.18)",
-                fontSize: "0.73rem", color: "#10b981", fontWeight: 600, flexShrink: 0,
-              }}>
-                <CheckCircle2 size={12} />
-                Preview showing your applied changes —
-                <button onClick={() => { setSaveNewName(""); setShowSaveNewModal(true); }}
-                  style={{ background: "none", border: "none", color: "#10b981", cursor: "pointer", textDecoration: "underline", fontWeight: 700, padding: 0, fontSize: "0.73rem" }}>
-                  Save as New Resume
-                </button>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.45rem", padding: "0.38rem 0.8rem", background: "rgba(16,185,129,0.09)", border: "1px solid rgba(16,185,129,0.22)", borderRadius: "8px", fontSize: "0.73rem", color: "#10b981", fontWeight: 600 }}>
+                <CheckCircle2 size={12} /> Preview showing your applied changes
               </div>
             )}
 
             {/* Resume paper container */}
             <div style={{
-              flex: 1, overflow: "auto", borderRadius: "0 0 16px 16px",
-              backgroundImage: "radial-gradient(circle, var(--border) 1px, transparent 1px)",
-              backgroundSize: "20px 20px",
-              backgroundColor: "var(--bg-3)",
+              flex: 1, overflow: "auto", background: "var(--bg-3)", borderRadius: "12px",
+              border: hasUnappliedChanges ? "1.5px solid rgba(16,185,129,0.35)" : "1px solid var(--border)",
               display: "flex", justifyContent: "center", alignItems: "flex-start",
-              padding: "2rem 1.5rem", position: "relative",
+              padding: "1.5rem 1rem", position: "relative",
               transition: "border-color 0.3s",
             }}>
               <div style={{
@@ -1178,10 +1047,9 @@ export default function ResumeDetailPage() {
                 <div className="resume-paper resume-print-area" style={{
                   background: "#ffffff", color: "#333333",
                   padding: "40px", width: "210mm", minHeight: "297mm",
-                  boxShadow: hasUnappliedChanges
-                    ? "0 0 0 2px #10b981, 0 12px 40px rgba(16,185,129,0.2)"
-                    : "0 4px 6px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.15)",
-                  borderRadius: "4px", transition: "box-shadow 0.4s cubic-bezier(0.16,1,0.3,1)",
+                  boxShadow: hasUnappliedChanges ? "0 8px 32px rgba(16,185,129,0.25)" : "0 8px 30px rgba(0,0,0,0.12)",
+                  borderRadius: "4px", transition: "box-shadow 0.3s",
+                  outline: hasUnappliedChanges ? "2px solid #10b981" : "1px solid #e5e7eb",
                 }}>
                   <ResumeDocument
                     data={modifiedResumeData || (resume as any).structured_data || resume.resume_data || emptyResumeData}

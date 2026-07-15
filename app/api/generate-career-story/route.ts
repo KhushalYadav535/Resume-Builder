@@ -30,10 +30,14 @@ export async function POST(req: NextRequest) {
     }
 
     const resumeText = JSON.stringify(resume.resume_data);
-    const systemPrompt = `You are an interview prep coach. 
-Write a highly compelling, narrative-focused "Tell me about yourself" script (approx. 200-300 words) using the candidate's resume.
-Ensure it weaves together their background, key achievements, current career direction, and target industry focus.
-Make it sound conversational, professional, and natural to pitch in under 2 minutes.
+    const systemPrompt = `You are a master executive communication coach and storytelling expert. 
+Write a highly compelling, narrative-focused "Tell me about yourself" elevator pitch script (approx. 200-300 words) using the candidate's resume data.
+Ensure the pitch:
+1. Opens with a strong, memorable hook about their core professional identity.
+2. Weaves together their most impressive achievements and quantifiable impacts naturally.
+3. Highlights their unique value proposition and current career trajectory.
+4. Concludes with a forward-looking statement that seamlessly transitions into why they are excited about their next opportunity.
+Make it sound conversational, confident, authentic, and natural to deliver in under 2 minutes. Do NOT use overly flowery language; keep it punchy and impactful.
 Return ONLY the raw script text. No intro/outro conversational remarks.`;
 
     const result = await askAI(resumeText, systemPrompt);

@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { AiChangesHistoryModal } from "@/components/AiChangesHistoryModal";
 import { useToast } from "@/components/ui/toast-1";
-import { Edit3, Printer, BookOpen, Sparkles, Share2, Eye, Briefcase, Maximize2, Minimize2, Check, Lightbulb } from "lucide-react";
+import { Edit3, Printer, BookOpen, Sparkles, Share2, Eye, Briefcase, Maximize2, Minimize2, Check, Lightbulb, X, CheckCircle2, ChevronDown } from "lucide-react";
 
 
 const defaultEmptyResume: ResumeData = {
@@ -724,79 +724,78 @@ function BuilderContent() {
       <ParticleBackground count={50} connectionDist={110} />
       <Navbar />
       
-      {/* EDITOR HEADER */}
-      <div className="no-print" style={{ background: "var(--bg-2)", borderBottom: "1px solid var(--border)", padding: "1.2rem 2rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1550px", margin: "0 auto", flexWrap: "wrap", gap: "1.5rem" }}>
-          <div>
-            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.6rem", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.8rem" }}>
-              {resumeId ? (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
-                  <Edit3 size={20} className="text-[var(--accent)]" />
-                  Premium Resume Editor
-                </span>
-              ) : "✦ Interactive Resume Builder"}
-              {resume.fresherMode && <span style={{ fontSize: "0.75rem", background: "var(--accent-3)", color: "#000", padding: "2px 8px", borderRadius: "20px", fontWeight: 700 }}>FRESHER</span>}
+      {/* ── EDITOR HEADER ── */}
+      <div className="no-print" style={{
+        background: "linear-gradient(135deg, var(--card) 0%, var(--bg-2) 100%)",
+        borderBottom: "1px solid var(--border)", padding: "1rem 2rem",
+        position: "relative", overflow: "hidden",
+      }}>
+        {/* subtle glow orb */}
+        <div style={{ position: "absolute", top: "-50px", right: "20%", width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+        
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1550px", margin: "0 auto", flexWrap: "wrap", gap: "1rem", position: "relative" }}>
+          
+          {/* Left: Title & Meta */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+            <h1 style={{
+              fontFamily: "Syne, sans-serif", fontSize: "1.5rem", fontWeight: 800, margin: 0,
+              display: "flex", alignItems: "center", gap: "0.6rem",
+              background: "linear-gradient(135deg, var(--text) 0%, var(--text-muted) 100%)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+            }}>
+              {resumeId ? <><Edit3 size={18} color="var(--accent)" style={{ flexShrink: 0 }} /> Premium Resume Editor</> : "✦ Interactive Resume Builder"}
+              {resume.fresherMode && (
+                <span style={{ fontSize: "0.65rem", padding: "0.15rem 0.5rem", borderRadius: "9999px", background: "rgba(16,185,129,0.15)", color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", fontWeight: 700, WebkitTextFillColor: "#10b981", letterSpacing: "0.05em" }}>FRESHER</span>
+              )}
             </h1>
-            <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", marginTop: "0.2rem", flexWrap: "wrap" }}>
-              <span className="tag tag-purple" style={{ fontSize: "0.72rem", textTransform: "capitalize" }}>
-                Template: {selectedTemplate}
+            
+            {/* Quick Meta */}
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "0.2rem 0.6rem", borderRadius: "6px", background: "var(--bg-3)", color: "var(--text-muted)", border: "1px solid var(--border)", textTransform: "capitalize" }}>
+                Template: <span style={{ color: "var(--text)" }}>{selectedTemplate}</span>
               </span>
               {localATS && (
-                <span className="tag tag-green" style={{ fontSize: "0.72rem", fontWeight: 700, background: localATS.overall >= 70 ? "rgba(67,233,123,0.12)" : "rgba(255,101,132,0.12)", color: localATS.overall >= 70 ? "#43e97b" : "#ff6584" }}>
-                  Scan Compatibility: {localATS.overall}/100
+                <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "0.2rem 0.6rem", borderRadius: "6px", background: localATS.overall >= 70 ? "rgba(16,185,129,0.1)" : "rgba(245,158,11,0.1)", color: localATS.overall >= 70 ? "#10b981" : "#f59e0b", border: `1px solid ${localATS.overall >= 70 ? "rgba(16,185,129,0.25)" : "rgba(245,158,11,0.25)"}` }}>
+                  Score: {localATS.overall}/100
                 </span>
               )}
-              <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                Active Industry: <strong>{resume.industryMode || "IT"}</strong>
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "0.2rem 0.6rem", borderRadius: "6px", background: "var(--bg-3)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
+                Industry: <span style={{ color: "var(--text)" }}>{resume.industryMode || "IT"}</span>
               </span>
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-xl)", padding: "0.5rem 1rem", boxShadow: "var(--shadow-sm)" }}>
-            {saveStatus === "saving" && <span style={{ fontSize: "0.8rem", color: "var(--accent)" }} className="pulse">● Saving...</span>}
-            {saveStatus === "saved" && <span style={{ fontSize: "0.8rem", color: "#43e97b" }}>✓ Saved</span>}
-            {saveStatus === "error" && <span style={{ fontSize: "0.8rem", color: "#ff6584" }}>✗ Autosave failed</span>}
+          {/* Right: Actions */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+            {saveStatus === "saving" && <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginRight: "0.5rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><span className="spinner" style={{ width: 10, height: 10 }} /> Saving...</span>}
+            {saveStatus === "saved" && <span style={{ fontSize: "0.75rem", color: "#10b981", marginRight: "0.5rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><Check size={12} /> Saved</span>}
+            {saveStatus === "error" && <span style={{ fontSize: "0.75rem", color: "#ef4444", marginRight: "0.5rem" }}>✗ Autosave failed</span>}
 
-            <button onClick={() => setShowCoach(prev => !prev)} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1rem", borderColor: "var(--accent)", color: "var(--accent)", fontWeight: 600, background: "var(--accent-soft)", borderRadius: "var(--radius-full)", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
-              ✦ AI Career Coach
+            <button onClick={() => setShowCoach(prev => !prev)}
+              style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "1px solid rgba(139,92,246,0.3)", color: "#8b5cf6", fontWeight: 700, background: "rgba(139,92,246,0.1)", borderRadius: "8px", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}
+              onMouseOver={e => e.currentTarget.style.background = "rgba(139,92,246,0.15)"} onMouseOut={e => e.currentTarget.style.background = "rgba(139,92,246,0.1)"}>
+              <Sparkles size={14} /> AI Career Coach
             </button>
-            <button 
-              onClick={() => setShowLinkedinModal(true)} 
+            
+            <button onClick={() => setShowLinkedinModal(true)} 
               className="btn-secondary" 
-              style={{ fontSize: "0.85rem", padding: "0.4rem 1.2rem", borderColor: "#a89fff", color: "#a89fff", background: "rgba(168, 159, 255, 0.1)", borderRadius: "var(--radius-full)", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} 
-              onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} 
-              onMouseOut={e => e.currentTarget.style.transform = "none"}
-            >
-              <Briefcase size={14} />
-              Import LinkedIn
+              style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", height: "34px" }}>
+              <Briefcase size={14} /> Import LinkedIn
             </button>
-            <button 
-              onClick={() => setIsFullscreen(prev => !prev)} 
+            
+            <button onClick={() => setIsFullscreen(prev => !prev)} 
               className="btn-primary" 
-              style={{ fontSize: "0.85rem", padding: "0.4rem 1.2rem", borderRadius: "var(--radius-full)", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} 
-              onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} 
-              onMouseOut={e => e.currentTarget.style.transform = "none"}
-            >
-              {isFullscreen ? (
-                <>
-                  <Minimize2 size={14} />
-                  Hide Preview
-                </>
-              ) : (
-                <>
-                  <Maximize2 size={14} />
-                  See Preview
-                </>
-              )}
+              style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", height: "34px", background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", border: "none" }}>
+              {isFullscreen ? <><Minimize2 size={14} /> Exit Preview</> : <><Maximize2 size={14} /> See Preview</>}
             </button>
-            <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1.2rem", borderRadius: "var(--radius-full)", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
-              <Printer size={14} />
-              Export PDF
+            
+            <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", height: "34px" }}>
+              <Printer size={14} /> Export PDF
             </button>
-            <Link href="/dashboard">
-              <button className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 1.2rem", borderRadius: "var(--radius-full)", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem" }} onMouseOver={e => e.currentTarget.style.transform = "translateY(-1px)"} onMouseOut={e => e.currentTarget.style.transform = "none"}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5" style={{ verticalAlign: 'middle' }}><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                Close
+            
+            <Link href="/dashboard" style={{ textDecoration: "none" }}>
+              <button className="btn-secondary" style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", height: "34px" }}>
+                <X size={14} /> Close
               </button>
             </Link>
           </div>
@@ -815,99 +814,90 @@ function BuilderContent() {
       <div className={`builder-workspace transition-all duration-1000 ${showSuggestionsGlow ? 'brightness-110 shadow-[inset_0_0_50px_rgba(34,197,94,0.05)]' : ''}`}>
         
         {/* COLUMN 1: PROGRESS & NAVIGATION SIDEBAR (Sticky) */}
-        <div className="no-print builder-sidebar">
+        <div className="no-print builder-sidebar" style={{ gap: "1rem" }}>
           {/* Completion stats card */}
-            <div className="card" style={{ padding: "1rem", display: "grid", gap: "0.8rem" }}>
-              <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Completion</span>
-                <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--accent)" }}>{completion.percent}%</span>
-              </div>
-              <div style={{ height: "6px", background: "var(--bg-3)", borderRadius: "3px", overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${completion.percent}%`, background: "var(--accent)", transition: "width 0.3s" }} />
-              </div>
-              
-              {/* Fresher Mode switch */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border)", paddingTop: "0.8rem", marginTop: "0.3rem" }}>
-                <span style={{ fontSize: "0.82rem", fontWeight: 700 }}>Fresher Mode</span>
-                <label className="switch" style={{ position: "relative", display: "inline-block", width: "40px", height: "20px" }}>
-                  <Input variant="static"
-                    type="checkbox"
-                    checked={resume.fresherMode || false}
-                    onChange={(e) => {
-                      const fm = e.target.checked;
-                      setResume(r => ({
-                        ...r,
-                        fresherMode: fm,
-                        sectionOrder: fm 
-                          ? ["summary", "education", "projects", "certifications", "languages", "fresher", "skills", "work"]
-                          : ["summary", "work", "education", "skills", "projects", "certifications", "languages"]
-                      }));
-                    }}
-                    style={{ opacity: 0, width: 0, height: 0 }}
-                  />
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "14px", padding: "1.1rem", display: "grid", gap: "0.8rem", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Completion</span>
+              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--accent)" }}>{completion.percent}%</span>
+            </div>
+            <div style={{ height: "6px", background: "var(--bg-3)", borderRadius: "99px", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${completion.percent}%`, background: "linear-gradient(90deg, var(--accent), #8b5cf6)", borderRadius: "99px", transition: "width 0.4s cubic-bezier(0.16,1,0.3,1)" }} />
+            </div>
+            
+            {/* Fresher Mode switch */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border)", paddingTop: "0.8rem", marginTop: "0.2rem" }}>
+              <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text)" }}>Fresher Mode</span>
+              <label style={{ position: "relative", display: "inline-block", width: "42px", height: "24px" }}>
+                <input
+                  type="checkbox"
+                  checked={resume.fresherMode || false}
+                  onChange={(e) => {
+                    const fm = e.target.checked;
+                    setResume(r => ({
+                      ...r,
+                      fresherMode: fm,
+                      sectionOrder: fm 
+                        ? ["summary", "education", "projects", "certifications", "languages", "fresher", "skills", "work"]
+                        : ["summary", "work", "education", "skills", "projects", "certifications", "languages"]
+                    }));
+                  }}
+                  style={{ opacity: 0, width: 0, height: 0, position: "absolute" }}
+                />
+                <span style={{
+                  position: "absolute", cursor: "pointer", top: 0, left: 0, right: 0, bottom: 0,
+                  backgroundColor: resume.fresherMode ? "var(--accent)" : "var(--bg-3)",
+                  border: `1px solid ${resume.fresherMode ? "var(--accent)" : "var(--border-strong)"}`,
+                  transition: "0.3s", borderRadius: "24px"
+                }}>
                   <span style={{
-                    position: "absolute",
-                    cursor: "pointer",
-                    top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: resume.fresherMode ? "var(--accent)" : "#555",
-                    transition: "0.3s",
-                    borderRadius: "20px"
-                  }}>
-                    <span style={{
-                      position: "absolute",
-                      content: "",
-                      height: "14px", width: "14px",
-                      left: resume.fresherMode ? "22px" : "3px",
-                      bottom: "3px",
-                      backgroundColor: "white",
-                      transition: "0.3s",
-                      borderRadius: "50%"
-                    }} />
+                    position: "absolute", height: "16px", width: "16px",
+                    left: resume.fresherMode ? "20px" : "3px", bottom: "3px",
+                    backgroundColor: "white", transition: "0.3s", borderRadius: "50%",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
+                  }} />
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Steps Navigation list */}
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "14px", padding: "0.75rem", display: "flex", flexDirection: "column", gap: "0.25rem", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+            <span style={{ paddingLeft: "0.5rem", fontSize: "0.7rem", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem", display: "block" }}>Builder Steps</span>
+            {steps.map((stepItem, idx) => {
+              const isComplete = checkStepCompletion(stepItem.key);
+              const isActive = activeStep === stepItem.key;
+              return (
+                <button
+                  key={stepItem.key}
+                  onClick={() => setActiveStep(stepItem.key)}
+                  style={{
+                    background: isActive ? "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)" : "transparent",
+                    color: isActive ? "#fff" : "var(--text)",
+                    border: "none", borderRadius: "8px", padding: "0.6rem 0.8rem",
+                    fontSize: "0.82rem", fontWeight: isActive ? 700 : 600,
+                    cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "var(--bg-2)" }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent" }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span style={{ opacity: isActive ? 1 : 0.5, fontSize: "0.75rem" }}>{idx + 1}.</span>
+                    {stepItem.label}
                   </span>
-                </label>
-              </div>
-            </div>
+                  {isComplete && <CheckCircle2 size={14} color={isActive ? "rgba(255,255,255,0.9)" : "#10b981"} />}
+                </button>
+              );
+            })}
+          </div>
 
-            {/* Steps Navigation list */}
-            <div className="card" style={{ padding: "0.6rem", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-              <span style={{ paddingLeft: "0.4rem", fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "0.4rem" }}>Builder Steps</span>
-              {steps.map((stepItem, idx) => {
-                const isComplete = checkStepCompletion(stepItem.key);
-                return (
-                  <button
-                    key={stepItem.key}
-                    onClick={() => setActiveStep(stepItem.key)}
-                    style={{
-                      background: activeStep === stepItem.key ? "var(--accent)" : "transparent",
-                      color: activeStep === stepItem.key ? "#fff" : "var(--text)",
-                      border: "none",
-                      borderRadius: "6px",
-                      padding: "0.55rem 0.6rem",
-                      fontSize: "0.82rem",
-                      fontWeight: activeStep === stepItem.key ? 700 : 500,
-                      cursor: "pointer",
-                      textAlign: "left",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      transition: "all 0.2s"
-                    }}
-                  >
-                    <span>{idx + 1}. {stepItem.label}</span>
-                    <span style={{ fontSize: "0.8rem" }}>
-                      {isComplete ? "🟢" : "⚪"}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Section Reordering Widget */}
-            <div className="card" style={{ padding: "1rem", display: "grid", gap: "1rem" }}>
-              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>🔀 Layout Ordering</span>
-              <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", margin: 0 }}>Drag or use arrows to structure PDF sections.</p>
-              
-              <div style={{ display: "grid", gap: "0.4rem" }}>
+          {/* Section Reordering Widget */}
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "14px", padding: "1.1rem", display: "grid", gap: "1rem", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+            <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>🔀 Layout Ordering</span>
+            <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", margin: 0 }}>Drag or use arrows to structure PDF sections.</p>
+            
+            <div style={{ display: "grid", gap: "0.4rem" }}>
                 {(resume.sectionOrder || []).map((secKey, idx) => {
                   if (secKey === "fresher" && !resume.fresherMode) return null;
                   
@@ -975,90 +965,66 @@ function BuilderContent() {
         {/* COLUMN 2: ACTIVE STEP FORM EDITOR */}
         <ResizablePanels
           leftPanel={(
-          <div className="no-print builder-editor-container">
-            
-            {/* HORIZONTAL STEPPER */}
-            <div className="mb-8 no-print">
-              <div className="flex items-center justify-between relative px-2">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-[var(--bg-elevated)] rounded-full -z-10"></div>
-                <div 
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[var(--accent)] rounded-full -z-10 transition-all duration-500" 
-                  style={{ width: `${(steps.findIndex(s => s.key === activeStep) / (steps.length - 1)) * 100}%` }}
-                ></div>
-                
-                {steps.map((stepItem, idx) => {
-                  const isActive = activeStep === stepItem.key;
-                  const isPast = steps.findIndex(s => s.key === activeStep) > idx;
-                  const isComplete = checkStepCompletion(stepItem.key);
-                  return (
-                    <button
-                      key={stepItem.key}
-                      onClick={() => setActiveStep(stepItem.key)}
-                      className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 shadow-md ${
-                        isActive 
-                          ? 'bg-[var(--accent)] text-white scale-125 ring-4 ring-[var(--accent)]/20' 
-                          : isPast 
-                            ? 'bg-[var(--accent)] text-white' 
-                            : 'bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:bg-[var(--bg-3)]'
-                      }`}
-                      title={stepItem.label}
-                    >
-                      {isComplete && !isActive ? '✓' : idx + 1}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="text-center mt-5 font-bold text-[var(--text-primary)] text-sm tracking-wide uppercase">
-                {steps.find(s => s.key === activeStep)?.label}
-              </div>
-            </div>
+            <div className="no-print builder-editor-container" style={{ padding: "1.5rem" }}>
 
             <div key={activeStep} className="pb-24">
             
             {/* STEP 1: Personal info */}
             {activeStep === "personal" && (
-              <Card className="grid gap-6 p-8">
-                <h2 className="font-['Syne',sans-serif] font-bold text-xl text-[var(--text-primary)]">Personal Information</h2>
-                {([
-                  ["fullName", "Full Name *", "John Doe"],
-                  ["email", "Email Address *", "john@email.com"],
-                  ["phone", "Phone Number", "+91 98765 43210"],
-                  ["location", "Location (City, State)", "Pune, Maharashtra"],
-                  ["linkedin", "LinkedIn URL", "linkedin.com/in/johndoe"],
-                  ["website", "Website / Portfolio", "johndoe.com"],
-                  ["currentCTC", "Current CTC (e.g. 12 LPA)", "e.g. 10 LPA"],
-                  ["expectedCTC", "Expected CTC (e.g. 18 LPA)", "e.g. 15 LPA"]
-                ] as [keyof typeof resume.personalInfo, string, string][]).map(([field, label, placeholder]) => (
-                  <div key={field}>
-                    <Input variant="static"
-                      label={label}
-                      placeholder={placeholder}
-                      value={resume.personalInfo[field] || ""}
-                      onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, [field]: e.target.value } }))}
-                    />
-                  </div>
-                ))}
-              </Card>
+              <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "2rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)" }}>
+                <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.4rem", fontWeight: 800, marginBottom: "1.5rem", color: "var(--text-primary)" }}>Personal Information</h2>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.2rem" }}>
+                  {([
+                    ["fullName", "Full Name *", "John Doe"],
+                    ["email", "Email Address *", "john@email.com"],
+                    ["phone", "Phone Number", "+91 98765 43210"],
+                    ["location", "Location (City, State)", "Pune, Maharashtra"],
+                    ["linkedin", "LinkedIn URL", "linkedin.com/in/johndoe"],
+                    ["website", "Website / Portfolio", "johndoe.com"],
+                    ["currentCTC", "Current CTC", "e.g. 10 LPA"],
+                    ["expectedCTC", "Expected CTC", "e.g. 15 LPA"]
+                  ] as [keyof typeof resume.personalInfo, string, string][]).map(([field, label, placeholder]) => (
+                    <div key={field}>
+                      <Input variant="floating"
+                        label={label}
+                        placeholder={placeholder}
+                        value={resume.personalInfo[field] || ""}
+                        onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, [field]: e.target.value } }))}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* STEP 2: Summary */}
             {activeStep === "summary" && (
-              <Card className="grid gap-6 p-8">
-                <div className="flex justify-between items-center">
-                  <h2 className="font-['Syne',sans-serif] font-bold text-xl text-[var(--text-primary)]">Professional Summary</h2>
-                  <Button
-                    variant="secondary"
-                    size="sm"
+              <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "2rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.4rem", fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>Professional Summary</h2>
+                  <button
                     disabled={!!aiLoading}
                     onClick={() => handleAIEngineCall("summary", `Role: ${resume.workExperience[0]?.role || "Professional"}\nSkills: ${resume.skills.technical.join(", ")}`, (r) => setResume((prev) => ({ ...prev, summary: r })))}
+                    style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "1px solid rgba(139,92,246,0.3)", color: "#8b5cf6", fontWeight: 700, background: "rgba(139,92,246,0.1)", borderRadius: "8px", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}
+                    onMouseOver={e => e.currentTarget.style.background = "rgba(139,92,246,0.15)"} onMouseOut={e => e.currentTarget.style.background = "rgba(139,92,246,0.1)"}
                   >
-                    {aiLoading === "summary" ? "Generating..." : "✦ AI Generate"}
-                  </Button>
+                    {aiLoading === "summary" ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Generating...</> : <><Sparkles size={14} /> AI Generate</>}
+                  </button>
                 </div>
+                
+                {resume.summary.length === 0 && (
+                  <div style={{ marginBottom: "1rem", padding: "1rem", background: "rgba(16,185,129,0.05)", borderLeft: "3px solid #10b981", borderRadius: "0 8px 8px 0" }}>
+                    <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <Lightbulb size={14} color="#10b981" />
+                      <strong>Pro Tip:</strong> Keep it under 4 lines. Highlight your biggest achievement and what you bring to the table. Let AI write it for you!
+                    </p>
+                  </div>
+                )}
+                
                 <textarea
-                  className="w-full min-h-[120px] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 text-[14px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all shadow-[var(--shadow-xs)]"
+                  className="w-full min-h-[160px] rounded-[12px] border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-4 text-[15px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_var(--accent-soft)] transition-all"
                   rows={6}
-                  placeholder="Enter Compelling Summary..."
+                  placeholder="e.g., Results-driven Software Engineer with 3+ years of experience..."
                   value={resume.summary}
                   onChange={(e) => setResume((r) => ({ ...r, summary: e.target.value }))}
                 />
@@ -1113,18 +1079,17 @@ function BuilderContent() {
                     )}
                   </div>
                 )}
-              </Card>
+              </div>
             )}
 
 
             {/* STEP 3: Work Experience */}
             {activeStep === "work" && (
-              <div className={`grid gap-6 ${!isFullscreen ? "md:grid-cols-2 items-start" : "grid-cols-1 items-start"}`}>
+              <div className="grid gap-6 grid-cols-1 items-start">
                 <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Work Experience {resume.fresherMode && "(Optional)"}</h2>
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Work Experience {resume.fresherMode && <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: 500 }}>(Optional)</span>}</h2>
                   <button
-                    className="btn-primary"
-                    style={{ fontSize: "0.82rem", padding: "0.45rem 1rem" }}
+                    style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }}
                     onClick={() => setResume((r) => ({ ...r, workExperience: [...r.workExperience, { id: uid(), company: "", role: "", startDate: "", endDate: "", current: false, bullets: [""], industry: "", city: "", teamSize: undefined, employmentType: "Full-time", reportingManager: "", toolsUsed: [], companyScale: "Mid-size", currentCTC: "", expectedCTC: "", salaryBreakup: "", showSalary: false }] }))}
                   >
                     + Add Position
@@ -1155,61 +1120,49 @@ function BuilderContent() {
                 {resume.workExperience.map((exp, idx) => {
                   const isCollapsed = collapsedCards[exp.id] || false;
                   return (
-                    <div key={exp.id} className="card" style={{ display: "grid", gap: "1.2rem" }}>
+                    <div key={exp.id} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gap: "1.2rem", transition: "all 0.3s" }}>
                       
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem" }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "1rem", borderBottom: isCollapsed ? "none" : "1px solid var(--border)", paddingBottom: isCollapsed ? "0" : "1rem" }}>
                         <span 
                           onClick={() => setCollapsedCards(prev => ({ ...prev, [exp.id]: !isCollapsed }))}
-                          style={{ fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}
+                          style={{ fontWeight: 800, fontSize: "1.05rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--text-primary)", flex: "1 1 min-content" }}
                         >
-                          {isCollapsed ? "▶" : "▼"} {exp.role || "Role"} {exp.company ? `@ ${exp.company}` : "Untitled Position"}
+                          <ChevronDown size={18} style={{ transform: isCollapsed ? "rotate(-90deg)" : "none", transition: "transform 0.2s", color: "var(--accent)" }} />
+                          {exp.role || "Role"} {exp.company ? <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>@ {exp.company}</span> : <span style={{ color: "var(--text-muted)", fontWeight: 500, fontStyle: "italic" }}>Untitled Position</span>}
                         </span>
                         
                         <div style={{ display: "flex", gap: "0.4rem" }}>
-                          <button onClick={() => setResume(r => ({ ...r, workExperience: moveItem(r.workExperience, idx, "up") }))} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>▲</button>
-                          <button onClick={() => setResume(r => ({ ...r, workExperience: moveItem(r.workExperience, idx, "down") }))} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>▼</button>
-                          <button onClick={() => setResume(r => ({ ...r, workExperience: duplicateItem(r.workExperience, idx) }))} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: "0.8rem" }}>Copy</button>
-                          <button onClick={() => setResume(r => ({ ...r, workExperience: r.workExperience.filter(w => w.id !== exp.id) }))} style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "0.8rem" }}>Delete</button>
+                          <button onClick={() => setResume(r => ({ ...r, workExperience: moveItem(r.workExperience, idx, "up") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▲</button>
+                          <button onClick={() => setResume(r => ({ ...r, workExperience: moveItem(r.workExperience, idx, "down") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▼</button>
+                          <button onClick={() => setResume(r => ({ ...r, workExperience: duplicateItem(r.workExperience, idx) }))} style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "var(--accent)", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700 }}>Copy</button>
+                          <button onClick={() => setResume(r => ({ ...r, workExperience: r.workExperience.filter(w => w.id !== exp.id) }))} style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "#ef4444", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700 }}>Delete</button>
                         </div>
                       </div>
 
                       {!isCollapsed && (
                         <>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem" }}>
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Company Name</label>
-                              <Input variant="static" className="input" placeholder="e.g. TCS, Google" value={exp.company} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, company: e.target.value } : w) }))} />
-                            </div>
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Role Title</label>
-                              <Input variant="static" className="input" placeholder="e.g. Software Engineer" value={exp.role} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, role: e.target.value } : w) }))} />
-                            </div>
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Start Date (e.g. Jan 2022)</label>
-                              <Input variant="static" className="input" placeholder="Jan 2022" value={exp.startDate} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, startDate: e.target.value } : w) }))} />
-                            </div>
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>End Date (e.g. Present)</label>
-                              <Input variant="static" className="input" placeholder="Present" value={exp.endDate} disabled={exp.current} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, endDate: e.target.value } : w) }))} />
-                            </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.2rem" }}>
+                            <Input variant="floating" label="Company Name" placeholder="e.g. TCS, Google" value={exp.company} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, company: e.target.value } : w) }))} />
+                            <Input variant="floating" label="Role Title" placeholder="e.g. Software Engineer" value={exp.role} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, role: e.target.value } : w) }))} />
+                            <Input variant="floating" label="Start Date" placeholder="Jan 2022" value={exp.startDate} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, startDate: e.target.value } : w) }))} />
+                            <Input variant="floating" label="End Date" placeholder="Present" value={exp.endDate} disabled={exp.current} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, endDate: e.target.value } : w) }))} />
 
                             {(() => {
                               const months = calculateTenureMonths(exp.startDate, exp.endDate, exp.current);
                               if (months > 0 && months < 18) {
                                 return (
-                                  <div style={{ gridColumn: "span 2", background: "rgba(246, 211, 101, 0.08)", borderLeft: "4px solid #f6d365", padding: "0.8rem", borderRadius: "8px", fontSize: "0.78rem", color: "var(--text-muted)", margin: "0.4rem 0" }}>
-                                    ⚠️ Short tenure detected ({months} months). Recruiter platforms may flag this as job-hopping. Use the Exit Context Note below to explain (e.g. startup shut down, completed contract, medical leave, UPSC preparation).
+                                  <div style={{ gridColumn: "1 / -1", background: "rgba(246, 211, 101, 0.08)", borderLeft: "4px solid #f6d365", padding: "0.8rem", borderRadius: "8px", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                                    ⚠️ Short tenure detected ({months} months). Recruiter platforms may flag this as job-hopping. Use the Exit Context Note below to explain.
                                   </div>
                                 );
                               }
                               return null;
                             })()}
 
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Employment Type</label>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", position: "relative" }}>
+                              <label style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-muted)", position: "absolute", top: "6px", left: "14px", zIndex: 2, pointerEvents: "none" }}>Employment Type</label>
                               <select
-                                className="input"
-                                style={{ background: "var(--bg-2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: "8px", height: "42px" }}
+                                style={{ background: "var(--bg-elevated)", color: "var(--text-primary)", border: "1.5px solid var(--border)", borderRadius: "var(--radius-md)", height: "52px", padding: "22px 14px 6px", fontSize: "15px", outline: "none", cursor: "pointer", transition: "all 0.2s" }}
                                 value={exp.employmentType || "Full-time"}
                                 onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, employmentType: e.target.value } : w) }))}
                               >
@@ -1220,11 +1173,10 @@ function BuilderContent() {
                               </select>
                             </div>
                             
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Company Scale</label>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", position: "relative" }}>
+                              <label style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-muted)", position: "absolute", top: "6px", left: "14px", zIndex: 2, pointerEvents: "none" }}>Company Scale</label>
                               <select
-                                className="input"
-                                style={{ background: "var(--bg-2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: "8px", height: "42px" }}
+                                style={{ background: "var(--bg-elevated)", color: "var(--text-primary)", border: "1.5px solid var(--border)", borderRadius: "var(--radius-md)", height: "52px", padding: "22px 14px 6px", fontSize: "15px", outline: "none", cursor: "pointer", transition: "all 0.2s" }}
                                 value={exp.companyScale || "Mid-size"}
                                 onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, companyScale: e.target.value } : w) }))}
                               >
@@ -1234,43 +1186,26 @@ function BuilderContent() {
                               </select>
                             </div>
 
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Industry</label>
-                              <Input variant="static" className="input" placeholder="e.g. IT, FinTech, Banking" value={exp.industry || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, industry: e.target.value } : w) }))} />
+                            <Input variant="floating" label="Industry" placeholder="e.g. IT, FinTech, Banking" value={exp.industry || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, industry: e.target.value } : w) }))} />
+                            <Input variant="floating" label="City" placeholder="e.g. Pune, Bangalore" value={exp.city || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, city: e.target.value } : w) }))} />
+                            <Input variant="floating" type="number" label="Team Size supervised" placeholder="e.g. 5" value={exp.teamSize || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, teamSize: parseInt(e.target.value) || undefined } : w) }))} />
+                            <Input variant="floating" label="Reporting Manager (Role)" placeholder="e.g. Engineering Manager" value={exp.reportingManager || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, reportingManager: e.target.value } : w) }))} />
+                            
+                            <div style={{ gridColumn: "1 / -1" }}>
+                              <Input variant="floating" label="Tools Used (Comma-separated)" placeholder="e.g. Jira, Git, React" value={exp.toolsUsed?.join(", ") || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, toolsUsed: e.target.value.split(",").map(t => t.trim()).filter(Boolean) } : w) }))} />
                             </div>
 
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>City</label>
-                              <Input variant="static" className="input" placeholder="e.g. Pune, Bangalore" value={exp.city || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, city: e.target.value } : w) }))} />
+                            <div style={{ gridColumn: "1 / -1" }}>
+                              <Input variant="floating" label="Exit Context Note / Reason for Short Tenure" placeholder="e.g. Project-based contract, startup shut down" value={exp.contextNote || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, contextNote: e.target.value } : w) }))} />
                             </div>
 
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Team Size supervised</label>
-                              <Input variant="static" type="number" className="input" placeholder="e.g. 5" value={exp.teamSize || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, teamSize: parseInt(e.target.value) || undefined } : w) }))} />
-                            </div>
-
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Reporting Manager (Role)</label>
-                              <Input variant="static" className="input" placeholder="e.g. Engineering Manager" value={exp.reportingManager || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, reportingManager: e.target.value } : w) }))} />
-                            </div>
-
-                            <div style={{ gridColumn: "span 2" }}>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Tools Used (Comma-separated)</label>
-                              <Input variant="static" className="input" placeholder="e.g. Jira, Git, React" value={exp.toolsUsed?.join(", ") || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, toolsUsed: e.target.value.split(",").map(t => t.trim()).filter(Boolean) } : w) }))} />
-                            </div>
-
-                            <div style={{ gridColumn: "span 2" }}>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Exit Context Note / Reason for Short Tenure</label>
-                              <Input variant="static" className="input" placeholder="e.g. Project-based contract, startup shut down, health reasons, UPSC / competitive exam preparation" value={exp.contextNote || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, contextNote: e.target.value } : w) }))} />
-                            </div>
-
-                            <div style={{ gridColumn: "span 2", marginTop: "0.5rem" }}>
-                              <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", cursor: "pointer", fontWeight: 600 }}>
-                                <Input variant="static"
+                            <div style={{ gridColumn: "1 / -1", marginTop: "0.2rem" }}>
+                              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer", fontWeight: 600, color: "var(--text-primary)" }}>
+                                <input
                                   type="checkbox"
                                   checked={exp.showSalary || false}
                                   onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, showSalary: e.target.checked } : w) }))}
-                                  style={{ accentColor: "var(--accent)" }}
+                                  style={{ accentColor: "var(--accent)", width: "18px", height: "18px" }}
                                 />
                                 Expose Indian CTC Salary details
                               </label>
@@ -1278,17 +1213,10 @@ function BuilderContent() {
 
                             {exp.showSalary && (
                               <>
-                                <div>
-                                  <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Current CTC (e.g. ₹ 8.5 LPA)</label>
-                                  <Input variant="static" className="input" placeholder="e.g. ₹ 8.5 LPA" value={exp.currentCTC || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, currentCTC: e.target.value } : w) }))} />
-                                </div>
-                                <div>
-                                  <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Expected CTC (e.g. ₹ 12.0 LPA)</label>
-                                  <Input variant="static" className="input" placeholder="e.g. ₹ 12.0 LPA" value={exp.expectedCTC || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, expectedCTC: e.target.value } : w) }))} />
-                                </div>
-                                <div style={{ gridColumn: "span 2" }}>
-                                  <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Salary Breakup details</label>
-                                  <Input variant="static" className="input" placeholder="e.g. ₹ 8.0 LPA Fixed + ₹ 0.5 LPA Variable" value={exp.salaryBreakup || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, salaryBreakup: e.target.value } : w) }))} />
+                                <Input variant="floating" label="Current CTC" placeholder="e.g. ₹ 8.5 LPA" value={exp.currentCTC || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, currentCTC: e.target.value } : w) }))} />
+                                <Input variant="floating" label="Expected CTC" placeholder="e.g. ₹ 12.0 LPA" value={exp.expectedCTC || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, expectedCTC: e.target.value } : w) }))} />
+                                <div style={{ gridColumn: "1 / -1" }}>
+                                  <Input variant="floating" label="Salary Breakup details" placeholder="e.g. ₹ 8.0 LPA Fixed + ₹ 0.5 LPA Variable" value={exp.salaryBreakup || ""} onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, salaryBreakup: e.target.value } : w) }))} />
                                 </div>
                               </>
                             )}
@@ -1301,8 +1229,8 @@ function BuilderContent() {
                               return (
                                 <div key={bi} style={{ display: "flex", flexDirection: "column", gap: "0.2rem", marginBottom: "0.6rem" }}>
                                   <div style={{ display: "flex", gap: "0.8rem" }}>
-                                    <Input variant="static"
-                                      className="input"
+                                    <Input variant="floating"
+                                      label={`Accomplishment ${bi + 1}`}
                                       placeholder="Describe result achieved..."
                                       value={bullet}
                                       onChange={(e) => setResume(r => ({ ...r, workExperience: r.workExperience.map(w => w.id === exp.id ? { ...w, bullets: w.bullets.map((b, bIdx) => bIdx === bi ? e.target.value : b) } : w) }))}
@@ -1417,12 +1345,11 @@ function BuilderContent() {
 
             {/* STEP 4: Education */}
             {activeStep === "education" && (
-              <div className={`grid gap-6 ${!isFullscreen ? "md:grid-cols-2 items-start" : "grid-cols-1 items-start"}`}>
+              <div className="grid gap-6 grid-cols-1 items-start">
                 <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Education</h2>
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Education</h2>
                   <button 
-                    className="btn-primary" 
-                    style={{ fontSize: "0.82rem", padding: "0.45rem 1rem" }} 
+                    style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }}
                     onClick={() => setResume(r => ({ 
                       ...r, 
                       education: [...r.education, { id: uid(), institution: "", degree: "", field: "", startDate: "", endDate: "", gpa: "", level: "", boardOrUniversity: "", gpaType: "cgpa", distinction: false, topper: false, scholarship: "", academicAchievements: "" }] 
@@ -1435,28 +1362,28 @@ function BuilderContent() {
                 {resume.education.map((edu, idx) => {
                   const isCollapsed = collapsedCards[edu.id] || false;
                   return (
-                    <div key={edu.id} className="card" style={{ display: "grid", gap: "1.2rem" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem" }}>
+                    <div key={edu.id} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gap: "1.2rem", transition: "all 0.3s" }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "1rem", borderBottom: isCollapsed ? "none" : "1px solid var(--border)", paddingBottom: isCollapsed ? "0" : "1rem" }}>
                         <span 
                           onClick={() => setCollapsedCards(prev => ({ ...prev, [edu.id]: !isCollapsed }))}
-                          style={{ fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}
+                          style={{ fontWeight: 800, fontSize: "1.05rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--text-primary)", flex: "1 1 min-content" }}
                         >
-                          {isCollapsed ? "▶" : "▼"} {edu.level ? `[${edu.level}] ` : ""}{edu.degree || "Degree"} {edu.institution ? `@ ${edu.institution}` : ""}
+                          <ChevronDown size={18} style={{ transform: isCollapsed ? "rotate(-90deg)" : "none", transition: "transform 0.2s", color: "var(--accent)" }} />
+                          {edu.level ? `[${edu.level}] ` : ""}{edu.degree || "Degree"} {edu.institution ? <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>@ {edu.institution}</span> : ""}
                         </span>
                         <div style={{ display: "flex", gap: "0.4rem" }}>
-                          <button onClick={() => setResume(r => ({ ...r, education: moveItem(r.education, idx, "up") }))} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>▲</button>
-                          <button onClick={() => setResume(r => ({ ...r, education: moveItem(r.education, idx, "down") }))} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>▼</button>
-                          <button onClick={() => setResume(r => ({ ...r, education: r.education.filter(e => e.id !== edu.id) }))} style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "0.8rem" }}>Delete</button>
+                          <button onClick={() => setResume(r => ({ ...r, education: moveItem(r.education, idx, "up") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▲</button>
+                          <button onClick={() => setResume(r => ({ ...r, education: moveItem(r.education, idx, "down") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▼</button>
+                          <button onClick={() => setResume(r => ({ ...r, education: r.education.filter(e => e.id !== edu.id) }))} style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "#ef4444", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700 }}>Delete</button>
                         </div>
                       </div>
 
                       {!isCollapsed && (
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem" }}>
-                          <div>
-                            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Education Level</label>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.2rem" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", position: "relative" }}>
+                            <label style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-muted)", position: "absolute", top: "6px", left: "14px", zIndex: 2, pointerEvents: "none" }}>Education Level</label>
                             <select
-                              className="input"
-                              style={{ background: "var(--bg-2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: "8px", height: "42px" }}
+                              style={{ background: "var(--bg-elevated)", color: "var(--text-primary)", border: "1.5px solid var(--border)", borderRadius: "var(--radius-md)", height: "52px", padding: "22px 14px 6px", fontSize: "15px", outline: "none", cursor: "pointer", transition: "all 0.2s" }}
                               value={edu.level || ""}
                               onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, level: e.target.value as any } : ed) }))}
                             >
@@ -1470,37 +1397,16 @@ function BuilderContent() {
                             </select>
                           </div>
                           
-                          <div>
-                            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Board or University</label>
-                            <Input variant="static" 
-                              className="input" 
-                              placeholder="e.g. CBSE, ICSE, IIT, NIT, Pune University" 
-                              value={edu.boardOrUniversity || ""} 
-                              onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, boardOrUniversity: e.target.value } : ed) }))} 
-                            />
-                          </div>
-
-                          <div>
-                            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Institution Name</label>
-                            <Input variant="static" className="input" placeholder="e.g. VIT Bhopal University" value={edu.institution} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, institution: e.target.value } : ed) }))} />
-                          </div>
-
-                          <div>
-                            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Degree / Certificate</label>
-                            <Input variant="static" className="input" placeholder="B.Tech Computer Science" value={edu.degree} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, degree: e.target.value } : ed) }))} />
-                          </div>
-
-                          <div>
-                            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Field of Study</label>
-                            <Input variant="static" className="input" placeholder="e.g. Cyber Security, Business" value={edu.field} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, field: e.target.value } : ed) }))} />
-                          </div>
+                          <Input variant="floating" label="Board or University" placeholder="e.g. CBSE, ICSE, IIT, NIT, Pune University" value={edu.boardOrUniversity || ""} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, boardOrUniversity: e.target.value } : ed) }))} />
+                          <Input variant="floating" label="Institution Name" placeholder="e.g. VIT Bhopal University" value={edu.institution} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, institution: e.target.value } : ed) }))} />
+                          <Input variant="floating" label="Degree / Certificate" placeholder="B.Tech Computer Science" value={edu.degree} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, degree: e.target.value } : ed) }))} />
+                          <Input variant="floating" label="Field of Study" placeholder="e.g. Cyber Security, Business" value={edu.field} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, field: e.target.value } : ed) }))} />
 
                           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Score Type</label>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", position: "relative" }}>
+                              <label style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-muted)", position: "absolute", top: "6px", left: "14px", zIndex: 2, pointerEvents: "none" }}>Score Type</label>
                               <select
-                                className="input"
-                                style={{ background: "var(--bg-2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: "8px", height: "42px" }}
+                                style={{ background: "var(--bg-elevated)", color: "var(--text-primary)", border: "1.5px solid var(--border)", borderRadius: "var(--radius-md)", height: "52px", padding: "22px 14px 6px", fontSize: "15px", outline: "none", cursor: "pointer", transition: "all 0.2s" }}
                                 value={edu.gpaType || "cgpa"}
                                 onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, gpaType: e.target.value as any } : ed) }))}
                               >
@@ -1508,57 +1414,36 @@ function BuilderContent() {
                                 <option value="percentage">Percentage (%)</option>
                               </select>
                             </div>
-                            <div>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Score</label>
-                              <Input variant="static" className="input" placeholder={edu.gpaType === "percentage" ? "e.g. 91.5%" : "e.g. 9.2/10"} value={edu.gpa} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, gpa: e.target.value } : ed) }))} />
-                            </div>
+                            <Input variant="floating" label="Score" placeholder={edu.gpaType === "percentage" ? "e.g. 91.5%" : "e.g. 9.2"} value={edu.gpa} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, gpa: e.target.value } : ed) }))} />
                           </div>
 
-                          <div>
-                            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Start Year</label>
-                            <Input variant="static" className="input" placeholder="2020" value={edu.startDate} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, startDate: e.target.value } : ed) }))} />
-                          </div>
+                          <Input variant="floating" label="Start Year" placeholder="2020" value={edu.startDate} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, startDate: e.target.value } : ed) }))} />
+                          <Input variant="floating" label="End Year" placeholder="2024" value={edu.endDate} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, endDate: e.target.value } : ed) }))} />
+                          <Input variant="floating" label="Scholarship (Optional)" placeholder="e.g. NTSE Scholar" value={edu.scholarship || ""} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, scholarship: e.target.value } : ed) }))} />
 
-                          <div>
-                            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>End Year</label>
-                            <Input variant="static" className="input" placeholder="2024" value={edu.endDate} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, endDate: e.target.value } : ed) }))} />
-                          </div>
-
-                          <div>
-                            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Scholarship (Optional)</label>
-                            <Input variant="static" className="input" placeholder="e.g. NTSE Scholar" value={edu.scholarship || ""} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, scholarship: e.target.value } : ed) }))} />
-                          </div>
-
-                          <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", height: "42px", marginTop: "1.5rem" }}>
-                            <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.82rem", cursor: "pointer" }}>
-                              <Input variant="static" 
+                          <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", height: "52px" }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer", fontWeight: 600, color: "var(--text-primary)" }}>
+                              <input 
                                 type="checkbox" 
                                 checked={edu.distinction || false} 
                                 onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, distinction: e.target.checked } : ed) }))} 
-                                style={{ accentColor: "var(--accent)" }}
+                                style={{ accentColor: "var(--accent)", width: "18px", height: "18px" }}
                               />
                               Graduated with Distinction
                             </label>
-                            <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.82rem", cursor: "pointer" }}>
-                              <Input variant="static" 
+                            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer", fontWeight: 600, color: "var(--text-primary)" }}>
+                              <input 
                                 type="checkbox" 
                                 checked={edu.topper || false} 
                                 onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, topper: e.target.checked } : ed) }))} 
-                                style={{ accentColor: "var(--accent)" }}
+                                style={{ accentColor: "var(--accent)", width: "18px", height: "18px" }}
                               />
                               Class Topper
                             </label>
                           </div>
 
                           <div style={{ gridColumn: "span 2" }}>
-                            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Academic Achievements & Honors</label>
-                            <textarea 
-                              className="input" 
-                              rows={2} 
-                              placeholder="e.g. Department Rank 2, Gold medalist in Chemistry..." 
-                              value={edu.academicAchievements || ""} 
-                              onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, academicAchievements: e.target.value } : ed) }))} 
-                            />
+                            <Input variant="floating" label="Academic Achievements & Honors" placeholder="e.g. Department Rank 2, Gold medalist in Chemistry..." value={edu.academicAchievements || ""} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, academicAchievements: e.target.value } : ed) }))} />
                           </div>
 
                         </div>
@@ -1573,8 +1458,8 @@ function BuilderContent() {
             {activeStep === "skills" && (
               <div style={{ display: "grid", gap: "1.5rem" }}>
                 <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Skills</h2>
-                  <button className="btn-secondary" style={{ fontSize: "0.8rem", padding: "0.4rem 0.9rem" }} disabled={!!aiLoading} onClick={() => {
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Skills</h2>
+                  <button style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "1px solid var(--accent)", color: "var(--accent)", fontWeight: 700, background: "transparent", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.4rem" }} disabled={!!aiLoading} onClick={() => {
                     const role = resume.workExperience[0]?.role || "software engineer";
                     handleAIEngineCall("skills", role, (r) => {
                       const techMatch = r.match(/Technical:(.*?)(\||$)/i);
@@ -1588,36 +1473,40 @@ function BuilderContent() {
                   </button>
                 </div>
 
-                <div className="card" style={{ display: "grid", gap: "1.2rem" }}>
+                <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gap: "1.2rem" }}>
                   <div>
                     <label style={{ fontSize: "0.82rem", color: "var(--text-muted)", display: "block", marginBottom: "0.5rem" }}>Technical Skills ({resume.skills.technical.length} added)</label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.5rem" }}>
                       {resume.skills.technical.map((skill) => (
-                        <span key={skill} className="tag tag-purple" style={{ cursor: "pointer" }} onClick={() => setResume((r) => ({ ...r, skills: { ...r.skills, technical: r.skills.technical.filter((s) => s !== skill) } }))}>
-                          {skill} ×
+                        <span key={skill} style={{ background: "rgba(99,102,241,0.1)", color: "var(--accent)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "20px", padding: "0.3rem 0.8rem", fontSize: "0.8rem", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }} onClick={() => setResume((r) => ({ ...r, skills: { ...r.skills, technical: r.skills.technical.filter((s) => s !== skill) } }))}>
+                          {skill} <span style={{ fontSize: "1rem", lineHeight: 1 }}>×</span>
                         </span>
                       ))}
                     </div>
                     <div style={{ display: "flex", gap: "0.8rem" }}>
-                      <Input variant="static" className="input" placeholder="React, SQL, Python..." value={skillInput.tech} onChange={(e) => setSkillInput((s) => ({ ...s, tech: e.target.value }))}
-                        onKeyDown={(e) => { if (e.key === "Enter" && skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }} />
-                      <button className="btn-secondary" style={{ whiteSpace: "nowrap", fontSize: "0.82rem" }} onClick={() => { if (skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }}>Add</button>
+                      <div style={{ flex: 1 }}>
+                        <Input variant="floating" label="Add Technical Skill" placeholder="React, SQL, Python..." value={skillInput.tech} onChange={(e) => setSkillInput((s) => ({ ...s, tech: e.target.value }))}
+                          onKeyDown={(e) => { if (e.key === "Enter" && skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }} />
+                      </div>
+                      <button style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", fontWeight: 600, borderRadius: "8px", padding: "0 1.5rem", height: "52px", cursor: "pointer", transition: "all 0.2s" }} onClick={() => { if (skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }}>Add</button>
                     </div>
                   </div>
 
-                  <div>
+                  <div style={{ marginTop: "1rem" }}>
                     <label style={{ fontSize: "0.82rem", color: "var(--text-muted)", display: "block", marginBottom: "0.5rem" }}>Soft Skills ({resume.skills.soft.length} added)</label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.5rem" }}>
                       {resume.skills.soft.map((skill) => (
-                        <span key={skill} className="tag tag-green" style={{ cursor: "pointer" }} onClick={() => setResume((r) => ({ ...r, skills: { ...r.skills, soft: r.skills.soft.filter((s) => s !== skill) } }))}>
-                          {skill} ×
+                        <span key={skill} style={{ background: "rgba(16,185,129,0.1)", color: "#10b981", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "20px", padding: "0.3rem 0.8rem", fontSize: "0.8rem", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }} onClick={() => setResume((r) => ({ ...r, skills: { ...r.skills, soft: r.skills.soft.filter((s) => s !== skill) } }))}>
+                          {skill} <span style={{ fontSize: "1rem", lineHeight: 1 }}>×</span>
                         </span>
                       ))}
                     </div>
                     <div style={{ display: "flex", gap: "0.8rem" }}>
-                      <Input variant="static" className="input" placeholder="Leadership, Negotiation..." value={skillInput.soft} onChange={(e) => setSkillInput((s) => ({ ...s, soft: e.target.value }))}
-                        onKeyDown={(e) => { if (e.key === "Enter" && skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }} />
-                      <button className="btn-secondary" style={{ whiteSpace: "nowrap", fontSize: "0.82rem" }} onClick={() => { if (skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }}>Add</button>
+                      <div style={{ flex: 1 }}>
+                        <Input variant="floating" label="Add Soft Skill" placeholder="Leadership, Negotiation..." value={skillInput.soft} onChange={(e) => setSkillInput((s) => ({ ...s, soft: e.target.value }))}
+                          onKeyDown={(e) => { if (e.key === "Enter" && skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }} />
+                      </div>
+                      <button style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", fontWeight: 600, borderRadius: "8px", padding: "0 1.5rem", height: "52px", cursor: "pointer", transition: "all 0.2s" }} onClick={() => { if (skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }}>Add</button>
                     </div>
                   </div>
                 </div>
@@ -1626,65 +1515,79 @@ function BuilderContent() {
 
             {/* STEP 6: Projects */}
             {activeStep === "projects" && (
-              <div className={`grid gap-6 ${!isFullscreen ? "md:grid-cols-2 items-start" : "grid-cols-1 items-start"}`}>
+              <div className="grid gap-6 grid-cols-1 items-start">
                 <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Projects</h2>
-                  <button className="btn-primary" style={{ fontSize: "0.82rem", padding: "0.45rem 1rem" }} onClick={() => setResume((r) => ({ ...r, projects: [...r.projects, { id: uid(), name: "", description: "", techStack: [], link: "" }] }))}>+ Add Project</button>
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Projects</h2>
+                  <button style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }} onClick={() => setResume((r) => ({ ...r, projects: [...r.projects, { id: uid(), name: "", description: "", techStack: [], link: "" }] }))}>
+                    + Add Project
+                  </button>
                 </div>
-                {resume.projects.map((proj, idx) => (
-                  <div key={proj.id} className="card" style={{ display: "grid", gap: "1.2rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>Project {idx + 1}</span>
-                      <div style={{ display: "flex", gap: "0.4rem" }}>
-                        <button onClick={() => setResume(r => ({ ...r, projects: moveItem(r.projects, idx, "up") }))} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>▲</button>
-                        <button onClick={() => setResume(r => ({ ...r, projects: moveItem(r.projects, idx, "down") }))} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>▼</button>
-                        <button onClick={() => setResume((r) => ({ ...r, projects: r.projects.filter((p) => p.id !== proj.id) }))} style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "0.85rem" }}>Remove</button>
+                {resume.projects.map((proj, idx) => {
+                  const isCollapsed = collapsedCards[proj.id] || false;
+                  return (
+                    <div key={proj.id} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gap: "1.2rem", transition: "all 0.3s" }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "1rem", borderBottom: isCollapsed ? "none" : "1px solid var(--border)", paddingBottom: isCollapsed ? "0" : "1rem" }}>
+                        <span 
+                          onClick={() => setCollapsedCards(prev => ({ ...prev, [proj.id]: !isCollapsed }))}
+                          style={{ fontWeight: 800, fontSize: "1.05rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--text-primary)", flex: "1 1 min-content" }}
+                        >
+                          <ChevronDown size={18} style={{ transform: isCollapsed ? "rotate(-90deg)" : "none", transition: "transform 0.2s", color: "var(--accent)" }} />
+                          {proj.name || `Project ${idx + 1}`}
+                        </span>
+                        <div style={{ display: "flex", gap: "0.4rem" }}>
+                          <button onClick={() => setResume(r => ({ ...r, projects: moveItem(r.projects, idx, "up") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▲</button>
+                          <button onClick={() => setResume(r => ({ ...r, projects: moveItem(r.projects, idx, "down") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▼</button>
+                          <button onClick={() => setResume((r) => ({ ...r, projects: r.projects.filter((p) => p.id !== proj.id) }))} style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "#ef4444", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700 }}>Delete</button>
+                        </div>
                       </div>
+                      
+                      {!isCollapsed && (
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.2rem" }}>
+                          <Input variant="floating" label="Project Name" placeholder="e.g. E-Commerce Platform" value={proj.name} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, name: e.target.value } : p) }))} />
+                          <Input variant="floating" label="GitHub / Live Link" placeholder="e.g. https://github.com/user/project" value={proj.link} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, link: e.target.value } : p) }))} />
+                          <div style={{ gridColumn: "1 / -1" }}>
+                            <Input variant="floating" label="Description" placeholder="Brief description of what it does and your role..." value={proj.description} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, description: e.target.value } : p) }))} />
+                          </div>
+                          <div style={{ gridColumn: "1 / -1" }}>
+                            <Input variant="floating" label="Tech stack (comma separated)" placeholder="e.g. React, Node.js, MongoDB" value={proj.techStack.join(", ")} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, techStack: e.target.value.split(",").map((s) => s.trim()) } : p) }))} />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <Input variant="static" className="input" placeholder="Project Name" value={proj.name} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, name: e.target.value } : p) }))} />
-                    <textarea className="input" rows={3} placeholder="Brief description of what it does and your role..." value={proj.description} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, description: e.target.value } : p) }))} />
-                    <Input variant="static" className="input" placeholder="GitHub / Live Link" value={proj.link} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, link: e.target.value } : p) }))} />
-                    <Input variant="static" className="input" placeholder="Tech stack (comma separated)" value={proj.techStack.join(", ")} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, techStack: e.target.value.split(",").map((s) => s.trim()) } : p) }))} />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
             {/* STEP 7: Certifications */}
             {activeStep === "certifications" && (
-              <div className={`grid gap-6 ${!isFullscreen ? "md:grid-cols-2 items-start" : "grid-cols-1 items-start"}`}>
+              <div className="grid gap-6 grid-cols-1 items-start">
                 <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Certifications</h2>
-                  <button className="btn-primary" style={{ fontSize: "0.82rem", padding: "0.45rem 1rem" }} onClick={() => setResume((r) => ({ ...r, certifications: [...r.certifications, { id: uid(), name: "", issuer: "", date: "" }] }))}>+ Add Certification</button>
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Certifications</h2>
+                  <button style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }} onClick={() => setResume((r) => ({ ...r, certifications: [...r.certifications, { id: uid(), name: "", issuer: "", date: "" }] }))}>
+                    + Add Certification
+                  </button>
                 </div>
-                {resume.certifications.map((cert, idx) => (
-                  <div key={cert.id} className="card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "1.2rem", alignItems: "end" }}>
-                    <div>
-                      <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Certification Name</label>
-                      <Input variant="static" className="input" placeholder="AWS Solutions Architect" value={cert.name} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, name: e.target.value } : c) }))} />
+                {resume.certifications.map((cert, idx) => {
+                  return (
+                    <div key={cert.id} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "1.2rem", alignItems: "center", transition: "all 0.3s" }}>
+                      <Input variant="floating" label="Certification Name" placeholder="e.g. AWS Solutions Architect" value={cert.name} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, name: e.target.value } : c) }))} />
+                      <Input variant="floating" label="Issuer" placeholder="e.g. Amazon Web Services" value={cert.issuer} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, issuer: e.target.value } : c) }))} />
+                      <Input variant="floating" label="Date" placeholder="e.g. 2024" value={cert.date} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, date: e.target.value } : c) }))} />
+                      <button onClick={() => setResume((r) => ({ ...r, certifications: r.certifications.filter((c) => c.id !== cert.id) }))} style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", width: "42px", height: "52px", display: "flex", alignItems: "center", justifyContent: "center", color: "#ef4444", cursor: "pointer", fontSize: "1.2rem" }}>×</button>
                     </div>
-                    <div>
-                      <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Issuer</label>
-                      <Input variant="static" className="input" placeholder="Amazon Web Services" value={cert.issuer} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, issuer: e.target.value } : c) }))} />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Date</label>
-                      <Input variant="static" className="input" placeholder="2024" value={cert.date} onChange={(e) => setResume((r) => ({ ...r, certifications: r.certifications.map((c) => c.id === cert.id ? { ...c, date: e.target.value } : c) }))} />
-                    </div>
-                    <button onClick={() => setResume((r) => ({ ...r, certifications: r.certifications.filter((c) => c.id !== cert.id) }))} style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "1.2rem", paddingBottom: "0.6rem" }}>×</button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
             {/* STEP 8: Languages Known */}
             {activeStep === "languages" && (
-              <div className={`grid gap-6 ${!isFullscreen ? "md:grid-cols-2 items-start" : "grid-cols-1 items-start"}`}>
+              <div className="grid gap-6 grid-cols-1 items-start">
                 <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Languages Known</h2>
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Languages Known</h2>
                   <button
-                    className="btn-primary"
-                    style={{ fontSize: "0.82rem", padding: "0.45rem 1rem" }}
+                    style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }}
                     onClick={() => setResume(r => ({
                       ...r,
                       languagesKnown: [...(r.languagesKnown || []), { id: uid(), language: "", proficiency: "Beginner", certification: "", usageContext: "" }]
@@ -1695,46 +1598,42 @@ function BuilderContent() {
                 </div>
 
                 {(!resume.languagesKnown || resume.languagesKnown.length === 0) && (
-                  <div className="card" style={{ textAlign: "center", padding: "2.5rem", borderStyle: "dashed" }}>
-                    <p style={{ color: "var(--text-muted)", marginBottom: "1rem" }}>No languages added yet.</p>
+                  <div style={{ background: "var(--card)", border: "1px dashed var(--border)", borderRadius: "16px", padding: "3rem", textAlign: "center" }}>
+                    <p style={{ color: "var(--text-muted)", margin: 0, fontWeight: 500 }}>No languages added yet.</p>
                   </div>
                 )}
 
                 {(resume.languagesKnown || []).map((lang, idx) => (
-                  <div key={lang.id} className="card" style={{ display: "grid", gap: "1.2rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem" }}>
-                      <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>
-                        🗣️ {lang.language || "Language"} ({lang.proficiency || "Proficiency"})
+                  <div key={lang.id} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gap: "1.2rem", transition: "all 0.3s" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: "1rem" }}>
+                      <span style={{ fontWeight: 800, fontSize: "1.05rem", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        🗣️ {lang.language || "Language"} <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 600 }}>({lang.proficiency || "Proficiency"})</span>
                       </span>
                       <button
                         onClick={() => setResume(r => ({
                           ...r,
                           languagesKnown: (r.languagesKnown || []).filter(l => l.id !== lang.id)
                         }))}
-                        style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "0.8rem" }}
+                        style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", padding: "0 0.8rem", height: "30px", color: "#ef4444", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700 }}
                       >
                         Delete
                       </button>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem" }}>
-                      <div>
-                        <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Language</label>
-                        <Input variant="static"
-                          className="input"
-                          placeholder="Hindi, Marathi, Tamil, etc."
-                          value={lang.language}
-                          onChange={(e) => setResume(r => ({
-                            ...r,
-                            languagesKnown: (r.languagesKnown || []).map(l => l.id === lang.id ? { ...l, language: e.target.value } : l)
-                          }))}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Proficiency</label>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.2rem" }}>
+                      <Input variant="floating"
+                        label="Language"
+                        placeholder="e.g. English, Spanish, Hindi"
+                        value={lang.language}
+                        onChange={(e) => setResume(r => ({
+                          ...r,
+                          languagesKnown: (r.languagesKnown || []).map(l => l.id === lang.id ? { ...l, language: e.target.value } : l)
+                        }))}
+                      />
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", position: "relative" }}>
+                        <label style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-muted)", position: "absolute", top: "6px", left: "14px", zIndex: 2, pointerEvents: "none" }}>Proficiency</label>
                         <select
-                          className="input"
-                          style={{ background: "var(--bg-2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: "8px", height: "42px" }}
+                          style={{ background: "var(--bg-elevated)", color: "var(--text-primary)", border: "1.5px solid var(--border)", borderRadius: "var(--radius-md)", height: "52px", padding: "22px 14px 6px", fontSize: "15px", outline: "none", cursor: "pointer", transition: "all 0.2s" }}
                           value={lang.proficiency}
                           onChange={(e) => setResume(r => ({
                             ...r,
@@ -1747,30 +1646,24 @@ function BuilderContent() {
                           <option value="Native">Native</option>
                         </select>
                       </div>
-                      <div>
-                        <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Certification (Optional)</label>
-                        <Input variant="static"
-                          className="input"
-                          placeholder="IELTS Band 8.5, JLPT N2"
-                          value={lang.certification || ""}
-                          onChange={(e) => setResume(r => ({
-                            ...r,
-                            languagesKnown: (r.languagesKnown || []).map(l => l.id === lang.id ? { ...l, certification: e.target.value } : l)
-                          }))}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Context (Optional)</label>
-                        <Input variant="static"
-                          className="input"
-                          placeholder="Professional Work, Conversation"
-                          value={lang.usageContext || ""}
-                          onChange={(e) => setResume(r => ({
-                            ...r,
-                            languagesKnown: (r.languagesKnown || []).map(l => l.id === lang.id ? { ...l, usageContext: e.target.value } : l)
-                          }))}
-                        />
-                      </div>
+                      <Input variant="floating"
+                        label="Certification (Optional)"
+                        placeholder="e.g. IELTS Band 8.5"
+                        value={lang.certification || ""}
+                        onChange={(e) => setResume(r => ({
+                          ...r,
+                          languagesKnown: (r.languagesKnown || []).map(l => l.id === lang.id ? { ...l, certification: e.target.value } : l)
+                        }))}
+                      />
+                      <Input variant="floating"
+                        label="Context (Optional)"
+                        placeholder="e.g. Professional Work"
+                        value={lang.usageContext || ""}
+                        onChange={(e) => setResume(r => ({
+                          ...r,
+                          languagesKnown: (r.languagesKnown || []).map(l => l.id === lang.id ? { ...l, usageContext: e.target.value } : l)
+                        }))}
+                      />
                     </div>
                   </div>
                 ))}
@@ -1780,18 +1673,17 @@ function BuilderContent() {
             {/* STEP 9: Fresher Activities */}
             {activeStep === "fresher" && (
               <div style={{ display: "grid", gap: "1.2rem" }}>
-                <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.2rem" }}>Fresher Mode Achievements & Activities</h2>
+                <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Fresher Mode Achievements & Activities</h2>
 
                 {/* Competitive Exams */}
-                <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
+                <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gap: "1.5rem" }}>
                   <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ fontWeight: 700, fontSize: "1rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <h3 style={{ fontWeight: 800, fontSize: "1.05rem", display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-primary)", margin: 0 }}>
                       <BookOpen size={18} className="text-indigo-500" />
                       Competitive Exams (JEE, GATE, CAT, UPSC)
                     </h3>
                     <button
-                      className="btn-secondary"
-                      style={{ fontSize: "0.78rem", padding: "0.3rem 0.7rem" }}
+                      style={{ fontSize: "0.78rem", padding: "0.3rem 0.7rem", border: "1px solid var(--border)", background: "var(--bg-elevated)", color: "var(--text-primary)", fontWeight: 600, borderRadius: "6px", cursor: "pointer" }}
                       onClick={() => setResume(r => ({
                         ...r,
                         competitiveExams: [...(r.competitiveExams || []), { exam: "GATE", score: "", year: "" }]
@@ -1802,54 +1694,57 @@ function BuilderContent() {
                   </div>
 
                   {(!resume.competitiveExams || resume.competitiveExams.length === 0) && (
-                    <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No competitive exams listed.</p>
+                    <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0, fontWeight: 500 }}>No competitive exams listed.</p>
                   )}
 
                   {(resume.competitiveExams || []).map((item, idx) => (
                     <div key={idx} style={{ display: "flex", gap: "0.8rem", alignItems: "center" }}>
-                      <select
-                        className="input"
-                        style={{ flex: 1, background: "var(--bg-2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: "8px", height: "42px" }}
-                        value={item.exam}
-                        onChange={(e) => setResume(r => ({
-                          ...r,
-                          competitiveExams: (r.competitiveExams || []).map((ex, i) => i === idx ? { ...ex, exam: e.target.value } : ex)
-                        }))}
-                      >
-                        <option value="JEE Mains">JEE Mains</option>
-                        <option value="JEE Advanced">JEE Advanced</option>
-                        <option value="GATE">GATE</option>
-                        <option value="CAT">CAT</option>
-                        <option value="UPSC">UPSC</option>
-                        <option value="NEET">NEET</option>
-                        <option value="GMAT">GMAT</option>
-                      </select>
-                      <Input variant="static"
-                        className="input"
-                        style={{ flex: 1.5 }}
-                        placeholder="AIR 120 / 99.8 Percentile"
-                        value={item.score}
-                        onChange={(e) => setResume(r => ({
-                          ...r,
-                          competitiveExams: (r.competitiveExams || []).map((ex, i) => i === idx ? { ...ex, score: e.target.value } : ex)
-                        }))}
-                      />
-                      <Input variant="static"
-                        className="input"
-                        style={{ flex: 0.8 }}
-                        placeholder="Year"
-                        value={item.year}
-                        onChange={(e) => setResume(r => ({
-                          ...r,
-                          competitiveExams: (r.competitiveExams || []).map((ex, i) => i === idx ? { ...ex, year: e.target.value } : ex)
-                        }))}
-                      />
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", position: "relative", flex: 1 }}>
+                        <select
+                          style={{ background: "var(--bg-elevated)", color: "var(--text-primary)", border: "1.5px solid var(--border)", borderRadius: "var(--radius-md)", height: "52px", padding: "0 14px", fontSize: "15px", outline: "none", cursor: "pointer" }}
+                          value={item.exam}
+                          onChange={(e) => setResume(r => ({
+                            ...r,
+                            competitiveExams: (r.competitiveExams || []).map((ex, i) => i === idx ? { ...ex, exam: e.target.value } : ex)
+                          }))}
+                        >
+                          <option value="JEE Mains">JEE Mains</option>
+                          <option value="JEE Advanced">JEE Advanced</option>
+                          <option value="GATE">GATE</option>
+                          <option value="CAT">CAT</option>
+                          <option value="UPSC">UPSC</option>
+                          <option value="NEET">NEET</option>
+                          <option value="GMAT">GMAT</option>
+                        </select>
+                      </div>
+                      <div style={{ flex: 1.5 }}>
+                        <Input variant="floating"
+                          label="Score"
+                          placeholder="AIR 120 / 99.8 Percentile"
+                          value={item.score}
+                          onChange={(e) => setResume(r => ({
+                            ...r,
+                            competitiveExams: (r.competitiveExams || []).map((ex, i) => i === idx ? { ...ex, score: e.target.value } : ex)
+                          }))}
+                        />
+                      </div>
+                      <div style={{ flex: 0.8 }}>
+                        <Input variant="floating"
+                          label="Year"
+                          placeholder="2024"
+                          value={item.year}
+                          onChange={(e) => setResume(r => ({
+                            ...r,
+                            competitiveExams: (r.competitiveExams || []).map((ex, i) => i === idx ? { ...ex, year: e.target.value } : ex)
+                          }))}
+                        />
+                      </div>
                       <button
                         onClick={() => setResume(r => ({
                           ...r,
                           competitiveExams: (r.competitiveExams || []).filter((_, i) => i !== idx)
                         }))}
-                        style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "1.2rem" }}
+                        style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", width: "42px", height: "52px", display: "flex", alignItems: "center", justifyContent: "center", color: "#ef4444", cursor: "pointer", fontSize: "1.2rem" }}
                       >
                         ×
                       </button>
@@ -1858,59 +1753,55 @@ function BuilderContent() {
                 </div>
 
                 {/* Hackathons & Coding Contests */}
-                <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
-                  <h3 style={{ fontWeight: 700, fontSize: "1rem" }}>🏆 Hackathons & Coding Contests</h3>
-                  <div>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Hackathons Participated</label>
-                    <textarea
-                      className="input"
-                      rows={2}
-                      placeholder="e.g. Smart India Hackathon 2024 (Winner)"
-                      value={resume.hackathons?.join("\n") || ""}
-                      onChange={(e) => setResume(r => ({ ...r, hackathons: e.target.value.split("\n").filter(Boolean) }))}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Coding Contest Profiles / Ratings</label>
-                    <textarea
-                      className="input"
-                      rows={2}
-                      placeholder="e.g. LeetCode Max Rating: 1850"
-                      value={resume.codingContests?.join("\n") || ""}
-                      onChange={(e) => setResume(r => ({ ...r, codingContests: e.target.value.split("\n").filter(Boolean) }))}
-                    />
+                <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gap: "1.5rem" }}>
+                  <h3 style={{ fontWeight: 800, fontSize: "1.05rem", margin: 0, color: "var(--text-primary)" }}>🏆 Hackathons & Coding Contests</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.2rem" }}>
+                    <div style={{ gridColumn: "1 / -1" }}>
+                      <Input variant="floating"
+                        label="Hackathons Participated"
+                        placeholder="e.g. Smart India Hackathon 2024 (Winner)"
+                        value={resume.hackathons?.join("\n") || ""}
+                        onChange={(e) => setResume(r => ({ ...r, hackathons: e.target.value.split("\n").filter(Boolean) }))}
+                      />
+                    </div>
+                    <div style={{ gridColumn: "1 / -1" }}>
+                      <Input variant="floating"
+                        label="Coding Contest Profiles / Ratings"
+                        placeholder="e.g. LeetCode Max Rating: 1850"
+                        value={resume.codingContests?.join("\n") || ""}
+                        onChange={(e) => setResume(r => ({ ...r, codingContests: e.target.value.split("\n").filter(Boolean) }))}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Campus Activities */}
-                <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
-                  <h3 style={{ fontWeight: 700, fontSize: "1rem" }}>📣 Campus Achievements & Club Roles</h3>
-                  <div>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Campus Achievements</label>
-                    <textarea
-                      className="input"
-                      rows={2}
-                      placeholder="e.g. Excellence award in Capstone Project"
-                      value={resume.campusAchievements?.join("\n") || ""}
-                      onChange={(e) => setResume(r => ({ ...r, campusAchievements: e.target.value.split("\n").filter(Boolean) }))}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Clubs & Leadership Roles</label>
-                    <textarea
-                      className="input"
-                      rows={2}
-                      placeholder="e.g. Technical Head at UX Club"
-                      value={resume.clubsAndLeadership?.join("\n") || ""}
-                      onChange={(e) => setResume(r => ({ ...r, clubsAndLeadership: e.target.value.split("\n").filter(Boolean) }))}
-                    />
+                <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gap: "1.5rem" }}>
+                  <h3 style={{ fontWeight: 800, fontSize: "1.05rem", margin: 0, color: "var(--text-primary)" }}>📣 Campus Achievements & Club Roles</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.2rem" }}>
+                    <div style={{ gridColumn: "1 / -1" }}>
+                      <Input variant="floating"
+                        label="Campus Achievements"
+                        placeholder="e.g. Excellence award in Capstone Project"
+                        value={resume.campusAchievements?.join("\n") || ""}
+                        onChange={(e) => setResume(r => ({ ...r, campusAchievements: e.target.value.split("\n").filter(Boolean) }))}
+                      />
+                    </div>
+                    <div style={{ gridColumn: "1 / -1" }}>
+                      <Input variant="floating"
+                        label="Clubs & Leadership Roles"
+                        placeholder="e.g. Technical Head at UX Club"
+                        value={resume.clubsAndLeadership?.join("\n") || ""}
+                        onChange={(e) => setResume(r => ({ ...r, clubsAndLeadership: e.target.value.split("\n").filter(Boolean) }))}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Placement Readiness Checklist */}
-                <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
-                  <h3 style={{ fontWeight: 700, fontSize: "1rem" }}>🎓 Placement Readiness Checklist</h3>
-                  <div style={{ display: "grid", gap: "1rem" }}>
+                <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gap: "1.5rem" }}>
+                  <h3 style={{ fontWeight: 800, fontSize: "1.05rem", margin: 0, color: "var(--text-primary)" }}>🎓 Placement Readiness Checklist</h3>
+                  <div style={{ display: "grid", gap: "1.2rem" }}>
                     {[
                       ["aptitudePrep", "Completed Quantitative & Verbal Aptitude Prep"],
                       ["codingPrep", "Completed Core DSA Preparation"],
@@ -1918,8 +1809,8 @@ function BuilderContent() {
                       ["resumeReviewed", "Resume audited and ATS score above 70%"],
                       ["linkedinUpdated", "LinkedIn Profile and GitHub repositories updated"]
                     ].map(([key, label]) => (
-                      <label key={key} style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.85rem", cursor: "pointer" }}>
-                        <Input variant="static"
+                      <label key={key} style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.9rem", cursor: "pointer", fontWeight: 600, color: "var(--text-primary)" }}>
+                        <input
                           type="checkbox"
                           checked={resume.placementChecklist?.[key] || false}
                           onChange={(e) => setResume(r => ({
@@ -1929,7 +1820,7 @@ function BuilderContent() {
                               [key]: e.target.checked
                             }
                           }))}
-                          style={{ accentColor: "var(--accent)", width: "16px", height: "16px" }}
+                          style={{ accentColor: "var(--accent)", width: "18px", height: "18px" }}
                         />
                         {label}
                       </label>
