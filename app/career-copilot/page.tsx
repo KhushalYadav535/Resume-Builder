@@ -7,6 +7,17 @@ import { Resume } from "@/types";
 import { Sparkles, TrendingUp, Compass, Target, MessageSquare } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
 import ConcentricLoader from "@/components/ui/Loader";
+import ToneCalibrator from "@/components/career-copilot/ToneCalibrator";
+import GapStoryteller from "@/components/career-copilot/GapStoryteller";
+import SalaryBenchmarker from "@/components/career-copilot/SalaryBenchmarker";
+import RecruiterVisibility from "@/components/career-copilot/RecruiterVisibility";
+import PromotionCaseBuilder from "@/components/career-copilot/PromotionCaseBuilder";
+import NetworkingAssistant from "@/components/career-copilot/NetworkingAssistant";
+import OfferEvaluator from "@/components/career-copilot/OfferEvaluator";
+import NegotiationScript from "@/components/career-copilot/NegotiationScript";
+import CompanyResearch from "@/components/career-copilot/CompanyResearch";
+import MarketTimingAlerts from "@/components/career-copilot/MarketTimingAlerts";
+import PeerBenchmark from "@/components/career-copilot/PeerBenchmark";
 
 export default function CareerCopilotPage() {
   const { user, loading: authLoading } = useAuth();
@@ -17,7 +28,7 @@ export default function CareerCopilotPage() {
   const [selectedResumeId, setSelectedResumeId] = useState<string>("");
   const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"interview" | "skillgap">("interview");
+  const [activeTab, setActiveTab] = useState<"interview" | "skillgap" | "market" | "growth" | "negotiation">("interview");
 
   // Interview Prep States
   const [questions, setQuestions] = useState<{ question: string; type: string; suggestedAnswerTips: string }[]>([]);
@@ -25,6 +36,7 @@ export default function CareerCopilotPage() {
   const [careerStory, setCareerStory] = useState("");
   const [careerStoryLoading, setCareerStoryLoading] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
+  const [toneValue, setToneValue] = useState(50);
 
   // Skill Gap States
   const [targetRole, setTargetRole] = useState("");
@@ -94,7 +106,7 @@ export default function CareerCopilotPage() {
       const res = await fetch("/api/generate-career-story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeId: selectedResume.id })
+        body: JSON.stringify({ resumeId: selectedResume.id, tone: toneValue })
       });
       if (res.ok) {
         const data = await res.json();
@@ -232,11 +244,32 @@ export default function CareerCopilotPage() {
         {/* AI Tools Section */}
         {selectedResume && (
           <div style={{ animation: "fadeInUp 0.3s ease" }}>
+            {/* Progress Dashboard */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
+              <div className="card" style={{ padding: "1.2rem", background: "linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%)", border: "1px solid rgba(108, 99, 255, 0.15)" }}>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 600 }}>Resume ATS Strength</span>
+                <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: "var(--accent)", marginTop: "0.5rem" }}>
+                  {selectedResume.ats_score?.overall || 0}/100
+                </div>
+              </div>
+              <div className="card" style={{ padding: "1.2rem", background: "linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)", border: "1px solid rgba(16, 185, 129, 0.15)" }}>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 600 }}>Interview Readiness</span>
+                <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: "#10b981", marginTop: "0.5rem" }}>
+                  {questions.length > 0 && careerStory ? "High" : careerStory ? "Medium" : "Pending"}
+                </div>
+              </div>
+              
+              <PeerBenchmark userAtsScore={selectedResume.ats_score?.overall || 0} />
+            </div>
+
             {/* Tab Navigation */}
             <div className="flex flex-wrap gap-2 border-b border-[var(--border)] mb-6 pb-4">
               {[
                 { key: "interview", label: "Interview Prep & Pitch" },
-                { key: "skillgap", label: "Skill Gap & Next Steps" },
+                { key: "skillgap", label: "Skill Gap & Career Path" },
+                { key: "market", label: "Market Awareness" },
+                { key: "growth", label: "Planning & Growth" },
+                { key: "negotiation", label: "Negotiation & Offers" },
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -254,16 +287,18 @@ export default function CareerCopilotPage() {
             {/* Tab: Interview Prep */}
             {activeTab === "interview" && (
               <div style={{ display: "grid", gap: "1.5rem" }}>
-                {/* Career Pitch Script */}
+                {/* Narrative Studio */}
                 <div className="card" style={{ display: "grid", gap: "0.8rem", padding: "1.5rem" }}>
                   <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.1rem", fontWeight: 700, margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <MessageSquare size={18} className="text-purple-500" />
-                    Career Pitch Script ("Tell Me About Yourself")
+                    Narrative Studio
                   </h3>
                   <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
-                    Generate a high-quality 2-minute elevator pitch script tailored to your resume's achievements to kickstart your interviews confidently.
+                    Generate a high-quality elevator pitch script tailored to your resume's achievements to kickstart your interviews confidently. Use the calibrator to match your desired tone.
                   </p>
                   
+                  <ToneCalibrator value={toneValue} onChange={setToneValue} />
+
                   {showStoryModal && careerStory ? (
                     <div style={{ background: "rgba(108, 99, 255, 0.04)", border: "1px solid rgba(108, 99, 255, 0.15)", borderRadius: "8px", padding: "1.2rem", marginTop: "0.5rem" }}>
                        <p style={{ whiteSpace: "pre-wrap", fontSize: "0.88rem", lineHeight: 1.6, margin: 0 }}>{careerStory}</p>
@@ -480,6 +515,34 @@ export default function CareerCopilotPage() {
                     </div>
                   )}
                 </div>
+
+                <GapStoryteller />
+              </div>
+            )}
+
+            {/* Tab: Market Awareness */}
+            {activeTab === "market" && (
+              <div style={{ display: "grid", gap: "1.5rem" }}>
+                <SalaryBenchmarker />
+                <MarketTimingAlerts />
+                <CompanyResearch />
+                <RecruiterVisibility />
+              </div>
+            )}
+
+            {/* Tab: Planning & Growth */}
+            {activeTab === "growth" && (
+              <div style={{ display: "grid", gap: "1.5rem" }}>
+                <PromotionCaseBuilder />
+                <NetworkingAssistant />
+              </div>
+            )}
+
+            {/* Tab: Negotiation & Offers */}
+            {activeTab === "negotiation" && (
+              <div style={{ display: "grid", gap: "1.5rem" }}>
+                <OfferEvaluator />
+                <NegotiationScript />
               </div>
             )}
           </div>
