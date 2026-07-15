@@ -1,19 +1,79 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Plus, Calendar, Tag, ChevronRight, Award, Zap, TrendingUp, AlertTriangle } from "lucide-react";
+import { CareerJournalEntry } from "@/types";
+import { useToast } from "@/components/ui/toast-1";
+import QuickEntryModal from "@/components/career-journal/QuickEntryModal";
+import ProofVault from "@/components/career-journal/ProofVault";
+import StreakIndicator from "@/components/career-journal/StreakIndicator";
+import AchievementRadar from "@/components/career-journal/AchievementRadar";
+import ProjectSync from "@/components/career-journal/ProjectSync";
 
 export default function CareerJournalPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { showToast } = useToast();
+
+  const [entries, setEntries] = useState<CareerJournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showQuickEntry, setShowQuickEntry] = useState(false);
+  const [prefilledContent, setPrefilledContent] = useState("");
+  const [generatedPromptStr, setGeneratedPromptStr] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
     }
   }, [authLoading, user, router]);
+
+  useEffect(() => {
+    if (user) {
+      fetchEntries();
+    }
+  }, [user]);
+
+  const fetchEntries = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/journal/list");
+      if (res.ok) {
+        const data = await res.json();
+        setEntries(data.entries || []);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load journal entries.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveEntry = async (entry: Partial<CareerJournalEntry>) => {
+    try {
+      const res = await fetch("/api/journal/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry),
+      });
+      if (res.ok) {
+        showToast("Entry saved successfully!", "success");
+        fetchEntries();
+      } else {
+        throw new Error("Failed to save entry");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to save entry. Try again.", "error");
+    }
+  };
+
+  const handleProofVaultExtracted = (text: string) => {
+    setPrefilledContent(text);
+    setShowQuickEntry(true);
+  };
 
   if (authLoading || !user) {
     return (
@@ -23,36 +83,145 @@ export default function CareerJournalPage() {
     );
   }
 
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case "win": return <Award size={18} className="text-emerald-500" />;
+      case "skill": return <Zap size={18} className="text-amber-500" />;
+      case "promotion": return <TrendingUp size={18} className="text-purple-500" />;
+      case "gap": return <AlertTriangle size={18} className="text-red-500" />;
+      default: return <BookOpen size={18} className="text-blue-500" />;
+    }
+  };
+
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
-      <div style={{ padding: "3rem 2rem", maxWidth: "900px", margin: "0 auto", width: "100%", textAlign: "center" }}>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
-          <div style={{ background: "rgba(108, 99, 255, 0.1)", padding: "1.5rem", borderRadius: "50%" }}>
-            <BookOpen size={48} className="text-purple-500" />
+      <div style={{ padding: "2.5rem 2rem", maxWidth: "1000px", margin: "0 auto", width: "100%", display: "grid", gridTemplateColumns: "1fr 320px", gap: "2rem" }}>
+        {/* Main Content */}
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+            <div>
+              <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, margin: 0, display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                <BookOpen size={28} className="text-purple-500" />
+                Career Journal
+              </h1>
+              <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", marginTop: "0.4rem" }}>
+                Log your wins, feedback, and skills. Build your narrative effortlessly.
+              </p>
+            </div>
+            <button
+              onClick={() => { setPrefilledContent(""); setShowQuickEntry(true); }}
+              className="btn-primary"
+              style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.6rem 1.2rem" }}
+            >
+              <Plus size={18} />
+              Quick Entry
+            </button>
+          </div>
+
+          {/* Timeline View */}
+          <div style={{ marginTop: "2rem" }}>
+            <h2 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "1.5rem" }}>Timeline</h2>
+            
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "2rem" }}><div className="spinner" style={{ width: 30, height: 30, margin: "0 auto" }} /></div>
+            ) : entries.length === 0 ? (
+              <div className="card" style={{ textAlign: "center", padding: "3rem", borderStyle: "dashed" }}>
+                <BookOpen size={48} className="text-gray-300 mx-auto mb-4" />
+                <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem" }}>Your journal is empty</h3>
+                <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>Start logging your career achievements to build a powerful resume later.</p>
+                <button onClick={() => setShowQuickEntry(true)} className="btn-secondary" style={{ marginTop: "1rem" }}>Log your first entry</button>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gap: "1.5rem", position: "relative" }}>
+                {/* Vertical Line */}
+                <div style={{ position: "absolute", left: "20px", top: "10px", bottom: "10px", width: "2px", background: "var(--border)" }} />
+
+                {entries.map((entry) => (
+                  <div key={entry.id} style={{ display: "flex", gap: "1.5rem", position: "relative", zIndex: 1 }}>
+                    <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "var(--bg-elevated)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      {getTypeIcon(entry.entry_type)}
+                    </div>
+                    
+                    <div className="card" style={{ flex: 1, padding: "1.5rem", display: "grid", gap: "1rem", transition: "all 0.2s" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <div>
+                          <span style={{ textTransform: "capitalize", fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.3rem" }}>
+                            {entry.entry_type} {entry.source === "prompted" && "• Prompted"}
+                          </span>
+                          <p style={{ margin: 0, fontSize: "1rem", lineHeight: 1.6, color: "var(--text)" }}>{entry.content}</p>
+                        </div>
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          <Calendar size={12} />
+                          {new Date(entry.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                        </span>
+                      </div>
+                      
+                      {entry.tags && entry.tags.length > 0 && (
+                        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                          {entry.tags.map(t => (
+                            <span key={t} className="tag tag-purple" style={{ fontSize: "0.7rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                              <Tag size={10} /> {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-        
-        <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.5rem", fontWeight: 800, marginBottom: "1rem" }}>
-          Career Journal
-        </h1>
-        
-        <p style={{ color: "var(--text-muted)", fontSize: "1.1rem", maxWidth: "600px", margin: "0 auto", lineHeight: 1.6 }}>
-          Track your professional journey, document your wins, and log your learning progress. 
-          Your personalized Career Journal is coming soon!
-        </p>
 
-        <div className="card" style={{ marginTop: "3rem", padding: "2rem", display: "grid", gap: "1rem", textAlign: "left", background: "var(--card)", border: "1px dashed var(--border-light)" }}>
-          <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>Upcoming Features:</h3>
-          <ul style={{ margin: 0, paddingLeft: "1.2rem", color: "var(--text-muted)", display: "grid", gap: "0.8rem", fontSize: "0.95rem" }}>
-            <li>Log daily/weekly professional achievements to easily update your resume later.</li>
-            <li>Track interview experiences, questions asked, and lessons learned.</li>
-            <li>Monitor networking contacts and follow-up reminders.</li>
-            <li>AI-assisted reflections to pull skills and bullet points directly from your journal entries.</li>
-          </ul>
+        {/* Sidebar */}
+        <div style={{ display: "grid", gap: "1.5rem", alignContent: "start" }}>
+          
+          <StreakIndicator entriesCount={entries.length} />
+
+          {/* Health Check-in */}
+          <div className="card" style={{ padding: "1.5rem", background: "linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)", border: "1px solid rgba(108, 99, 255, 0.2)" }}>
+            <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.05rem", fontWeight: 700 }}>Career Health Check</h3>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", margin: "0 0 1rem", lineHeight: 1.5 }}>
+              How is work going this week? Any small wins worth documenting?
+            </p>
+            <button onClick={() => setShowQuickEntry(true)} className="btn-primary" style={{ width: "100%", fontSize: "0.85rem", padding: "0.6rem" }}>
+              Log a Quick Win
+            </button>
+          </div>
+
+          <AchievementRadar onLogQuickWin={() => setShowQuickEntry(true)} />
+
+          <ProjectSync onGeneratedPrompt={(prompt) => {
+            setGeneratedPromptStr(prompt);
+            setShowQuickEntry(true);
+          }} />
+
+          {/* Proof Vault */}
+          <ProofVault onExtracted={handleProofVaultExtracted} />
+
+          {/* Copilot Link */}
+          <div className="card" style={{ padding: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", transition: "all 0.2s" }} onClick={() => router.push("/career-copilot")}>
+            <div>
+              <h3 style={{ margin: "0 0 0.2rem", fontSize: "1rem", fontWeight: 700 }}>Career Copilot</h3>
+              <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-muted)" }}>Use journal data to generate pitch scripts.</p>
+            </div>
+            <ChevronRight size={20} className="text-gray-400" />
+          </div>
         </div>
       </div>
+
+      {showQuickEntry && (
+        <QuickEntryModal
+          onClose={() => {
+            setShowQuickEntry(false);
+            setGeneratedPromptStr("");
+          }}
+          onSave={handleSaveEntry}
+          prefilledContent={prefilledContent || generatedPromptStr}
+        />
+      )}
     </div>
   );
 }

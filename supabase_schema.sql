@@ -351,3 +351,32 @@ CREATE POLICY "Users can view and manage their suggestions"
   WITH CHECK (auth.uid() = user_id);
 
 CREATE INDEX IF NOT EXISTS idx_resume_imp_sugg_resume ON public.resume_improvement_suggestions(resume_id);
+
+-- 19. Career Journal Entries Table
+CREATE TABLE IF NOT EXISTS public.career_journal_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  date DATE NOT NULL DEFAULT current_date,
+  entry_type TEXT NOT NULL CHECK (entry_type IN ('win', 'gap', 'skill', 'feedback', 'project', 'certification', 'promotion', 'other')),
+  content TEXT NOT NULL,
+  source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'imported', 'prompted')),
+  linked_role TEXT,
+  tags TEXT[] DEFAULT '{}',
+  extracted_metrics JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.career_journal_entries ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can manage their own journal entries" ON public.career_journal_entries;
+
+CREATE POLICY "Users can manage their own journal entries"
+  ON public.career_journal_entries
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_career_journal_user ON public.career_journal_entries(user_id);
+CREATE INDEX IF NOT EXISTS idx_career_journal_date ON public.career_journal_entries(date);
+CREATE INDEX IF NOT EXISTS idx_career_journal_type ON public.career_journal_entries(entry_type);

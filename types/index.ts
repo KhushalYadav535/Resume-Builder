@@ -155,3 +155,17 @@ export interface Resume {
   created_at: string;
   updated_at?: string;
 }
+
+export interface CareerJournalEntry {
+  id: string;
+  user_id: string;
+  date: string;
+  entry_type: 'win' | 'gap' | 'skill' | 'feedback' | 'project' | 'certification' | 'promotion' | 'other';
+  content: string;
+  source: 'manual' | 'imported' | 'prompted';
+  linked_role?: string;
+  tags: string[];
+  extracted_metrics?: Record<string, any>;
+  created_at: string;
+  updated_at?: string;
+}
