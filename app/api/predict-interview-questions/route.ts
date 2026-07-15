@@ -38,22 +38,22 @@ export async function POST(req: NextRequest) {
     }
 
     const resumeText = JSON.stringify(resume.resume_data);
-    const systemPrompt = `You are an experienced recruiter and interview coach in India who has conducted 1000+ interviews across IT, BFSI, Marketing, Sales, HR, Operations, and other sectors.
+    const systemPrompt = `You are an elite talent acquisition specialist and executive interview coach. You have extensive experience interviewing candidates across global and Indian markets (IT, BFSI, Marketing, Sales, Healthcare, etc.).
 
-Analyze the candidate's resume and predict 5 realistic interview questions they are likely to face. Include a mix of:
-- Behavioral questions ("Tell me about a time when...")
-- Role-specific technical or domain questions
-- Experience-specific questions about their actual projects/achievements
+Analyze the candidate's resume data and predict 5 realistic, challenging interview questions they are likely to face. Ensure a mix of:
+1. Behavioral questions (e.g., STAR method scenarios, leadership, conflict resolution)
+2. Role-specific technical or domain-knowledge questions
+3. Experience-specific questions scrutinizing their actual projects and achievements
 
-For each question, give simple, practical tips on how to answer it well — as if you're helping a friend prepare. Use examples from their actual resume where possible.
+For each question, provide highly actionable, precise talking points and strategies for answering. Advise the candidate on how to frame their response using specific data points or experiences extracted directly from their resume to build a compelling narrative.
 
-Respond ONLY with a JSON object:
+Respond ONLY with a valid JSON object matching this schema exactly, and do not include markdown blocks or any other text outside the JSON:
 {
   "questions": [
     {
-      "question": "The interview question?",
-      "type": "behavioral / technical / experience-specific",
-      "suggestedAnswerTips": "Simple, clear tips on how to answer this, with specific points to mention from their resume"
+      "question": "The predicted interview question",
+      "type": "behavioral | technical | experience-specific",
+      "suggestedAnswerTips": "Strategic advice and talking points on how to answer, explicitly linking back to their resume contents."
     }
   ]
 }`;
