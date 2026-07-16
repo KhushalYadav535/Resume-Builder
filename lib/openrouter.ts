@@ -4,7 +4,7 @@ async function logAIRequest(model: string, success: boolean, tokensEstimated: nu
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     await supabase.from("ai_requests").insert({
       user_id: user?.id || null,
       model_used: model,
@@ -124,8 +124,8 @@ export async function askAI(prompt: string, systemPrompt?: string): Promise<stri
  * Deploys OpenRouter models chain.
  */
 export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promise<T> {
-  const combinedSystem = (systemPrompt ? `${systemPrompt}\n\n` : "") + 
-    INDIAN_MARKET_GUIDELINE + 
+  const combinedSystem = (systemPrompt ? `${systemPrompt}\n\n` : "") +
+    INDIAN_MARKET_GUIDELINE +
     "\n\nYou must respond ONLY with valid JSON. No explanation, no markdown, no backticks. Ensure ALL property names are double-quoted. Do NOT include any trailing commas. Just raw JSON.";
 
   try {
@@ -141,7 +141,7 @@ export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promi
     console.log("-------------------------------------");
 
     let clean = rawResponse.replace(/```json|```/g, "").trim();
-    
+
     // Extract the JSON object or array substring if there is surrounding conversational text
     const firstBrace = clean.indexOf('{');
     const firstBracket = clean.indexOf('[');
@@ -170,7 +170,7 @@ export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promi
         clean = clean.substring(startIndex, endIndex + 1);
       }
     }
-    
+
     // Helper to fix common AI trailing comma errors
     const sanitizeJSON = (str: string) => str.replace(/,\s*([\]}])/g, '$1');
     const sanitizedClean = sanitizeJSON(clean);
@@ -181,13 +181,13 @@ export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promi
       // Try array first (for askAIJSON<any[]> cases)
       const matchArr = clean.match(/\[[\s\S]*\]/);
       if (matchArr) {
-        try { return JSON.parse(sanitizeJSON(matchArr[0])) as T; } catch(e) {}
+        try { return JSON.parse(sanitizeJSON(matchArr[0])) as T; } catch (e) { }
       }
-      
+
       // Try object next
       const matchObj = clean.match(/\{[\s\S]*\}/);
       if (matchObj) {
-        try { return JSON.parse(sanitizeJSON(matchObj[0])) as T; } catch(e) {}
+        try { return JSON.parse(sanitizeJSON(matchObj[0])) as T; } catch (e) { }
       }
 
       // Ultimate Fallback: Extract all flat JSON objects individually (ignores bad objects & truncation)
@@ -199,13 +199,13 @@ export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promi
             // Fix unquoted keys for this specific object if needed
             let fixed = objStr.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
             parsed.push(JSON.parse(sanitizeJSON(fixed)));
-          } catch(e) {}
+          } catch (e) { }
         }
         if (parsed.length > 0) {
           return parsed as any;
         }
       }
-      
+
       throw new Error("AI returned invalid JSON: " + parseError.message);
     }
   } catch (err: any) {

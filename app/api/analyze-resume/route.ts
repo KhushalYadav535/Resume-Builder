@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { parseResume } from "@/lib/resumeParser";
 import { calculateDynamicATS } from "@/lib/ats";
 import { sanitizeInput, sanitizeObject } from "@/lib/sanitization";
+import { checkAndDeductCredits } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,16 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    // --- CREDIT CONSUMPTION GUARD ---
+    const billingCheck = await checkAndDeductCredits(user.id, 15, "ATS Optimization Check");
+    if (!billingCheck.allowed) {
+      return NextResponse.json(
+        { error: billingCheck.error || "Insufficient credits." },
+        { status: 403 }
+      );
+    }
+    // --------------------------------
 
     let { resumeText, fileName } = await req.json();
     if (!resumeText) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { askAIJSON } from "@/lib/openrouter";
 import { apiLimiter, getIP } from "@/lib/rateLimit";
+import { checkAndDeductCredits } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,16 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    // --- CREDIT CONSUMPTION GUARD ---
+    const billingCheck = await checkAndDeductCredits(user.id, 10, "AI Resume Edit");
+    if (!billingCheck.allowed) {
+      return NextResponse.json(
+        { error: billingCheck.error || "Insufficient credits." },
+        { status: 403 }
+      );
+    }
+    // --------------------------------
 
     const { text, context, targetJobDescription, atsMissingKeywords, atsIndustry } = await req.json();
 

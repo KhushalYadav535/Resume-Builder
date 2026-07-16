@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { askAIJSON } from "@/lib/openrouter";
 import { createClient } from "@/utils/supabase/server";
 import { JDMatch } from "@/types";
+import { checkAndDeductCredits } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,16 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    // --- CREDIT CONSUMPTION GUARD ---
+    const billingCheck = await checkAndDeductCredits(user.id, 10, "JD Matching");
+    if (!billingCheck.allowed) {
+      return NextResponse.json(
+        { error: billingCheck.error || "Insufficient credits." },
+        { status: 403 }
+      );
+    }
+    // --------------------------------
 
     const { resumeData, jobDescription } = await req.json();
 

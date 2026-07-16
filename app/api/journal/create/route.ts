@@ -53,6 +53,72 @@ export async function POST(req: Request) {
 
     if (error) throw error;
 
+    // --- JOURNAL GAMIFICATION: BONUS CREDITS ---
+    const creditMap: Record<string, number> = {
+      promotion: 25,
+      award: 20,
+      impact: 20,
+      publication: 20,
+      certification: 15,
+      project: 15,
+      feedback: 15,
+      mentorship: 10,
+      skill: 8,
+      other: 3,
+      win: 0,
+      gap: 0,
+    };
+
+    const potentialBonus = creditMap[entry_type] || 0;
+
+    if (potentialBonus > 0) {
+      // Get current month start
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+      // Check how many credits they earned this month from journal
+      const { data: monthTx, error: txErr } = await supabase
+        .from("credit_transactions")
+        .select("amount")
+        .eq("user_id", user.id)
+        .eq("category", "journal_bonus")
+        .gte("created_at", startOfMonth);
+
+      if (!txErr && monthTx) {
+        const earnedThisMonth = monthTx.reduce((sum, tx) => sum + tx.amount, 0);
+        const MAX_MONTHLY_BONUS = 50;
+
+        const allowedBonus = Math.min(potentialBonus, MAX_MONTHLY_BONUS - earnedThisMonth);
+
+        if (allowedBonus > 0) {
+          // Give them the allowed bonus
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("credit_balance")
+            .eq("id", user.id)
+            .single();
+
+          if (profile) {
+            await supabase
+              .from("profiles")
+              .update({ credit_balance: profile.credit_balance + allowedBonus })
+              .eq("id", user.id);
+
+            await supabase
+              .from("credit_transactions")
+              .insert({
+                user_id: user.id,
+                amount: allowedBonus,
+                reason: `Journal Entry Bonus: ${entry_type}`,
+                category: "journal_bonus",
+                expires_at: new Date(now.setFullYear(now.getFullYear() + 1)).toISOString() // 12 months expiry
+              });
+          }
+        }
+      }
+    }
+    // -------------------------------------------
+
     return NextResponse.json({ success: true, entry: data });
   } catch (error: any) {
     console.error("Error creating journal entry:", error);

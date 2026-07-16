@@ -6,9 +6,10 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Coins, Sparkles, LogOut, ArrowRight, User } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { createClient } from "@/utils/supabase/client";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -19,6 +20,30 @@ export default function Navbar() {
   const { role, user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [profile, setProfile] = useState<{ tier: string; credit_balance: number }>({ tier: "Loading...", credit_balance: 0 });
+
+  useEffect(() => {
+    if (user && user.id) {
+      const fetchProfile = async () => {
+        try {
+          const supabase = createClient();
+          const { data, error } = await supabase.from("profiles").select("tier, credit_balance").eq("id", user.id).single();
+          if (data) {
+            setProfile(data);
+          } else {
+            // Fallback if profile doesn't exist (e.g. table missing or trigger failed)
+            setProfile({ tier: "Free", credit_balance: 0 });
+          }
+        } catch (err) {
+          console.error("Profile fetch error:", err);
+          setProfile({ tier: "Free", credit_balance: 0 });
+        }
+      };
+      fetchProfile();
+    } else {
+      setProfile({ tier: "Free", credit_balance: 0 });
+    }
+  }, [user]);
 
   // Scroll listener for fade behavior
   useEffect(() => {
@@ -153,17 +178,58 @@ export default function Navbar() {
                     box-shadow: var(--accent-glow);
                   }
                 `}</style>
-                {/* Dropdown for logout */}
-                <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-surface)] border border-[var(--border)] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div className="px-4 py-2 text-xs text-[var(--text-muted)] border-b border-[var(--border)] mb-1 truncate">
-                    {user.email}
+                <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-[#12121a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right scale-95 group-hover:scale-100 z-50">
+                  
+                  {/* Header */}
+                  <div className="px-4 py-3 border-b border-[var(--border)]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--accent-soft)] text-[var(--accent)]">
+                        <User size={20} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
+                          {user.email?.split("@")[0]}
+                        </p>
+                        <p className="text-xs text-[var(--text-muted)] truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <button
-                    onClick={logout}
-                    className="w-full text-left px-4 py-2 text-sm text-[var(--danger)] hover:bg-[var(--bg-elevated)] transition-colors"
-                  >
-                    Logout
-                  </button>
+
+                  {/* Stats */}
+                  <div className="px-4 py-3">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Current Plan</span>
+                        <span className="text-[11px] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 px-2 py-0.5 rounded-md uppercase flex items-center gap-1">
+                          <Sparkles size={10} />
+                          {profile.tier}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Balance</span>
+                        <span className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                          <Coins size={12} />
+                          {profile.credit_balance}
+                        </span>
+                      </div>
+                    </div>
+
+                    <Link href="/pricing" className="mt-4 flex items-center justify-center gap-1.5 w-full text-[13px] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-lg py-2.5 transition-all shadow-sm hover:shadow-md">
+                      Upgrade <ArrowRight size={14} />
+                    </Link>
+                  </div>
+
+                  <div className="px-2 pb-1 border-t border-gray-100 dark:border-white/5 pt-1 mt-1">
+                    <button
+                      onClick={logout}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                    >
+                      <LogOut size={16} />
+                      Log out
+                    </button>
+                  </div>
                 </div>
               </div>
             </>

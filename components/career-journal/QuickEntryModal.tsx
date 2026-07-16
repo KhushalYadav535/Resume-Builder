@@ -69,14 +69,18 @@ export default function QuickEntryModal({ onClose, onSave, prefilledContent }: Q
               onChange={(e) => setEntryType(e.target.value as any)}
               style={{ background: "var(--bg-elevated)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: "8px", height: "42px", width: "100%" }}
             >
-              <option value="win">Win / Achievement</option>
-              <option value="feedback">Feedback / Praise</option>
-              <option value="skill">Skill Learned</option>
-              <option value="project">Project Completed</option>
-              <option value="certification">Certification</option>
-              <option value="promotion">Promotion</option>
-              <option value="gap">Gap / Setback</option>
-              <option value="other">Other</option>
+              <option value="win">Win / Achievement (+0)</option>
+              <option value="feedback">Client / Customer Appreciation (+15)</option>
+              <option value="skill">New Skill / Tool Learned (+8)</option>
+              <option value="project">Successful Project Completion (+15)</option>
+              <option value="certification">Certification Earned (+15)</option>
+              <option value="promotion">Promotion (+25)</option>
+              <option value="award">Award / Recognition (+20)</option>
+              <option value="mentorship">Mentored / Trained Someone (+10)</option>
+              <option value="impact">Cost Savings / Revenue Impact (+20)</option>
+              <option value="publication">Publication / Patent (+20)</option>
+              <option value="gap">Gap / Setback (+0)</option>
+              <option value="other">General Activity Log (+3)</option>
             </select>
           </div>
 
