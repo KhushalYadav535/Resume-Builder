@@ -160,7 +160,7 @@ export interface CareerJournalEntry {
   id: string;
   user_id: string;
   date: string;
-  entry_type: 'win' | 'gap' | 'skill' | 'feedback' | 'project' | 'certification' | 'promotion' | 'other';
+  entry_type: 'win' | 'gap' | 'skill' | 'feedback' | 'project' | 'certification' | 'promotion' | 'award' | 'mentorship' | 'impact' | 'publication' | 'other';
   content: string;
   source: 'manual' | 'imported' | 'prompted';
   linked_role?: string;

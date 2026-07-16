@@ -17,6 +17,13 @@ import { Button } from "@/components/ui/Button";
 import { AiChangesHistoryModal } from "@/components/AiChangesHistoryModal";
 import { useToast } from "@/components/ui/toast-1";
 import { Edit3, Printer, BookOpen, Sparkles, Share2, Eye, Briefcase, Maximize2, Minimize2, Check, Lightbulb, X, CheckCircle2, ChevronDown } from "lucide-react";
+import { LineInput } from "@/components/resume-builder/LineInput";
+import { StrengthenButton } from "@/components/resume-builder/StrengthenButton";
+import { VoiceInputToggle } from "@/components/resume-builder/VoiceInputToggle";
+import { SectionProgressList } from "@/components/resume-builder/SectionProgressList";
+import { SessionBanner } from "@/components/resume-builder/SessionBanner";
+import { ComparisonGuard } from "@/components/resume-builder/ComparisonGuard";
+import { RepetitionFlag } from "@/components/resume-builder/RepetitionFlag";
 
 
 const defaultEmptyResume: ResumeData = {
@@ -815,18 +822,20 @@ function BuilderContent() {
         
         {/* COLUMN 1: PROGRESS & NAVIGATION SIDEBAR (Sticky) */}
         <div className="no-print builder-sidebar" style={{ gap: "1rem" }}>
-          {/* Completion stats card */}
+          {/* Steps Navigation list using new SectionProgressList */}
+          <SectionProgressList 
+            sections={steps.map(stepItem => ({
+              id: stepItem.key,
+              label: stepItem.label,
+              status: checkStepCompletion(stepItem.key as Step) ? "done" : (activeStep === stepItem.key ? "in-progress" : "not-started")
+            }))}
+            activeSectionId={activeStep}
+            onSectionClick={(id) => setActiveStep(id as Step)}
+          />
+
+          {/* Fresher Mode switch (moved out of completion stats) */}
           <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "14px", padding: "1.1rem", display: "grid", gap: "0.8rem", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Completion</span>
-              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--accent)" }}>{completion.percent}%</span>
-            </div>
-            <div style={{ height: "6px", background: "var(--bg-3)", borderRadius: "99px", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${completion.percent}%`, background: "linear-gradient(90deg, var(--accent), #8b5cf6)", borderRadius: "99px", transition: "width 0.4s cubic-bezier(0.16,1,0.3,1)" }} />
-            </div>
-            
-            {/* Fresher Mode switch */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border)", paddingTop: "0.8rem", marginTop: "0.2rem" }}>
               <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text)" }}>Fresher Mode</span>
               <label style={{ position: "relative", display: "inline-block", width: "42px", height: "24px" }}>
                 <input
@@ -859,37 +868,6 @@ function BuilderContent() {
                 </span>
               </label>
             </div>
-          </div>
-
-          {/* Steps Navigation list */}
-          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "14px", padding: "0.75rem", display: "flex", flexDirection: "column", gap: "0.25rem", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
-            <span style={{ paddingLeft: "0.5rem", fontSize: "0.7rem", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem", display: "block" }}>Builder Steps</span>
-            {steps.map((stepItem, idx) => {
-              const isComplete = checkStepCompletion(stepItem.key);
-              const isActive = activeStep === stepItem.key;
-              return (
-                <button
-                  key={stepItem.key}
-                  onClick={() => setActiveStep(stepItem.key)}
-                  style={{
-                    background: isActive ? "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)" : "transparent",
-                    color: isActive ? "#fff" : "var(--text)",
-                    border: "none", borderRadius: "8px", padding: "0.6rem 0.8rem",
-                    fontSize: "0.82rem", fontWeight: isActive ? 700 : 600,
-                    cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "var(--bg-2)" }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent" }}
-                >
-                  <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <span style={{ opacity: isActive ? 1 : 0.5, fontSize: "0.75rem" }}>{idx + 1}.</span>
-                    {stepItem.label}
-                  </span>
-                  {isComplete && <CheckCircle2 size={14} color={isActive ? "rgba(255,255,255,0.9)" : "#10b981"} />}
-                </button>
-              );
-            })}
           </div>
 
           {/* Section Reordering Widget */}
@@ -1021,64 +999,49 @@ function BuilderContent() {
                   </div>
                 )}
                 
-                <textarea
-                  className="w-full min-h-[160px] rounded-[12px] border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-4 text-[15px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_var(--accent-soft)] transition-all"
-                  rows={6}
-                  placeholder="e.g., Results-driven Software Engineer with 3+ years of experience..."
-                  value={resume.summary}
-                  onChange={(e) => setResume((r) => ({ ...r, summary: e.target.value }))}
-                />
-
-                {/* Inline AI Rewrite for Summary */}
-                {resume.summary.trim().length > 15 && (
-                  <div>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={inlineRewriteLoading && inlineRewriteKey === "summary"}
-                      onClick={() => handleInlineRewrite(resume.summary, "Professional Summary", "summary")}
-                      className="border-sky-500 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-950"
-                    >
-                      {inlineRewriteLoading && inlineRewriteKey === "summary" ? (
-                        <span className="flex items-center gap-2">
-                          <span className="w-3 h-3 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" /> Rewriting...
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1">
-                          <Sparkles size={12} />
-                          AI Rewrite
-                        </span>
-                      )}
-                    </Button>
-
-                    {inlineRewriteKey === "summary" && inlineRewriteSuggestions.length > 0 && (
-                      <div className="mt-3 grid gap-2">
-                        <span className="text-xs font-bold text-[var(--accent)] uppercase tracking-wider">
-                          Click a suggestion to accept:
-                        </span>
-                        {inlineRewriteSuggestions.map((s, idx) => (
-                          <div
-                            key={idx}
-                            onClick={() => {
-                              setResume((r) => ({ ...r, summary: s }));
-                              setInlineRewriteSuggestions([]);
-                              setInlineRewriteKey("");
-                            }}
-                            className="p-3 bg-sky-50/50 dark:bg-sky-900/10 border border-sky-100 dark:border-sky-900/50 rounded-[var(--radius-md)] cursor-pointer transition-all hover:bg-sky-50 hover:border-sky-400 dark:hover:bg-sky-900/30 text-sm leading-relaxed"
-                          >
-                            <div className="flex justify-between items-start gap-4">
-                              <span className="text-[var(--text-primary)]">{s}</span>
-                              <span className="text-xs text-sky-500 font-bold whitespace-nowrap shrink-0 flex items-center gap-1">
-                                <Check size={12} />
-                                Accept
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                <SessionBanner estimatedMinutes={resume.summary.trim().length > 15 ? 0 : 1} />
+                
+                {resume.summary.length === 0 && (
+                  <div style={{ marginBottom: "1rem", padding: "1rem", background: "rgba(16,185,129,0.05)", borderLeft: "3px solid #10b981", borderRadius: "0 8px 8px 0" }}>
+                    <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <Lightbulb size={14} color="#10b981" />
+                      <strong>Pro Tip:</strong> Keep it under 4 lines. Highlight your biggest achievement and what you bring to the table. Let AI write it for you!
+                    </p>
                   </div>
                 )}
+                
+                <div className="flex flex-col gap-2 relative">
+                  <LineInput
+                    value={resume.summary}
+                    onChange={(val) => setResume((r) => ({ ...r, summary: val }))}
+                    placeholder="e.g., Results-driven Software Engineer with 3+ years of experience..."
+                    inputState={resume.summary.trim().length > 15 ? "unassessed" : "empty"}
+                    style={{ minHeight: "100px" }}
+                  />
+                  {resume.summary.trim().length > 15 && (
+                    <div className="flex justify-end mt-1">
+                      <StrengthenButton
+                        originalText={resume.summary}
+                        onRewrite={async (text) => {
+                          const res = await fetch("/api/ai-rewrite", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              text,
+                              context: "Professional Summary",
+                              targetJobDescription: resume.targetJobDescription || "",
+                            }),
+                          });
+                          const data = await res.json();
+                          if (!res.ok || data.error) throw new Error(data.error || "Rewrite failed");
+                          return data.suggestions?.[0] || text;
+                        }}
+                        onAccept={(newText) => setResume((r) => ({ ...r, summary: newText }))}
+                        onReject={() => {}}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1086,15 +1049,26 @@ function BuilderContent() {
             {/* STEP 3: Work Experience */}
             {activeStep === "work" && (
               <div className="grid gap-6 grid-cols-1 items-start">
-                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Work Experience {resume.fresherMode && <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: 500 }}>(Optional)</span>}</h2>
-                  <button
-                    style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }}
-                    onClick={() => setResume((r) => ({ ...r, workExperience: [...r.workExperience, { id: uid(), company: "", role: "", startDate: "", endDate: "", current: false, bullets: [""], industry: "", city: "", teamSize: undefined, employmentType: "Full-time", reportingManager: "", toolsUsed: [], companyScale: "Mid-size", currentCTC: "", expectedCTC: "", salaryBreakup: "", showSalary: false }] }))}
-                  >
-                    + Add Position
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
+                    <VoiceInputToggle onTranscript={(text) => {
+                       // Just a simple implementation for now, appending to the first position's first bullet
+                       if (resume.workExperience.length > 0) {
+                         const firstExp = resume.workExperience[0];
+                         const firstBullet = firstExp.bullets[0] || "";
+                         setResume(r => ({ ...r, workExperience: r.workExperience.map((w, i) => i === 0 ? { ...w, bullets: w.bullets.map((b, bi) => bi === 0 ? (b ? b + " " + text : text) : b) } : w) }));
+                       }
+                    }} />
+                    <button
+                      style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }}
+                      onClick={() => setResume((r) => ({ ...r, workExperience: [...r.workExperience, { id: uid(), company: "", role: "", startDate: "", endDate: "", current: false, bullets: [""], industry: "", city: "", teamSize: undefined, employmentType: "Full-time", reportingManager: "", toolsUsed: [], companyScale: "Mid-size", currentCTC: "", expectedCTC: "", salaryBreakup: "", showSalary: false }] }))}
+                    >
+                      + Add Position
+                    </button>
+                  </div>
                 </div>
+                <SessionBanner estimatedMinutes={resume.workExperience.length === 0 ? 5 : (resume.workExperience.some(w => !w.company || w.bullets[0] === "") ? 2 : 0)} />
 
                 {(() => {
                   const shortTenureCount = resume.workExperience.filter(exp => {
@@ -1135,7 +1109,13 @@ function BuilderContent() {
                           <button onClick={() => setResume(r => ({ ...r, workExperience: moveItem(r.workExperience, idx, "up") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▲</button>
                           <button onClick={() => setResume(r => ({ ...r, workExperience: moveItem(r.workExperience, idx, "down") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▼</button>
                           <button onClick={() => setResume(r => ({ ...r, workExperience: duplicateItem(r.workExperience, idx) }))} style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "var(--accent)", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700 }}>Copy</button>
-                          <button onClick={() => setResume(r => ({ ...r, workExperience: r.workExperience.filter(w => w.id !== exp.id) }))} style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "#ef4444", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700 }}>Delete</button>
+                          <ComparisonGuard 
+                            itemName={exp.company || "Company"} 
+                            relevanceReason={resume.targetJobDescription && exp.role ? "this role might match the target job title or responsibilities" : undefined}
+                            onConfirmDelete={() => setResume(r => ({ ...r, workExperience: r.workExperience.filter(w => w.id !== exp.id) }))}
+                          >
+                            <button style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "#ef4444", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700, height: "28px" }}>Delete</button>
+                          </ComparisonGuard>
                         </div>
                       </div>
 
@@ -1346,18 +1326,27 @@ function BuilderContent() {
             {/* STEP 4: Education */}
             {activeStep === "education" && (
               <div className="grid gap-6 grid-cols-1 items-start">
-                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Education</h2>
-                  <button 
-                    style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }}
-                    onClick={() => setResume(r => ({ 
-                      ...r, 
-                      education: [...r.education, { id: uid(), institution: "", degree: "", field: "", startDate: "", endDate: "", gpa: "", level: "", boardOrUniversity: "", gpaType: "cgpa", distinction: false, topper: false, scholarship: "", academicAchievements: "" }] 
-                    }))}
-                  >
-                    + Add Education
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
+                    <VoiceInputToggle onTranscript={(text) => {
+                       if (resume.education.length > 0) {
+                         const currentText = resume.education[0].academicAchievements || "";
+                         setResume(r => ({ ...r, education: r.education.map((e, i) => i === 0 ? { ...e, academicAchievements: (currentText ? currentText + " " + text : text) } : e) }));
+                       }
+                    }} />
+                    <button 
+                      style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }}
+                      onClick={() => setResume(r => ({ 
+                        ...r, 
+                        education: [...r.education, { id: uid(), institution: "", degree: "", field: "", startDate: "", endDate: "", gpa: "", level: "", boardOrUniversity: "", gpaType: "cgpa", distinction: false, topper: false, scholarship: "", academicAchievements: "" }] 
+                      }))}
+                    >
+                      + Add Education
+                    </button>
+                  </div>
                 </div>
+                <SessionBanner estimatedMinutes={resume.education.length === 0 ? 3 : (resume.education.some(e => !e.institution) ? 1 : 0)} />
 
                 {resume.education.map((edu, idx) => {
                   const isCollapsed = collapsedCards[edu.id] || false;
@@ -1374,7 +1363,13 @@ function BuilderContent() {
                         <div style={{ display: "flex", gap: "0.4rem" }}>
                           <button onClick={() => setResume(r => ({ ...r, education: moveItem(r.education, idx, "up") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▲</button>
                           <button onClick={() => setResume(r => ({ ...r, education: moveItem(r.education, idx, "down") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▼</button>
-                          <button onClick={() => setResume(r => ({ ...r, education: r.education.filter(e => e.id !== edu.id) }))} style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "#ef4444", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700 }}>Delete</button>
+                          <ComparisonGuard 
+                            itemName={edu.degree || "Education"} 
+                            relevanceReason={resume.targetJobDescription ? "it might fulfill educational requirements for the target role" : undefined}
+                            onConfirmDelete={() => setResume(r => ({ ...r, education: r.education.filter(e => e.id !== edu.id) }))}
+                          >
+                            <button style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "#ef4444", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700, height: "28px" }}>Delete</button>
+                          </ComparisonGuard>
                         </div>
                       </div>
 
@@ -1443,7 +1438,15 @@ function BuilderContent() {
                           </div>
 
                           <div style={{ gridColumn: "span 2" }}>
-                            <Input variant="floating" label="Academic Achievements & Honors" placeholder="e.g. Department Rank 2, Gold medalist in Chemistry..." value={edu.academicAchievements || ""} onChange={(e) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, academicAchievements: e.target.value } : ed) }))} />
+                            <div className="flex flex-col gap-1">
+                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Academic Achievements & Honors</label>
+                              <LineInput
+                                value={edu.academicAchievements || ""}
+                                onChange={(val) => setResume(r => ({ ...r, education: r.education.map(ed => ed.id === edu.id ? { ...ed, academicAchievements: val } : ed) }))}
+                                placeholder="e.g. Department Rank 2, Gold medalist in Chemistry..."
+                                inputState={edu.academicAchievements && edu.academicAchievements.trim().length > 0 ? "unassessed" : "empty"}
+                              />
+                            </div>
                           </div>
 
                         </div>
@@ -1516,12 +1519,21 @@ function BuilderContent() {
             {/* STEP 6: Projects */}
             {activeStep === "projects" && (
               <div className="grid gap-6 grid-cols-1 items-start">
-                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Projects</h2>
-                  <button style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }} onClick={() => setResume((r) => ({ ...r, projects: [...r.projects, { id: uid(), name: "", description: "", techStack: [], link: "" }] }))}>
-                    + Add Project
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
+                    <VoiceInputToggle onTranscript={(text) => {
+                       if (resume.projects.length > 0) {
+                         const currentDesc = resume.projects[0].description || "";
+                         setResume(r => ({ ...r, projects: r.projects.map((p, i) => i === 0 ? { ...p, description: (currentDesc ? currentDesc + " " + text : text) } : p) }));
+                       }
+                    }} />
+                    <button style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "none", color: "#fff", fontWeight: 700, background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }} onClick={() => setResume((r) => ({ ...r, projects: [...r.projects, { id: uid(), name: "", description: "", techStack: [], link: "" }] }))}>
+                      + Add Project
+                    </button>
+                  </div>
                 </div>
+                <SessionBanner estimatedMinutes={resume.projects.length === 0 ? 3 : (resume.projects.some(p => !p.name) ? 2 : 0)} />
                 {resume.projects.map((proj, idx) => {
                   const isCollapsed = collapsedCards[proj.id] || false;
                   return (
@@ -1537,7 +1549,13 @@ function BuilderContent() {
                         <div style={{ display: "flex", gap: "0.4rem" }}>
                           <button onClick={() => setResume(r => ({ ...r, projects: moveItem(r.projects, idx, "up") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▲</button>
                           <button onClick={() => setResume(r => ({ ...r, projects: moveItem(r.projects, idx, "down") }))} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", cursor: "pointer" }}>▼</button>
-                          <button onClick={() => setResume((r) => ({ ...r, projects: r.projects.filter((p) => p.id !== proj.id) }))} style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "#ef4444", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700 }}>Delete</button>
+                          <ComparisonGuard 
+                            itemName={proj.name} 
+                            relevanceReason={resume.targetJobDescription && proj.techStack.length > 0 ? "it uses technologies mentioned in your target JD" : undefined}
+                            onConfirmDelete={() => setResume((r) => ({ ...r, projects: r.projects.filter((p) => p.id !== proj.id) }))}
+                          >
+                            <button style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", padding: "0 0.8rem", color: "#ef4444", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700, height: "28px" }}>Delete</button>
+                          </ComparisonGuard>
                         </div>
                       </div>
                       
@@ -1546,7 +1564,38 @@ function BuilderContent() {
                           <Input variant="floating" label="Project Name" placeholder="e.g. E-Commerce Platform" value={proj.name} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, name: e.target.value } : p) }))} />
                           <Input variant="floating" label="GitHub / Live Link" placeholder="e.g. https://github.com/user/project" value={proj.link} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, link: e.target.value } : p) }))} />
                           <div style={{ gridColumn: "1 / -1" }}>
-                            <Input variant="floating" label="Description" placeholder="Brief description of what it does and your role..." value={proj.description} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, description: e.target.value } : p) }))} />
+                            <div className="flex flex-col gap-1">
+                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Description</label>
+                              <LineInput
+                                value={proj.description}
+                                onChange={(val) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, description: val } : p) }))}
+                                placeholder="Brief description of what it does and your role..."
+                                inputState={proj.description.trim().length > 0 ? "unassessed" : "empty"}
+                              />
+                              {proj.description.trim().length > 10 && (
+                                <div className="flex justify-end mt-1">
+                                  <StrengthenButton
+                                    originalText={proj.description}
+                                    onRewrite={async (text) => {
+                                      const res = await fetch("/api/ai-rewrite", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          text,
+                                          context: `Project: ${proj.name}`,
+                                          targetJobDescription: resume.targetJobDescription || "",
+                                        }),
+                                      });
+                                      const data = await res.json();
+                                      if (!res.ok || data.error) throw new Error(data.error || "Rewrite failed");
+                                      return data.suggestions?.[0] || text;
+                                    }}
+                                    onAccept={(newText) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, description: newText } : p) }))}
+                                    onReject={() => {}}
+                                  />
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <div style={{ gridColumn: "1 / -1" }}>
                             <Input variant="floating" label="Tech stack (comma separated)" placeholder="e.g. React, Node.js, MongoDB" value={proj.techStack.join(", ")} onChange={(e) => setResume((r) => ({ ...r, projects: r.projects.map((p) => p.id === proj.id ? { ...p, techStack: e.target.value.split(",").map((s) => s.trim()) } : p) }))} />

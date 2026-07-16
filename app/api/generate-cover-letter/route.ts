@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { askAI } from "@/lib/openrouter";
 import { createClient } from "@/utils/supabase/server";
+import { checkAndDeductCredits } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,16 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
+
+    // --- CREDIT CONSUMPTION GUARD ---
+    const billingCheck = await checkAndDeductCredits(user.id, 20, "Cover Letter Generation");
+    if (!billingCheck.allowed) {
+      return NextResponse.json(
+        { error: billingCheck.error || "Insufficient credits." },
+        { status: 403 }
+      );
+    }
+    // --------------------------------
 
     const { resumeId, jobDescription } = await req.json();
     if (!resumeId || !jobDescription) {

@@ -58,11 +58,14 @@
   --score-mid:    #F59E0B;
   --score-low:    #EF4444;
 
-  /* Status */
+  /* Status / Signals (UpRole Design Spec) */
   --success: #10B981;
   --warning: #F59E0B;
   --danger:  #EF4444;
   --info:    #3B82F6;
+  --accent-affirm: #10B981; /* Affirmation indicator, green hue */
+  --signal-nudge:  #F59E0B; /* Amber tone for suggestions */
+  --signal-error:  #EF4444; /* True blockers */
 
   /* Motion */
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
@@ -131,11 +134,19 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
 body {
   background: var(--bg-page);
   color: var(--text-primary);
-  font-family: var(--font-plus-jakarta, system-ui, sans-serif);
+  font-family: 'Inter', var(--font-plus-jakarta, system-ui), sans-serif;
   transition: background var(--dur-slow) var(--ease-out),
               color var(--dur-slow) var(--ease-out);
   min-height: 100vh;
 }
+
+/* ── Typography Tokens (UpRole Design Spec) ── */
+.type-display { font-family: 'Inter', sans-serif; font-size: 28px; line-height: 34px; font-weight: 500; }
+.type-heading { font-family: 'Inter', sans-serif; font-size: 18px; line-height: 24px; font-weight: 500; }
+.type-body    { font-family: 'Inter', sans-serif; font-size: 15px; line-height: 22px; font-weight: 400; }
+.type-label   { font-family: 'Inter', sans-serif; font-size: 13px; line-height: 18px; font-weight: 500; }
+.type-caption { font-family: 'Inter', sans-serif; font-size: 12px; line-height: 16px; font-weight: 400; }
+.type-micro   { font-family: 'Inter', sans-serif; font-size: 11px; line-height: 14px; font-weight: 500; }
 
 .hero-bg-mockup {
   opacity: 1;

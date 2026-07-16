@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import LandingFeatureTour from "@/components/LandingFeatureTour";
+import PricingSection from "@/components/pricing/PricingSection";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -175,6 +176,9 @@ export default function Home() {
 
           <LandingFeatureTour />
         </section>
+
+        {/* Pricing Section */}
+        <PricingSection />
 
         {/* CTA */}
         <section className="py-24 relative z-10 overflow-hidden">
