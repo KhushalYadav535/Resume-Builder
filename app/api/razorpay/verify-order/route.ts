@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     await supabaseAdmin.from("credit_transactions").insert({
       user_id: userId,
       amount: creditsToAdd,
-      reason: `Purchased ${tier !== "free" ? tier.toUpperCase() + " Plan" : "Credits"}`,
+      reason: `Purchased ${tier && tier !== "free" ? String(tier).toUpperCase() + " Plan" : "Credits"}`,
       category: "purchase"
     });
 
