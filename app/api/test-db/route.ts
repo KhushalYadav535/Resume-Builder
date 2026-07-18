@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: err.message || String(err),
+        error: err instanceof Error ? err.message : String(err),
       },
       { status: 500 }
     );
