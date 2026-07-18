@@ -2,7 +2,8 @@
 -- Run this in your Supabase SQL Editor
 
 -- 1. Create enum for tiers
-CREATE TYPE subscription_tier AS ENUM ('free', 'sprint', 'pro');
+CREATE TYPE subscription_tier AS ENUM ('free', 'sprint', 'pro', 'interview_pack');
+
 
 -- 2. Create the user_profiles table if it doesn't exist (assuming you might have one)
 -- If you already have a profiles table, just add these columns.

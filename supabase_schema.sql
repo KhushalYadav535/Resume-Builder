@@ -357,7 +357,7 @@ CREATE TABLE IF NOT EXISTS public.career_journal_entries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   date DATE NOT NULL DEFAULT current_date,
-  entry_type TEXT NOT NULL CHECK (entry_type IN ('win', 'gap', 'skill', 'feedback', 'project', 'certification', 'promotion', 'other')),
+  entry_type TEXT NOT NULL CHECK (entry_type IN ('win', 'gap', 'skill', 'feedback', 'project', 'certification', 'promotion', 'award', 'mentorship', 'impact', 'publication', 'other')),
   content TEXT NOT NULL,
   source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'imported', 'prompted')),
   linked_role TEXT,

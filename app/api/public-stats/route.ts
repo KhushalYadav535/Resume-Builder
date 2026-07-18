@@ -53,9 +53,10 @@ export async function GET() {
         averageATS: averageATS
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error("Failed to fetch public stats:", error);
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch stats" },
+      { success: false, error: "Failed to fetch stats. Please try again." },
       { status: 500 }
     );
   }

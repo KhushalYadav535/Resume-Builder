@@ -171,10 +171,10 @@ Return ONLY the JSON array.`;
       estimatedNewScore,
       totalSuggestions: formattedSuggestions.length
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Generate suggestions error:", error);
     return NextResponse.json(
-      { error: error?.message || "Failed to generate suggestions" },
+      { error: "Failed to generate suggestions" },
       { status: 500 }
     );
   }

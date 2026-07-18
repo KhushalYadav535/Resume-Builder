@@ -164,10 +164,10 @@ export async function POST(req: NextRequest) {
       success: true,
       resume: updatedResume
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Apply suggestions error:", error);
     return NextResponse.json(
-      { error: error?.message || "Failed to apply suggestions" },
+      { error: "Failed to apply suggestions" },
       { status: 500 }
     );
   }

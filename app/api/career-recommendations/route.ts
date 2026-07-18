@@ -61,8 +61,8 @@ Respond ONLY with a valid JSON object matching this exact schema. Do not include
 
     const result = await askAIJSON<CareerRecommendations>(resumeText, systemPrompt);
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Career recommendations failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to generate career recommendations." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to generate career recommendations." }, { status: 500 });
   }
 }

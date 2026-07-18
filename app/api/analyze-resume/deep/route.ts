@@ -119,10 +119,10 @@ Instructions:
     }
 
     return NextResponse.json(updatedData);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Deep AI Analysis failed:", err);
     return NextResponse.json(
-      { error: "Deep analysis failed: " + (err.message || String(err)) },
+      { error: "Deep analysis failed: " },
       { status: 500 }
     );
   }

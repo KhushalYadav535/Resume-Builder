@@ -61,13 +61,21 @@ export async function POST(req: NextRequest) {
     const hasJD = !!targetJobDescription && targetJobDescription.trim().length > 0;
     const hasATS = atsMissingKeywords && atsMissingKeywords.length > 0;
 
-    const prompt = `You are a world-class professional resume writer and ATS optimization expert.
+    const prompt = `You are a master resume copywriter and ATS algorithm specialist. You specialize in transforming weak, passive resume bullet points into high-impact, metric-driven achievements that score in the top 1% of ATS parsing engines (Workday, Greenhouse, Lever).
 
-TASK: Rewrite the following resume text into 3 highly optimized variations. Each variation must:
-- Use strong, active action verbs (e.g., Spearheaded, Engineered, Orchestrated, Delivered)
-- Include quantified metrics and impact wherever possible (e.g., "reduced latency by 40%", "managed team of 8")
-- Be concise, direct, and ATS-friendly
-- Sound natural and professional — not robotic or generic
+TASK: Rewrite the following resume text into exactly 3 variations based on strict optimization dimensions.
+
+ANALYSIS FRAMEWORK:
+1. Action-Verb Led: Every variation must begin with a high-impact, specific action verb (e.g., Architected, Spearheaded, Orchestrated).
+2. Outcome-First Structure: Structure bullets to highlight the *result* first, followed by the *method*.
+3. JD & ATS Alignment: Weave in target keywords naturally without keyword stuffing.
+
+RULES:
+- No Hallucinations: You must NOT invent numbers, team sizes, or revenue impacts. If a metric is implied, you may add a placeholder like [XX]%, but never a fake number.
+- Distinct Variations:
+  Variation 1: Highly technical and keyword-dense (best for ATS).
+  Variation 2: Leadership & impact focused (best for Hiring Managers).
+  Variation 3: Concise and punchy (best for quick scanning).
 
 SECTION CONTEXT: ${context || "Resume section"}
 
@@ -77,27 +85,24 @@ ORIGINAL TEXT TO REWRITE:
 ${hasJD ? `TARGET JOB DESCRIPTION (align rewrites with these keywords and requirements):
 ${targetJobDescription}
 
-IMPORTANT: Each rewrite MUST naturally incorporate relevant keywords from this job description while maintaining authenticity. Do NOT fabricate skills or experience the original text doesn't imply.` : ""}
+IMPORTANT: Each rewrite MUST naturally incorporate relevant keywords from this job description while maintaining authenticity.` : ""}
 
 ${hasATS ? `ATS OPTIMIZATION CONTEXT:
 The user is targeting the "${atsIndustry || "relevant"}" industry. The resume is currently missing these critical ATS keywords:
 ${atsMissingKeywords.join(", ")}
 
-IMPORTANT: Naturally weave as many of these missing ATS keywords into the rewrite as possible to boost the ATS match score.` : ""}
+IMPORTANT: Naturally weave as many of these missing ATS keywords into the rewrite as possible.` : ""}
 
-Return a JSON object with this exact structure:
+Return a JSON object with this exact structure (do NOT use nested objects for variations, keep it as an array of 3 string variations to match the expected schema):
 {
   "suggestions": [
-    "First optimized rewrite...",
-    "Second optimized rewrite...",
-    "Third optimized rewrite..."
+    "Variation 1: [Technical & ATS Optimized rewrite text...]",
+    "Variation 2: [Leadership & Impact Focused rewrite text...]",
+    "Variation 3: [Concise & Punchy rewrite text...]"
   ]
 }
 
-Rules:
-1. Each suggestion should be a distinctly different rewrite, not just minor word swaps
-2. Keep each suggestion roughly the same length as the original (±20%)
-3. Output ONLY valid JSON. No markdown, no backticks, no explanation.`;
+Output ONLY valid JSON. No markdown, no backticks, no explanation.`;
 
     const result = await askAIJSON<RewriteSuggestion>(
       prompt,
@@ -110,7 +115,7 @@ Rules:
     }
 
     return NextResponse.json({ suggestions: result.suggestions });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("AI Rewrite failed:", err);
     return NextResponse.json(
       { error: "An unexpected error occurred while rewriting the text." },

@@ -1,10 +1,32 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(req: Request) {
   try {
+    // Auth check — prevent unauthenticated AI quota abuse
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll(); },
+          setAll(cookiesToSet) {
+            try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch {}
+          },
+        },
+      }
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
@@ -16,8 +38,6 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(bytes);
     let extractedText = "";
 
-    // For simplicity, we extract text via Gemini directly if it's an image
-    // If it's a PDF, we might need a parser, but Gemini Pro Vision supports PDFs too via parts if passed correctly.
     if (file.type.startsWith("image/") || file.type === "application/pdf") {
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const prompt = `Extract the core career achievement, praise, or learning from this document. 
@@ -49,8 +69,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, extractedText: extractedText.trim() });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error extracting data:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to extract data from file. Please try again." }, { status: 500 });
   }
 }

@@ -39,8 +39,8 @@ export async function GET(req: Request) {
     if (error) throw error;
 
     return NextResponse.json({ success: true, entries: data });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching journal entries:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to load journal entries. Please try again." }, { status: 500 });
   }
 }

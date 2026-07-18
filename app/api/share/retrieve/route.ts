@@ -53,8 +53,8 @@ export async function GET(req: NextRequest) {
       resume_data: resume.resume_data,
       template_id: resume.template_id || share.template_id || "modern",
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Public share retrieval failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to retrieve shared resume." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to retrieve shared resume." }, { status: 500 });
   }
 }

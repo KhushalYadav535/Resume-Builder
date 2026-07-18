@@ -151,10 +151,10 @@ export async function GET(req: NextRequest) {
         uploadsHistory: formatHistory(uploadHistory),
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Platform stats fetch failed:", err);
     return NextResponse.json(
-      { error: err.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

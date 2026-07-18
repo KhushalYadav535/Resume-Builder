@@ -49,6 +49,10 @@ export async function POST(req: Request) {
     } else if (tier === "pro") {
       tierExpiryDate = new Date();
       tierExpiryDate.setDate(tierExpiryDate.getDate() + 90);
+    } else if (tier === "interview_pack") {
+      // Interview Pack: 14-day access window (enough for interview prep cycle)
+      tierExpiryDate = new Date();
+      tierExpiryDate.setDate(tierExpiryDate.getDate() + 14);
     }
 
     // 1. Get current profile to safely add credits
@@ -76,10 +80,10 @@ export async function POST(req: Request) {
       { success: true, message: "Payment verified successfully" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Razorpay Verify Order Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to verify order" },
+      { error: "Failed to verify payment. Please contact support if the amount was deducted." },
       { status: 500 }
     );
   }

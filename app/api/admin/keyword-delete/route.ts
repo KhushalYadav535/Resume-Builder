@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
     fs.writeFileSync(filePath, JSON.stringify(fileData, null, 2), "utf8");
 
     return NextResponse.json({ success: true, deleted: keyword, remaining: fileData.keywords.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("keyword-delete error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

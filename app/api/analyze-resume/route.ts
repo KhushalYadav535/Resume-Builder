@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(savedRecord);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Failed local resume analysis:", err);
     return NextResponse.json(
       { error: "An unexpected error occurred while parsing the resume." },

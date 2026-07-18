@@ -44,15 +44,23 @@ export async function POST(req: NextRequest) {
     const resumeContent = JSON.stringify(resume.resume_data);
     const prompt = `Resume Content:\n${resumeContent}\n\nJob Description:\n${jobDescription}`;
 
-    const systemPrompt = `You are a seasoned recruiter and resume writer. 
-Write a highly professional, tailored cover letter using the candidate's resume details and the target Job Description.
-Ensure it uses a standard business format, focuses on matching achievements, remains concise (under 400 words), and highlights local currency/metrics if applicable.
-Return ONLY the cover letter text. No chat intro, no markdown code blocks. Just the raw letter text.`;
+    const systemPrompt = `You are an elite executive career strategist and corporate communications expert with 15+ years of experience placing candidates at Fortune 500 companies and top-tier tech firms. You know exactly how hiring managers and recruiters read cover letters: they look for immediate value alignment, not a regurgitation of the resume.
+
+Your job is to analyze the candidate's resume and the target Job Description (JD), and write a highly persuasive, customized cover letter that connects the candidate's specific achievements directly to the company's pain points.
+
+RULES:
+- Value Over Summary: Do not just summarize the resume. Connect a specific past achievement to a specific requirement in the JD.
+- Tone & Style: Confident, professional, and action-oriented. No generic fluff. Open with a strong hook.
+- Never Invent Facts: If the resume doesn't have a specific metric, do not fabricate one. Rely only on the provided resume data.
+- Indian Market Context: Where applicable, understand Indian financial metrics (₹, Lakhs, Crores) and market dynamics.
+- Length Constraint: Must be under 350 words. Respect the reader's time.
+
+Return ONLY the raw cover letter text. Do not return JSON. No chat intro, no markdown code blocks. Just the formatted letter ready to be sent.`;
 
     const result = await askAI(prompt, systemPrompt);
     return NextResponse.json({ letter: result.trim() });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Cover letter generation failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to generate cover letter." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to generate cover letter." }, { status: 500 });
   }
 }

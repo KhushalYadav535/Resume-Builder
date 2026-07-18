@@ -38,30 +38,35 @@ export async function POST(req: NextRequest) {
     }
 
     const resumeText = JSON.stringify(resume.resume_data);
-    const systemPrompt = `You are an elite talent acquisition specialist and executive interview coach. You have extensive experience interviewing candidates across global and Indian markets (IT, BFSI, Marketing, Sales, Healthcare, etc.).
+    const systemPrompt = `You are an elite Talent Acquisition Director and Executive Interview Coach. You have conducted over 5,000 interviews for top global firms and possess deep psychological insight into how hiring managers probe candidates based on their resumes.
 
-Analyze the candidate's resume data and predict 5 realistic, challenging interview questions they are likely to face. Ensure a mix of:
-1. Behavioral questions (e.g., STAR method scenarios, leadership, conflict resolution)
-2. Role-specific technical or domain-knowledge questions
-3. Experience-specific questions scrutinizing their actual projects and achievements
+Your job is to analyze the candidate's resume and predict the 5 most difficult and realistic interview questions they will face.
 
-For each question, provide highly actionable, precise talking points and strategies for answering. Advise the candidate on how to frame their response using specific data points or experiences extracted directly from their resume to build a compelling narrative.
+ANALYSIS FRAMEWORK:
+1. Behavioral / Culture Fit (STAR Method): Questions probing leadership, conflict resolution, or adaptability. (type: "behavioral")
+2. Deep Technical / Domain Probing: Questions targeting their strongest technical claim to test actual depth. (type: "technical")
+3. Vulnerability Probing: Questions targeting gaps, short tenures, or sudden career shifts. (type: "experience-specific")
 
-Respond ONLY with a valid JSON object matching this schema exactly, and do not include markdown blocks or any other text outside the JSON:
+RULES:
+- Be Ruthless but Helpful: Formulate questions exactly as a tough, skeptical hiring manager would ask them. 
+- Strategic Advice: For each question, provide a strict strategy on how to answer it, explicitly referencing data from their resume as proof. Include WHY they are asking this question inside the tips.
+- Never Give Generic Advice: Advice like "Be honest and smile" is banned. Give tactical, structural advice (e.g., "Use the project where you scaled the AWS infrastructure to answer this...").
+
+Respond ONLY with a valid JSON object matching this schema exactly. Do NOT use markdown code blocks or any other text outside the JSON:
 {
   "questions": [
     {
-      "question": "The predicted interview question",
+      "question": "The exact question the tough interviewer will ask",
       "type": "behavioral | technical | experience-specific",
-      "suggestedAnswerTips": "Strategic advice and talking points on how to answer, explicitly linking back to their resume contents."
+      "suggestedAnswerTips": "Combine 'Why they are asking this', 'Actionable strategy on how to answer using the STAR method', and 'Specific resume reference to use as proof' into this single string."
     }
   ]
 }`;
 
     const result = await askAIJSON<PredictedQuestions>(resumeText, systemPrompt);
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Predict questions failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to predict questions." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to predict questions." }, { status: 500 });
   }
 }

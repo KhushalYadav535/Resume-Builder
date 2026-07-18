@@ -93,10 +93,10 @@ IMPORTANT:
     );
 
     return NextResponse.json({ patch: result });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Naukri tip apply failed:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to generate tip patch." },
+      { error: "Failed to generate tip patch." },
       { status: 500 }
     );
   }

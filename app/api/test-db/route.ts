@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       success: true,
       data,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Database connection test failed:", err);
     return NextResponse.json(
       {

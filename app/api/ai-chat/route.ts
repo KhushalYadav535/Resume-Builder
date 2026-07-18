@@ -191,9 +191,9 @@ ${resumeContext}`;
     const result = await askAI(fullPrompt, systemPrompt);
 
     return NextResponse.json({ message: result.trim() });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("AI Coach Chat API Error:", err);
-    return NextResponse.json({ error: err.message || "Failed to generate AI Coach response." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to generate AI Coach response." }, { status: 500 });
   }
 }
 

@@ -147,10 +147,10 @@ ${cleanedText}`;
       validation: null
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("LinkedIn import API failure:", err);
     return NextResponse.json(
-      { error: err.message || "Unable to import LinkedIn details. Continue manually." },
+      { error: "Unable to import LinkedIn details. Continue manually." },
       { status: 500 }
     );
   }

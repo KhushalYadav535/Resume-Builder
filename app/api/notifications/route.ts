@@ -23,14 +23,14 @@ export async function GET(req: NextRequest) {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.warn("Notifications table query warning (might not be migrated yet):", error.message);
+      console.warn("Notifications table query warning (might not be migrated yet):", (error instanceof Error ? error.message : "Unknown error"));
       return NextResponse.json([]); // Graceful fallback
     }
 
     return NextResponse.json(data || []);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Fetch notifications failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to fetch notifications." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch notifications. Please try again." }, { status: 500 });
   }
 }
 
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         .eq("user_id", user.id);
 
       if (error) {
-        console.warn("Could not mark all notifications as read:", error.message);
+        console.warn("Could not mark all notifications as read:", (error instanceof Error ? error.message : "Unknown error"));
         return NextResponse.json({ success: false, bypassed: true });
       }
 
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
         .eq("user_id", user.id);
 
       if (error) {
-        console.warn("Could not mark notification as read:", error.message);
+        console.warn("Could not mark notification as read:", (error instanceof Error ? error.message : "Unknown error"));
         return NextResponse.json({ success: false, bypassed: true });
       }
 
@@ -83,8 +83,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ error: "Invalid request body parameters." }, { status: 400 });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Update notifications failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to update notification." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update notification. Please try again." }, { status: 500 });
   }
 }

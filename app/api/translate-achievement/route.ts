@@ -27,8 +27,8 @@ Return ONLY the rewritten bullet point text. No explanation, no intro, no conver
     const result = await askAI(bullet, systemPrompt);
 
     return NextResponse.json({ result: result.trim() });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Translate achievement failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to translate achievement." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to translate achievement." }, { status: 500 });
   }
 }

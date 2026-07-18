@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ suggestions: formattedSuggestions }, { status: 200 });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Failed to fetch accepted suggestions:", err);
     return NextResponse.json(
       { error: "An unexpected error occurred while fetching suggestions." },

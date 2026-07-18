@@ -74,9 +74,9 @@ export async function POST(req: NextRequest) {
         keywordCount: normalizedKeywords.length,
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("category-create error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }
 
@@ -112,7 +112,7 @@ export async function GET(_req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, categories });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

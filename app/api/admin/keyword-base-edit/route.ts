@@ -61,8 +61,8 @@ export async function POST(req: NextRequest) {
     fs.writeFileSync(basePath, JSON.stringify(fileData, null, 2), "utf8");
 
     return NextResponse.json({ success: true, updated: fileData.keywords[idx] });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("keyword-base-edit error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

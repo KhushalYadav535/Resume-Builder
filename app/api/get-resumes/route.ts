@@ -35,10 +35,10 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(data || []);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Failed to fetch resumes:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to fetch resumes" }, 
+      { error: "Failed to fetch resumes" }, 
       { status: 500 }
     );
   }

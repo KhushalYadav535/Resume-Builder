@@ -62,8 +62,8 @@ export async function POST(req: NextRequest) {
       success: true,
       added: { keyword: keyword.trim(), weight: kwWeight, aliases: kwAliases },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("keyword-base-add error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }
