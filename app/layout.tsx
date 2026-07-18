@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "UPROLE — Build & Optimize Your Resume",
-  description: "AI-powered resume builder, ATS scorer, and job description matcher. Land your dream job faster.",
+  title: "UpRole — Discover Your Value. Communicate It Better.",
+  description: "UpRole's AI finds the achievements you forgot to mention — and turns them into a resume that's ATS-ready and interview-ready. Free to start.",
   icons: {
     icon: "/logo symbol.png",
     apple: "/UpRole logo.jpeg",

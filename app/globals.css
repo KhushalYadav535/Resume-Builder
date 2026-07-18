@@ -768,3 +768,10 @@ textarea.input {
   transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Landing page contrast table — stack on mobile */
+@media (max-width: 640px) {
+  .contrast-table-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
