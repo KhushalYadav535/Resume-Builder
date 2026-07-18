@@ -747,3 +747,24 @@ textarea.input {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Custom Suggestion Redesign Animations ── */
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.suggestion-card {
+  animation: cardEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.progress-bar {
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+

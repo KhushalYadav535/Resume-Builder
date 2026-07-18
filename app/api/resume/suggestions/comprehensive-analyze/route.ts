@@ -39,167 +39,58 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Resume record not found or access denied." }, { status: 404 });
     }
 
-    const prompt = `You are an elite executive resume writer and ATS optimization expert with 15+ years of experience helping professionals land top-tier positions.
+    const prompt = `You are an elite executive resume writer and ATS optimization expert with 15+ years of experience. Your task is to analyze the candidate's resume and generate highly personalized, context-aware improvements.
 
-Analyze this resume comprehensively across 12 dimensions and suggest improvements for EACH:
+ABOUT THIS PERSON:
+- Target Role/Detected Role: ${detectedRole || 'General'}
+- Industry Focus: ${detectedIndustry || 'Technology'}
 
-═══════════════════════════════════════════════════════════════════════════════════════
-
-RESUME:
+RESUME TEXT:
 ---
 ${resumeText}
 ---
 
-Detected Role: ${detectedRole || 'General'}
-Industry: ${detectedIndustry || 'Technology'}
+INSTRUCTIONS:
+You must provide highly personalized, custom suggestions for incorporating improvement dimensions. Do NOT provide generic feedback (e.g., "Add metrics to your experience" or "use stronger action verbs").
+Instead:
+1. Examine their exact resume sentences.
+2. Formulate specific rewrite suggestions using the candidate's own words.
+3. Explain why this matters for their specific career trajectory, target role, or experience level.
+4. For suggestions modifying existing text, set "currentText" to the exact string from the resume (no paraphrasing) so it can be programmatically matched, and "suggestedText" to the complete, rewritten sentence.
+5. Highlight Indian job market trends (e.g. Naukri/LinkedIn SEO) where appropriate.
+6. CRITICAL: Do NOT include any emojis (e.g. 🚀, ✅, ✨, etc.) or special symbol icons in any string returned (including the "title", "description", and "suggestedText"). All values must be plain, professional, text-only characters, suitable for direct insertion into a standard corporate resume.
 
-═══════════════════════════════════════════════════════════════════════════════════════
+Analyze across these 12 dimensions:
+1️⃣ ATS KEYWORDS & TECHNICAL SKILLS (e.g. gaps in stack)
+2️⃣ SOFT SKILLS & COMPETENCIES (contextualizing leadership/communication)
+3️⃣ EXPERIENCE BULLET POINT OPTIMIZATION (rewriting weak bullets)
+4️⃣ ACHIEVEMENT QUANTIFICATION (specific metrics calculated/inferred from context)
+5️⃣ ACTION VERB IMPROVEMENT (replacing passive verbs with strong action verbs)
+6️⃣ PROFESSIONAL SUMMARY (compelling value positioning)
+7️⃣ EDUCATION SECTION (coursework/honors)
+8️⃣ CERTIFICATIONS & CREDENTIALS (AWS, GCP, etc.)
+9️⃣ PROJECTS SECTION (technical details, tools, impact)
+🔟 FORMATTING & STRUCTURE (readability, order)
+1️⃣1️⃣ CONTACT INFO & PERSONAL BRAND (LinkedIn/Naukri SEO)
+1️⃣2️⃣ WORK EXPERIENCE ORGANIZATION (chronology, growth)
 
-ANALYSIS FRAMEWORK:
-
-1️⃣ ATS KEYWORDS & TECHNICAL SKILLS
-   - Missing high-value keywords for the role
-   - Technical stack gaps
-   - Framework/tool coverage
-   
-2️⃣ SOFT SKILLS & COMPETENCIES
-   - Leadership, Communication, Problem-solving, etc.
-   - Team skills (collaboration, mentoring)
-   - Domain-specific competencies
-   
-3️⃣ EXPERIENCE BULLET POINT OPTIMIZATION
-   - Weak/passive bullets that should be rewritten
-   - Missing specific examples
-   - Bullets lacking measurable impact
-   - Current: "Responsible for X" → Suggested: "Led X, achieved Y"
-   
-4️⃣ ACHIEVEMENT QUANTIFICATION
-   - Bullets without numbers (percentages, money, time saved)
-   - Unquantified impact statements
-   - Missing metrics that strengthen credibility
-   
-5️⃣ ACTION VERB IMPROVEMENT
-   - Overused verbs (used, made, did) → Strong verbs (architected, accelerated, optimized)
-   - Weak verb choices
-   
-6️⃣ PROFESSIONAL SUMMARY
-   - Is it compelling? Does it showcase unique value?
-   - Missing key positioning
-   - Too generic or too long
-   - Opportunity: "Senior Software Engineer" → "Full-Stack Architect who scaled systems to 100K+ users"
-   
-7️⃣ EDUCATION SECTION
-   - Missing relevant coursework, honors, relevant projects
-   - Incomplete degree information
-   - Not highlighting achievements (GPA, scholarships, thesis)
-   
-8️⃣ CERTIFICATIONS & CREDENTIALS
-   - Recommended certifications for the role (AWS, GCP, Kubernetes, etc.)
-   - Licensing or domain-specific creds
-   - Skills validation certifications
-   
-9️⃣ PROJECTS SECTION
-   - Projects that don't showcase relevant skills
-   - Incomplete project descriptions
-   - Missing technical details or impact metrics
-   - Opportunity to add personal projects that fill skill gaps
-   
-🔟 FORMATTING & STRUCTURE
-   - ATS compliance issues (weird spacing, symbols, tables)
-   - Readability improvements (section order, grouping)
-   - Length optimization (too long, missing key sections)
-   - Font consistency, bullet point structure
-   
-1️⃣1️⃣ CONTACT INFO & PERSONAL BRAND (including Naukri/LinkedIn SEO)
-   - Include 1-2 suggestions specifically for "Indian Portals (Naukri/LinkedIn) SEO" if applicable. Explicitly mention "Naukri/LinkedIn SEO" in the title or description.
-   - Missing LinkedIn, GitHub, portfolio links
-   - Outdated phone/email format
-   - Missing professional branding elements
-   
-1️⃣2️⃣ WORK EXPERIENCE ORGANIZATION
-   - Chronological issues or gaps not explained
-   - Company descriptions missing
-   - Roles not clearly differentiated
-   - Progression/growth not evident
-
-═══════════════════════════════════════════════════════════════════════════════════════
-
-For EACH suggestion, return:
-
+Return ONLY a valid JSON array matching this schema:
 [
   {
     "category": "ats_keyword" | "technical_skill" | "soft_skill" | "experience_bullet" | 
                 "achievement_quantification" | "action_verb" | "professional_summary" | 
                 "education" | "certification" | "project" | "formatting" | "contact_info" | 
                 "skills_organization" | "work_experience_structure",
-    
-    "title": "Short, actionable title (5-10 words)",
-    
-    "description": "Why this matters. 1-2 sentences explaining the benefit",
-    
-    "currentText": "If applicable, the exact current text from resume (or null)",
-    
-    "suggestedText": "The improved version (or specific instruction for improvement)",
-    
-    "section": "Which resume section: summary | experience | education | skills | 
-               certifications | projects | contact | general",
-    
+    "title": "Short, highly personalized title (e.g., 'Quantify UX teaching impact at UX Club')",
+    "description": "Specific explanation of why this matters for their profile and how it upgrades their presentation.",
+    "currentText": "The exact current text from the resume to be replaced, or null if adding new content.",
+    "suggestedText": "The complete, custom rewritten version incorporating the improvement.",
+    "section": "summary" | "experience" | "education" | "skills" | "certifications" | "projects" | "contact" | "general",
     "impactLevel": "high" | "medium" | "low",
-    
-    "priority": 1-5 (5 = most important for role and ATS scoring),
-    
-    "reasoning": "Why you suggest this specific improvement"
+    "priority": 1-5,
+    "reasoning": "Detailed breakdown of the changes and how it enhances ATS / human review."
   }
 ]
-
-GUIDELINES FOR SUGGESTIONS:
-
-- Authenticity first: Never suggest fabricating experience
-- Specificity: "Add specific metrics" not "make it better"
-- Impact-focused: Prioritize by how much it improves ATS score or hiring chances
-- Actionable: User should be able to implement immediately
-- Varied: Don't all be "add more keywords" — provide true comprehensive coaching
-- IMPORTANT for currentText: When suggesting bullet rewrites, currentText MUST exactly match a portion of text from the resume provided above so we can programmatically find and replace it. Do not paraphrase currentText.
-
-EXAMPLE SUGGESTIONS (model your response exactly as a single JSON array like this):
-
-[
-  {
-    "category": "experience_bullet",
-    "title": "Strengthen impact of AWS deployment experience",
-    "description": "Current bullet is passive. Rewrite with stronger action verb and quantify the scale/impact",
-    "currentText": "Responsible for AWS infrastructure management",
-    "suggestedText": "Architected and deployed AWS infrastructure supporting 100K+ daily active users, reducing deployment time by 60%",
-    "section": "experience",
-    "impactLevel": "high",
-    "priority": 5,
-    "reasoning": "High-value keywords (architected, AWS, scale metrics) and quantification strengthen both ATS and human review"
-  },
-  {
-    "category": "achievement_quantification",
-    "title": "Add specific ROI metrics to marketing campaign bullet",
-    "description": "Quantify the business impact with concrete numbers. Metrics make achievements credible and impressive",
-    "currentText": "Led successful marketing campaigns",
-    "suggestedText": "Led 12 marketing campaigns generating $2.4M in revenue with 34% average conversion rate",
-    "section": "experience",
-    "impactLevel": "high",
-    "priority": 4,
-    "reasoning": "Numbers provide credibility and are remembered better by hiring managers"
-  },
-  {
-    "category": "contact_info",
-    "title": "Naukri/LinkedIn SEO: Add profile headline",
-    "description": "Indian job portals rank candidates based on keyword density in the headline. Make sure your profile headline matches your target role.",
-    "currentText": null,
-    "suggestedText": "Add 'Senior Frontend Engineer | React | Next.js' as your headline",
-    "section": "contact",
-    "impactLevel": "medium",
-    "priority": 4,
-    "reasoning": "Search visibility on portals like Naukri heavily relies on headline keywords."
-  }
-]
-
-═══════════════════════════════════════════════════════════════════════════════════════
 
 Now analyze the provided resume and return a JSON array with 10-12 highly-impactful comprehensive suggestions.
 
@@ -218,14 +109,14 @@ RETURN ONLY VALID JSON ARRAY. NO PREAMBLE. NO MARKDOWN.`;
     const insertData = aiResponse.map(s => ({
       resume_id: resumeId,
       user_id: user.id,
-      suggestion_category: s.category,
-      title: s.title,
-      description: s.description,
-      current_text: s.currentText || null,
-      suggested_text: s.suggestedText,
-      section: s.section,
-      impact_level: s.impactLevel ? String(s.impactLevel).toLowerCase() : "medium",
-      priority: s.priority,
+      suggestion_category: s.category || s.suggestion_category || 'ats_keyword',
+      title: s.title || 'Resume Upgrade Recommended',
+      description: s.description || 'Improvement details',
+      current_text: s.currentText || s.current_text || null,
+      suggested_text: s.suggestedText || s.suggested_text || s.suggestion || 'Upgrade recommended text',
+      section: s.section || 'general',
+      impact_level: s.impactLevel || s.impact_level ? String(s.impactLevel || s.impact_level).toLowerCase() : "medium",
+      priority: Math.min(5, Math.max(1, Math.floor(Number(s.priority) || 3))),
       is_accepted: false
     }));
 

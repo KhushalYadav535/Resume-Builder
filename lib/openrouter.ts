@@ -17,14 +17,11 @@ async function logAIRequest(model: string, success: boolean, tokensEstimated: nu
 }
 
 const OPENROUTER_MODELS = [
-  "google/gemma-4-31b-it:free",                  // Google Gemma 4 (highly capable, non-Venice)
-  "openrouter/free",                             // Smart router that auto-allocates an available free model
-  "z-ai/glm-4.5-air:free",                       // Zhipu GLM (highly available, non-Venice)
-  "poolside/laguna-xs.2:free",                   // Poolside (highly available, non-Venice)
-  "liquid/lfm-2.5-1.2b-instruct:free",           // Liquid LFM (highly available, non-Venice)
-  "meta-llama/llama-3.3-70b-instruct:free",      // Venice fallback
-  "qwen/qwen3-coder:free",                       // Venice fallback
-  "meta-llama/llama-3.2-3b-instruct:free"        // Venice fallback
+  "google/gemma-2-9b-it:free",                  // Google Gemma 2 9B (fast, free)
+  "meta-llama/llama-3-8b-instruct:free",        // Meta Llama 3 8B (fast, free)
+  "openrouter/free",                            // Smart router fallback
+  "qwen/qwen-2.5-72b-instruct:free",            // Qwen 2.5 72B (powerful, free)
+  "meta-llama/llama-3.2-3b-instruct:free"       // Venice fallback
 ];
 
 /**
