@@ -72,6 +72,7 @@ ANALYSIS FRAMEWORK:
 
 RULES:
 - No Hallucinations: You must NOT invent numbers, team sizes, or revenue impacts. If a metric is implied, you may add a placeholder like [XX]%, but never a fake number.
+- No Template Placeholders: CRITICAL - DO NOT output any generic template placeholder text like "Company Name", "Professional Role", "[Date]", etc.
 - Distinct Variations:
   Variation 1: Highly technical and keyword-dense (best for ATS).
   Variation 2: Leadership & impact focused (best for Hiring Managers).

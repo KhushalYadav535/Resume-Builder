@@ -38,7 +38,7 @@ Return as plain text, comma separated: "Technical: skill1, skill2... | Soft: ski
 
     const prompt = prompts[section] || `Improve this resume section content: ${context}\nIndustry Guidelines: ${industryGuideline}`;
     
-    const systemPrompt = `You are an expert resume writer specializing in ${industryMode} industry recruitment norms. Be direct and impactful. Adhere to: ${industryGuideline}`;
+    const systemPrompt = `You are an expert resume writer specializing in ${industryMode} industry recruitment norms. Be direct and impactful. Adhere to: ${industryGuideline}. CRITICAL RULE: DO NOT output any generic template placeholder text like "Company Name", "Professional Role", "[Date]", etc.`;
     const result = await askAI(prompt, systemPrompt);
 
     return NextResponse.json({ result: result.trim() });
