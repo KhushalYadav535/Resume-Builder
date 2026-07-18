@@ -6,13 +6,36 @@ import LandingFeatureTour from "@/components/LandingFeatureTour";
 import PricingSection from "@/components/pricing/PricingSection";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { motion } from "framer-motion";
-import { ArrowRight, Upload, Sparkles, FileText, CheckCircle, Target, Download, Settings } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  ArrowRight,
+  Upload,
+  Sparkles,
+  FileText,
+  BookOpen,
+  Kanban,
+  TrendingUp,
+  RefreshCw,
+  ChevronDown,
+  X as XIcon,
+  Check,
+  Award,
+  ShieldCheck,
+  Send,
+} from "lucide-react";
+import { useEffect, useState, useRef } from "react";
 
-function Counter({ value, suffix = "", prefix = "" }: { value: number; suffix?: string; prefix?: string }) {
+/* ───── Animated Counter ───── */
+function Counter({
+  value,
+  suffix = "",
+  prefix = "",
+}: {
+  value: number;
+  suffix?: string;
+  prefix?: string;
+}) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -20,7 +43,6 @@ function Counter({ value, suffix = "", prefix = "" }: { value: number; suffix?: 
     const end = value;
     const duration = 2000;
     const increment = end / (duration / 16);
-
     const timer = setInterval(() => {
       start += increment;
       if (start >= end) {
@@ -33,11 +55,25 @@ function Counter({ value, suffix = "", prefix = "" }: { value: number; suffix?: 
     return () => clearInterval(timer);
   }, [value]);
 
-  return <span>{prefix}{count}{suffix}</span>;
+  return (
+    <span>
+      {prefix}
+      {count}
+      {suffix}
+    </span>
+  );
 }
 
+/* ═══════════════════════════════════════════════
+   MAIN PAGE COMPONENT
+   ═══════════════════════════════════════════════ */
 export default function Home() {
-  const [dbStats, setDbStats] = useState({ totalResumes: 120, aiRunsCount: 350, averageATS: 78 });
+  const [dbStats, setDbStats] = useState({
+    totalResumes: 120,
+    aiRunsCount: 350,
+    averageATS: 78,
+  });
+  const howItWorksRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/public-stats")
@@ -49,91 +85,247 @@ export default function Home() {
       })
       .catch((err) => console.error("Failed to load public stats:", err));
   }, []);
+
+  const scrollToHowItWorks = () => {
+    howItWorksRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <main style={{ position: 'relative', minHeight: '100vh', background: 'var(--bg-page)', overflowX: 'hidden' }}>
-      <ParticleBackground count={75} connectionDist={130} />
-      <div style={{ position: 'relative', zIndex: 1 }}>
+    <main
+      className="relative min-h-screen text-[var(--text-primary)]"
+      style={{
+        background: "var(--bg-page)",
+        overflowX: "hidden",
+      }}
+    >
+      <ParticleBackground count={65} connectionDist={120} />
+
+      <div className="relative z-10">
         <Navbar />
 
-        {/* Hero Section */}
-        <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 24px 60px', overflow: 'hidden' }}>
-          {/* Background gradient orbs */}
-          <div style={{ position: 'absolute', top: '-120px', left: '-100px', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(var(--particle-rgb), 0.12) 0%, transparent 70%)', animation: 'orbDrift 10s ease-in-out infinite', pointerEvents: 'none', zIndex: 1 }} />
-          <div style={{ position: 'absolute', bottom: '-80px', right: '-60px', width: '420px', height: '420px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124, 58, 237, 0.10) 0%, transparent 70%)', animation: 'orbDrift 13s ease-in-out infinite reverse', pointerEvents: 'none', zIndex: 1 }} />
-
-          {/* Resume mockup card (background decoration) */}
-          <div className="hidden md:block hero-bg-mockup" style={{ position: 'absolute', right: 'clamp(-40px, 4vw, 60px)', top: '50%', transform: 'translateY(-50%)', width: 'clamp(280px, 28vw, 380px)', zIndex: 2, pointerEvents: 'none', animation: 'float 5s ease-in-out infinite' }}>
-            <div className="relative w-full aspect-[4/3] rounded-2xl bg-[var(--bg-surface)] border-2 border-[var(--accent)] shadow-[var(--accent-glow)] backdrop-blur-xl p-6 overflow-hidden transform rotate-y-[-10deg] rotate-x-[5deg] hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-[800ms] ease-out">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-[var(--accent-grad)]" />
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <div className="h-6 w-48 bg-[var(--border-strong)] rounded-md mb-2 opacity-60" />
-                  <div className="h-4 w-32 bg-[var(--border-strong)] rounded-md opacity-40" />
-                </div>
-                <div className="w-12 h-12 rounded-full border-[3px] border-[var(--score-high)] flex items-center justify-center font-mono font-bold text-[var(--score-high)] text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                  98
-                </div>
-              </div>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="w-2 h-2 rounded-full bg-[var(--accent)] mt-2 shadow-[0_0_10px_var(--accent)]" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 w-full bg-[var(--border-strong)] rounded-md opacity-40" />
-                      <div className="h-4 w-5/6 bg-[var(--border-strong)] rounded-md opacity-30" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* Floating optimization chip */}
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                className="absolute bottom-6 right-6 bg-[var(--bg-surface)] px-4 py-2 rounded-full shadow-[0_0_20px_var(--accent)] border border-[var(--accent)] flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]"
-              >
-                <Sparkles size={16} className="text-[var(--accent)] animate-pulse" />
-                <span>ATS Optimized</span>
-              </motion.div>
-            </div>
+        {/* ═══════════════════════════════════════
+            SECTION 1: HERO
+            ═══════════════════════════════════════ */}
+        <section className="relative min-h-[calc(100vh-72px)] flex items-center justify-center pt-24 pb-16 overflow-hidden">
+          {/* Background Ambient Orbs */}
+          <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+            <div className="absolute top-1/4 right-10 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-1/4 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
           </div>
 
-          {/* Hero text content */}
-          <div style={{ position: 'relative', zIndex: 3, maxWidth: '680px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', textAlign: 'center', animation: 'heroFadeUp 0.9s var(--ease-out) both' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', background: 'var(--accent-soft)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-full)', fontSize: '13px', fontWeight: 600, color: 'var(--accent)', animation: 'heroFadeUp 0.9s var(--ease-out) both' }}>
-              <Sparkles size={14} className="mr-1.5" />
-              AI-Powered Resume Platform
+          <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column: Text Content */}
+            <div className="space-y-8 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[var(--accent-soft)] border border-[var(--border-accent)] rounded-full text-xs font-semibold text-[var(--accent)]">
+                <Sparkles size={12} className="text-[var(--accent)] animate-pulse" />
+                <span>AI Career Companion</span>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight font-['Syne',sans-serif]">
+                <span className="text-[var(--text-primary)]">You&apos;ve done more than</span>
+                <br />
+                <span className="bg-gradient-to-r from-[var(--accent)] via-[var(--accent-2)] to-pink-500 bg-clip-text text-transparent">
+                  your resume says.
+                </span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed max-w-xl">
+                UpRole&apos;s AI finds the achievements you forgot to mention — and turns them into a resume that&apos;s ATS-ready and interview-ready. Free to start. Pay only when you&apos;re ready to apply.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                <Link href="/resume/upload" className="w-full sm:w-auto no-underline">
+                  <Button size="lg" fullWidth icon={<Upload size={18} />}>
+                    Start free — find what you&apos;re missing
+                  </Button>
+                </Link>
+                <button
+                  onClick={scrollToHowItWorks}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] font-semibold transition-all duration-200"
+                >
+                  <span>See how it works</span>
+                  <ChevronDown size={16} />
+                </button>
+              </div>
+
+              {/* Quick Social Proof Stats */}
+              <div className="flex gap-8 pt-4 border-t border-[var(--border)] max-w-md">
+                <div>
+                  <p className="text-2xl font-extrabold text-[var(--text-primary)]">15K+</p>
+                  <p className="text-xs text-[var(--text-muted)]">Resumes improved</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-[var(--text-primary)]">+18</p>
+                  <p className="text-xs text-[var(--text-muted)]">Avg ATS improvement</p>
+                </div>
+              </div>
             </div>
 
-            <h1 className="font-['Syne',sans-serif]" style={{ fontSize: 'clamp(42px, 7vw, 78px)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.025em', textAlign: 'center', color: 'var(--text-primary)', animation: 'heroFadeUp 0.9s 0.1s var(--ease-out) both' }}>
-              Outsmart the ATS.{" "}
-              <span className="gradient-text relative inline-block">
-                Land the Interview.
-                <svg className="absolute w-full h-3 -bottom-1 left-0 text-[var(--accent)] opacity-40" viewBox="0 0 100 10" preserveAspectRatio="none">
-                  <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="none" />
-                </svg>
-              </span>
-            </h1>
+            {/* Right Column: Visual Before/After Transformation Card */}
+            <div className="flex items-center justify-center relative min-h-[380px] lg:min-h-0">
+              <div className="relative w-full max-w-[420px] aspect-[4/3] flex items-center justify-center">
+                {/* BEFORE Card */}
+                <motion.div
+                  initial={{ opacity: 0, x: -30, y: -20 }}
+                  animate={{ opacity: 0.85, x: 0, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="absolute left-4 top-4 w-[280px] sm:w-[320px] bg-red-500/5 dark:bg-red-950/10 border border-red-500/20 rounded-xl p-4 sm:p-5 shadow-lg backdrop-blur-md"
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-[10px] sm:text-xs font-bold text-red-500 tracking-wider uppercase">Before UpRole</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                  </div>
+                  <p className="text-[13px] sm:text-sm font-mono text-[var(--text-muted)] line-through">
+                    &quot;Worked on customer complaints and resolved ticketing queues.&quot;
+                  </p>
+                </motion.div>
 
-            <p style={{ fontSize: 'clamp(16px, 2vw, 20px)', color: 'var(--text-muted)', fontWeight: 400, lineHeight: 1.6, maxWidth: '520px', animation: 'heroFadeUp 0.9s 0.2s var(--ease-out) both' }}>
-              Stop guessing what recruiters want. Let our elite AI engine perfect, optimize, and score your resume in seconds.
-            </p>
+                {/* Arrow */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.6 }}
+                  transition={{ duration: 0.6, delay: 0.8 }}
+                  className="absolute z-20 text-3xl text-[var(--accent)]"
+                  style={{ transform: "rotate(45deg)" }}
+                >
+                  ➔
+                </motion.div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '14px', animation: 'heroFadeUp 0.9s 0.3s var(--ease-out) both' }}>
-              <Link href="/resume/builder" className="w-full sm:w-auto no-underline">
-                <Button size="lg" fullWidth icon={<FileText size={18} />}>
-                  Build My Resume
-                </Button>
-              </Link>
-              <Link href="/resume/upload" className="w-full sm:w-auto no-underline">
-                <Button variant="secondary" size="lg" fullWidth icon={<Upload size={18} />}>
-                  Upload Resume
-                </Button>
-              </Link>
+                {/* AFTER Card */}
+                <motion.div
+                  initial={{ opacity: 0, x: 30, y: 20 }}
+                  animate={{ opacity: 1, x: 0, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                  className="absolute right-4 bottom-4 w-[300px] sm:w-[340px] bg-gradient-to-br from-[var(--accent-soft)] to-transparent border-2 border-[var(--accent)] rounded-xl p-5 sm:p-6 shadow-[var(--accent-glow)] backdrop-blur-md"
+                >
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-[10px] sm:text-xs font-bold text-[var(--accent)] tracking-wider uppercase">Surfaced Achievement</span>
+                    <Badge variant="success" className="text-[9px] px-2 py-0.5">+18 ATS</Badge>
+                  </div>
+                  <p className="text-[13px] sm:text-sm font-semibold text-[var(--text-primary)] leading-relaxed">
+                    &quot;Resolved 40+ escalations/month, cutting response time by 35% using ticket automation.&quot;
+                  </p>
+                  <div className="mt-3 flex items-center gap-1.5 text-[11px] text-[var(--accent-2)] font-semibold">
+                    <Sparkles size={12} className="animate-spin" />
+                    <span>Achievement Discovery SURFACED</span>
+                  </div>
+                </motion.div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Stats Section */}
+        {/* ═══════════════════════════════════════
+            SECTION 2: PROBLEM (Empathy Hook)
+            ═══════════════════════════════════════ */}
+        <section className="py-20 md:py-32 border-t border-[var(--border)] bg-gradient-to-b from-[var(--bg-page)] via-[var(--bg-2)] to-[var(--bg-page)]">
+          <div className="max-w-4xl mx-auto px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.7 }}
+              className="text-center space-y-6"
+            >
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif] leading-tight">
+                Your resume isn&apos;t bad.
+                <br />
+                <span className="text-[var(--accent)]">It&apos;s just underselling you.</span>
+              </h2>
+
+              <p className="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto">
+                Most people don&apos;t lie on their resumes — they under-report. You remember the late nights, not the outcomes. You remember what you did, not what changed because of it. Recruiters make a fit-or-no-fit call in seconds, not minutes. They can&apos;t read your mind — they read what you&apos;ve written, fast.
+              </p>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════
+            SECTION 3: HOW IT WORKS (Mechanism)
+            ═══════════════════════════════════════ */}
+        <section ref={howItWorksRef} className="py-20 md:py-32">
+          <div className="max-w-5xl mx-auto px-6 space-y-16">
+            {/* Header */}
+            <div className="text-center space-y-4">
+              <Badge variant="neutral" className="mb-2">How It Works</Badge>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif] leading-tight">
+                Most resume builders ask you to write.
+                <br />
+                <span className="text-[var(--accent)]">UpRole helps you remember.</span>
+              </h2>
+            </div>
+
+            {/* Comparison Table */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-lg"
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[500px]">
+                  <thead>
+                    <tr className="border-b border-[var(--border)] bg-[var(--bg-2)]">
+                      <th className="text-left p-5 text-[var(--text-secondary)] font-bold text-sm tracking-wider uppercase">Traditional Tools</th>
+                      <th className="text-left p-5 text-[var(--accent)] font-bold text-sm tracking-wider uppercase">UpRole</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)]">
+                    <tr>
+                      <td className="p-5 text-sm text-[var(--text-muted)]">Write your resume manually</td>
+                      <td className="p-5 text-sm font-medium text-[var(--text-primary)]">Tell us your story via guided chat</td>
+                    </tr>
+                    <tr>
+                      <td className="p-5 text-sm text-[var(--text-muted)]">Start from a blank page</td>
+                      <td className="p-5 text-sm font-medium text-[var(--text-primary)]">Conversational prompt guidance</td>
+                    </tr>
+                    <tr>
+                      <td className="p-5 text-sm text-[var(--text-muted)]">AI wording rewrites</td>
+                      <td className="p-5 text-sm font-medium text-[var(--text-primary)]">Achievement Discovery maps existing work</td>
+                    </tr>
+                    <tr className="bg-[var(--accent-soft)]/20">
+                      <td className="p-5 text-sm text-[var(--text-muted)]">Standard thesaurus replacements</td>
+                      <td className="p-5 text-sm font-bold text-[var(--accent)]">Surfaces quantified business outcomes</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+
+            {/* 3-Step Visual Flow */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { num: "01", title: "Tell Your Story", desc: "Chat about your career. Answer simple guided questions rather than writing templates." },
+                { num: "02", title: "AI Discovers", desc: "Our Achievement Discovery engine automatically extracts and quantifies the highlights you overlooked." },
+                { num: "03", title: "Resume Ready", desc: "Generate templates compiled with ATS-grade parser logic, fully optimized for recruiter screening." }
+              ].map((step, i) => (
+                <motion.div
+                  key={step.num}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border)] shadow-sm relative group hover:border-[var(--accent)] transition-all duration-300"
+                >
+                  <div className="text-3xl font-extrabold text-[var(--accent)] font-['Syne',sans-serif] mb-4">{step.num}</div>
+                  <h4 className="text-lg font-bold text-[var(--text-primary)] mb-2">{step.title}</h4>
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{step.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Existing Interactive Features Tour */}
+            <div className="pt-8">
+              <LandingFeatureTour />
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════
+            STATS BAR (Social Proof Counters)
+            ═══════════════════════════════════════ */}
         <section className="border-y border-[var(--border)] bg-[var(--bg-surface)] py-16 relative z-10">
           <div className="max-w-6xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10 divide-y md:divide-y-0 md:divide-x divide-[var(--border)]">
@@ -162,43 +354,216 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Interactive Features Tour */}
-        <section className="py-24 max-w-7xl mx-auto px-6 relative z-10">
-          <div className="text-center mb-16">
-            <Badge variant="neutral" className="mb-4">Features</Badge>
-            <h2 className="font-['Syne',sans-serif] text-3xl md:text-5xl font-extrabold text-[var(--text-primary)]">
-              How Uprole helps you <span className="text-[var(--accent)]">get noticed</span>
-            </h2>
-            <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", marginTop: "0.5rem" }}>
-              Everything you need to build a stronger, tailored application
-            </p>
-          </div>
+        {/* ═══════════════════════════════════════
+            SECTION 4: CONFIDENCE (Emotional Payoff)
+            ═══════════════════════════════════════ */}
+        <section className="py-20 md:py-32 bg-gradient-to-r from-purple-900/5 to-indigo-900/5 border-b border-[var(--border)]">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              {/* Text Left Column */}
+              <div className="space-y-6 lg:col-span-7">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif] leading-tight">
+                  Walk into the interview already
+                  <br />
+                  <span className="text-[var(--accent-2)]">knowing you&apos;re good enough.</span>
+                </h2>
 
-          <LandingFeatureTour />
+                <p className="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed">
+                  Imposter syndrome doesn&apos;t show up on your resume — it shows up in what you leave out. UpRole surfaces the awards, the &quot;thank yous&quot;, the problems you quietly solved, so your resume reflects what actually happened, not what you assumed wasn&apos;t worth mentioning.
+                </p>
+              </div>
+
+              {/* Graphic Right Column */}
+              <div className="flex justify-center items-center lg:col-span-5">
+                <motion.div
+                  animate={{ y: [0, -12, 0] }}
+                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                  className="relative w-44 h-44 rounded-3xl bg-gradient-to-tr from-[var(--accent)] to-[var(--accent-2)] p-1 flex items-center justify-center shadow-xl"
+                >
+                  <div className="w-full h-full bg-[var(--bg-surface)] rounded-[22px] flex flex-col items-center justify-center gap-2 p-4 text-center">
+                    <ShieldCheck size={48} className="text-[var(--accent)]" />
+                    <span className="text-sm font-bold font-['Syne',sans-serif] text-[var(--text-primary)]">Confidence Surfaced</span>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
         </section>
 
-        {/* Pricing Section */}
-        <PricingSection />
+        {/* ═══════════════════════════════════════
+            SECTION 5: BEYOND RESUME (Feature Grid)
+            ═══════════════════════════════════════ */}
+        <section className="py-20 md:py-32">
+          <div className="max-w-5xl mx-auto px-6 space-y-12">
+            {/* Header */}
+            <div className="text-center space-y-4">
+              <Badge variant="neutral" className="mb-2">Grow Post-Hire</Badge>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif]">
+                Your resume is just the beginning.
+              </h2>
+              <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
+                After you&apos;re hired, UpRole stays with you — track applications on your Kanban board, log wins in your Career Journal, and build your next resume automatically.
+              </p>
+            </div>
 
-        {/* CTA */}
-        <section className="py-24 relative z-10 overflow-hidden">
-          <div className="absolute inset-0 bg-[var(--accent-grad)] opacity-[0.03] pointer-events-none" />
-          <div className="max-w-3xl mx-auto px-6 text-center">
-            <h2 className="font-['Syne',sans-serif] text-3xl md:text-5xl font-extrabold mb-6 text-[var(--text-primary)]">
-              Ready to get more interviews?
+            {/* Feature Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
+              {[
+                { icon: <Kanban size={26} />, title: "Kanban Tracker", desc: "Organize your job search pipeline. Track applied links, mock schedule triggers, and negotiation statuses in one workspace." },
+                { icon: <BookOpen size={26} />, title: "Career Journal", desc: "Log wins as they happen, storing crucial metrics before you forget them weeks later." },
+                { icon: <Award size={26} />, title: "Promotion Builder", desc: "Collate captured feedback and journal updates to make your next package increase case automatically." }
+              ].map((feature, i) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="p-8 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border)] hover:border-[var(--accent)] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="w-12 h-12 rounded-xl bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">{feature.title}</h3>
+                    <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{feature.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════
+            SECTION 5b: VISION SECTION
+            ═══════════════════════════════════════ */}
+        <section className="py-20 md:py-32 border-t border-[var(--border)] bg-gradient-to-b from-[var(--bg-page)] via-[var(--bg-2)] to-[var(--bg-page)]">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              {/* Visual Left */}
+              <div className="flex justify-center items-center lg:col-span-5 order-last lg:order-first">
+                <motion.div
+                  animate={{ rotate: [0, 4, 0] }}
+                  transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                  className="relative w-44 h-44 rounded-3xl bg-[var(--bg-surface)] border border-[var(--border)] p-5 flex flex-col items-center justify-center gap-3 shadow-md"
+                >
+                  <RefreshCw size={44} className="text-[var(--accent-2)] animate-spin" style={{ animationDuration: '8s' }} />
+                  <span className="text-xs font-bold text-[var(--text-secondary)]">Automated Rebuild</span>
+                </motion.div>
+              </div>
+
+              {/* Text Right */}
+              <div className="space-y-6 lg:col-span-7">
+                <Badge variant="neutral" className="mb-2">Our Vision</Badge>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif] leading-tight">
+                  We believe careers shouldn&apos;t be rebuilt
+                  <br />
+                  <span className="text-[var(--accent)]">from scratch every time you change jobs.</span>
+                </h2>
+                <p className="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed">
+                  Your achievements deserve to grow with you, not disappear into an old resume file you can&apos;t find anymore. UpRole remembers them — so the next resume, the next negotiation, the next promotion case, starts from everything you&apos;ve already proven, not a blank page.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════
+            SECTION 6: PRICING (No Duplicate Headers)
+            ═══════════════════════════════════════ */}
+        <section className="relative z-10 border-t border-[var(--border)]">
+          <PricingSection />
+        </section>
+
+        {/* ═══════════════════════════════════════
+            SECTION 7: FINAL CTA
+            ═══════════════════════════════════════ */}
+        <section className="py-24 bg-gradient-to-r from-[var(--accent)]/10 to-[var(--accent-2)]/10 border-t border-[var(--border)]">
+          <div className="max-w-3xl mx-auto px-6 text-center space-y-8">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif] leading-tight">
+              You already did the work.
+              <br />
+              <span className="text-[var(--accent)]">Let&apos;s make sure it shows.</span>
             </h2>
-            <p className="text-lg text-[var(--text-secondary)] mb-10 max-w-xl mx-auto">
-              Free. No credit card. No account needed to start. Join thousands of job seekers landing their dream roles.
-            </p>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="inline-block">
-              <Link href="/resume/builder" className="no-underline">
-                <Button size="lg" icon={<ArrowRight size={18} />} className="shadow-[var(--shadow-lg)]">
-                  Start Building Now
+
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="inline-block">
+              <Link href="/resume/upload" className="no-underline">
+                <Button size="lg" className="px-10 shadow-lg">
+                  ⚡ Start free — takes 5 minutes
                 </Button>
               </Link>
             </motion.div>
+
+            <p className="text-xs text-[var(--text-muted)]">
+              No credit card needed. Free forever plan included.
+            </p>
           </div>
         </section>
+
+        {/* ═══════════════════════════════════════
+            SECTION 8: FOOTER (Premium Brand Footer)
+            ═══════════════════════════════════════ */}
+        <footer className="border-t border-[var(--border)] bg-[var(--bg-surface)] py-16 px-6 relative z-10">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+            {/* Col 1: Logo / Brand tagline */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] rounded-lg flex items-center justify-center text-white font-bold text-lg font-['Syne']">U</div>
+                <span className="font-extrabold text-[var(--text-primary)] font-['Syne'] text-base tracking-tight">UpRole</span>
+              </div>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                Discover your value. Communicate it better. Grow your career.
+              </p>
+              <p className="text-[11px] text-[var(--text-muted)]">
+                © {new Date().getFullYear()} UpRole. All rights reserved.
+              </p>
+            </div>
+
+            {/* Col 2: Product Links */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">Product</h4>
+              <ul className="space-y-2 text-xs text-[var(--text-secondary)] list-none p-0 m-0">
+                <li><Link href="/dashboard" className="hover:text-[var(--accent)] transition-colors">Dashboard</Link></li>
+                <li><Link href="/resume/builder" className="hover:text-[var(--accent)] transition-colors">Build Resume</Link></li>
+                <li><Link href="/pricing" className="hover:text-[var(--accent)] transition-colors">Pricing</Link></li>
+              </ul>
+            </div>
+
+            {/* Col 3: Social Links */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">Connect</h4>
+              <ul className="space-y-2 text-xs text-[var(--text-secondary)] list-none p-0 m-0">
+                <li><a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent)] transition-colors">GitHub</a></li>
+                <li><a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent)] transition-colors">LinkedIn</a></li>
+              </ul>
+            </div>
+
+            {/* Col 4: Newsletter */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">Stay Updated</h4>
+              <p className="text-xs text-[var(--text-muted)]">Get career updates and optimization metrics.</p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  className="flex-1 px-3 py-2 bg-[var(--bg-page)] border border-[var(--border)] rounded-lg text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
+                />
+                <button className="p-2 bg-[var(--accent)] hover:bg-[var(--accent-2)] text-white rounded-lg transition-colors flex items-center justify-center">
+                  <Send size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom links */}
+          <div className="max-w-7xl mx-auto pt-8 border-t border-[var(--border)] flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-[var(--text-muted)]">
+            <div className="flex gap-6">
+              <Link href="/privacy" className="hover:text-[var(--text-primary)] transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-[var(--text-primary)] transition-colors">Terms of Service</Link>
+            </div>
+            <p>Made with ⚡ for active job seekers.</p>
+          </div>
+        </footer>
       </div>
     </main>
   );
