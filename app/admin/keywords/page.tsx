@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/toast-1";
 import {
   ShieldCheck, BarChart2, Users, Bot, Brain,
   Plus, Trash2, Edit3, Check, X, ChevronDown, ChevronRight,
-  Search, Layers, RefreshCw, Tag, Save, PlusCircle, FolderPlus
+  Search, Layers, RefreshCw, Tag, Save, PlusCircle, FolderPlus, CreditCard
 } from "lucide-react";
 
 const WEIGHT_COLORS: Record<number, string> = {
@@ -295,6 +295,7 @@ export default function AdminKeywordsPage() {
             { href: "/admin/users", icon: <Users size={14} />, label: "Users" },
             { href: "/admin/ai-usage", icon: <Bot size={14} />, label: "AI Usage" },
             { href: "/admin/keywords", icon: <Brain size={14} />, label: "ATS Keywords", active: true },
+            { href: "/admin/billing", icon: <CreditCard size={14} />, label: "Billing & Credits" },
           ].map(tab => (
             <Link key={tab.href} href={tab.href} style={{ textDecoration: "none" }}>
               <button style={{

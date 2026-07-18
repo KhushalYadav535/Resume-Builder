@@ -4,7 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { useToast } from "@/components/ui/toast-1";
-import { ShieldCheck, BarChart2, Users, Bot, Brain } from "lucide-react";
+import { ShieldCheck, BarChart2, Users, Bot, Brain, CreditCard } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -165,6 +165,12 @@ export default function AdminUsersPage() {
             <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
               <Brain size={14} />
               ATS Keywords
+            </button>
+          </Link>
+          <Link href="/admin/billing" style={{ textDecoration: "none" }}>
+            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <CreditCard size={14} />
+              Billing & Credits
             </button>
           </Link>
         </div>
