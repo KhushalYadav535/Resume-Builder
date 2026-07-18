@@ -55,46 +55,46 @@ export async function POST(req: NextRequest) {
     const topMissing = missingKeywords.slice(0, 8);
 
     // 2. Call AI via OpenRouter
-    const prompt = `You are a professional resume coach helping job seekers in India across all industries — IT, Software, BFSI, Marketing, Sales, HR, Operations, Healthcare, and more.
+    const prompt = `You are an elite executive resume writer and ATS optimization specialist with 15+ years of experience. Your task is to analyze the candidate's resume and generate highly personalized, context-aware suggestions for incorporating missing high-value keywords.
 
-Resume text:
+RESUME TEXT:
 ---
 ${resumeText}
 ---
 
-Current detected role: ${roleToUse || 'General'}
-Industry: ${industryToUse || 'General'}
+TARGET/DETECTED ROLE: ${roleToUse || 'General'}
+INDUSTRY: ${industryToUse || 'General'}
 
-These high-value keywords are MISSING from the resume:
+MISSING HIGH-VALUE KEYWORDS (ATS TARGETS):
 ${topMissing.map(k => `- ${k.keyword} (weight: ${k.weight})`).join('\n')}
 
-For each missing keyword/skill, suggest a SPECIFIC way this candidate can add it to their resume. The advice must:
-1. Be authentic — based on what the candidate actually seems to have done (don't fabricate)
-2. Be actionable — show exactly what sentence to add and where
-3. Use simple, natural language — avoid overly corporate/buzzword-heavy phrasing
-4. Be relevant to the Indian job market — mention Indian tools, platforms, or contexts where appropriate
-5. Be encouraging and human — remember this is a real person trying to improve their career
+INSTRUCTIONS:
+You must provide highly personalized, custom suggestions for incorporating these missing keywords. Do NOT provide generic feedback (e.g., "Add keyword to your experience" or "use stronger action verbs").
+Instead:
+1. Examine their exact resume sentences.
+2. Formulate specific rewrite suggestions using the candidate's own words.
+3. Explain why this matters for their specific career trajectory, target role, or experience level.
+4. Highlight Indian job market trends (e.g. Naukri/LinkedIn SEO) where appropriate.
+5. Make the rewrite flow naturally.
+6. CRITICAL: Do NOT include any emojis (e.g. 🚀, ✅, ✨, etc.) or special symbol icons in any string returned (including the "title", "description", and "suggestedText"). All values must be plain, professional, text-only characters, suitable for direct insertion into a standard corporate resume.
 
-Return ONLY a valid JSON array:
+Return ONLY a valid JSON array matching this schema:
 [
   {
     "type": "missing_keyword" | "missing_skill" | "experience_gap" | "skill_enhancement" | "formatting_improvement",
     "keyword": "the missing keyword or skill name",
-    "title": "short, friendly title for this suggestion (5-10 words)",
-    "description": "1-2 sentence explanation of why this matters for Indian recruiters",
-    "suggestedText": "the exact text to add to the resume (1-2 sentences, in first person, achievement-focused)",
+    "title": "Short, highly personalized title (e.g., 'Integrate Kubernetes to your microservices bullet')",
+    "description": "Specific explanation of why this matters for their target role and how it upgrades their presentation.",
+    "suggestedText": "The complete, custom rewritten version incorporating the keyword (e.g. 'Orchestrated containerized microservices with Kubernetes, improving deployment frequency by 40%')",
     "category": "technical" | "soft_skill" | "experience" | "education" | "certification",
     "priority": 1-5,
     "whereToAdd": "experience" | "skills" | "summary" | "education" | "certifications"
   }
 ]
 
-Examples of good suggestions:
-- type: "missing_skill", keyword: "MS Excel", suggestedText: "Advanced proficiency in MS Excel including pivot tables, VLOOKUP, and data visualization for MIS reporting"
-- type: "experience_gap", keyword: "Team Management", suggestedText: "Led a team of 5 associates, assigning tasks, tracking KPIs, and conducting weekly review meetings"
-- type: "skill_enhancement", keyword: "Customer Relationship", suggestedText: "Managed relationships with 50+ enterprise clients resulting in 92% renewal rate"
+Now analyze the provided resume and return a JSON array of highly-impactful personalized suggestions.
 
-Return ONLY the JSON array.`;
+RETURN ONLY VALID JSON ARRAY. NO PREAMBLE. NO MARKDOWN.`;
 
     const aiResponse = await askAIJSON<any[]>(
       prompt,
@@ -114,7 +114,7 @@ Return ONLY the JSON array.`;
       description: s.description || 'Improve your resume by adding this missing keyword.',
       suggested_text: s.suggestedText || s.keyword,
       category: s.category || 'technical',
-      priority: s.priority || 3,
+      priority: Math.min(5, Math.max(1, Math.floor(Number(s.priority) || 3))),
       is_accepted: false,
     }));
 

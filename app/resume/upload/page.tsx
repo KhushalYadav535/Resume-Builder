@@ -14,6 +14,7 @@ import { ResumeSuggestion } from "@/lib/types/comprehensive-suggestions";
 import { groupSuggestions } from "@/lib/suggestions/categorize";
 import { ImprovementCategory } from "@/components/ImprovementCategory";
 import { ComprehensivePreview } from "@/components/ComprehensivePreview";
+import { SuggestionFlow } from "@/components/SuggestionFlow";
 
 type Step = "upload" | "analyzing" | "results" | "applied";
 
@@ -223,16 +224,19 @@ export default function UploadPage() {
     }
   };
 
-  const handleApplySuggestions = async () => {
-    if (selectedSuggestionIds.size === 0 || !savedId) return;
+  const handleApplySuggestions = async (acceptedSuggestionsList: ResumeSuggestion[]) => {
+    if (acceptedSuggestionsList.length === 0 || !savedId) return;
     setIsApplying(true);
     try {
+      const ids = acceptedSuggestionsList.map(s => s.id);
+      setSelectedSuggestionIds(new Set(ids));
+
       const res = await fetch("/api/resume/suggestions/apply-comprehensive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           resumeId: savedId, 
-          applySuggestionIds: Array.from(selectedSuggestionIds) 
+          applySuggestionIds: ids 
         })
       });
       if (res.ok) {
@@ -293,16 +297,18 @@ export default function UploadPage() {
     <div style={{ minHeight: "100vh", background: "var(--bg)", paddingBottom: "100px" }}>
       <Navbar />
 
-      <div style={{ maxWidth: "950px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
-        <div style={{ marginBottom: "2rem" }}>
-          <p className="section-label" style={{ marginBottom: "0.5rem" }}>Complete Resume Engine</p>
-          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800 }}>
-            Upload & Optimize
-          </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.25rem" }}>
-            ATS scoring combined with an elite 12-dimension AI coaching engine to perfect your resume.
-          </p>
-        </div>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1.5rem" }}>
+        {step !== "results" && (
+          <div style={{ marginBottom: "2rem" }}>
+            <p className="section-label" style={{ marginBottom: "0.5rem" }}>Complete Resume Engine</p>
+            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800 }}>
+              Upload & Optimize
+            </h1>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.25rem" }}>
+              ATS scoring combined with an elite 12-dimension AI coaching engine to perfect your resume.
+            </p>
+          </div>
+        )}
 
         {/* STEP 1: Upload Portal */}
         {step === "upload" && (
@@ -387,132 +393,13 @@ export default function UploadPage() {
 
         {/* STEP 3: Results */}
         {step === "results" && atsScore && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "2rem", animation: "fadeInUp 0.4s ease" }}>
-            <div className="flex-1 w-full">
-              {/* Score Header */}
-              <div className="card mb-6 border-l-4 border-[#43e97b] bg-[rgba(67,233,123,0.02)]">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                      <CheckCircle2 className="text-[#43e97b]" size={22} />
-                      Comprehensive Analysis Complete
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      Impact: {suggestions.length} improvements found across multiple dimensions.
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-6">
-                    <div className="text-center">
-                      <div className="text-xs uppercase font-bold text-muted-foreground mb-1">Current ATS</div>
-                      <div className="text-3xl font-black font-syne" style={{ color: getScoreColor(atsScore.overall) }}>
-                        {atsScore.overall}<span className="text-sm font-normal text-muted-foreground">/100</span>
-                      </div>
-                    </div>
-                    {suggestions.length > 0 && (
-                      <>
-                        <div className="h-12 w-px bg-border"></div>
-                        <div className="text-center">
-                          <div className="text-xs uppercase font-bold text-[#43e97b] mb-1">Potential</div>
-                          <div className="text-3xl font-black font-syne text-[#43e97b]">
-                            {Math.min(100, atsScore.overall + Math.floor(selectedSuggestionIds.size * 1.5))}
-                            <span className="text-sm font-normal text-muted-foreground">/100</span>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {error && <div className="mb-6 p-4 rounded-xl bg-red-500/10 border-l-4 border-red-500 text-red-400 text-sm">{error}</div>}
-
-              {/* Categories */}
-              <h3 className="text-lg font-bold text-white mb-4">Improvement Opportunities</h3>
-              
-              <ImprovementCategory 
-                title="ATS & Technical Keywords" 
-                emoji="⭐" 
-                description="Missing high-value keywords and hard skills."
-                suggestions={grouped.atsAndKeywords}
-                selectedIds={selectedSuggestionIds}
-                onToggle={toggleSuggestionSelection}
-                onAcceptAll={handleAcceptAllInCategory}
-              />
-
-              <ImprovementCategory 
-                title="Experience Bullet Optimization" 
-                emoji="💪" 
-                description="Rewrite passive bullets, add action verbs and impact metrics."
-                suggestions={grouped.experienceBullets}
-                selectedIds={selectedSuggestionIds}
-                onToggle={toggleSuggestionSelection}
-                onAcceptAll={handleAcceptAllInCategory}
-              />
-
-              <ImprovementCategory 
-                title="Soft Skills & Competencies" 
-                emoji="🎯" 
-                description="Highlight leadership, communication, and domain expertise."
-                suggestions={grouped.softSkills}
-                selectedIds={selectedSuggestionIds}
-                onToggle={toggleSuggestionSelection}
-                onAcceptAll={handleAcceptAllInCategory}
-              />
-
-              <ImprovementCategory 
-                title="Summary, Education & Certs" 
-                emoji="📚" 
-                description="Optimize professional summary, add certifications and achievements."
-                suggestions={grouped.sections}
-                selectedIds={selectedSuggestionIds}
-                onToggle={toggleSuggestionSelection}
-                onAcceptAll={handleAcceptAllInCategory}
-              />
-
-              <ImprovementCategory 
-                title="Formatting & Structure" 
-                emoji="🎨" 
-                description="Fix ATS parsing issues and improve readability."
-                suggestions={grouped.formatting}
-                selectedIds={selectedSuggestionIds}
-                onToggle={toggleSuggestionSelection}
-                onAcceptAll={handleAcceptAllInCategory}
-              />
-
-              {suggestions.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground bg-card rounded-xl border border-border/50">
-                  <div className="text-amber-500 mb-4 flex justify-center"><Sparkles size={40} /></div>
-                  <p>Your resume is in excellent shape! No major AI suggestions found.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Sticky Actions Footer */}
-            {suggestions.length > 0 && (
-              <div className="fixed bottom-0 left-0 right-0 p-5 bg-[var(--bg-glass-nav)] backdrop-blur-xl border-t border-[var(--border)] z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
-                <div className="max-w-4xl mx-auto flex items-center justify-between">
-                  <div className="text-sm font-medium text-[var(--text-muted)] hidden sm:block">
-                    <span className="text-[var(--text-primary)] font-bold">{selectedSuggestionIds.size}</span> / {suggestions.length} selected
-                  </div>
-                  <div className="flex gap-3 w-full sm:w-auto">
-                    <button 
-                      onClick={() => { setStep("upload"); setAtsScore(null); setResumeText(""); }}
-                      className="px-6 py-2.5 rounded-xl font-medium text-sm bg-[var(--bg-2)] hover:bg-[var(--bg-3)] transition-colors border border-[var(--border)] flex-1 sm:flex-none"
-                    >
-                      Skip
-                    </button>
-                    <button 
-                      onClick={handleApplySuggestions}
-                      disabled={selectedSuggestionIds.size === 0 || isApplying}
-                      className="px-8 py-2.5 rounded-xl font-bold text-sm bg-[var(--accent)] text-white hover:opacity-90 transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] disabled:opacity-50 disabled:shadow-none flex-1 sm:flex-none"
-                    >
-                      {isApplying ? "Applying..." : `Apply & Preview (${selectedSuggestionIds.size})`}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+          <div style={{ animation: "fadeInUp 0.4s ease" }}>
+            <SuggestionFlow
+              suggestions={suggestions}
+              currentScore={atsScore.overall}
+              estimatedNewScore={Math.min(100, atsScore.overall + Math.round(suggestions.length * 1.5))}
+              onApplyChanges={handleApplySuggestions}
+            />
           </div>
         )}
 
