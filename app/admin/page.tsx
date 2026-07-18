@@ -4,7 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { Card } from "@/components/ui/Card";
 import ParticleBackground from "@/components/ui/ParticleBackground";
-import { ShieldCheck, FileText, TrendingUp, User, BarChart2, Users, Bot, Brain, Sparkles } from "lucide-react";
+import { ShieldCheck, FileText, TrendingUp, User, BarChart2, Users, Bot, Brain, Sparkles, CreditCard } from "lucide-react";
 
 interface SignupHistoryItem {
   date: string;
@@ -195,6 +195,12 @@ export default function AdminDashboardPage() {
             <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
               <Brain size={14} />
               ATS Keywords
+            </button>
+          </Link>
+          <Link href="/admin/billing" style={{ textDecoration: "none" }}>
+            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <CreditCard size={14} />
+              Billing & Credits
             </button>
           </Link>
         </div>
