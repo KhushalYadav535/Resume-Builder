@@ -74,8 +74,8 @@ Respond ONLY with a JSON object:
     const result = await askAIJSON<NaukriTipsResult>(prompt, systemPrompt);
 
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Naukri tips generation failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to generate job portal optimization tips." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to generate job portal optimization tips." }, { status: 500 });
   }
 }

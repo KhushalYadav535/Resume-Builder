@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
         .select();
 
       if (error) {
-        console.error("Supabase update error:", error.message, error.details, error.hint);
+        console.error("Supabase update error:", (error instanceof Error ? error.message : "Unknown error"), error.details, error.hint);
         throw error;
       }
       if (!data || data.length === 0) {
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
         .select();
 
       if (error) {
-        console.error("Supabase insert error:", error.message, error.details, error.hint);
+        console.error("Supabase insert error:", (error instanceof Error ? error.message : "Unknown error"), error.details, error.hint);
         throw error;
       }
       resultData = data;
@@ -131,10 +131,10 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(savedRecord);
-  } catch (err: any) {
-    console.error("Failed to save resume:", err?.message || err, err?.stack || "");
+  } catch (err: unknown) {
+    console.error("Failed to save resume:", err);
     return NextResponse.json(
-      { error: err?.message || "An unexpected error occurred while saving the resume." },
+      { error: "Failed to save resume. Please try again." },
       { status: 500 }
     );
   }

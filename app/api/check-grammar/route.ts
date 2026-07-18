@@ -42,8 +42,8 @@ Respond ONLY with a JSON object of the following format:
 
     const result = await askAIJSON<GrammarCheckResult>(text, systemPrompt);
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Grammar check failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to perform grammar check." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to perform grammar check." }, { status: 500 });
   }
 }

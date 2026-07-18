@@ -165,19 +165,13 @@ export default function Navbar() {
               <NotificationBell />
               <div className="relative group cursor-pointer">
                 <div
-                  className="flex items-center justify-center w-[34px] h-[34px] rounded-full text-white font-bold text-[13px] transition-all duration-300"
+                  className="flex items-center justify-center w-[34px] h-[34px] rounded-full text-white font-bold text-[13px] transition-all duration-300 hover:scale-[1.08] hover:shadow-[var(--accent-glow)]"
                   style={{
                     background: "var(--accent-grad)",
                   }}
                 >
                   {userInitials}
                 </div>
-                <style jsx>{`
-                  div:hover {
-                    transform: scale(1.08);
-                    box-shadow: var(--accent-glow);
-                  }
-                `}</style>
                 <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-[#12121a] border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right scale-95 group-hover:scale-100 z-50">
                   
                   {/* Header */}
@@ -208,17 +202,39 @@ export default function Navbar() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Balance</span>
-                        <span className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md">
-                          <Coins size={12} />
-                          {profile.credit_balance}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Balance</span>
+                          <Link href="/dashboard/credits" className="text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors">View history</Link>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {profile.credit_balance < 50 && profile.tier === 'free' && (
+                            <Link href="/pricing" className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded transition-colors">Top Up</Link>
+                          )}
+                          <span
+                            className={`text-[12px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-md ${
+                              profile.credit_balance < 20
+                                ? 'text-red-500 bg-red-500/10'
+                                : profile.credit_balance < 50
+                                ? 'text-amber-500 bg-amber-500/10'
+                                : 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10'
+                            }`}
+                          >
+                            <Coins size={12} />
+                            {profile.credit_balance}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    <Link href="/pricing" className="mt-4 flex items-center justify-center gap-1.5 w-full text-[13px] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-lg py-2.5 transition-all shadow-sm hover:shadow-md">
-                      Upgrade <ArrowRight size={14} />
-                    </Link>
+                    {profile.tier === 'free' ? (
+                      <Link href="/pricing" className="mt-4 flex items-center justify-center gap-1.5 w-full text-[13px] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-lg py-2.5 transition-all shadow-sm hover:shadow-md">
+                        Upgrade <ArrowRight size={14} />
+                      </Link>
+                    ) : (
+                      <Link href="/dashboard/credits" className="mt-4 flex items-center justify-center gap-1.5 w-full text-[13px] font-semibold text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/10 rounded-lg py-2.5 transition-all">
+                        <Coins size={13} /> View Credits & History
+                      </Link>
+                    )}
                   </div>
 
                   <div className="px-2 pb-1 border-t border-gray-100 dark:border-white/5 pt-1 mt-1">

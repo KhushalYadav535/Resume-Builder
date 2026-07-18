@@ -89,10 +89,10 @@ export async function POST(req: NextRequest) {
       count: suggestionIds.length,
       acceptedSuggestions: formattedSuggestions
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Accept/reject suggestions error:", error);
     return NextResponse.json(
-      { error: error?.message || "Failed to process suggestions" },
+      { error: "Failed to process suggestions" },
       { status: 500 }
     );
   }

@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
       text: text.trim(),
       fileName: file.name,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Parse Route Error:", err);
     return NextResponse.json({ error: "An unexpected error occurred." }, { status: 500 });
   }

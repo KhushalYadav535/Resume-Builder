@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
-import { BookOpen, Plus, Calendar, Tag, ChevronRight, Award, Zap, TrendingUp, AlertTriangle } from "lucide-react";
+import { BookOpen, Plus, Calendar, Tag, ChevronRight, Award, Zap, TrendingUp, AlertTriangle, Search, Filter } from "lucide-react";
 import { CareerJournalEntry } from "@/types";
 import { useToast } from "@/components/ui/toast-1";
 import QuickEntryModal from "@/components/career-journal/QuickEntryModal";
@@ -22,6 +22,8 @@ export default function CareerJournalPage() {
   const [showQuickEntry, setShowQuickEntry] = useState(false);
   const [prefilledContent, setPrefilledContent] = useState("");
   const [generatedPromptStr, setGeneratedPromptStr] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -88,10 +90,33 @@ export default function CareerJournalPage() {
       case "win": return <Award size={18} className="text-emerald-500" />;
       case "skill": return <Zap size={18} className="text-amber-500" />;
       case "promotion": return <TrendingUp size={18} className="text-purple-500" />;
-      case "gap": return <AlertTriangle size={18} className="text-red-500" />;
+      case "gap": return <AlertTriangle size={18} className="text-orange-400" />;
       default: return <BookOpen size={18} className="text-blue-500" />;
     }
   };
+
+  const filteredEntries = entries.filter((e) => {
+    const matchesType = filterType === "all" || e.entry_type === filterType;
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      e.content.toLowerCase().includes(q) ||
+      (e.tags || []).some((t) => t.toLowerCase().includes(q)) ||
+      e.entry_type.toLowerCase().includes(q);
+    return matchesType && matchesSearch;
+  });
+
+  const ENTRY_TYPES = [
+    { value: "all", label: "All" },
+    { value: "win", label: "Win" },
+    { value: "skill", label: "Skill" },
+    { value: "promotion", label: "Promotion" },
+    { value: "certification", label: "Certification" },
+    { value: "project", label: "Project" },
+    { value: "feedback", label: "Feedback" },
+    { value: "gap", label: "Gap" },
+    { value: "other", label: "Other" },
+  ];
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
@@ -120,25 +145,79 @@ export default function CareerJournalPage() {
             </button>
           </div>
 
+          {/* Search + Filter */}
+          <div style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
+            <div style={{ position: "relative", flex: 1, minWidth: "200px" }}>
+              <Search size={16} style={{ position: "absolute", left: "0.8rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
+              <input
+                type="text"
+                className="input"
+                placeholder="Search entries..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ paddingLeft: "2.2rem", height: "38px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "8px", width: "100%" }}
+              />
+            </div>
+            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", alignItems: "center" }}>
+              <Filter size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+              {ENTRY_TYPES.map((t) => (
+                <button
+                  key={t.value}
+                  onClick={() => setFilterType(t.value)}
+                  style={{
+                    padding: "0.3rem 0.7rem",
+                    borderRadius: "999px",
+                    border: `1px solid ${filterType === t.value ? "var(--accent)" : "var(--border)"}`,
+                    background: filterType === t.value ? "rgba(108,99,255,0.1)" : "var(--bg-elevated)",
+                    color: filterType === t.value ? "var(--accent)" : "var(--text-muted)",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Timeline View */}
-          <div style={{ marginTop: "2rem" }}>
-            <h2 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "1.5rem" }}>Timeline</h2>
+          <div style={{ marginTop: "0" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h2 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>Timeline</h2>
+              {filteredEntries.length !== entries.length && (
+                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                  Showing {filteredEntries.length} of {entries.length}
+                </span>
+              )}
+            </div>
             
             {loading ? (
               <div style={{ textAlign: "center", padding: "2rem" }}><div className="spinner" style={{ width: 30, height: 30, margin: "0 auto" }} /></div>
-            ) : entries.length === 0 ? (
+            ) : filteredEntries.length === 0 ? (
               <div className="card" style={{ textAlign: "center", padding: "3rem", borderStyle: "dashed" }}>
                 <BookOpen size={48} className="text-gray-300 mx-auto mb-4" />
-                <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem" }}>Your journal is empty</h3>
-                <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>Start logging your career achievements to build a powerful resume later.</p>
-                <button onClick={() => setShowQuickEntry(true)} className="btn-secondary" style={{ marginTop: "1rem" }}>Log your first entry</button>
+                {entries.length === 0 ? (
+                  <>
+                    <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem" }}>Your journal is empty</h3>
+                    <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>Start logging your career achievements to build a powerful resume later.</p>
+                    <button onClick={() => setShowQuickEntry(true)} className="btn-secondary" style={{ marginTop: "1rem" }}>Log your first entry</button>
+                  </>
+                ) : (
+                  <>
+                    <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem" }}>No matching entries</h3>
+                    <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>Try adjusting your search or filter.</p>
+                    <button onClick={() => { setSearchQuery(""); setFilterType("all"); }} className="btn-secondary" style={{ marginTop: "1rem" }}>Clear Filters</button>
+                  </>
+                )}
               </div>
             ) : (
               <div style={{ display: "grid", gap: "1.5rem", position: "relative" }}>
                 {/* Vertical Line */}
                 <div style={{ position: "absolute", left: "20px", top: "10px", bottom: "10px", width: "2px", background: "var(--border)" }} />
 
-                {entries.map((entry) => (
+                {filteredEntries.map((entry) => (
                   <div key={entry.id} style={{ display: "flex", gap: "1.5rem", position: "relative", zIndex: 1 }}>
                     <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "var(--bg-elevated)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       {getTypeIcon(entry.entry_type)}
@@ -178,7 +257,7 @@ export default function CareerJournalPage() {
         {/* Sidebar */}
         <div style={{ display: "grid", gap: "1.5rem", alignContent: "start" }}>
           
-          <StreakIndicator entriesCount={entries.length} />
+          <StreakIndicator entries={entries} />
 
           {/* Health Check-in */}
           <div className="card" style={{ padding: "1.5rem", background: "linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)", border: "1px solid rgba(108, 99, 255, 0.2)" }}>
@@ -191,7 +270,7 @@ export default function CareerJournalPage() {
             </button>
           </div>
 
-          <AchievementRadar onLogQuickWin={() => setShowQuickEntry(true)} />
+          <AchievementRadar entries={entries} onLogQuickWin={() => setShowQuickEntry(true)} />
 
           <ProjectSync onGeneratedPrompt={(prompt) => {
             setGeneratedPromptStr(prompt);

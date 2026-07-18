@@ -18,6 +18,8 @@ import NegotiationScript from "@/components/career-copilot/NegotiationScript";
 import CompanyResearch from "@/components/career-copilot/CompanyResearch";
 import MarketTimingAlerts from "@/components/career-copilot/MarketTimingAlerts";
 import PeerBenchmark from "@/components/career-copilot/PeerBenchmark";
+import MockInterview from "@/components/career-copilot/MockInterview";
+import LearningPathRecommender from "@/components/career-copilot/LearningPathRecommender";
 
 export default function CareerCopilotPage() {
   const { user, loading: authLoading } = useAuth();
@@ -37,10 +39,12 @@ export default function CareerCopilotPage() {
   const [careerStoryLoading, setCareerStoryLoading] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [toneValue, setToneValue] = useState(50);
+  const [narrativeAudience, setNarrativeAudience] = useState("interview");
+  const [narrativeCopied, setNarrativeCopied] = useState(false);
 
   // Skill Gap States
   const [targetRole, setTargetRole] = useState("");
-  const [skillGapData, setSkillGapData] = useState<{ matchedSkills: string[]; missingSkills: string[]; recommendedCourses: string[]; gapPercentage: number } | null>(null);
+  const [skillGapData, setSkillGapData] = useState<{ matchedSkills: string[]; missingSkills: string[]; recommendedCourses: string[]; gapPercentage: number; estimatedWeeksToClose?: number } | null>(null);
   const [skillGapLoading, setSkillGapLoading] = useState(false);
   const [careerRecommendations, setCareerRecommendations] = useState<{ roleTitle: string; marketDemand: string; averageSalaryRange: string; whyGoodFit: string }[]>([]);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
@@ -106,7 +110,7 @@ export default function CareerCopilotPage() {
       const res = await fetch("/api/generate-career-story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeId: selectedResume.id, tone: toneValue })
+        body: JSON.stringify({ resumeId: selectedResume.id, tone: toneValue, audience: narrativeAudience })
       });
       if (res.ok) {
         const data = await res.json();
@@ -294,15 +298,54 @@ export default function CareerCopilotPage() {
                     Narrative Studio
                   </h3>
                   <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
-                    Generate a high-quality elevator pitch script tailored to your resume's achievements to kickstart your interviews confidently. Use the calibrator to match your desired tone.
+                    Generate a tailored pitch for your chosen audience — interview intro, recruiter DM, LinkedIn About, or networking message.
                   </p>
-                  
+
+                  {/* Audience Selector */}
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                    {[
+                      { value: "interview", label: "Interview Intro" },
+                      { value: "recruiter", label: "Recruiter DM" },
+                      { value: "linkedin", label: "LinkedIn About" },
+                      { value: "networking", label: "Networking Intro" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => { setNarrativeAudience(opt.value); setShowStoryModal(false); setCareerStory(""); }}
+                        style={{
+                          padding: "0.35rem 0.8rem",
+                          borderRadius: "999px",
+                          border: `1px solid ${narrativeAudience === opt.value ? "var(--accent)" : "var(--border)"}`,
+                          background: narrativeAudience === opt.value ? "rgba(108,99,255,0.1)" : "var(--bg-elevated)",
+                          color: narrativeAudience === opt.value ? "var(--accent)" : "var(--text-muted)",
+                          fontSize: "0.78rem",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+
                   <ToneCalibrator value={toneValue} onChange={setToneValue} />
 
                   {showStoryModal && careerStory ? (
                     <div style={{ background: "rgba(108, 99, 255, 0.04)", border: "1px solid rgba(108, 99, 255, 0.15)", borderRadius: "8px", padding: "1.2rem", marginTop: "0.5rem" }}>
-                       <p style={{ whiteSpace: "pre-wrap", fontSize: "0.88rem", lineHeight: 1.6, margin: 0 }}>{careerStory}</p>
-                       <button onClick={() => setShowStoryModal(false)} className="btn-secondary" style={{ marginTop: "1rem", fontSize: "0.8rem" }}>Close</button>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
+                        <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--accent)" }}>Generated Script</span>
+                        <div style={{ display: "flex", gap: "0.6rem" }}>
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(careerStory); setNarrativeCopied(true); setTimeout(() => setNarrativeCopied(false), 2000); }}
+                            style={{ background: "none", border: "none", cursor: "pointer", color: narrativeCopied ? "#10b981" : "var(--text-muted)", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.3rem" }}
+                          >
+                            {narrativeCopied ? "✓ Copied!" : "Copy"}
+                          </button>
+                          <button onClick={() => { setShowStoryModal(false); setCareerStory(""); }} className="btn-secondary" style={{ fontSize: "0.8rem", padding: "0.3rem 0.7rem" }}>Regenerate</button>
+                        </div>
+                      </div>
+                      <p style={{ whiteSpace: "pre-wrap", fontSize: "0.88rem", lineHeight: 1.7, margin: 0 }}>{careerStory}</p>
                     </div>
                   ) : (
                     <button
@@ -311,7 +354,7 @@ export default function CareerCopilotPage() {
                       className="btn-primary mt-2"
                       style={{ padding: "0.6rem 1.2rem", fontSize: "0.85rem", background: "linear-gradient(135deg, #6c63ff 0%, #3b82f6 100%)", border: "none", width: "fit-content" }}
                     >
-                      {careerStoryLoading ? "Generating Elevator Pitch..." : "✦ Generate Elevator Pitch Script"}
+                      {careerStoryLoading ? "Generating Script..." : `✦ Generate ${["interview","recruiter","linkedin","networking"].includes(narrativeAudience) ? {interview:"Interview Intro",recruiter:"Recruiter DM",linkedin:"LinkedIn About",networking:"Networking Intro"}[narrativeAudience] : "Script"}`}
                     </button>
                   )}
                 </div>
@@ -370,7 +413,9 @@ export default function CareerCopilotPage() {
                       })}
                     </div>
                   )}
-                </div>
+                  {/* Mock Interview STAR Builder */}
+                <MockInterview resumeId={selectedResume.id} questions={questions} />
+              </div>
               </div>
             )}
 
@@ -408,7 +453,7 @@ export default function CareerCopilotPage() {
 
                   {skillGapData && (
                     <div style={{ display: "grid", gap: "1.5rem", borderTop: "1px solid var(--border)", paddingTop: "1.5rem", marginTop: "0.5rem" }}>
-                      {/* Gap Percentage Badge */}
+                      {/* Gap & Time-to-Close Summary */}
                       <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", background: "rgba(0,0,0,0.15)", padding: "1rem 1.5rem", borderRadius: "10px" }}>
                         <div style={{
                           fontSize: "2.2rem",
@@ -418,12 +463,18 @@ export default function CareerCopilotPage() {
                         }}>
                           {skillGapData.gapPercentage}%
                         </div>
-                        <div>
+                        <div style={{ flex: 1 }}>
                           <strong style={{ display: "block", fontSize: "0.9rem" }}>Skills Gap Detected</strong>
                           <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
                             {skillGapData.gapPercentage > 60 ? "Requires significant skill acquisition." : skillGapData.gapPercentage > 30 ? "Moderate alignment. Learn recommended topics to stand out." : "Excellent alignment! Minimal skill gap detected."}
                           </span>
                         </div>
+                        {skillGapData.estimatedWeeksToClose && (
+                          <div style={{ textAlign: "center", background: "rgba(108,99,255,0.1)", border: "1px solid rgba(108,99,255,0.2)", borderRadius: "10px", padding: "0.6rem 1rem" }}>
+                            <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" }}>Est. to close</div>
+                            <div style={{ fontSize: "1.4rem", fontWeight: 900, color: "var(--accent)", fontFamily: "Syne, sans-serif", lineHeight: 1.1 }}>~{skillGapData.estimatedWeeksToClose}w</div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Matched vs Missing */}
@@ -460,6 +511,15 @@ export default function CareerCopilotPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Learning Path Recommender — appears after skill gap runs */}
+                {skillGapData && skillGapData.missingSkills && skillGapData.missingSkills.length > 0 && (
+                  <LearningPathRecommender
+                    targetRole={targetRole}
+                    missingSkills={skillGapData.missingSkills}
+                    gapPercentage={skillGapData.gapPercentage}
+                  />
+                )}
 
                 {/* Career Path Recommendations */}
                 <div className="card" style={{ display: "grid", gap: "1.2rem", padding: "1.5rem" }}>

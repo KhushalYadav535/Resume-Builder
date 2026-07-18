@@ -426,8 +426,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Export Word failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to export Word document." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to export Word document." }, { status: 500 });
   }
 }

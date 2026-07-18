@@ -24,7 +24,7 @@ export async function checkAndDeductCredits(
     }
 
     // 2. Check active subscription tier
-    const isPremium = profile.tier === "sprint" || profile.tier === "pro";
+    const isPremium = profile.tier === "sprint" || profile.tier === "pro" || profile.tier === "interview_pack";
     const isActive = profile.tier_expiry_date ? new Date(profile.tier_expiry_date) > new Date() : false;
 
     if (isPremium && isActive) {

@@ -23,8 +23,8 @@ export async function GET(req: NextRequest) {
     const benchmark = getSalaryBenchmark(role, yoe, city);
 
     return NextResponse.json(benchmark);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Salary benchmark endpoint failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to retrieve salary benchmark." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to retrieve salary benchmark." }, { status: 500 });
   }
 }

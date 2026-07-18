@@ -50,7 +50,7 @@ export async function GET(_req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, data: results });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

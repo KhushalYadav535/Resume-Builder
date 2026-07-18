@@ -269,10 +269,10 @@ RETURN ONLY VALID JSON ARRAY. NO PREAMBLE. NO MARKDOWN.`;
       estimatedNewScore: 100 // We can calculate this dynamically on frontend based on selected items
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Comprehensive analysis error:", error);
     return NextResponse.json(
-      { error: "Failed to generate comprehensive suggestions: " + error.message },
+      { error: "Failed to generate suggestions. Please try again." },
       { status: 500 }
     );
   }

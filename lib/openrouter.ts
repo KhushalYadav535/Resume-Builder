@@ -120,96 +120,117 @@ export async function askAI(prompt: string, systemPrompt?: string): Promise<stri
 }
 
 /**
- * JSON generation helper.
+ * JSON generation helper with built-in auto-retries and robust extraction.
  * Deploys OpenRouter models chain.
  */
-export async function askAIJSON<T>(prompt: string, systemPrompt?: string): Promise<T> {
+export async function askAIJSON<T>(prompt: string, systemPrompt?: string, retries = 2): Promise<T> {
   const combinedSystem = (systemPrompt ? `${systemPrompt}\n\n` : "") +
     INDIAN_MARKET_GUIDELINE +
     "\n\nYou must respond ONLY with valid JSON. No explanation, no markdown, no backticks. Ensure ALL property names are double-quoted. Do NOT include any trailing commas. Just raw JSON.";
 
-  try {
-    const messages = [
-      { role: "system", content: combinedSystem },
-      { role: "user", content: prompt }
-    ];
+  let messages = [
+    { role: "system", content: combinedSystem },
+    { role: "user", content: prompt }
+  ];
 
-    const rawResponse = await fetchOpenRouter(messages, 0.7, 4000);
+  let attempt = 0;
+  let lastParseError = "";
 
-    console.log("--- OpenRouter Raw JSON Response ---");
-    console.log(rawResponse);
-    console.log("-------------------------------------");
-
-    let clean = rawResponse.replace(/```json|```/g, "").trim();
-
-    // Extract the JSON object or array substring if there is surrounding conversational text
-    const firstBrace = clean.indexOf('{');
-    const firstBracket = clean.indexOf('[');
-    let startIndex = -1;
-    if (firstBrace !== -1 && firstBracket !== -1) {
-      startIndex = Math.min(firstBrace, firstBracket);
-    } else if (firstBrace !== -1) {
-      startIndex = firstBrace;
-    } else if (firstBracket !== -1) {
-      startIndex = firstBracket;
-    }
-
-    if (startIndex !== -1) {
-      const lastBrace = clean.lastIndexOf('}');
-      const lastBracket = clean.lastIndexOf(']');
-      let endIndex = -1;
-      if (lastBrace !== -1 && lastBracket !== -1) {
-        endIndex = Math.max(lastBrace, lastBracket);
-      } else if (lastBrace !== -1) {
-        endIndex = lastBrace;
-      } else if (lastBracket !== -1) {
-        endIndex = lastBracket;
-      }
-
-      if (endIndex !== -1 && endIndex > startIndex) {
-        clean = clean.substring(startIndex, endIndex + 1);
-      }
-    }
-
-    // Helper to fix common AI trailing comma errors
-    const sanitizeJSON = (str: string) => str.replace(/,\s*([\]}])/g, '$1');
-    const sanitizedClean = sanitizeJSON(clean);
-
+  while (attempt <= retries) {
     try {
-      return JSON.parse(sanitizedClean) as T;
-    } catch (parseError: any) {
-      // Try array first (for askAIJSON<any[]> cases)
-      const matchArr = clean.match(/\[[\s\S]*\]/);
-      if (matchArr) {
-        try { return JSON.parse(sanitizeJSON(matchArr[0])) as T; } catch (e) { }
+      const rawResponse = await fetchOpenRouter(messages, 0.7, 4000);
+
+      console.log(`--- OpenRouter Raw JSON Response (Attempt ${attempt + 1}) ---`);
+      console.log(rawResponse);
+      console.log("-------------------------------------");
+
+      let clean = rawResponse.replace(/```(?:json)?|```/g, "").trim();
+
+      // Extract the JSON object or array substring if there is surrounding conversational text
+      const firstBrace = clean.indexOf('{');
+      const firstBracket = clean.indexOf('[');
+      let startIndex = -1;
+      if (firstBrace !== -1 && firstBracket !== -1) {
+        startIndex = Math.min(firstBrace, firstBracket);
+      } else if (firstBrace !== -1) {
+        startIndex = firstBrace;
+      } else if (firstBracket !== -1) {
+        startIndex = firstBracket;
       }
 
-      // Try object next
-      const matchObj = clean.match(/\{[\s\S]*\}/);
-      if (matchObj) {
-        try { return JSON.parse(sanitizeJSON(matchObj[0])) as T; } catch (e) { }
-      }
-
-      // Ultimate Fallback: Extract all flat JSON objects individually (ignores bad objects & truncation)
-      const flatObjects = clean.match(/\{[^{}]+\}/g);
-      if (flatObjects && flatObjects.length > 0) {
-        const parsed = [];
-        for (const objStr of flatObjects) {
-          try {
-            // Fix unquoted keys for this specific object if needed
-            let fixed = objStr.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
-            parsed.push(JSON.parse(sanitizeJSON(fixed)));
-          } catch (e) { }
+      if (startIndex !== -1) {
+        const lastBrace = clean.lastIndexOf('}');
+        const lastBracket = clean.lastIndexOf(']');
+        let endIndex = -1;
+        if (lastBrace !== -1 && lastBracket !== -1) {
+          endIndex = Math.max(lastBrace, lastBracket);
+        } else if (lastBrace !== -1) {
+          endIndex = lastBrace;
+        } else if (lastBracket !== -1) {
+          endIndex = lastBracket;
         }
-        if (parsed.length > 0) {
-          return parsed as any;
+
+        if (endIndex !== -1 && endIndex > startIndex) {
+          clean = clean.substring(startIndex, endIndex + 1);
         }
       }
 
-      throw new Error("AI returned invalid JSON: " + parseError.message);
+      // Helper to fix common AI trailing comma errors
+      const sanitizeJSON = (str: string) => str.replace(/,\s*([\]}])/g, '$1');
+      const sanitizedClean = sanitizeJSON(clean);
+
+      try {
+        return JSON.parse(sanitizedClean) as T;
+      } catch (parseError: any) {
+        // Try array first (for askAIJSON<any[]> cases)
+        const matchArr = clean.match(/\[[\s\S]*\]/);
+        if (matchArr) {
+          try { return JSON.parse(sanitizeJSON(matchArr[0])) as T; } catch (e) { }
+        }
+
+        // Try object next
+        const matchObj = clean.match(/\{[\s\S]*\}/);
+        if (matchObj) {
+          try { return JSON.parse(sanitizeJSON(matchObj[0])) as T; } catch (e) { }
+        }
+
+        // Ultimate Fallback: Extract all flat JSON objects individually
+        const flatObjects = clean.match(/\{[^{}]+\}/g);
+        if (flatObjects && flatObjects.length > 0) {
+          const parsed = [];
+          for (const objStr of flatObjects) {
+            try {
+              let fixed = objStr.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+              parsed.push(JSON.parse(sanitizeJSON(fixed)));
+            } catch (e) { }
+          }
+          if (parsed.length > 0) {
+            return parsed as any;
+          }
+        }
+        
+        lastParseError = parseError.message;
+        throw new Error("AI returned invalid JSON: " + parseError.message);
+      }
+    } catch (err: any) {
+      console.warn(`[askAIJSON] Attempt ${attempt + 1} failed:`, err.message || String(err));
+      
+      // Only retry if it was a JSON parsing failure
+      if (err.message.includes("AI returned invalid JSON") && attempt < retries) {
+        console.log(`[askAIJSON] Retrying (${attempt + 1}/${retries})...`);
+        messages.push({ role: "assistant", content: err.message });
+        messages.push({ role: "user", content: "Your previous response was invalid JSON. Please return ONLY raw JSON without any conversational text or markdown blocks." });
+        attempt++;
+      } else {
+        // Stop retrying
+        if (err.message.includes("AI returned invalid JSON")) {
+           console.error("AI Client JSON Failure (Retries exhausted):", err);
+           throw new Error("The AI generated an unreadable response. Please try again.");
+        }
+        throw new Error(`AI Client Failure: ${err.message || String(err)}`);
+      }
     }
-  } catch (err: any) {
-    console.error("AI Client JSON Failure (OpenRouter failed):", err);
-    throw new Error(`AI Client JSON Failure: ${err.message || String(err)}`);
   }
+  
+  throw new Error("The AI generated an unreadable response. Please try again.");
 }

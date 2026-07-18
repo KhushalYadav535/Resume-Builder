@@ -9,6 +9,7 @@ interface SkillGapResult {
   missingSkills: string[];
   recommendedCourses: string[];
   gapPercentage: number;
+  estimatedWeeksToClose: number;
 }
 
 export async function POST(req: NextRequest) {
@@ -45,19 +46,21 @@ Perform a rigorous and strict evaluation of their current skills versus what is 
 2. Identify critical missing skills (what they lack but is essential for the target role). Be highly critical.
 3. Recommend 3-5 specific, modern learning topics or certifications they should pursue to bridge the gap.
 4. Calculate a strict gap percentage (0-100%, where 0% means perfectly qualified and 100% means completely unqualified).
+5. Estimate the total number of weeks of focused learning needed to close the gap (be realistic: 1-52 weeks).
 
 Respond ONLY with a valid JSON object of this exact structure, with no markdown formatting outside the JSON:
 {
   "matchedSkills": ["skill1", "skill2"],
   "missingSkills": ["missing1", "missing2"],
   "recommendedCourses": ["Specific Certification/Topic 1", "Specific Certification/Topic 2"],
-  "gapPercentage": 45
+  "gapPercentage": 45,
+  "estimatedWeeksToClose": 6
 }`;
 
     const result = await askAIJSON<SkillGapResult>(prompt, systemPrompt);
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Skill gap analysis failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to perform skill gap analysis." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to perform skill gap analysis." }, { status: 500 });
   }
 }

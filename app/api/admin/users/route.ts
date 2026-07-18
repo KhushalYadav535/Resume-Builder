@@ -22,14 +22,14 @@ export async function GET(req: NextRequest) {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.warn("Error querying user profiles (might not be migrated yet):", error.message);
+      console.warn("Error querying user profiles (might not be migrated yet):", (error instanceof Error ? error.message : "Unknown error"));
       return NextResponse.json([]); // Graceful fallback
     }
 
     return NextResponse.json(users || []);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Fetch admin users failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to fetch users." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch users." }, { status: 500 });
   }
 }
 
@@ -70,9 +70,9 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, user: data });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Update user role failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to update user role." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update user role." }, { status: 500 });
   }
 }
 
@@ -106,8 +106,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Delete user failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to delete user." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete user." }, { status: 500 });
   }
 }

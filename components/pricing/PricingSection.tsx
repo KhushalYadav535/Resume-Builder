@@ -161,7 +161,7 @@ export default function PricingSection() {
           </ul>
           <button 
             disabled={isProcessing}
-            onClick={() => handlePayment(799, "Interview Pack", "sprint", 0)}
+            onClick={() => handlePayment(799, "Interview Pack", "interview_pack", 0)}
             className="w-full py-3 rounded-xl font-semibold border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-50"
           >
             Get Interview Pack
@@ -200,7 +200,7 @@ export default function PricingSection() {
       </div>
 
       {/* Credit Top Ups */}
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-4xl mx-auto px-6" id="topup">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4" style={{ fontFamily: "Syne, sans-serif" }}>Just need a quick fix?</h2>
           <p className="text-[var(--text-secondary)]">

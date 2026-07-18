@@ -91,8 +91,8 @@ export async function GET(req: NextRequest) {
         modelCounts,
       }
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Fetch AI usage logs failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to query AI usage statistics." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to query AI usage statistics." }, { status: 500 });
   }
 }

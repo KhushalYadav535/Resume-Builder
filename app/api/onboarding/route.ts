@@ -28,13 +28,13 @@ export async function POST(req: NextRequest) {
     // Note: If the column or profiles table is not yet fully updated by the user in SQL console,
     // we return a successful fake response to ensure zero onboarding locks for the user.
     if (error) {
-      console.warn("Could not write onboarding status to profiles table:", error.message);
+      console.warn("Could not write onboarding status to profiles table:", (error instanceof Error ? error.message : "Unknown error"));
       return NextResponse.json({ success: true, bypassed: true });
     }
 
     return NextResponse.json({ success: true, data });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Onboarding endpoint failed:", err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to complete onboarding. Please try again." }, { status: 500 });
   }
 }

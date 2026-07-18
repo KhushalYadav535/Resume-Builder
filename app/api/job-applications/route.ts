@@ -39,9 +39,9 @@ export async function GET(req: NextRequest) {
 
     if (error) throw error;
     return NextResponse.json(data || []);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("GET job applications failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to fetch job applications." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch job applications." }, { status: 500 });
   }
 }
 
@@ -112,9 +112,9 @@ export async function POST(req: NextRequest) {
 
     if (error) throw error;
     return NextResponse.json(data);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("POST job application failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to add job application." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to add job application." }, { status: 500 });
   }
 }
 
@@ -189,9 +189,9 @@ export async function PUT(req: NextRequest) {
 
     if (error) throw error;
     return NextResponse.json(data);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("PUT job application failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to update job application." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update job application." }, { status: 500 });
   }
 }
 
@@ -220,8 +220,8 @@ export async function DELETE(req: NextRequest) {
 
     if (error) throw error;
     return NextResponse.json({ success: true, message: "Job application deleted." });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("DELETE job application failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to delete job application." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete job application." }, { status: 500 });
   }
 }

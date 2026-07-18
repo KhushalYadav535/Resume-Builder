@@ -40,9 +40,9 @@ export async function GET(req: NextRequest) {
       .maybeSingle();
 
     return NextResponse.json(shareLink || { active: false, message: "No active share link found." });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("GET share status failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to retrieve share status." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to retrieve share status." }, { status: 500 });
   }
 }
 
@@ -114,8 +114,8 @@ export async function POST(req: NextRequest) {
       if (error) throw error;
       return NextResponse.json(data);
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("POST share toggle failed:", err);
-    return NextResponse.json({ error: err.message || "Failed to toggle share settings." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to toggle share settings." }, { status: 500 });
   }
 }

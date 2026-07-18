@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       message: "Resume deleted successfully.",
       deletedRecord,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Failed to delete resume:", err);
     return NextResponse.json(
       { error: "An unexpected error occurred while deleting the resume." },

@@ -88,10 +88,10 @@ export async function GET(req: NextRequest) {
         recentActivity: topActivity,
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Failed to gather admin stats:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to query stats" },
+      { error: "Failed to query stats" },
       { status: 500 }
     );
   }

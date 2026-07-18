@@ -72,10 +72,10 @@ Analyze the match and return the JSON.`;
     const result = await askAIJSON<JDMatch>(userPrompt, systemPrompt);
 
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Failed JD Match analysis:", err);
     return NextResponse.json(
-      { error: "Failed to analyze JD Match: " + (err.message || String(err)) },
+      { error: "Failed to analyze JD Match: " },
       { status: 500 }
     );
   }

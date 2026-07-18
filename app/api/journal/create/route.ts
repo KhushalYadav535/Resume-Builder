@@ -88,7 +88,31 @@ export async function POST(req: Request) {
         const earnedThisMonth = monthTx.reduce((sum, tx) => sum + tx.amount, 0);
         const MAX_MONTHLY_BONUS = 50;
 
-        const allowedBonus = Math.min(potentialBonus, MAX_MONTHLY_BONUS - earnedThisMonth);
+        let allowedBonus = Math.min(potentialBonus, MAX_MONTHLY_BONUS - earnedThisMonth);
+
+        // --- DIMINISHING RETURNS: Check same entry_type in last 7 days ---
+        if (allowedBonus > 0) {
+          const sevenDaysAgo = new Date(now);
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+          const { data: recentSameType } = await supabase
+            .from("career_journal_entries")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("entry_type", entry_type)
+            .gte("created_at", sevenDaysAgo.toISOString());
+
+          const sameTypeCount = recentSameType ? recentSameType.length : 0;
+
+          // 5+ same type in 7 days → 0 bonus
+          // 3-4 same type in 7 days → 50% bonus
+          if (sameTypeCount >= 5) {
+            allowedBonus = 0;
+          } else if (sameTypeCount >= 3) {
+            allowedBonus = Math.floor(allowedBonus * 0.5);
+          }
+        }
+        // -------------------------------------------------------------------
 
         if (allowedBonus > 0) {
           // Give them the allowed bonus
@@ -111,7 +135,7 @@ export async function POST(req: Request) {
                 amount: allowedBonus,
                 reason: `Journal Entry Bonus: ${entry_type}`,
                 category: "journal_bonus",
-                expires_at: new Date(now.setFullYear(now.getFullYear() + 1)).toISOString() // 12 months expiry
+                expires_at: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString() // 12 months expiry
               });
           }
         }
@@ -120,8 +144,8 @@ export async function POST(req: Request) {
     // -------------------------------------------
 
     return NextResponse.json({ success: true, entry: data });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating journal entry:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to save journal entry. Please try again." }, { status: 500 });
   }
 }
