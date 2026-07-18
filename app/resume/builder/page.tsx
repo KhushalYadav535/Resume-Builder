@@ -294,7 +294,7 @@ function BuilderContent() {
 
     const fetchResume = async () => {
       try {
-        const res = await fetch("/api/get-resumes");
+        const res = await fetch("/api/get-resumes", { cache: "no-store" });
         const data = await res.json();
         
         let found = null;
@@ -325,6 +325,11 @@ function BuilderContent() {
             initialTemplateRef.current = found.template_id;
             setSelectedTemplate(found.template_id);
           }
+        } else {
+          // Explicitly reset state for new users with no resumes
+          setResume(defaultEmptyResume);
+          setResumeId(null);
+          initialResumeRef.current = JSON.stringify(defaultEmptyResume);
         }
       } catch (err) {
         console.error("Error loading resume details for edit:", err);
@@ -1463,8 +1468,12 @@ function BuilderContent() {
                 <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Skills</h2>
                   <button style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "1px solid var(--accent)", color: "var(--accent)", fontWeight: 700, background: "transparent", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.4rem" }} disabled={!!aiLoading} onClick={() => {
-                    const role = resume.workExperience[0]?.role || "software engineer";
-                    handleAIEngineCall("skills", role, (r) => {
+                    const context = resume.workExperience[0]?.role || resume.summary || resume.projects[0]?.name;
+                    if (!context || context.trim() === "") {
+                      showToast("Please add at least one Work Experience, Summary, or Project first so AI can generate relevant skills.", "error");
+                      return;
+                    }
+                    handleAIEngineCall("skills", context, (r) => {
                       const techMatch = r.match(/Technical:(.*?)(\||$)/i);
                       const softMatch = r.match(/Soft:(.*?)(\||$)/i);
                       const tech = techMatch ? techMatch[1].split(",").map((s) => s.trim()).filter(Boolean) : [];

@@ -132,6 +132,7 @@ STRICT VALIDATION RULES:
 7. If a field has no data, use empty string "" or empty array [].
 8. Never truncate valid professional content.
 9. IF YOU CANNOT EXTRACT DATA, YOU MUST STILL RETURN A VALID JSON OBJECT MATCHING THE STRUCTURE WITH EMPTY FIELDS. DO NOT OUTPUT ANY EXPLANATORY TEXT.
+10. CRITICAL: DO NOT include template placeholder text like "Company Name", "Professional Role", "[Date]", etc. in your output. If a field is unknown, leave it as an empty string.
 
 LinkedIn PDF text to extract from:
 ${cleanedText}`;
