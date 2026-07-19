@@ -3,6 +3,7 @@ import Script from "next/script";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ToastProvider } from "@/components/ui/toast-1";
 import CreditBannerWrapper from "@/components/credits/CreditBannerWrapper";
+import ReferralTracker from "@/components/ReferralTracker";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import "./globals.css";
 
@@ -59,6 +60,7 @@ export default function RootLayout({
           <ToastProvider>
             {children}
             <CreditBannerWrapper />
+            <ReferralTracker />
           </ToastProvider>
         </AuthProvider>
       </body>
