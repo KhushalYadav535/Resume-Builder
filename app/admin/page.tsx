@@ -4,7 +4,9 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { Card } from "@/components/ui/Card";
 import ParticleBackground from "@/components/ui/ParticleBackground";
-import { ShieldCheck, FileText, TrendingUp, User, BarChart2, Users, Bot, Brain, Sparkles, CreditCard, Megaphone } from "lucide-react";
+import { 
+  BarChart2, Users, FileText, CheckCircle, Brain, CreditCard, Clock, Star, Megaphone, Settings, ShieldCheck, Bot, Sparkles, TrendingUp, User
+} from "lucide-react";
 
 interface SignupHistoryItem {
   date: string;
@@ -207,6 +209,12 @@ export default function AdminDashboardPage() {
             <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
               <Megaphone size={14} />
               Broadcasts
+            </button>
+          </Link>
+          <Link href="/admin/settings" style={{ textDecoration: "none" }}>
+            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <Settings size={14} />
+              Settings
             </button>
           </Link>
         </div>

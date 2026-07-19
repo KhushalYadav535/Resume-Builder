@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
-import { X, Sparkles, AlertCircle, ChevronDown } from "lucide-react";
+import { X, Sparkles, AlertCircle, ChevronDown, Calendar } from "lucide-react";
 import { CareerJournalEntry } from "@/types";
 
 interface QuickEntryModalProps {
   onClose: () => void;
   onSave: (entry: Partial<CareerJournalEntry>) => Promise<void>;
   prefilledContent?: string;
+  editEntry?: CareerJournalEntry | null;
 }
 
 const PROMPTS = [
@@ -33,15 +34,25 @@ const ENTRY_TYPES = [
   { value: "other", label: "General Activity Log" },
 ];
 
-export default function QuickEntryModal({ onClose, onSave, prefilledContent }: QuickEntryModalProps) {
-  const [content, setContent] = useState(prefilledContent || "");
-  const [entryType, setEntryType] = useState<CareerJournalEntry["entry_type"]>("win");
-  const [tags, setTags] = useState("");
+export default function QuickEntryModal({ onClose, onSave, prefilledContent, editEntry }: QuickEntryModalProps) {
+  const isEditing = !!editEntry;
+
+  const [content, setContent] = useState(editEntry?.content || prefilledContent || "");
+  const [entryType, setEntryType] = useState<CareerJournalEntry["entry_type"]>(editEntry?.entry_type || "win");
+  const [tags, setTags] = useState((editEntry?.tags || []).join(", "));
   const [saving, setSaving] = useState(false);
   const [activePrompt, setActivePrompt] = useState(PROMPTS[0]);
 
+  // Date for past entries
+  const todayStr = new Date().toISOString().split("T")[0];
+  const [entryDate, setEntryDate] = useState<string>(
+    editEntry?.date ? new Date(editEntry.date).toISOString().split("T")[0] : todayStr
+  );
+
   // Gap 3-step fields
-  const [gapWhatHappened, setGapWhatHappened] = useState("");
+  const [gapWhatHappened, setGapWhatHappened] = useState(
+    editEntry?.entry_type === "gap" ? editEntry.content.split("What I did:")[0].replace("What happened:", "").trim() : ""
+  );
   const [gapWhatYouDid, setGapWhatYouDid] = useState("");
   const [gapWhatYouLearned, setGapWhatYouLearned] = useState("");
 
@@ -50,7 +61,6 @@ export default function QuickEntryModal({ onClose, onSave, prefilledContent }: Q
   const handleSave = async () => {
     let finalContent = content.trim();
 
-    // For gap entries, stitch the 3-step fields into the content
     if (isGapEntry) {
       if (!gapWhatHappened.trim()) return;
       finalContent = [
@@ -65,10 +75,12 @@ export default function QuickEntryModal({ onClose, onSave, prefilledContent }: Q
     if (!finalContent) return;
     setSaving(true);
     await onSave({
+      id: editEntry?.id,
       content: finalContent,
       entry_type: entryType,
       tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
       source: "manual",
+      date: entryDate,
     });
     setSaving(false);
     onClose();
@@ -88,7 +100,9 @@ export default function QuickEntryModal({ onClose, onSave, prefilledContent }: Q
           <X size={24} />
         </button>
 
-        <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.5rem", fontWeight: 800, marginBottom: "1.5rem" }}>Log Career Event</h2>
+        <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.5rem", fontWeight: 800, marginBottom: "1.5rem" }}>
+          {isEditing ? "Edit Journal Entry" : "Log Career Event"}
+        </h2>
 
         <div style={{ display: "grid", gap: "1.2rem" }}>
           {/* Entry Type */}
@@ -107,6 +121,23 @@ export default function QuickEntryModal({ onClose, onSave, prefilledContent }: Q
               </select>
               <ChevronDown size={16} style={{ position: "absolute", right: "0.8rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none" }} />
             </div>
+          </div>
+
+          {/* Date Picker for past entries */}
+          <div>
+            <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: 600 }}>
+              <Calendar size={14} style={{ color: "var(--accent)" }} />
+              Date of Event
+              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 400 }}>(can be in the past)</span>
+            </label>
+            <input
+              type="date"
+              className="input"
+              value={entryDate}
+              max={todayStr}
+              onChange={(e) => setEntryDate(e.target.value)}
+              style={{ background: "var(--bg-elevated)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: "8px", height: "42px", width: "100%", padding: "0 1rem" }}
+            />
           </div>
 
           {/* Gap 3-Step Flow */}
@@ -166,15 +197,17 @@ export default function QuickEntryModal({ onClose, onSave, prefilledContent }: Q
             </div>
           ) : (
             <>
-              {/* Guided Prompt */}
-              <div style={{ background: "rgba(108, 99, 255, 0.05)", border: "1px solid rgba(108, 99, 255, 0.2)", borderRadius: "12px", padding: "1rem", display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-                <Sparkles size={20} className="text-purple-500" style={{ marginTop: "2px", flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", color: "var(--text)", fontWeight: 600 }}>Guided Prompt</p>
-                  <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--text-muted)", fontStyle: "italic" }}>"{activePrompt}"</p>
+              {/* Guided Prompt — only for new entries */}
+              {!isEditing && (
+                <div style={{ background: "rgba(108, 99, 255, 0.05)", border: "1px solid rgba(108, 99, 255, 0.2)", borderRadius: "12px", padding: "1rem", display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+                  <Sparkles size={20} className="text-purple-500" style={{ marginTop: "2px", flexShrink: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", color: "var(--text)", fontWeight: 600 }}>Guided Prompt</p>
+                    <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--text-muted)", fontStyle: "italic" }}>"{activePrompt}"</p>
+                  </div>
+                  <button onClick={shufflePrompt} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: "0.8rem", cursor: "pointer", fontWeight: 600, flexShrink: 0 }}>Refresh</button>
                 </div>
-                <button onClick={shufflePrompt} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: "0.8rem", cursor: "pointer", fontWeight: 600, flexShrink: 0 }}>Refresh</button>
-              </div>
+              )}
 
               {/* Content */}
               <div>
@@ -207,7 +240,7 @@ export default function QuickEntryModal({ onClose, onSave, prefilledContent }: Q
           <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
             <button onClick={onClose} className="btn-secondary">Cancel</button>
             <button onClick={handleSave} disabled={saving || !canSave} className="btn-primary" style={{ minWidth: "120px" }}>
-              {saving ? "Saving..." : "Save Entry"}
+              {saving ? "Saving..." : isEditing ? "Update Entry" : "Save Entry"}
             </button>
           </div>
         </div>

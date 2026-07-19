@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { ArrowUpCircle, ListChecks } from "lucide-react";
+import { ArrowUpCircle, ListChecks, Copy, Check } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
 import ToneCalibrator from "@/components/career-copilot/ToneCalibrator";
 
@@ -9,6 +9,7 @@ export default function PromotionCaseBuilder() {
   const [toneValue, setToneValue] = useState(50);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string>("");
+  const [copied, setCopied] = useState(false);
   const { showToast } = useToast();
 
   const handleGenerate = async () => {
@@ -63,9 +64,17 @@ export default function PromotionCaseBuilder() {
 
       {result && (
         <div style={{ background: "rgba(108, 99, 255, 0.05)", border: "1px solid rgba(108, 99, 255, 0.2)", borderRadius: "10px", padding: "1.2rem", marginTop: "0.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.8rem", color: "var(--accent)" }}>
-            <ListChecks size={16} />
-            <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>Suggested Talking Points & Draft</span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--accent)" }}>
+              <ListChecks size={16} />
+              <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>Suggested Talking Points & Draft</span>
+            </div>
+            <button
+              onClick={() => { navigator.clipboard.writeText(result); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+              style={{ background: "none", border: "1px solid var(--border)", borderRadius: "6px", padding: "0.3rem 0.7rem", cursor: "pointer", color: copied ? "#10b981" : "var(--text-muted)", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.3rem", fontWeight: 600 }}
+            >
+              {copied ? <><Check size={13} /> Copied!</> : <><Copy size={13} /> Copy</>}
+            </button>
           </div>
           <p style={{ whiteSpace: "pre-wrap", margin: 0, fontSize: "0.9rem", color: "var(--text)", lineHeight: 1.6 }}>
             {result}

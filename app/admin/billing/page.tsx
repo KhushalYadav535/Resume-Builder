@@ -168,6 +168,12 @@ export default function AdminBillingPage() {
               Broadcasts
             </button>
           </Link>
+          <Link href="/admin/settings" style={{ textDecoration: "none" }}>
+            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <Settings size={14} />
+              Settings
+            </button>
+          </Link>
         </div>
 
         {errorMsg && (

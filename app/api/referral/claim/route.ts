@@ -68,7 +68,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "You cannot refer yourself." }, { status: 400 });
     }
 
-    const BONUS_CREDITS = 50;
+    // 2.5 Fetch global referral bonus amount
+    const { data: settingsData } = await supabaseAdmin
+      .from("app_settings")
+      .select("value")
+      .eq("key", "referral_bonus_amount")
+      .single();
+
+    const BONUS_CREDITS = settingsData?.value !== undefined ? Number(settingsData.value) : 50;
+    
+    if (BONUS_CREDITS <= 0) {
+      return NextResponse.json({ error: "The referral bonus program is currently paused." }, { status: 400 });
+    }
 
     // 3. Update my profile (add referred_by and credits)
     await supabaseAdmin
