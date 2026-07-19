@@ -5,9 +5,10 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { useToast } from "@/components/ui/toast-1";
 import {
   Coins, TrendingUp, TrendingDown, Gift, ShoppingCart,
-  BookOpen, Zap, ArrowUpRight, Clock, AlertCircle
+  BookOpen, Zap, ArrowUpRight, Clock, AlertCircle, Users, Copy
 } from "lucide-react";
 
 interface Transaction {
@@ -25,11 +26,18 @@ interface Profile {
   credit_balance: number;
 }
 
+interface ReferralStats {
+  referralCode: string;
+  referralCount: number;
+  totalEarned: number;
+}
+
 const categoryConfig: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
   journal_bonus: { icon: <BookOpen size={14} />, color: "#10b981", bg: "rgba(16,185,129,0.1)" },
   purchase:      { icon: <ShoppingCart size={14} />, color: "#6c63ff", bg: "rgba(108,99,255,0.1)" },
   welcome:       { icon: <Gift size={14} />, color: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
   usage:         { icon: <Zap size={14} />, color: "#ef4444", bg: "rgba(239,68,68,0.1)" },
+  referral_bonus:{ icon: <Users size={14} />, color: "#3b82f6", bg: "rgba(59,130,246,0.1)" },
   default:       { icon: <Coins size={14} />, color: "#6b7280", bg: "rgba(107,114,128,0.1)" },
 };
 
@@ -42,38 +50,80 @@ const tierLabels: Record<string, { label: string; color: string }> = {
 export default function CreditsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { showToast } = useToast();
+  
   const [profile, setProfile] = useState<Profile | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
   }, [authLoading, user, router]);
 
-  useEffect(() => {
+  const fetchData = async () => {
     if (!user) return;
-    const fetchData = async () => {
-      const supabase = createClient();
-      const [profileRes, txRes] = await Promise.all([
-        supabase.from("profiles").select("tier, tier_expiry_date, credit_balance").eq("id", user.id).single(),
-        supabase.from("credit_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
-      ]);
-      if (profileRes.data) setProfile(profileRes.data);
-      if (txRes.data) setTransactions(txRes.data);
-      setLoading(false);
-    };
-    fetchData();
+    const supabase = createClient();
+    const [profileRes, txRes, refRes] = await Promise.all([
+      supabase.from("profiles").select("tier, tier_expiry_date, credit_balance").eq("id", user.id).single(),
+      supabase.from("credit_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
+      fetch("/api/referral/stats").then(r => r.ok ? r.json() : null)
+    ]);
+    if (profileRes.data) setProfile(profileRes.data);
+    if (txRes.data) setTransactions(txRes.data);
+    if (refRes && !refRes.error) setReferralStats(refRes);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+      checkAndClaimReferral();
+    }
   }, [user]);
+
+  const checkAndClaimReferral = async () => {
+    const refCode = localStorage.getItem("uprole_referral_code");
+    if (!refCode) return;
+
+    try {
+      const res = await fetch("/api/referral/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refCode })
+      });
+      
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast("Referral claimed! You received 50 bonus credits.", "success");
+        fetchData(); // refresh everything
+      } else if (!res.ok && data.error !== "User profile not found." && data.error !== "You cannot refer yourself.") {
+        // Only toast errors if it's not a self-referral or missing profile
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      // Remove it so we don't try again
+      localStorage.removeItem("uprole_referral_code");
+      document.cookie = "uprole_referral_code=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    }
+  };
+
+  const copyReferralLink = () => {
+    if (!referralStats) return;
+    const link = `${window.location.origin}/signup?ref=${referralStats.referralCode}`;
+    navigator.clipboard.writeText(link);
+    showToast("Referral link copied to clipboard!", "success");
+  };
 
   const totalEarned = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
   const totalSpent  = transactions.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
-
   const tierInfo = profile ? (tierLabels[profile.tier] || tierLabels.free) : tierLabels.free;
 
   const isExpiringSoon = (dateStr: string | null): boolean => {
     if (!dateStr) return false;
     const diff = new Date(dateStr).getTime() - Date.now();
-    return diff > 0 && diff < 30 * 24 * 60 * 60 * 1000; // within 30 days
+    return diff > 0 && diff < 30 * 24 * 60 * 60 * 1000;
   };
 
   return (
@@ -81,14 +131,21 @@ export default function CreditsPage() {
       <Navbar />
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "2rem 1.5rem" }}>
 
-        {/* Header */}
-        <div style={{ marginBottom: "2rem" }}>
-          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, margin: "0 0 0.4rem" }}>
-            Credits & Plan
-          </h1>
-          <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>
-            Track your credit balance, spending history, and subscription.
-          </p>
+        <div style={{ marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+          <div>
+            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, margin: "0 0 0.4rem" }}>
+              Credits & Plan
+            </h1>
+            <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>
+              Track your credit balance, spending history, and subscription.
+            </p>
+          </div>
+          <Link
+            href="/pricing"
+            style={{ padding: "0.6rem 1.4rem", borderRadius: "10px", background: "linear-gradient(135deg, #6c63ff, #3b82f6)", color: "#fff", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0, boxShadow: "0 4px 15px rgba(108,99,255,0.3)" }}
+          >
+            <Coins size={16} /> Add Credits
+          </Link>
         </div>
 
         {loading ? (
@@ -99,8 +156,6 @@ export default function CreditsPage() {
           <>
             {/* Stats Row */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.2rem", marginBottom: "2rem" }}>
-
-              {/* Balance */}
               <div className="card" style={{ padding: "1.4rem", background: "linear-gradient(135deg, rgba(108,99,255,0.08) 0%, rgba(59,130,246,0.08) 100%)", border: "1px solid rgba(108,99,255,0.2)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
                   <Coins size={18} style={{ color: "var(--accent)" }} />
@@ -117,7 +172,6 @@ export default function CreditsPage() {
                 )}
               </div>
 
-              {/* Current Plan */}
               <div className="card" style={{ padding: "1.4rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
                   <Zap size={18} style={{ color: tierInfo.color }} />
@@ -139,7 +193,6 @@ export default function CreditsPage() {
                 )}
               </div>
 
-              {/* Total Earned */}
               <div className="card" style={{ padding: "1.4rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
                   <TrendingUp size={18} style={{ color: "#10b981" }} />
@@ -149,7 +202,6 @@ export default function CreditsPage() {
                 <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.3rem" }}>credits received</div>
               </div>
 
-              {/* Total Spent */}
               <div className="card" style={{ padding: "1.4rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
                   <TrendingDown size={18} style={{ color: "#ef4444" }} />
@@ -160,7 +212,45 @@ export default function CreditsPage() {
               </div>
             </div>
 
-            {/* Sprint Upsell — coach tone, only for free */}
+            {/* Refer & Earn Section */}
+            {referralStats && (
+              <div className="card" style={{ padding: "1.8rem", marginBottom: "2rem", background: "linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(16,185,129,0.06) 100%)", border: "1px solid rgba(59,130,246,0.2)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "1.5rem" }}>
+                  <div style={{ flex: "1 1 300px" }}>
+                    <h2 style={{ fontSize: "1.2rem", fontWeight: 800, margin: "0 0 0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <Users size={20} className="text-blue-500" />
+                      Refer & Earn Credits
+                    </h2>
+                    <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", margin: "0 0 1rem", lineHeight: 1.5 }}>
+                      Invite your friends to UpRole! They get 50 bonus credits on signup, and you get 50 credits when they join.
+                    </p>
+                    
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "8px", padding: "0.6rem 1rem", fontSize: "0.85rem", color: "var(--text)", fontFamily: "var(--font-mono)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {typeof window !== "undefined" ? `${window.location.origin}/signup?ref=${referralStats.referralCode}` : `.../signup?ref=${referralStats.referralCode}`}
+                      </div>
+                      <button onClick={copyReferralLink} className="btn-primary" style={{ padding: "0.6rem 1rem", display: "flex", alignItems: "center", gap: "0.4rem", background: "#3b82f6" }}>
+                        <Copy size={16} /> Copy
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: "flex", gap: "1.5rem", flexShrink: 0, alignItems: "center" }}>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: "1.8rem", fontWeight: 800, color: "#3b82f6", fontFamily: "Syne, sans-serif" }}>{referralStats.referralCount}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 600 }}>Friends Joined</div>
+                    </div>
+                    <div style={{ width: "1px", height: "40px", background: "var(--border)" }} />
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: "1.8rem", fontWeight: 800, color: "#10b981", fontFamily: "Syne, sans-serif" }}>+{referralStats.totalEarned}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 600 }}>Credits Earned</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sprint Upsell */}
             {profile?.tier === "free" && (
               <div className="card" style={{ padding: "1.4rem 1.8rem", marginBottom: "2rem", background: "linear-gradient(135deg, rgba(108,99,255,0.06) 0%, rgba(59,130,246,0.06) 100%)", border: "1px solid rgba(108,99,255,0.2)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
                 <div>
@@ -169,10 +259,7 @@ export default function CreditsPage() {
                     Career Sprint gives unlimited AI access for 30 days — no credit counting, no interruptions.
                   </p>
                 </div>
-                <Link
-                  href="/pricing"
-                  style={{ padding: "0.6rem 1.4rem", borderRadius: "10px", background: "linear-gradient(135deg, #6c63ff, #3b82f6)", color: "#fff", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.4rem", flexShrink: 0 }}
-                >
+                <Link href="/pricing" style={{ padding: "0.6rem 1.4rem", borderRadius: "10px", background: "linear-gradient(135deg, #6c63ff, #3b82f6)", color: "#fff", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.4rem", flexShrink: 0 }}>
                   View Plans <ArrowUpRight size={14} />
                 </Link>
               </div>

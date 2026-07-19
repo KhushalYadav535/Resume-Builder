@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { content, entry_type, tags, source, extracted_metrics } = body;
+    const { content, entry_type, tags, source, extracted_metrics, date } = body;
 
     if (!content || !entry_type) {
       return NextResponse.json({ error: "Missing content or entry_type" }, { status: 400 });
@@ -47,6 +47,7 @@ export async function POST(req: Request) {
         tags: tags || [],
         source: source || 'manual',
         extracted_metrics: extracted_metrics || {},
+        date: date || new Date().toISOString(),
       })
       .select()
       .single();

@@ -113,8 +113,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Could not extract text from file" }, { status: 400 });
     }
 
+    // Normalize parsed text: fix spacing/bullet formatting issues
+    const cleanText = text
+      // Normalize line endings
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      // Ensure bullet markers have a space after them
+      .replace(/^([•●▪▸◦–\-])\s*/gm, "$1 ")
+      // Collapse more than 2 consecutive blank lines into 2
+      .replace(/\n{3,}/g, "\n\n")
+      // Ensure sentences that run together get a space (pattern: lowercase immediately followed by uppercase)
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      // Remove trailing whitespace from each line
+      .split("\n").map(l => l.trimEnd()).join("\n")
+      .trim();
+
     return NextResponse.json({
-      text: text.trim(),
+      text: cleanText,
       fileName: file.name,
     });
   } catch (err: unknown) {

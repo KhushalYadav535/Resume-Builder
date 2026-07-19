@@ -71,12 +71,13 @@ ${topMissing.map(k => `- ${k.keyword} (weight: ${k.weight})`).join('\n')}
 INSTRUCTIONS:
 You must provide highly personalized, custom suggestions for incorporating these missing keywords. Do NOT provide generic feedback (e.g., "Add keyword to your experience" or "use stronger action verbs").
 Instead:
-1. Examine their exact resume sentences.
+1. Examine their exact resume sentences across ALL positions and jobs. Do NOT focus only on the most recent position.
 2. Formulate specific rewrite suggestions using the candidate's own words.
-3. Explain why this matters for their specific career trajectory, target role, or experience level.
-4. Highlight Indian job market trends (e.g. Naukri/LinkedIn SEO) where appropriate.
-5. Make the rewrite flow naturally.
-6. CRITICAL: Do NOT include any emojis (e.g. 🚀, ✅, ✨, etc.) or special symbol icons in any string returned (including the "title", "description", and "suggestedText"). All values must be plain, professional, text-only characters, suitable for direct insertion into a standard corporate resume.
+3. Distribute your keyword additions across DIFFERENT jobs and sections where they fit best.
+4. Explain why this matters for their specific career trajectory, target role, or experience level.
+5. Highlight Indian job market trends (e.g. Naukri/LinkedIn SEO) where appropriate.
+6. Make the rewrite flow naturally.
+7. CRITICAL: Do NOT include any emojis (e.g. 🚀, ✅, ✨, etc.) or special symbol icons in any string returned (including the "title", "description", and "suggestedText"). All values must be plain, professional, text-only characters, suitable for direct insertion into a standard corporate resume.
 
 Return ONLY a valid JSON array matching this schema:
 [

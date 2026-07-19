@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
-import { BookOpen, Plus, Calendar, Tag, ChevronRight, Award, Zap, TrendingUp, AlertTriangle, Search, Filter } from "lucide-react";
+import { BookOpen, Plus, Calendar, Tag, ChevronRight, Award, Zap, TrendingUp, AlertTriangle, Search, Filter, Pencil, Trash2 } from "lucide-react";
 import { CareerJournalEntry } from "@/types";
 import { useToast } from "@/components/ui/toast-1";
 import QuickEntryModal from "@/components/career-journal/QuickEntryModal";
@@ -24,6 +24,8 @@ export default function CareerJournalPage() {
   const [generatedPromptStr, setGeneratedPromptStr] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
+  const [editEntry, setEditEntry] = useState<CareerJournalEntry | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -55,13 +57,15 @@ export default function CareerJournalPage() {
 
   const handleSaveEntry = async (entry: Partial<CareerJournalEntry>) => {
     try {
-      const res = await fetch("/api/journal/create", {
-        method: "POST",
+      const isEdit = !!entry.id;
+      const res = await fetch(isEdit ? "/api/journal/update" : "/api/journal/create", {
+        method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(entry),
       });
       if (res.ok) {
-        showToast("Entry saved successfully!", "success");
+        showToast(isEdit ? "Entry updated!" : "Entry saved!", "success");
+        setEditEntry(null);
         fetchEntries();
       } else {
         throw new Error("Failed to save entry");
@@ -69,6 +73,25 @@ export default function CareerJournalPage() {
     } catch (err) {
       console.error(err);
       showToast("Failed to save entry. Try again.", "error");
+    }
+  };
+
+  const handleDeleteEntry = async (id: string) => {
+    try {
+      const res = await fetch("/api/journal/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        showToast("Entry deleted.", "success");
+        setDeleteConfirmId(null);
+        fetchEntries();
+      } else {
+        throw new Error();
+      }
+    } catch {
+      showToast("Failed to delete entry.", "error");
     }
   };
 
@@ -224,17 +247,42 @@ export default function CareerJournalPage() {
                     </div>
                     
                     <div className="card" style={{ flex: 1, padding: "1.5rem", display: "grid", gap: "1rem", transition: "all 0.2s" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                        <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
+                        <div style={{ flex: 1 }}>
                           <span style={{ textTransform: "capitalize", fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.3rem" }}>
                             {entry.entry_type} {entry.source === "prompted" && "• Prompted"}
                           </span>
-                          <p style={{ margin: 0, fontSize: "1rem", lineHeight: 1.6, color: "var(--text)" }}>{entry.content}</p>
+                          <p style={{ margin: 0, fontSize: "1rem", lineHeight: 1.6, color: "var(--text)", whiteSpace: "pre-wrap" }}>{entry.content}</p>
                         </div>
-                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                          <Calendar size={12} />
-                          {new Date(entry.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                        </span>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem", flexShrink: 0 }}>
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                            <Calendar size={12} />
+                            {new Date(entry.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                          </span>
+                          <div style={{ display: "flex", gap: "0.4rem" }}>
+                            <button
+                              onClick={() => { setEditEntry(entry); setShowQuickEntry(true); }}
+                              title="Edit entry"
+                              style={{ background: "none", border: "1px solid var(--border)", borderRadius: "6px", padding: "0.3rem 0.5rem", cursor: "pointer", color: "var(--accent)", display: "flex", alignItems: "center", gap: "0.2rem", fontSize: "0.75rem", fontWeight: 600, transition: "all 0.15s" }}
+                            >
+                              <Pencil size={12} /> Edit
+                            </button>
+                            {deleteConfirmId === entry.id ? (
+                              <div style={{ display: "flex", gap: "0.3rem" }}>
+                                <button onClick={() => handleDeleteEntry(entry.id)} style={{ background: "#ef4444", color: "#fff", border: "none", borderRadius: "6px", padding: "0.3rem 0.6rem", cursor: "pointer", fontSize: "0.72rem", fontWeight: 700 }}>Confirm</button>
+                                <button onClick={() => setDeleteConfirmId(null)} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "6px", padding: "0.3rem 0.5rem", cursor: "pointer", fontSize: "0.72rem" }}>Cancel</button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setDeleteConfirmId(entry.id)}
+                                title="Delete entry"
+                                style={{ background: "none", border: "1px solid var(--border)", borderRadius: "6px", padding: "0.3rem 0.5rem", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", gap: "0.2rem", fontSize: "0.75rem", fontWeight: 600, transition: "all 0.15s" }}
+                              >
+                                <Trash2 size={12} /> Delete
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       
                       {entry.tags && entry.tags.length > 0 && (
@@ -296,9 +344,11 @@ export default function CareerJournalPage() {
           onClose={() => {
             setShowQuickEntry(false);
             setGeneratedPromptStr("");
+            setEditEntry(null);
           }}
           onSave={handleSaveEntry}
           prefilledContent={prefilledContent || generatedPromptStr}
+          editEntry={editEntry}
         />
       )}
     </div>
