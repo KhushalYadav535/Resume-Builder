@@ -3,26 +3,21 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import LandingFeatureTour from "@/components/LandingFeatureTour";
-import PricingSection from "@/components/pricing/PricingSection";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { motion } from "framer-motion";
 import {
-  ArrowRight,
   Upload,
   Sparkles,
-  FileText,
   BookOpen,
   Kanban,
   TrendingUp,
   RefreshCw,
   ChevronDown,
-  X as XIcon,
-  Check,
-  Award,
   ShieldCheck,
   Send,
+  Award,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 
@@ -64,6 +59,128 @@ function Counter({
   );
 }
 
+/* ───── Floating Scroll Progress Bar (B2) ───── */
+function ScrollProgress() {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (windowHeight > 0) {
+        const scrolled = (window.scrollY / windowHeight) * 100;
+        setScrollProgress(scrolled);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden md:block">
+      <div className="h-48 w-1 bg-white/10 rounded-full overflow-hidden relative">
+        <div
+          className="w-full bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full transition-all duration-150"
+          style={{ height: `${scrollProgress}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ───── Option 1: Confidence Checklist Mockup ───── */
+function SurfacedAchievementsMockup() {
+  return (
+    <div className="relative w-full max-w-[400px] h-[340px] rounded-2xl bg-white/5 border border-white/10 p-6 overflow-hidden flex flex-col justify-between shadow-2xl backdrop-blur-md">
+      {/* Resume Background Mock Line placeholders */}
+      <div className="space-y-4 opacity-30 select-none">
+        <div className="flex justify-between items-center">
+          <div className="h-4 w-32 bg-white rounded" />
+          <div className="h-3 w-16 bg-white rounded" />
+        </div>
+        <div className="h-2 w-full bg-white rounded" />
+        <div className="h-2 w-5/6 bg-white rounded" />
+        <div className="h-2 w-4/5 bg-white rounded" />
+      </div>
+
+      {/* Floating Glassmorphic Checklist */}
+      <div className="absolute inset-x-4 top-1/4 bottom-6 bg-gradient-to-br from-[#0c0e25]/95 to-[#181235]/95 border border-indigo-500/30 rounded-xl p-5 shadow-[0_15px_35px_rgba(99,102,241,0.2)] flex flex-col justify-between backdrop-blur-xl">
+        <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1">
+          <Sparkles size={10} className="animate-pulse" />
+          <span>Surfaced Wins Discovery</span>
+        </div>
+        
+        <div className="space-y-3.5 mt-2">
+          {[
+            "Awarded MVP of Q3 (Out of 45 devs)",
+            "Mentored 3 Junior Engineers to promotion",
+            "Shipped routing engine (saved 35% time)"
+          ].map((item, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.2, duration: 0.5 }}
+              className="flex items-start gap-2.5"
+            >
+              <div className="w-4 h-4 rounded-full bg-green-500/20 border border-green-500/50 flex items-center justify-center text-green-400 mt-0.5 shadow-[0_0_8px_rgba(34,197,94,0.3)] flex-shrink-0">
+                ✓
+              </div>
+              <span className="text-xs font-semibold text-white/95 leading-tight">{item}</span>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="text-[9px] text-green-400 font-bold border-t border-white/5 pt-2 flex justify-between items-center">
+          <span>SCAN COMPLETE: 3 OUTCOMES SURFACED</span>
+          <span className="animate-pulse flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+            Active
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ───── Textual Career Vault Mockup (Vision Visual Upgrade) ───── */
+function CareerVaultMockup() {
+  const vaultItems = [
+    { year: "2026", task: "Database Rewrite", text: "Migrated DB clusters, reducing load latencies by 40% globally.", tag: "Database" },
+    { year: "2025", task: "Team Leadership", text: "Mentored 3 junior developers to mid-level engineering elevations.", tag: "People" },
+    { year: "2024", task: "Payments Integration", text: "Engineered core checkout flows processing 100K+ monthly runs.", tag: "Product" },
+  ];
+
+  return (
+    <div className="relative w-full max-w-[380px] rounded-2xl bg-white border border-slate-100 p-5 shadow-[0_15px_40px_rgba(0,0,0,0.06)] dark:bg-[#0c0e25]/60 dark:border-indigo-500/10 rotate-[-4deg] transition-transform duration-300 hover:rotate-0 select-none">
+      <div className="flex justify-between items-center pb-3.5 border-b border-slate-100 dark:border-white/5 mb-3.5">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse" />
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">Career Vault</span>
+        </div>
+        <span className="text-[9px] bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold px-2 py-0.5 rounded-full">Sync Complete</span>
+      </div>
+
+      <div className="space-y-3">
+        {vaultItems.map((item, i) => (
+          <div
+            key={i}
+            className="space-y-1 p-3 rounded-xl bg-slate-50/50 border border-slate-100 dark:bg-white/[0.02] dark:border-white/5"
+          >
+            <div className="flex justify-between items-center text-[9px] font-bold">
+              <span className="text-slate-400 dark:text-white/40">{item.year} • {item.task}</span>
+              <span className="text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">{item.tag}</span>
+            </div>
+            <p className="text-xs text-slate-700 dark:text-white/80 leading-relaxed font-mono">
+              &quot;{item.text}&quot;
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════
    MAIN PAGE COMPONENT
    ═══════════════════════════════════════════════ */
@@ -98,8 +215,9 @@ export default function Home() {
         overflowX: "hidden",
       }}
     >
-      <ParticleBackground count={65} connectionDist={120} />
-
+      <ScrollProgress />
+      <ParticleBackground count={75} connectionDist={130} />
+      
       <div className="relative z-10">
         <Navbar />
 
@@ -107,10 +225,16 @@ export default function Home() {
             SECTION 1: HERO
             ═══════════════════════════════════════ */}
         <section className="relative min-h-[calc(100vh-72px)] flex items-center justify-center pt-24 pb-16 overflow-hidden">
-          {/* Background Ambient Orbs */}
+          {/* Base gradient & animated gradient mask (Theme aware to prevent blackish tint in light theme) */}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#F4F5FB] via-indigo-50/30 to-purple-50/20 dark:from-black dark:via-indigo-900/20 dark:to-purple-900/10" />
+          <div className="absolute inset-0 -z-10 opacity-30">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 dark:via-indigo-500/20 to-indigo-500/0 animate-[shimmer_8s_ease-in-out_infinite]" />
+          </div>
+
+          {/* Floating Orbs with different speeds */}
           <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-            <div className="absolute top-1/4 right-10 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-1/4 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute top-1/4 right-10 w-96 h-96 bg-indigo-500/[0.04] dark:bg-indigo-500/10 rounded-full blur-3xl animate-[float_6s_ease-in-out_infinite]" />
+            <div className="absolute bottom-1/4 left-10 w-96 h-96 bg-purple-500/[0.04] dark:bg-purple-500/10 rounded-full blur-3xl animate-[float_8s_ease-in-out_infinite] [animation-delay:2000ms]" />
           </div>
 
           <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -162,52 +286,52 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Column: Visual Before/After Transformation Card */}
+            {/* Right Column: Visual Before/After Transformation Card Stack */}
             <div className="flex items-center justify-center relative min-h-[380px] lg:min-h-0">
               <div className="relative w-full max-w-[420px] aspect-[4/3] flex items-center justify-center">
-                {/* BEFORE Card */}
+                {/* BEFORE Card (Optimized for light theme readability) */}
                 <motion.div
                   initial={{ opacity: 0, x: -30, y: -20 }}
-                  animate={{ opacity: 0.85, x: 0, y: 0 }}
+                  animate={{ opacity: 0.95, x: 0, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
-                  className="absolute left-4 top-4 w-[280px] sm:w-[320px] bg-red-500/5 dark:bg-red-950/10 border border-red-500/20 rounded-xl p-4 sm:p-5 shadow-lg backdrop-blur-md"
+                  className="absolute left-4 top-4 w-[280px] sm:w-[320px] bg-red-50/95 dark:bg-red-950/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4 sm:p-5 shadow-lg backdrop-blur-md"
                 >
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-[10px] sm:text-xs font-bold text-red-500 tracking-wider uppercase">Before UpRole</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-red-600 dark:text-red-400 tracking-wider uppercase">Before UpRole</span>
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                   </div>
-                  <p className="text-[13px] sm:text-sm font-mono text-[var(--text-muted)] line-through">
+                  <p className="text-[13px] sm:text-sm font-mono text-slate-500 dark:text-slate-400 line-through">
                     &quot;Worked on customer complaints and resolved ticketing queues.&quot;
                   </p>
                 </motion.div>
 
-                {/* Arrow */}
+                {/* Arrow (Indigo arrow with high visibility) */}
                 <motion.div
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.6 }}
+                  animate={{ opacity: 0.7 }}
                   transition={{ duration: 0.6, delay: 0.8 }}
-                  className="absolute z-20 text-3xl text-[var(--accent)]"
+                  className="absolute z-20 text-3xl text-indigo-500 dark:text-[var(--accent)]"
                   style={{ transform: "rotate(45deg)" }}
                 >
                   ➔
                 </motion.div>
 
-                {/* AFTER Card */}
+                {/* AFTER Card (Optimized to fix white background bleed in dark mode) */}
                 <motion.div
                   initial={{ opacity: 0, x: 30, y: 20 }}
                   animate={{ opacity: 1, x: 0, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.5 }}
-                  className="absolute right-4 bottom-4 w-[300px] sm:w-[340px] bg-gradient-to-br from-[var(--accent-soft)] to-transparent border-2 border-[var(--accent)] rounded-xl p-5 sm:p-6 shadow-[var(--accent-glow)] backdrop-blur-md"
+                  className="absolute right-4 bottom-4 w-[300px] sm:w-[340px] bg-white/95 dark:bg-transparent dark:bg-gradient-to-br dark:from-[var(--accent-soft)] dark:to-transparent border-2 border-indigo-500 dark:border-[var(--accent)] rounded-xl p-5 sm:p-6 shadow-xl dark:shadow-[var(--accent-glow)] backdrop-blur-md"
                 >
                   <div className="flex justify-between items-center mb-4">
-                    <span className="text-[10px] sm:text-xs font-bold text-[var(--accent)] tracking-wider uppercase">Surfaced Achievement</span>
-                    <Badge variant="success" className="text-[9px] px-2 py-0.5">+18 ATS</Badge>
+                    <span className="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-[var(--accent)] tracking-wider uppercase">Surfaced Achievement</span>
+                    <Badge variant="success" className="text-[9px] px-2 py-0.5 bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400 border-none">+18 ATS</Badge>
                   </div>
-                  <p className="text-[13px] sm:text-sm font-semibold text-[var(--text-primary)] leading-relaxed">
+                  <p className="text-[13px] sm:text-sm font-semibold text-slate-900 dark:text-[var(--text-primary)] leading-relaxed">
                     &quot;Resolved 40+ escalations/month, cutting response time by 35% using ticket automation.&quot;
                   </p>
-                  <div className="mt-3 flex items-center gap-1.5 text-[11px] text-[var(--accent-2)] font-semibold">
-                    <Sparkles size={12} className="animate-spin" />
+                  <div className="mt-3 flex items-center gap-1.5 text-[11px] text-indigo-600 dark:text-[var(--accent-2)] font-semibold">
+                    <Sparkles size={12} className="animate-spin text-indigo-500 dark:text-indigo-400" />
                     <span>Achievement Discovery SURFACED</span>
                   </div>
                 </motion.div>
@@ -355,9 +479,9 @@ export default function Home() {
         </section>
 
         {/* ═══════════════════════════════════════
-            SECTION 4: CONFIDENCE (Emotional Payoff)
+            SECTION 4: CONFIDENCE (Emotional Payoff - Option 1 Mockup)
             ═══════════════════════════════════════ */}
-        <section className="py-20 md:py-32 bg-gradient-to-r from-purple-900/5 to-indigo-900/5 border-b border-[var(--border)]">
+        <section className="py-20 md:py-32 bg-gradient-to-r from-purple-500/[0.03] to-indigo-500/[0.03] dark:from-purple-900/5 dark:to-indigo-900/5 border-b border-[var(--border)]">
           <div className="max-w-5xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               {/* Text Left Column */}
@@ -373,17 +497,14 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Graphic Right Column */}
+              {/* Graphic Right Column (Surfaced Checklist Mockup) */}
               <div className="flex justify-center items-center lg:col-span-5">
                 <motion.div
-                  animate={{ y: [0, -12, 0] }}
+                  animate={{ y: [0, -10, 0] }}
                   transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                  className="relative w-44 h-44 rounded-3xl bg-gradient-to-tr from-[var(--accent)] to-[var(--accent-2)] p-1 flex items-center justify-center shadow-xl"
+                  className="relative w-full flex justify-center"
                 >
-                  <div className="w-full h-full bg-[var(--bg-surface)] rounded-[22px] flex flex-col items-center justify-center gap-2 p-4 text-center">
-                    <ShieldCheck size={48} className="text-[var(--accent)]" />
-                    <span className="text-sm font-bold font-['Syne',sans-serif] text-[var(--text-primary)]">Confidence Surfaced</span>
-                  </div>
+                  <SurfacedAchievementsMockup />
                 </motion.div>
               </div>
             </div>
@@ -393,7 +514,7 @@ export default function Home() {
         {/* ═══════════════════════════════════════
             SECTION 5: BEYOND RESUME (Feature Grid)
             ═══════════════════════════════════════ */}
-        <section className="py-20 md:py-32">
+        <section className="py-20 md:py-32 border-b border-[var(--border)]">
           <div className="max-w-5xl mx-auto px-6 space-y-12">
             {/* Header */}
             <div className="text-center space-y-4">
@@ -411,7 +532,7 @@ export default function Home() {
               {[
                 { icon: <Kanban size={26} />, title: "Kanban Tracker", desc: "Organize your job search pipeline. Track applied links, mock schedule triggers, and negotiation statuses in one workspace." },
                 { icon: <BookOpen size={26} />, title: "Career Journal", desc: "Log wins as they happen, storing crucial metrics before you forget them weeks later." },
-                { icon: <Award size={26} />, title: "Promotion Builder", desc: "Collate captured feedback and journal updates to make your next package increase case automatically." }
+                { icon: <TrendingUp size={26} />, title: "Promotion Builder", desc: "Collate captured feedback and journal updates to make your next package increase case automatically." }
               ].map((feature, i) => (
                 <motion.div
                   key={feature.title}
@@ -435,20 +556,19 @@ export default function Home() {
         </section>
 
         {/* ═══════════════════════════════════════
-            SECTION 5b: VISION SECTION
+            SECTION 5b: VISION SECTION (Textual Career Vault visual)
             ═══════════════════════════════════════ */}
         <section className="py-20 md:py-32 border-t border-[var(--border)] bg-gradient-to-b from-[var(--bg-page)] via-[var(--bg-2)] to-[var(--bg-page)]">
           <div className="max-w-5xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              {/* Visual Left */}
+              {/* Visual Left (Textual & Aesthetic Career Vault Mockup) */}
               <div className="flex justify-center items-center lg:col-span-5 order-last lg:order-first">
                 <motion.div
-                  animate={{ rotate: [0, 4, 0] }}
-                  transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-                  className="relative w-44 h-44 rounded-3xl bg-[var(--bg-surface)] border border-[var(--border)] p-5 flex flex-col items-center justify-center gap-3 shadow-md"
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+                  className="relative w-full flex justify-center"
                 >
-                  <RefreshCw size={44} className="text-[var(--accent-2)] animate-spin" style={{ animationDuration: '8s' }} />
-                  <span className="text-xs font-bold text-[var(--text-secondary)]">Automated Rebuild</span>
+                  <CareerVaultMockup />
                 </motion.div>
               </div>
 
@@ -476,16 +596,18 @@ export default function Home() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif] leading-tight">
               You already did the work.
               <br />
-              <span className="text-[var(--accent)]">Let&apos;s make sure it shows.</span>
+              <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Let&apos;s make sure it shows.</span>
             </h2>
 
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="inline-block">
+            <div className="inline-block transition-all duration-300 hover:scale-105 active:scale-95">
               <Link href="/resume/upload" className="no-underline">
-                <Button size="lg" className="px-10 shadow-lg">
-                  ⚡ Start free — takes 5 minutes
+                <Button size="lg" className="px-10 shadow-2xl relative group overflow-hidden transition-all duration-300 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 border-none">
+                  <span className="relative flex items-center gap-2">
+                    <span>⚡ Start free — takes 5 minutes</span>
+                  </span>
                 </Button>
               </Link>
-            </motion.div>
+            </div>
 
             <p className="text-xs text-[var(--text-muted)]">
               No credit card needed. Free forever plan included.
@@ -540,7 +662,7 @@ export default function Home() {
                   placeholder="your@email.com"
                   className="flex-1 px-3 py-2 bg-[var(--bg-page)] border border-[var(--border)] rounded-lg text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
                 />
-                <button className="p-2 bg-[var(--accent)] hover:bg-[var(--accent-2)] text-white rounded-lg transition-colors flex items-center justify-center">
+                <button aria-label="Subscribe to newsletter" className="p-2 bg-[var(--accent)] hover:bg-[var(--accent-2)] text-white rounded-lg transition-colors flex items-center justify-center">
                   <Send size={14} />
                 </button>
               </div>
