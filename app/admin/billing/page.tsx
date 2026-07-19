@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/components/ui/toast-1";
-import { BarChart2, Users, Bot, Brain, CreditCard, X, Receipt, Settings } from "lucide-react";
+import { BarChart2, Users, Bot, Brain, CreditCard, X, Receipt, Settings, Megaphone } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -160,6 +160,12 @@ export default function AdminBillingPage() {
             <button style={{ padding: "0.6rem 1.2rem", background: "rgba(16, 185, 129, 0.08)", border: "none", borderBottom: "2px solid #10b981", color: "#10b981", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
               <CreditCard size={14} />
               Billing & Credits
+            </button>
+          </Link>
+          <Link href="/admin/broadcast" style={{ textDecoration: "none" }}>
+            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <Megaphone size={14} />
+              Broadcasts
             </button>
           </Link>
         </div>
