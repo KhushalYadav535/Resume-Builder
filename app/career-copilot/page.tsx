@@ -267,7 +267,7 @@ export default function CareerCopilotPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex flex-wrap gap-2 border-b border-[var(--border)] mb-6 pb-4">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", borderBottom: "1px solid var(--border)", marginBottom: "1.5rem", paddingBottom: "1rem" }}>
               {[
                 { key: "interview", label: "Interview Prep & Pitch" },
                 { key: "skillgap", label: "Skill Gap & Career Path" },
@@ -278,10 +278,18 @@ export default function CareerCopilotPage() {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as any)}
-                  className={`px-4 py-2.5 rounded-full font-semibold text-[14.5px] transition-all duration-200 shrink-0 ${activeTab === tab.key
-                    ? "bg-[var(--accent)] text-white shadow-md shadow-[var(--accent)]/20"
-                    : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:bg-[var(--bg-3)] hover:text-[var(--text-primary)]"
-                    }`}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    borderRadius: "999px",
+                    fontWeight: 600,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    flexShrink: 0,
+                    border: activeTab === tab.key ? "1px solid var(--accent)" : "1px solid var(--border)",
+                    background: activeTab === tab.key ? "var(--accent)" : "var(--bg-elevated)",
+                    color: activeTab === tab.key ? "#fff" : "var(--text)",
+                  }}
                 >
                   {tab.label}
                 </button>

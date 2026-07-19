@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Handshake } from "lucide-react";
+import { Handshake, Copy, Check } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
 import ToneCalibrator from "@/components/career-copilot/ToneCalibrator";
 
@@ -10,6 +10,7 @@ export default function NegotiationScript() {
   const [toneValue, setToneValue] = useState(50);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string>("");
+  const [copied, setCopied] = useState(false);
   const { showToast } = useToast();
 
   const handleGenerate = async () => {
@@ -74,6 +75,15 @@ export default function NegotiationScript() {
 
       {result && (
         <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "10px", padding: "1.2rem", marginTop: "0.5rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
+            <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#10b981" }}>Generated Script</span>
+            <button
+              onClick={() => { navigator.clipboard.writeText(result); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+              style={{ background: "none", border: "1px solid var(--border)", borderRadius: "6px", padding: "0.3rem 0.7rem", cursor: "pointer", color: copied ? "#10b981" : "var(--text-muted)", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.3rem", fontWeight: 600 }}
+            >
+              {copied ? <><Check size={13} /> Copied!</> : <><Copy size={13} /> Copy</>}
+            </button>
+          </div>
           <p style={{ whiteSpace: "pre-wrap", margin: 0, fontSize: "0.9rem", color: "var(--text)", lineHeight: 1.6 }}>
             {result}
           </p>

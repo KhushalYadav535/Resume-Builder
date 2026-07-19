@@ -39,7 +39,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Resume record not found or access denied." }, { status: 404 });
     }
 
-    const prompt = `You are an elite executive resume writer and ATS optimization expert with 15+ years of experience. Your task is to analyze the candidate's resume and generate highly personalized, context-aware improvements.
+    const prompt = `You are an elite executive resume writer and ATS optimization expert with 15+ years of experience. Your task is to analyze the candidate's ENTIRE resume holistically and generate highly personalized, context-aware improvements.
+
+IMPORTANT: You MUST analyze ALL sections of the resume — every work experience, every job position, the summary, skills, education, projects, and certifications. Do NOT focus on just one position. Provide suggestions that span the entire document.
 
 ABOUT THIS PERSON:
 - Target Role/Detected Role: ${detectedRole || 'General'}
@@ -53,26 +55,27 @@ ${resumeText}
 INSTRUCTIONS:
 You must provide highly personalized, custom suggestions for incorporating improvement dimensions. Do NOT provide generic feedback (e.g., "Add metrics to your experience" or "use stronger action verbs").
 Instead:
-1. Examine their exact resume sentences.
+1. Examine their exact resume sentences across ALL positions.
 2. Formulate specific rewrite suggestions using the candidate's own words.
 3. Explain why this matters for their specific career trajectory, target role, or experience level.
 4. For suggestions modifying existing text, set "currentText" to the exact string from the resume (no paraphrasing) so it can be programmatically matched, and "suggestedText" to the complete, rewritten sentence.
 5. Highlight Indian job market trends (e.g. Naukri/LinkedIn SEO) where appropriate.
 6. CRITICAL: Do NOT include any emojis (e.g. 🚀, ✅, ✨, etc.) or special symbol icons in any string returned (including the "title", "description", and "suggestedText"). All values must be plain, professional, text-only characters, suitable for direct insertion into a standard corporate resume.
+7. DISTRIBUTE suggestions across DIFFERENT sections and positions — do not put all suggestions on the same job/section.
 
 Analyze across these 12 dimensions:
-1️⃣ ATS KEYWORDS & TECHNICAL SKILLS (e.g. gaps in stack)
-2️⃣ SOFT SKILLS & COMPETENCIES (contextualizing leadership/communication)
-3️⃣ EXPERIENCE BULLET POINT OPTIMIZATION (rewriting weak bullets)
-4️⃣ ACHIEVEMENT QUANTIFICATION (specific metrics calculated/inferred from context)
-5️⃣ ACTION VERB IMPROVEMENT (replacing passive verbs with strong action verbs)
-6️⃣ PROFESSIONAL SUMMARY (compelling value positioning)
-7️⃣ EDUCATION SECTION (coursework/honors)
-8️⃣ CERTIFICATIONS & CREDENTIALS (AWS, GCP, etc.)
-9️⃣ PROJECTS SECTION (technical details, tools, impact)
-🔟 FORMATTING & STRUCTURE (readability, order)
-1️⃣1️⃣ CONTACT INFO & PERSONAL BRAND (LinkedIn/Naukri SEO)
-1️⃣2️⃣ WORK EXPERIENCE ORGANIZATION (chronology, growth)
+1. ATS KEYWORDS & TECHNICAL SKILLS (e.g. gaps in stack)
+2. SOFT SKILLS & COMPETENCIES (contextualizing leadership/communication)
+3. EXPERIENCE BULLET POINT OPTIMIZATION (rewriting weak bullets across ALL jobs)
+4. ACHIEVEMENT QUANTIFICATION (specific metrics calculated/inferred from context)
+5. ACTION VERB IMPROVEMENT (replacing passive verbs with strong action verbs)
+6. PROFESSIONAL SUMMARY (compelling value positioning)
+7. EDUCATION SECTION (coursework/honors)
+8. CERTIFICATIONS & CREDENTIALS (AWS, GCP, etc.)
+9. PROJECTS SECTION (technical details, tools, impact)
+10. FORMATTING & STRUCTURE (readability, order)
+11. CONTACT INFO & PERSONAL BRAND (LinkedIn/Naukri SEO)
+12. WORK EXPERIENCE ORGANIZATION (chronology, growth)
 
 Return ONLY a valid JSON array matching this schema:
 [
@@ -92,7 +95,7 @@ Return ONLY a valid JSON array matching this schema:
   }
 ]
 
-Now analyze the provided resume and return a JSON array with 10-12 highly-impactful comprehensive suggestions.
+Now analyze the provided resume and return a JSON array with 10-15 highly-impactful comprehensive suggestions distributed across ALL sections and positions.
 
 RETURN ONLY VALID JSON ARRAY. NO PREAMBLE. NO MARKDOWN.`;
 

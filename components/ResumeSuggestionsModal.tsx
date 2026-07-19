@@ -12,6 +12,7 @@ interface ResumeSuggestionsModalProps {
   potentialScore: number;
   onClose: () => void;
   onApply: (selectedIds: string[]) => void;
+  onDismiss?: (id: string) => void;
 }
 
 export default function ResumeSuggestionsModal({
@@ -21,6 +22,7 @@ export default function ResumeSuggestionsModal({
   potentialScore,
   onClose,
   onApply,
+  onDismiss,
 }: ResumeSuggestionsModalProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [localSuggestions, setLocalSuggestions] = useState<ResumeSuggestion[]>(suggestions);
@@ -68,6 +70,7 @@ export default function ResumeSuggestionsModal({
         const nextSelected = new Set(selectedIds);
         nextSelected.delete(id);
         setSelectedIds(nextSelected);
+        if (onDismiss) onDismiss(id);
       }
     } catch (err) {
       console.error(err);
