@@ -24,10 +24,10 @@ export async function GET(req: NextRequest) {
 
     if (usersError) throw usersError;
 
-    // 2. Fetch billing profiles for tier and credit_balance
+    // 2. Fetch billing profiles for tier, credit_balance, and referrals
     const { data: billingProfiles, error: billingError } = await supabaseAdmin
       .from("profiles")
-      .select("id, tier, credit_balance, tier_expiry_date");
+      .select("id, tier, credit_balance, tier_expiry_date, referral_code, referred_by");
 
     if (billingError && billingError.code !== '42P01') { 
       // 42P01 is relation does not exist, ignore if table missing
@@ -49,9 +49,14 @@ export async function GET(req: NextRequest) {
       const billing = (billingProfiles || []).find((b) => b.id === u.id) || {
         tier: "free",
         credit_balance: 0,
-        tier_expiry_date: null
+        tier_expiry_date: null,
+        referral_code: null,
+        referred_by: null
       };
       const userTransactions = (transactions || []).filter((tx) => tx.user_id === u.id);
+      
+      // Calculate how many people this user has referred
+      const referralCount = (billingProfiles || []).filter((b) => b.referred_by === u.id).length;
 
       return {
         id: u.id,
@@ -60,6 +65,8 @@ export async function GET(req: NextRequest) {
         tier: billing.tier,
         credit_balance: billing.credit_balance,
         tier_expiry_date: billing.tier_expiry_date,
+        referral_code: billing.referral_code,
+        referral_count: referralCount,
         transactions: userTransactions,
       };
     });

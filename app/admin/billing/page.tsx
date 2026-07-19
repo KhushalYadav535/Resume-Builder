@@ -22,6 +22,8 @@ interface BillingProfile {
   tier: string;
   credit_balance: number;
   tier_expiry_date: string | null;
+  referral_code: string | null;
+  referral_count: number;
   transactions: Transaction[];
 }
 
@@ -199,6 +201,7 @@ export default function AdminBillingPage() {
                   <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>User Email</th>
                   <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>Tier</th>
                   <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>Credits</th>
+                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>Referrals</th>
                   <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem", textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
@@ -218,6 +221,9 @@ export default function AdminBillingPage() {
                     </td>
                     <td style={{ padding: "1rem 1.2rem", fontWeight: 700, color: profile.credit_balance > 0 ? "#10b981" : "var(--text-muted)" }}>
                       {profile.credit_balance}
+                    </td>
+                    <td style={{ padding: "1rem 1.2rem", fontWeight: 600, color: profile.referral_count > 0 ? "var(--accent)" : "var(--text-muted)" }}>
+                      {profile.referral_count || 0}
                     </td>
                     <td style={{ padding: "1rem 1.2rem", textAlign: "right" }}>
                       <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
