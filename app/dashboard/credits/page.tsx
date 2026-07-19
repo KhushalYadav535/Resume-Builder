@@ -131,13 +131,21 @@ export default function CreditsPage() {
       <Navbar />
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "2rem 1.5rem" }}>
 
-        <div style={{ marginBottom: "2rem" }}>
-          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, margin: "0 0 0.4rem" }}>
-            Credits & Plan
-          </h1>
-          <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>
-            Track your credit balance, spending history, and subscription.
-          </p>
+        <div style={{ marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+          <div>
+            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, margin: "0 0 0.4rem" }}>
+              Credits & Plan
+            </h1>
+            <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>
+              Track your credit balance, spending history, and subscription.
+            </p>
+          </div>
+          <Link
+            href="/pricing"
+            style={{ padding: "0.6rem 1.4rem", borderRadius: "10px", background: "linear-gradient(135deg, #6c63ff, #3b82f6)", color: "#fff", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0, boxShadow: "0 4px 15px rgba(108,99,255,0.3)" }}
+          >
+            <Coins size={16} /> Add Credits
+          </Link>
         </div>
 
         {loading ? (

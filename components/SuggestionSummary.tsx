@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ResumeSuggestion } from "@/lib/types/comprehensive-suggestions";
 
 interface SuggestionSummaryProps {
@@ -23,6 +24,15 @@ export function SuggestionSummary({
   onApply,
   onReview
 }: SuggestionSummaryProps) {
+  const [isApplying, setIsApplying] = useState(false);
+  const [applied, setApplied] = useState(false);
+
+  const handleApply = () => {
+    if (isApplying || applied) return;
+    setIsApplying(true);
+    setApplied(true);
+    onApply();
+  };
   
   return (
     <div className="w-full px-6 py-4 animate-in fade-in zoom-in-95 duration-300">
@@ -108,12 +118,19 @@ export function SuggestionSummary({
 
           {/* Action CTAs stacked vertically directly below metrics */}
           <div className="space-y-3 pt-3 border-t-2 border-slate-200 dark:border-gray-800/60">
-            <button 
-              onClick={onApply}
-              className="w-full py-4 rounded-xl font-black text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-95 transition-all shadow-[0_0_25px_rgba(99,102,241,0.25)] active:scale-[0.99]"
-            >
-              ✓ Apply Changes & Open Builder
-            </button>
+            {!applied ? (
+              <button 
+                onClick={handleApply}
+                disabled={isApplying || acceptedCount === 0}
+                className="w-full py-4 rounded-xl font-black text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-95 transition-all shadow-[0_0_25px_rgba(99,102,241,0.25)] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isApplying ? "Applying..." : "Apply Changes & Open Builder"}
+              </button>
+            ) : (
+              <div className="w-full py-4 rounded-xl font-black text-sm bg-green-500/20 border-2 border-green-500/40 text-green-600 text-center">
+                Changes Applied!
+              </div>
+            )}
             <button 
               onClick={onReview}
               className="w-full py-3 rounded-xl font-bold text-xs bg-slate-200 hover:bg-slate-300 text-slate-900 border-2 border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-300 dark:border-gray-700 active:scale-[0.99]"

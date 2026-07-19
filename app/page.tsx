@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import LandingFeatureTour from "@/components/LandingFeatureTour";
 import PricingSection from "@/components/pricing/PricingSection";
@@ -68,12 +70,21 @@ function Counter({
    MAIN PAGE COMPONENT
    ═══════════════════════════════════════════════ */
 export default function Home() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
   const [dbStats, setDbStats] = useState({
     totalResumes: 120,
     aiRunsCount: 350,
     averageATS: 78,
   });
   const howItWorksRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     fetch("/api/public-stats")

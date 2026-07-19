@@ -350,6 +350,7 @@ export default function ResumeDetailPage() {
     setModifiedResumeData(base);
     setHasUnappliedChanges(true);
     setHighlightedChanges(prev => [...prev, ...selectedSuggestions.map(s => s.suggestedText || s.suggested_text || "")].filter(Boolean));
+    setSuggestions(prev => prev.filter(s => !selectedSuggestions.some(sel => sel.id === s.id)));
     setShowSuggestionsModal(false);
     showToast(`${selectedSuggestions.length} change(s) applied! Check the preview, then save as new resume.`, "success");
   };
@@ -528,6 +529,9 @@ export default function ResumeDetailPage() {
             onApply={async (selectedIds) => {
               const selectedSuggs = suggestions.filter(s => selectedIds.includes(s.id));
               handleApplySuggestionsInline(selectedSuggs);
+            }}
+            onDismiss={(id) => {
+              setSuggestions(prev => prev.filter(s => s.id !== id));
             }}
           />
         )}
