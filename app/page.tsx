@@ -469,13 +469,6 @@ export default function Home() {
         </section>
 
         {/* ═══════════════════════════════════════
-            SECTION 6: PRICING (No Duplicate Headers)
-            ═══════════════════════════════════════ */}
-        <section className="relative z-10 border-t border-[var(--border)]">
-          <PricingSection />
-        </section>
-
-        {/* ═══════════════════════════════════════
             SECTION 7: FINAL CTA
             ═══════════════════════════════════════ */}
         <section className="py-24 bg-gradient-to-r from-[var(--accent)]/10 to-[var(--accent-2)]/10 border-t border-[var(--border)]">
@@ -525,7 +518,6 @@ export default function Home() {
               <ul className="space-y-2 text-xs text-[var(--text-secondary)] list-none p-0 m-0">
                 <li><Link href="/dashboard" className="hover:text-[var(--accent)] transition-colors">Dashboard</Link></li>
                 <li><Link href="/resume/builder" className="hover:text-[var(--accent)] transition-colors">Build Resume</Link></li>
-                <li><Link href="/pricing" className="hover:text-[var(--accent)] transition-colors">Pricing</Link></li>
               </ul>
             </div>
 
