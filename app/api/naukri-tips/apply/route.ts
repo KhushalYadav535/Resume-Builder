@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { askAIJSON } from "@/lib/openrouter";
 import { createClient } from "@/utils/supabase/server";
+import { checkAndDeductCredits } from "@/lib/billing";
+import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +47,16 @@ export async function POST(req: NextRequest) {
     if (error || !resume) {
       return NextResponse.json({ error: "Resume not found." }, { status: 404 });
     }
+
+    // --- CREDIT CONSUMPTION GUARD ---
+    const billingCheck = await checkAndDeductCredits(user.id, CREDIT_COSTS.NAUKRI_APPLY_FIX, "Naukri Apply Fix");
+    if (!billingCheck.allowed) {
+      return NextResponse.json(
+        { error: billingCheck.error || "Insufficient credits." },
+        { status: 403 }
+      );
+    }
+    // --------------------------------
 
     const resumeData = resume.resume_data as any;
     const currentSummary = resumeData?.summary || "";

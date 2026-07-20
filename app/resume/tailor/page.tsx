@@ -24,6 +24,7 @@ import {
   RefreshCw,
   ChevronDown,
 } from "lucide-react";
+import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 const getScoreColor = (score: number) => {
   if (score >= 70) return { color: "#10b981", bg: "rgba(16,185,129,0.12)", border: "rgba(16,185,129,0.3)" };
@@ -215,6 +216,7 @@ export default function TailorPage() {
         body: JSON.stringify({ resumeData: selectedResume.resume_data, jobDescription }),
       });
       const data = await res.json();
+      if (res.status === 403) throw new Error(data.error || `Insufficient credits. Analyze Match costs ${CREDIT_COSTS.JD_MATCH} credits.`);
       if (!res.ok || data.error) throw new Error(data.error || "Analysis failed");
       setJdMatchResult(data);
       setCurrentStep(3);
@@ -241,6 +243,7 @@ export default function TailorPage() {
         body: JSON.stringify({ text: target.original, context, targetJobDescription: jobDescription }),
       });
       const data = await res.json();
+      if (res.status === 403) throw new Error(data.error || `Insufficient credits. AI Rewrite costs ${CREDIT_COSTS.AI_REWRITE} credits per section.`);
       if (!res.ok || data.error) throw new Error(data.error || "Rewrite failed");
       setRewriteSuggestions((prev) => ({ ...prev, [key]: data.suggestions }));
     } catch (err: unknown) {
@@ -506,7 +509,13 @@ export default function TailorPage() {
                       </div>
                     )}
                   </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "0.75rem" }}>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: "0.25rem",
+                      fontSize: "0.72rem", fontWeight: 600, color: "#d97706",
+                    }}>
+                      <Zap size={11} />{CREDIT_COSTS.JD_MATCH} credits
+                    </span>
                     <button
                       className="btn-primary"
                       disabled={!jobDescription.trim() || analyzing}
@@ -700,7 +709,7 @@ export default function TailorPage() {
                                 >
                                   {isLoading
                                     ? <><span className="spinner" style={{ width: 10, height: 10 }} /> Generating...</>
-                                    : <><Sparkles size={10} /> Generate</>}
+                                    : <><Sparkles size={10} /> Generate <span style={{ display: "inline-flex", alignItems: "center", gap: "0.15rem", fontSize: "0.58rem", fontWeight: 700, padding: "0.05rem 0.3rem", borderRadius: "9999px", background: "rgba(245,158,11,0.15)", color: "#d97706", border: "1px solid rgba(245,158,11,0.2)" }}><Zap size={7} />{CREDIT_COSTS.AI_REWRITE}</span></>}
                                 </button>
                               )}
                               <ChevronDown size={13} color="var(--text-muted)" style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />

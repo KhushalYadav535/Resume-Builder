@@ -13,9 +13,10 @@ import {
   Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock,
   Maximize2, Minimize2, Sparkles, Save, CheckCircle2, Wand2, X,
   ChevronDown, Copy, AlertTriangle, ZoomIn, ZoomOut,
-  LayoutTemplate, Target,
+  LayoutTemplate, Target, Zap, RotateCcw, RotateCw,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
+import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 /* ─── helpers ─── */
 const ROTATING_MESSAGES = [
@@ -196,13 +197,91 @@ export default function ResumeDetailPage() {
   const [showSaveNewModal, setShowSaveNewModal] = useState(false);
   const [saveNewName, setSaveNewName] = useState("");
   const [savingNew, setSavingNew] = useState(false);
+  const [savingCurrent, setSavingCurrent] = useState(false);
   const [savedNewResumeId, setSavedNewResumeId] = useState<string | null>(null);
   const [highlightedChanges, setHighlightedChanges] = useState<string[]>([]);
+
+  // ── Undo / Redo history stacks ──────────────────────────────────────────
+  const [history, setHistory] = useState<any[]>([]); // past snapshots (max 20)
+  const [future, setFuture] = useState<any[]>([]);   // redo snapshots
 
   const [applyingTipIdx, setApplyingTipIdx] = useState<number | null>(null);
   const [appliedTipPatches, setAppliedTipPatches] = useState<Record<number, any>>({});
   const [selectedTipIdxs, setSelectedTipIdxs] = useState<Set<number>>(new Set());
   const [naukriApplyMode, setNaukriApplyMode] = useState(false);
+
+  // ── pushHistory: snapshot current data before mutating ─────────────────
+  const pushHistory = useCallback((snapshot: any) => {
+    setHistory(prev => [...prev.slice(-19), JSON.parse(JSON.stringify(snapshot))]);
+    setFuture([]); // new change clears redo stack
+  }, []);
+
+  // ── Undo ────────────────────────────────────────────────────────────────
+  const handleUndo = useCallback(() => {
+    setHistory(prev => {
+      if (!prev.length) return prev;
+      const snapshot = prev[prev.length - 1];
+      setFuture(f => [modifiedResumeData, ...f]);
+      setModifiedResumeData(snapshot);
+      setHasUnappliedChanges(prev.length > 1);
+      return prev.slice(0, -1);
+    });
+  }, [modifiedResumeData]);
+
+  // ── Redo ────────────────────────────────────────────────────────────────
+  const handleRedo = useCallback(() => {
+    setFuture(prev => {
+      if (!prev.length) return prev;
+      const snapshot = prev[0];
+      setHistory(h => [...h, modifiedResumeData]);
+      setModifiedResumeData(snapshot);
+      setHasUnappliedChanges(true);
+      return prev.slice(1);
+    });
+  }, [modifiedResumeData]);
+
+  // ── Save Changes → update the CURRENT resume record (in-place) ──────────
+  const handleSaveCurrentResume = useCallback(async () => {
+    if (!resume || !modifiedResumeData) return;
+    setSavingCurrent(true);
+    try {
+      const rawText = [
+        modifiedResumeData.personalInfo?.fullName || "",
+        modifiedResumeData.personalInfo?.email || "",
+        modifiedResumeData.summary || "",
+        ...(modifiedResumeData.workExperience?.flatMap((w: any) => [w.company, w.role, ...(w.bullets || [])]) || []),
+        ...(modifiedResumeData.skills?.technical || []),
+        ...(modifiedResumeData.skills?.soft || []),
+        ...(modifiedResumeData.certifications?.map((c: any) => c.name) || []),
+      ].join("\n");
+      const res = await fetch("/api/save-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: resume.id, // ← same ID = UPDATE existing record
+          file_name: resume.file_name,
+          raw_text: rawText,
+          resume_data: modifiedResumeData,
+          template_id: selectedTemplate,
+          ats_score: resume.ats_score,
+          content_review: resume.content_review,
+          jd_match: resume.jd_match,
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setResume(updated);
+        setHasUnappliedChanges(false);
+        setHistory([]); // clear after save
+        setFuture([]);
+        setHighlightedChanges([]);
+        showToast("Changes saved to this resume ✓", "success");
+      } else {
+        showToast("Failed to save. Please try again.", "error");
+      }
+    } catch { showToast("Error saving resume.", "error"); }
+    finally { setSavingCurrent(false); }
+  }, [resume, modifiedResumeData, selectedTemplate, showToast]);
 
   const fetchSuggestions = async () => {
     if (!resume || suggestionsFetched || suggestionsLoading) return;
@@ -218,6 +297,11 @@ export default function ResumeDetailPage() {
           detectedIndustry: resume.ats_score?.detectedIndustry
         })
       });
+      if (res.status === 403) {
+        const errData = await res.json();
+        showToast(errData.error || `Insufficient credits. Finding improvements costs ${CREDIT_COSTS.AI_IMPROVEMENTS_GENERATE} credits.`, "error");
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         if (data.suggestions) {
@@ -239,6 +323,11 @@ export default function ResumeDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resumeId: resume.id })
       });
+      if (res.status === 403) {
+        const errData = await res.json();
+        showToast(errData.error || `Insufficient credits. Loading tips costs ${CREDIT_COSTS.NAUKRI_SEO_TIPS} credits.`, "error");
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         if (data.tips) { setNaukriTips(data.tips); setNaukriFetched(true); }
@@ -326,6 +415,7 @@ export default function ResumeDetailPage() {
 
   const handleApplySuggestionsInline = (selectedSuggestions: any[]) => {
     if (!resume) return;
+    pushHistory(modifiedResumeData ?? resume.resume_data);
     const base = JSON.parse(JSON.stringify(modifiedResumeData || resume.resume_data || {}));
     for (const s of selectedSuggestions) {
       const text = s.suggestedText || s.suggested_text || "";
@@ -354,10 +444,11 @@ export default function ResumeDetailPage() {
     setHighlightedChanges(prev => [...prev, ...selectedSuggestions.map(s => s.suggestedText || s.suggested_text || "")].filter(Boolean));
     setSuggestions(prev => prev.filter(s => !selectedSuggestions.some(sel => sel.id === s.id)));
     setShowSuggestionsModal(false);
-    showToast(`${selectedSuggestions.length} change(s) applied! Check the preview, then save as new resume.`, "success");
+    showToast(`${selectedSuggestions.length} change(s) applied! Click "Save Changes" to persist.`, "success");
   };
 
   const handleApplyNaukriTipPatch = (idx: number, patch: any) => {
+    pushHistory(modifiedResumeData ?? resume?.resume_data);
     const base = JSON.parse(JSON.stringify(modifiedResumeData || resume?.resume_data || {}));
     if (patch.field === "summary") { base.summary = patch.suggestedValue; }
     else if (patch.field === "skills_technical") { const skills = patch.suggestedValue.split(",").map((s: string) => s.trim()).filter(Boolean); if (!base.skills) base.skills = { technical: [], soft: [] }; base.skills.technical = [...new Set([...(base.skills.technical || []), ...skills])]; }
@@ -367,7 +458,7 @@ export default function ResumeDetailPage() {
     setAppliedTipPatches(prev => ({ ...prev, [idx]: patch }));
     const newChanges = patch.field.startsWith("skills") ? patch.suggestedValue.split(",").map((s: string) => s.trim()) : [patch.suggestedValue];
     setHighlightedChanges(prev => [...prev, ...newChanges].filter(Boolean));
-    showToast("Tip applied to preview! Save as new resume to keep this version.", "success");
+    showToast("Tip applied! Click \"Save Changes\" to persist.", "success");
   };
 
   const handleGenerateNaukriTipFix = async (idx: number, tip: { area: string; tip: string }) => {
@@ -375,11 +466,35 @@ export default function ResumeDetailPage() {
     setApplyingTipIdx(idx);
     try {
       const res = await fetch("/api/naukri-tips/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ resumeId: resume.id, tipArea: tip.area, tipText: tip.tip }) });
+      if (res.status === 403) {
+        const errData = await res.json();
+        showToast(errData.error || `Insufficient credits. Apply Fix costs ${CREDIT_COSTS.NAUKRI_APPLY_FIX} credits.`, "error");
+        return;
+      }
       if (res.ok) { const data = await res.json(); if (data.patch) handleApplyNaukriTipPatch(idx, data.patch); }
       else showToast("Could not generate a fix for this tip. Please try again.", "error");
     } catch { showToast("Error applying tip.", "error"); }
     finally { setApplyingTipIdx(null); }
   };
+
+  // Small helper: render an inline credit cost pill
+  const CreditBadge = ({ cost, free }: { cost?: number; free?: boolean }) => (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: "0.2rem",
+      fontSize: "0.6rem", fontWeight: 700, padding: "0.08rem 0.4rem",
+      borderRadius: "9999px",
+      background: free ? "rgba(16,185,129,0.12)" : "rgba(245,158,11,0.12)",
+      color: free ? "#10b981" : "#d97706",
+      border: `1px solid ${free ? "rgba(16,185,129,0.25)" : "rgba(245,158,11,0.25)"}`,
+      letterSpacing: "0.03em", whiteSpace: "nowrap",
+    }}>
+      {free ? (
+        <><CheckCircle2 size={8} /> Free</>
+      ) : (
+        <><Zap size={8} /> {cost} credits</>
+      )}
+    </span>
+  );
 
   const handleSaveAsNewResume = async () => {
     if (!resume || !modifiedResumeData) return;
@@ -413,6 +528,17 @@ export default function ResumeDetailPage() {
   useEffect(() => { if (!authLoading && !user) router.push("/login"); }, [authLoading, user, router]);
   useEffect(() => { fetchResumeData(); fetchShareStatus(); }, [authLoading, user, params.id]);
   useEffect(() => { if (resume && !naukriFetched) fetchNaukriTips(); }, [resume, naukriFetched]);
+
+  // ── Keyboard shortcuts: Ctrl+Z = Undo, Ctrl+Y / Ctrl+Shift+Z = Redo ────
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!hasUnappliedChanges && !history.length && !future.length) return;
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === "z") { e.preventDefault(); handleUndo(); }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.shiftKey && e.key === "z"))) { e.preventDefault(); handleRedo(); }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleUndo, handleRedo, hasUnappliedChanges, history.length, future.length]);
 
   const handleTemplateChange = async (tplId: string) => {
     setSelectedTemplate(tplId);
@@ -675,36 +801,92 @@ export default function ResumeDetailPage() {
           {!isFullscreen && (
             <div className="no-print" style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.8rem", paddingRight: "4px", scrollbarGutter: "stable" }}>
 
-              {/* Changes applied banner */}
+              {/* ── Changes Applied — Undo / Redo / Save Bar ── */}
               {hasUnappliedChanges && (
                 <div style={{
-                  background: "linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.06))",
-                  border: "1px solid rgba(16,185,129,0.3)", borderRadius: "12px",
-                  padding: "0.8rem 1rem", display: "flex", justifyContent: "space-between",
-                  alignItems: "center", gap: "0.8rem", flexWrap: "wrap",
+                  background: "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.04))",
+                  border: "1px solid rgba(16,185,129,0.28)", borderRadius: "12px",
+                  padding: "0.75rem 1rem", display: "flex", flexDirection: "column", gap: "0.6rem",
                 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <CheckCircle2 size={16} color="#10b981" style={{ flexShrink: 0 }} />
-                    <div>
-                      <strong style={{ fontSize: "0.82rem", color: "#10b981", display: "block" }}>Changes Applied to Preview</strong>
-                      <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Review the right panel, then save as a new resume.</span>
+                  {/* Row 1: label + undo/redo */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <CheckCircle2 size={14} color="#10b981" style={{ flexShrink: 0 }} />
+                      <strong style={{ fontSize: "0.8rem", color: "#10b981" }}>Unsaved changes in preview</strong>
+                    </div>
+                    {/* Undo / Redo buttons */}
+                    <div style={{ display: "flex", gap: "0.35rem" }}>
+                      <button
+                        onClick={handleUndo}
+                        disabled={history.length === 0}
+                        title="Undo (Ctrl+Z)"
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: "0.25rem",
+                          background: history.length ? "var(--bg-2)" : "var(--bg-3)",
+                          border: "1px solid var(--border)", borderRadius: "7px",
+                          padding: "0.25rem 0.6rem", fontSize: "0.72rem", fontWeight: 700,
+                          color: history.length ? "var(--text)" : "var(--text-muted)",
+                          cursor: history.length ? "pointer" : "not-allowed", transition: "all 0.15s",
+                        }}
+                      >
+                        <RotateCcw size={11} />
+                        Undo{history.length > 0 && ` (${history.length})`}
+                      </button>
+                      <button
+                        onClick={handleRedo}
+                        disabled={future.length === 0}
+                        title="Redo (Ctrl+Y)"
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: "0.25rem",
+                          background: future.length ? "var(--bg-2)" : "var(--bg-3)",
+                          border: "1px solid var(--border)", borderRadius: "7px",
+                          padding: "0.25rem 0.6rem", fontSize: "0.72rem", fontWeight: 700,
+                          color: future.length ? "var(--text)" : "var(--text-muted)",
+                          cursor: future.length ? "pointer" : "not-allowed", transition: "all 0.15s",
+                        }}
+                      >
+                        <RotateCw size={11} />
+                        Redo{future.length > 0 && ` (${future.length})`}
+                      </button>
                     </div>
                   </div>
-                  <button
-                    onClick={() => { setSaveNewName(""); setShowSaveNewModal(true); }}
-                    className="btn-primary"
-                    style={{ fontSize: "0.78rem", padding: "0.4rem 0.9rem", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", border: "none", whiteSpace: "nowrap" }}
-                  >
-                    <Save size={12} /> Save as New
-                  </button>
+                  {/* Row 2: Save Changes (primary) + Save as Copy (ghost) */}
+                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                    <button
+                      onClick={handleSaveCurrentResume}
+                      disabled={savingCurrent}
+                      className="btn-primary"
+                      style={{
+                        flex: 1, fontSize: "0.8rem", padding: "0.45rem 0.9rem",
+                        background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                        border: "none", justifyContent: "center",
+                      }}
+                    >
+                      {savingCurrent
+                        ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Saving...</>
+                        : <><Save size={12} /> Save Changes</>}
+                    </button>
+                    <button
+                      onClick={() => { setSaveNewName(""); setShowSaveNewModal(true); }}
+                      style={{
+                        background: "none", border: "1px solid var(--border)", borderRadius: "8px",
+                        color: "var(--text-muted)", fontSize: "0.72rem", fontWeight: 600,
+                        padding: "0.45rem 0.7rem", cursor: "pointer", whiteSpace: "nowrap",
+                        transition: "all 0.15s",
+                      }}
+                      title="Save as a separate copy instead"
+                    >
+                      Save as Copy
+                    </button>
+                  </div>
                 </div>
               )}
 
               {savedNewResumeId && (
                 <div style={{ background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "10px", padding: "0.7rem 1rem", display: "flex", alignItems: "center", gap: "0.6rem", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "0.8rem", color: "#10b981", fontWeight: 600 }}>New resume saved!</span>
+                  <span style={{ fontSize: "0.8rem", color: "#10b981", fontWeight: 600 }}>Saved as a new copy!</span>
                   <Link href={`/resume/${savedNewResumeId}`}>
-                    <button className="btn-secondary" style={{ fontSize: "0.76rem", padding: "0.28rem 0.7rem", borderColor: "#10b981", color: "#10b981" }}>View New Resume</button>
+                    <button className="btn-secondary" style={{ fontSize: "0.76rem", padding: "0.28rem 0.7rem", borderColor: "#10b981", color: "#10b981" }}>View Copy</button>
                   </Link>
                 </div>
               )}
@@ -926,7 +1108,7 @@ export default function ResumeDetailPage() {
                             fontSize: "0.7rem", fontWeight: 700, cursor: addingKeywords ? "wait" : "pointer",
                           }}
                         >
-                          {addingKeywords ? <><span className="spinner" style={{ width: 10, height: 10 }} /> Adding...</> : <><Sparkles size={10} /> Auto-Add All</>}
+                          {addingKeywords ? <><span className="spinner" style={{ width: 10, height: 10 }} /> Adding...</> : <><Sparkles size={10} /> Auto-Add All <CreditBadge free /></>}
                         </button>
                       </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
@@ -989,9 +1171,9 @@ export default function ResumeDetailPage() {
                             onClick={fetchSuggestions}
                             disabled={suggestionsLoading}
                             className="btn-primary"
-                            style={{ fontSize: "0.78rem", padding: "0.4rem 0.9rem", whiteSpace: "nowrap" }}
+                            style={{ fontSize: "0.78rem", padding: "0.4rem 0.9rem", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
                           >
-                            {suggestionsLoading ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Analyzing...</> : <><Sparkles size={12} /> Find Improvements</>}
+                            {suggestionsLoading ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Analyzing...</> : <><Sparkles size={12} /> Find Improvements <CreditBadge cost={CREDIT_COSTS.AI_IMPROVEMENTS_GENERATE} /></>}
                           </button>
                         )}
                       </div>
@@ -1024,7 +1206,7 @@ export default function ResumeDetailPage() {
                     color: "#8b5cf6", borderRadius: "8px", padding: "0.45rem 1rem",
                     fontSize: "0.78rem", fontWeight: 700, cursor: "pointer",
                   }}>
-                    Load Visibility Tips
+                    Load Visibility Tips <CreditBadge cost={CREDIT_COSTS.NAUKRI_SEO_TIPS} />
                   </button>
                 )}
 
@@ -1074,7 +1256,7 @@ export default function ResumeDetailPage() {
                                 transition: "all 0.15s",
                               }}
                             >
-                              {isApplyingThis ? <><span className="spinner" style={{ width: 10, height: 10 }} /> Generating...</> : <><Wand2 size={10} /> Apply Fix</>}
+                              {isApplyingThis ? <><span className="spinner" style={{ width: 10, height: 10 }} /> Generating...</> : <><Wand2 size={10} /> Apply Fix <CreditBadge cost={CREDIT_COSTS.NAUKRI_APPLY_FIX} /></>}
                             </button>
                           )}
                         </div>
@@ -1212,19 +1394,39 @@ export default function ResumeDetailPage() {
               </button>
             </div>
 
-            {/* changes notice */}
+            {/* changes notice — right panel top bar */}
             {hasUnappliedChanges && (
               <div style={{
-                display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.45rem 1.1rem",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                gap: "0.5rem", padding: "0.4rem 0.9rem",
                 background: "rgba(16,185,129,0.07)", borderBottom: "1px solid rgba(16,185,129,0.18)",
-                fontSize: "0.73rem", color: "#10b981", fontWeight: 600, flexShrink: 0,
+                fontSize: "0.73rem", flexShrink: 0,
               }}>
-                <CheckCircle2 size={12} />
-                Preview showing your applied changes —
-                <button onClick={() => { setSaveNewName(""); setShowSaveNewModal(true); }}
-                  style={{ background: "none", border: "none", color: "#10b981", cursor: "pointer", textDecoration: "underline", fontWeight: 700, padding: 0, fontSize: "0.73rem" }}>
-                  Save as New Resume
-                </button>
+                <span style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "#10b981", fontWeight: 600 }}>
+                  <CheckCircle2 size={12} /> Preview showing unsaved changes
+                </span>
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <button onClick={handleUndo} disabled={!history.length}
+                    title="Undo (Ctrl+Z)"
+                    style={{ background: "none", border: "none", color: history.length ? "#10b981" : "var(--text-muted)", cursor: history.length ? "pointer" : "not-allowed", padding: "0 4px", display: "flex", alignItems: "center" }}>
+                    <RotateCcw size={12} />
+                  </button>
+                  <button onClick={handleRedo} disabled={!future.length}
+                    title="Redo (Ctrl+Y)"
+                    style={{ background: "none", border: "none", color: future.length ? "#10b981" : "var(--text-muted)", cursor: future.length ? "pointer" : "not-allowed", padding: "0 4px", display: "flex", alignItems: "center" }}>
+                    <RotateCw size={12} />
+                  </button>
+                  <button onClick={handleSaveCurrentResume} disabled={savingCurrent}
+                    style={{
+                      background: "#10b981", border: "none", color: "#fff",
+                      borderRadius: "6px", padding: "0.2rem 0.6rem",
+                      fontSize: "0.68rem", fontWeight: 700, cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", gap: "0.25rem",
+                    }}>
+                    {savingCurrent ? <span className="spinner" style={{ width: 10, height: 10 }} /> : <Save size={10} />}
+                    {savingCurrent ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
               </div>
             )}
 

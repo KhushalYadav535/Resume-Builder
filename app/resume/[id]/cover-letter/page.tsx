@@ -5,7 +5,8 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/Card";
-import { Copy, Check, Printer } from "lucide-react";
+import { Copy, Check, Printer, Zap } from "lucide-react";
+import { CREDIT_COSTS } from "@/lib/creditCosts";
 export default function CoverLetterPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -39,6 +40,9 @@ export default function CoverLetterPage() {
         body: JSON.stringify({ resumeId, jobDescription }),
       });
       const data = await res.json();
+      if (res.status === 403) {
+        throw new Error(data.error || `Insufficient credits. Cover Letter Generation costs ${CREDIT_COSTS.COVER_LETTER} credits.`);
+      }
       if (!res.ok || data.error) {
         throw new Error(data.error || "Failed to generate cover letter.");
       }
@@ -135,14 +139,19 @@ export default function CoverLetterPage() {
             </div>
           )}
 
-          <button
-            onClick={handleGenerate}
-            disabled={loading}
-            className="btn-primary"
-            style={{ width: "100%", justifyContent: "center", padding: "0.75rem", fontSize: "0.95rem" }}
-          >
-            {loading ? "✦ Writing Letter with AI reasoning..." : "✦ Generate Tailored Cover Letter"}
-          </button>
+          <div style={{ display: "grid", gap: "0.5rem" }}>
+            <button
+              onClick={handleGenerate}
+              disabled={loading}
+              className="btn-primary"
+              style={{ width: "100%", justifyContent: "center", padding: "0.75rem", fontSize: "0.95rem" }}
+            >
+              {loading ? "✦ Writing Letter with AI reasoning..." : "✦ Generate Tailored Cover Letter"}
+            </button>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "0.3rem", fontSize: "0.72rem", color: "#d97706", fontWeight: 600 }}>
+              <Zap size={11} />{CREDIT_COSTS.COVER_LETTER} credits will be deducted
+            </div>
+          </div>
 
           {coverLetter && (
             <div style={{ display: "grid", gap: "1rem", borderTop: "1px solid var(--border)", paddingTop: "1.5rem", marginTop: "0.5rem" }}>

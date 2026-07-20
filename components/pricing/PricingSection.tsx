@@ -51,7 +51,7 @@ export default function PricingSection() {
           
           if (verifyData.success) {
             alert("Payment successful! Credits/Tier updated.");
-            router.push("/dashboard");
+            window.location.href = "/dashboard";
           } else {
             alert("Payment verification failed.");
           }
@@ -211,7 +211,7 @@ export default function PricingSection() {
 
         <div className="grid md:grid-cols-3 gap-6">
           {/* Starter */}
-          <div onClick={() => handlePayment(99, "Starter Pack (100 Credits)")} className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 text-center hover:border-[var(--accent)] transition-colors cursor-pointer group">
+          <div onClick={() => handlePayment(99, "Starter Pack (100 Credits)", "free", 100)} className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 text-center hover:border-[var(--accent)] transition-colors cursor-pointer group">
             <div className="w-12 h-12 bg-[var(--bg-elevated)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[var(--accent-soft)] transition-colors">
               <Zap size={20} className="text-[var(--accent)]" />
             </div>
@@ -222,7 +222,7 @@ export default function PricingSection() {
           </div>
 
           {/* Booster */}
-          <div onClick={() => handlePayment(249, "Booster Pack (300 Credits)")} className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 text-center hover:border-[var(--accent)] transition-colors cursor-pointer group relative overflow-hidden">
+          <div onClick={() => handlePayment(249, "Booster Pack (300 Credits)", "free", 300)} className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 text-center hover:border-[var(--accent)] transition-colors cursor-pointer group relative overflow-hidden">
             <div className="absolute top-3 right-3 text-[10px] font-bold bg-[var(--signal-success)]/10 text-[var(--signal-success)] px-2 py-1 rounded">16% OFF</div>
             <div className="w-12 h-12 bg-[var(--bg-elevated)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[var(--accent-soft)] transition-colors">
               <Star size={20} className="text-[var(--accent)]" />
@@ -234,7 +234,7 @@ export default function PricingSection() {
           </div>
 
           {/* Power */}
-          <div onClick={() => handlePayment(499, "Power Pack (750 Credits)")} className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 text-center hover:border-[var(--accent)] transition-colors cursor-pointer group relative overflow-hidden">
+          <div onClick={() => handlePayment(499, "Power Pack (750 Credits)", "free", 750)} className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 text-center hover:border-[var(--accent)] transition-colors cursor-pointer group relative overflow-hidden">
              <div className="absolute top-3 right-3 text-[10px] font-bold bg-[var(--signal-success)]/10 text-[var(--signal-success)] px-2 py-1 rounded">33% OFF</div>
             <div className="w-12 h-12 bg-[var(--bg-elevated)] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[var(--accent-soft)] transition-colors">
               <Briefcase size={20} className="text-[var(--accent)]" />

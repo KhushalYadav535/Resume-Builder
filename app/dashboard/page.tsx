@@ -14,9 +14,10 @@ import { Card } from "@/components/ui/Card";
 import { ATSRing } from "@/components/ui/ATSRing";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
-import { Plus, Upload, Target, LayoutTemplate, FileText, Search, Trash2, Calendar, TrendingUp, ArrowRight } from "lucide-react";
+import { Plus, Upload, Target, LayoutTemplate, FileText, Search, Trash2, Calendar, TrendingUp, ArrowRight, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
+import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 export default function Dashboard() {
   const { user, role, loading: authLoading } = useAuth();
@@ -222,17 +223,24 @@ export default function Dashboard() {
           <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { icon: <Plus size={20} />, label: "Build from Scratch", href: "/resume/builder", color: "var(--accent)" },
-              { icon: <Upload size={20} />, label: "Upload & Analyze", href: "/resume/upload", color: "var(--score-high)" },
-              { icon: <Target size={20} />, label: "Tailor for Job", href: "/resume/tailor", color: "var(--info)" },
-              { icon: <LayoutTemplate size={20} />, label: "Browse Templates", href: "/resume/templates", color: "var(--warning)" },
+              { icon: <Plus size={20} />, label: "Build from Scratch", href: "/resume/builder", color: "var(--accent)", creditCost: null },
+              { icon: <Upload size={20} />, label: "Upload & Analyze", href: "/resume/upload", color: "var(--score-high)", creditCost: CREDIT_COSTS.ANALYZE_RESUME },
+              { icon: <Target size={20} />, label: "Tailor for Job", href: "/resume/tailor", color: "var(--info)", creditCost: CREDIT_COSTS.JD_MATCH },
+              { icon: <LayoutTemplate size={20} />, label: "Browse Templates", href: "/resume/templates", color: "var(--warning)", creditCost: null },
             ].map((action) => (
               <Link key={action.label} href={action.href} className="no-underline">
                 <Card hoverable className="p-4 flex items-center gap-4 transition-all duration-300 hover:border-[var(--accent)] hover:shadow-md">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: action.color }}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0" style={{ backgroundColor: action.color }}>
                     {action.icon}
                   </div>
-                  <span className="font-semibold text-sm text-[var(--text-primary)]">{action.label}</span>
+                  <div>
+                    <span className="font-semibold text-sm text-[var(--text-primary)] block">{action.label}</span>
+                    {action.creditCost !== null && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold mt-0.5" style={{ color: "#d97706" }}>
+                        <Zap size={9} />{action.creditCost} credits
+                      </span>
+                    )}
+                  </div>
                 </Card>
               </Link>
             ))}
