@@ -162,7 +162,7 @@ export default function ResumeDetailPage() {
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [selectedTemplate, setSelectedTemplate] = useState("standard");
+  const [selectedTemplate, setSelectedTemplate] = useState("jakes-resume");
   const [zoomFactor, setZoomFactor] = useState(0.85);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -634,18 +634,13 @@ export default function ResumeDetailPage() {
   const atsColor = resume.ats_score ? sc(resume.ats_score.overall) : null;
 
   const TEMPLATES = [
-    { value: "standard", label: "Standard" },
-    { value: "modern", label: "Modern ATS" },
-    { value: "professional", label: "Professional" },
-    { value: "executive", label: "Executive" },
-    { value: "minimal", label: "Minimal" },
-    { value: "creative", label: "Creative" },
-    { value: "ats-safe", label: "ATS Safe" },
-    { value: "fresher", label: "Fresher" },
-    { value: "startup", label: "Startup" },
-    { value: "it-tech", label: "IT Tech" },
-    { value: "bfsi-risk", label: "BFSI Corporate" },
-    { value: "minimal-2", label: "Minimalist Teal" },
+    { value: "jakes-resume", label: "Jake's Resume" },
+    { value: "altacv-modern", label: "AltaCV Modern" },
+    { value: "curve-timeline", label: "CurVe Timeline" },
+    { value: "hipster-sidebar", label: "Hipster Sidebar" },
+    { value: "deedy-cs", label: "Deedy CS" },
+    { value: "awesome-corporate", label: "Awesome Corporate" },
+    { value: "plasmati-academic", label: "Plasmati Academic" },
   ];
 
   return (
