@@ -113,17 +113,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Could not extract text from file" }, { status: 400 });
     }
 
-    // Normalize parsed text: fix spacing/bullet formatting issues
+    // Normalize parsed text: fix spacing/bullet/formatting issues from PDF extraction
     const cleanText = text
       // Normalize line endings
       .replace(/\r\n/g, "\n")
       .replace(/\r/g, "\n")
-      // Ensure bullet markers have a space after them
+      // Fix fully-uppercase concatenated words (common PDF artifact): e.g. "HARSHWARDHANSHARMA"
+      // Insert a space before each capital letter that follows another capital letter and a lowercase letter sequence
+      // Pattern: end of an uppercase word run joining into the next (e.g. "NAMECOMPANY" → keep as-is,
+      // but "JohnSmith" → "John Smith" and "B.Tech.COMPUTERSCIENCEAND" → split at boundaries)
+      // Step 1: lowercase letter immediately followed by uppercase → insert space (e.g. "techSkills")
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      // Step 2: uppercase letter followed by uppercase then lowercase → split (e.g. "HTMLParser" → "HTML Parser")
+      .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+      // Step 3: digit immediately followed by letter or letter followed by digit → insert space
+      .replace(/([0-9])([A-Za-z])/g, "$1 $2")
+      .replace(/([A-Za-z])([0-9])/g, "$1 $2")
+      // Step 4: punctuation (.,;:) immediately followed by uppercase word (no space) → add space
+      .replace(/([.,:;!?])([A-Z])/g, "$1 $2")
+      // Ensure bullet markers have a space after them and start on their own line
+      .replace(/([^\n])([•●▪▸◦–\-])\s*/g, "$1\n$2 ")
       .replace(/^([•●▪▸◦–\-])\s*/gm, "$1 ")
       // Collapse more than 2 consecutive blank lines into 2
       .replace(/\n{3,}/g, "\n\n")
-      // Ensure sentences that run together get a space (pattern: lowercase immediately followed by uppercase)
-      .replace(/([a-z])([A-Z])/g, "$1 $2")
       // Remove trailing whitespace from each line
       .split("\n").map(l => l.trimEnd()).join("\n")
       .trim();

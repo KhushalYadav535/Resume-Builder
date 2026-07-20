@@ -189,6 +189,8 @@ export default function ResumeDetailPage() {
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [estimatedNewScore, setEstimatedNewScore] = useState(0);
 
+  const [showCreditPrompt, setShowCreditPrompt] = useState(false);
+
   const [modifiedResumeData, setModifiedResumeData] = useState<any | null>(null);
   const [hasUnappliedChanges, setHasUnappliedChanges] = useState(false);
   const [showSaveNewModal, setShowSaveNewModal] = useState(false);
@@ -433,6 +435,13 @@ export default function ResumeDetailPage() {
     }, 250);
     try {
       const res = await fetch("/api/analyze-resume/deep", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ resumeId: resume.id, jobDescription }) });
+      // Handle credit exhaustion specifically
+      if (res.status === 403) {
+        clearInterval(animInterval);
+        setShowCreditPrompt(true);
+        setDeepLoading(false);
+        return;
+      }
       if (!res.ok) throw new Error("Deep AI response failed. AI service might be loaded. Please retry.");
       const updatedRow = await res.json();
       if (updatedRow.error) throw new Error(updatedRow.error);
@@ -440,6 +449,7 @@ export default function ResumeDetailPage() {
       setDeepProgress(100);
       setDeepText("Deep AI Enhancements integrated successfully!");
       setResume(updatedRow);
+      setShowCreditPrompt(false);
       setTimeout(() => setDeepLoading(false), 350);
     } catch (err: any) {
       clearInterval(animInterval);
@@ -699,6 +709,45 @@ export default function ResumeDetailPage() {
                 </div>
               )}
 
+              {/* ── Credit exhausted prompt (Bug 24) ── */}
+              {showCreditPrompt && (
+                <div style={{
+                  background: "linear-gradient(135deg, rgba(239,68,68,0.08), rgba(220,38,38,0.04))",
+                  border: "1px solid rgba(239,68,68,0.3)", borderLeft: "3px solid #ef4444",
+                  borderRadius: "12px", padding: "0.85rem 1rem",
+                  display: "flex", flexDirection: "column", gap: "0.6rem",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                      <AlertTriangle size={14} color="#ef4444" />
+                      <strong style={{ fontSize: "0.82rem", color: "#ef4444" }}>Insufficient Credits</strong>
+                    </div>
+                    <button onClick={() => setShowCreditPrompt(false)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 0 }}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                  <p style={{ margin: 0, fontSize: "0.76rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
+                    You don't have enough credits to run this AI feature. Top up your credits or upgrade to Career Sprint for unlimited access.
+                  </p>
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                    <Link href="/pricing" style={{
+                      flex: 1, textAlign: "center", padding: "0.45rem 0.7rem", borderRadius: "8px",
+                      background: "linear-gradient(135deg, #6c63ff 0%, #3b82f6 100%)",
+                      color: "#fff", fontWeight: 700, fontSize: "0.78rem", textDecoration: "none",
+                    }}>
+                      Career Sprint — ₹799
+                    </Link>
+                    <Link href="/pricing#topup" style={{
+                      flex: 1, textAlign: "center", padding: "0.45rem 0.7rem", borderRadius: "8px",
+                      border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444",
+                      fontWeight: 600, fontSize: "0.78rem", textDecoration: "none",
+                    }}>
+                      Top Up Credits
+                    </Link>
+                  </div>
+                </div>
+              )}
+
               {/* Missing sections alert */}
               {missingSecs.length > 0 && (
                 <div style={{ background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)", borderLeft: "3px solid #f59e0b", padding: "0.75rem 1rem", borderRadius: "10px" }}>
@@ -920,29 +969,44 @@ export default function ResumeDetailPage() {
               {/* ── AI Improvements ── */}
               {resume.ats_score && (
                 <Section title="AI Improvements" icon={Sparkles} defaultOpen={false} accentColor="#f59e0b">
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.7rem", flexWrap: "wrap", gap: "0.5rem" }}>
-                    <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
-                      Generate AI suggestions to improve ATS score by adding missing keywords and skills.
-                    </p>
-                    <button
-                      onClick={fetchSuggestions}
-                      disabled={suggestionsLoading}
-                      className="btn-primary"
-                      style={{ fontSize: "0.78rem", padding: "0.4rem 0.9rem", whiteSpace: "nowrap" }}
-                    >
-                      {suggestionsLoading ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Analyzing...</> : <><Sparkles size={12} /> Find Improvements</>}
-                    </button>
-                  </div>
-                  {suggestions.length > 0 && (
-                    <div style={{ background: "var(--accent-soft)", border: "1px solid var(--border-accent)", borderRadius: "9px", padding: "0.7rem 0.9rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.7rem", flexWrap: "wrap" }}>
+                  {/* All improvements applied — success state */}
+                  {suggestionsFetched && suggestions.length === 0 ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.7rem 0.9rem", background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.22)", borderRadius: "9px" }}>
+                      <CheckCircle2 size={15} color="#10b981" style={{ flexShrink: 0 }} />
                       <div>
-                        <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--accent)" }}>{suggestions.length} improvements found!</div>
-                        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Estimated new score: {estimatedNewScore}/100</div>
+                        <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#10b981" }}>All improvements applied!</div>
+                        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Your resume is fully optimised. Save as a new resume to keep the changes.</div>
                       </div>
-                      <button onClick={() => setShowSuggestionsModal(true)} className="btn-primary" style={{ fontSize: "0.78rem", padding: "0.38rem 0.85rem" }}>
-                        View & Apply
-                      </button>
                     </div>
+                  ) : (
+                    <>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.7rem", flexWrap: "wrap", gap: "0.5rem" }}>
+                        <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
+                          Generate AI suggestions to improve ATS score by adding missing keywords and skills.
+                        </p>
+                        {!suggestionsFetched && (
+                          <button
+                            onClick={fetchSuggestions}
+                            disabled={suggestionsLoading}
+                            className="btn-primary"
+                            style={{ fontSize: "0.78rem", padding: "0.4rem 0.9rem", whiteSpace: "nowrap" }}
+                          >
+                            {suggestionsLoading ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Analyzing...</> : <><Sparkles size={12} /> Find Improvements</>}
+                          </button>
+                        )}
+                      </div>
+                      {suggestions.length > 0 && (
+                        <div style={{ background: "var(--accent-soft)", border: "1px solid var(--border-accent)", borderRadius: "9px", padding: "0.7rem 0.9rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.7rem", flexWrap: "wrap" }}>
+                          <div>
+                            <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--accent)" }}>{suggestions.length} improvements found!</div>
+                            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Estimated new score: {estimatedNewScore}/100</div>
+                          </div>
+                          <button onClick={() => setShowSuggestionsModal(true)} className="btn-primary" style={{ fontSize: "0.78rem", padding: "0.38rem 0.85rem" }}>
+                            View & Apply
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </Section>
               )}

@@ -5,6 +5,7 @@ export interface ResumeSections {
   projects: string[];
   skills: string[];
   certifications: string[];
+  languages: string[];
 }
 
 /**
@@ -19,6 +20,7 @@ export function parseSections(text: string): ResumeSections {
     projects: [],
     skills: [],
     certifications: [],
+    languages: [],
   };
 
   // Keywords that identify section boundaries
@@ -29,6 +31,7 @@ export function parseSections(text: string): ResumeSections {
     projects: [/^\s*(?:projects|personal projects|key projects|academic projects|technical projects|portfolio)\b/i],
     skills: [/^\s*(?:skills|technical skills|technologies|expertise|core competencies|competencies|skills & tools)\b/i],
     certifications: [/^\s*(?:certifications|certificates|licenses|awards|credentials|achievements|courses)\b/i],
+    languages: [/^\s*(?:languages\s*known|languages|language skills|spoken languages|linguistic skills|language proficiency)\b/i],
   };
 
   const lines = text.split("\n").map(l => l.trim());

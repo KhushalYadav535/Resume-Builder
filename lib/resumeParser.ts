@@ -1,4 +1,4 @@
-import { ResumeData, WorkExperience, Education, Project, Certification } from "@/types";
+import { ResumeData, WorkExperience, Education, Project, Certification, LanguagesKnown } from "@/types";
 import { extractPersonalInfo } from "./extractPersonalInfo";
 import { parseSections } from "./sectionParser";
 import { extractSkills } from "./extractSkills";
@@ -27,12 +27,15 @@ export function parseResume(text: string): ResumeData {
   const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December|Present|\d{1,2}\/\d{2,4}|\b(?:19|20)\d{2}\b)\b/i;
 
   for (const line of sections.experience) {
-    const isBullet = /^[•\-\*■]\s*/.test(line) || line.trim().startsWith("-");
-    const cleanLine = line.replace(/^[•\-\*■]\s*/, "").trim();
+    const isBullet = /^[•\-\*■●▪▸◦]/.test(line) || (line.trim().startsWith("-") && line.trim().length > 2);
+    const cleanLine = line.replace(/^[•\-\*■●▪▸◦]\s*/, "").trim();
+
+    // Treat ALL-CAPS short lines as job title/company headers (common in formatted CVs/PDFs)
+    const isAllCapsHeader = /^[A-Z][A-Z\s\|\/&,.'()-]{3,}$/.test(line) && line.length < 80 && !isBullet;
 
     if (isBullet) {
       if (!currentJob) {
-        // Create a dummy job if a bullet is found before a job header
+        // Create a placeholder job if a bullet is found before any job header
         currentJob = {
           id: uid(),
           company: "Company Name",
@@ -50,7 +53,7 @@ export function parseResume(text: string): ResumeData {
       const hasDate = dateRegex.test(line);
       const parts = line.split(/\s*\|\s*|\s*-\s*|\s*,\s*|\s+at\s+/i).map(p => p.trim()).filter(Boolean);
 
-      if (parts.length >= 2 || hasDate) {
+      if (parts.length >= 2 || hasDate || isAllCapsHeader) {
         // Guess dates
         let datesFound: string[] = [];
         const matches = line.match(new RegExp(dateRegex, "gi"));
@@ -77,7 +80,7 @@ export function parseResume(text: string): ResumeData {
         };
         workExperience.push(currentJob as WorkExperience);
       } else if (line.length > 3) {
-        // If it's a short text line, append to bullets or use as job info
+        // If it's a short text line, append to bullets of current job only
         if (currentJob) {
           currentJob.bullets?.push(line);
         }
@@ -151,6 +154,56 @@ export function parseResume(text: string): ResumeData {
     }
   }
 
+  // 6. Parse Languages Known
+  const languagesKnown: LanguagesKnown[] = [];
+  const seenLangs = new Set<string>();
+
+  // 6a. From a dedicated 'Languages Known' section
+  for (const line of sections.languages) {
+    // Each line may contain comma/semicolon/pipe-separated languages
+    const parts = line.split(/[,;|]/).map(p => p.trim()).filter(Boolean);
+    for (const part of parts) {
+      // Strip bullet characters and leading noise
+      const lang = part.replace(/^[•\-\*■]\s*/, "").trim();
+      if (lang.length > 1 && !seenLangs.has(lang.toLowerCase())) {
+        seenLangs.add(lang.toLowerCase());
+        languagesKnown.push({
+          id: uid(),
+          language: lang,
+          proficiency: "",
+        });
+      }
+    }
+  }
+
+  // 6b. Inline pattern: "Languages & Tools: Hindi, English, ..." or "Languages Known: ..."
+  //     Often appears inside the skills section when there is no dedicated header
+  const INLINE_LANG_PATTERN = /languages?(?:\s*[&and]+\s*tools?)?\s*:\s*(.+)/i;
+  for (const line of sections.skills) {
+    const match = line.match(INLINE_LANG_PATTERN);
+    if (match) {
+      const rawValue = match[1];
+      const TECH_SKILLS_LOWER = skillAnalysis.technicalSkills.map(s => s.toLowerCase());
+      const parts = rawValue.split(/[,;|]/).map(p => p.trim()).filter(Boolean);
+      for (const part of parts) {
+        const clean = part.replace(/^[•\-\*■]\s*/, "").trim();
+        // Only keep if NOT already a detected technical skill (avoids "Python" etc.)
+        if (
+          clean.length > 1 &&
+          !TECH_SKILLS_LOWER.includes(clean.toLowerCase()) &&
+          !seenLangs.has(clean.toLowerCase())
+        ) {
+          seenLangs.add(clean.toLowerCase());
+          languagesKnown.push({
+            id: uid(),
+            language: clean,
+            proficiency: "",
+          });
+        }
+      }
+    }
+  }
+
   // Base fallback mappings if empty
   if (education.length === 0) {
     education.push({
@@ -187,5 +240,6 @@ export function parseResume(text: string): ResumeData {
     },
     projects,
     certifications,
+    languagesKnown: languagesKnown.length > 0 ? languagesKnown : undefined,
   };
 }

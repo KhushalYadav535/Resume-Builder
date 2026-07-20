@@ -93,7 +93,7 @@ interface DeepAnalysisResult {
 }
 
 Instructions:
-1. **contentReview**: Rewrite weak points. Focus on replacing passive language with strong action verbs (e.g. Spearheaded, Directed, Engineered) and highlighting where quantified impact/metrics are missing. Keep the suggestions and rewrites high-impact and concise. To prevent truncation and response size failures, limit the "sections" array to at most 3 sections (preferably Summary, Work Experience, and Projects).
+1. **contentReview**: Rewrite weak points. Focus on replacing passive language with strong action verbs (e.g. Spearheaded, Directed, Engineered) and highlighting where quantified impact/metrics are missing. Keep the suggestions and rewrites high-impact and concise. **Analyze EVERY work experience position separately** — do not skip or merge any roles. Each entry in "Work Experience" must appear as its own object in the "sections" array with an "improvedVersion" rewrite where possible.
 2. **jdMatch**: ${hasJD ? "Compare the resume against the provided Job Description. Generate a precise keyword match gap analysis." : "Set this to null."}`;
 
     // Execute heavy LLM reasoning using strictly free OpenRouter failover chain
