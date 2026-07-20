@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { askAIJSON } from "@/lib/openrouter";
 import { ResumeSuggestion } from "@/lib/types/comprehensive-suggestions";
+import { checkAndDeductCredits } from "@/lib/billing";
+import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +40,16 @@ export async function POST(req: NextRequest) {
     if (fetchError || !dbResume) {
       return NextResponse.json({ error: "Resume record not found or access denied." }, { status: 404 });
     }
+
+    // --- CREDIT CONSUMPTION GUARD ---
+    const billingCheck = await checkAndDeductCredits(user.id, CREDIT_COSTS.COMPREHENSIVE_AI_ANALYSIS, "Comprehensive AI Analysis");
+    if (!billingCheck.allowed) {
+      return NextResponse.json(
+        { error: billingCheck.error || "Insufficient credits." },
+        { status: 403 }
+      );
+    }
+    // --------------------------------
 
     const prompt = `You are an elite executive resume writer and ATS optimization expert with 15+ years of experience. Your task is to analyze the candidate's ENTIRE resume holistically and generate highly personalized, context-aware improvements.
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { askAIJSON } from "@/lib/openrouter";
 import { createClient } from "@/utils/supabase/server";
 import { checkAndDeductCredits } from "@/lib/billing";
+import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 export const dynamic = "force-dynamic";
 
@@ -34,10 +35,10 @@ export async function POST(req: NextRequest) {
     }
 
     // --- CREDIT CONSUMPTION GUARD (30 credits per mock interview) ---
-    const billingCheck = await checkAndDeductCredits(user.id, 30, "Mock Interview");
+    const billingCheck = await checkAndDeductCredits(user.id, CREDIT_COSTS.MOCK_INTERVIEW, "Mock Interview");
     if (!billingCheck.allowed) {
       return NextResponse.json(
-        { error: billingCheck.error || "Insufficient credits. Mock Interview costs 30 credits." },
+        { error: billingCheck.error || `Insufficient credits. Mock Interview costs ${CREDIT_COSTS.MOCK_INTERVIEW} credits.` },
         { status: 402 }
       );
     }

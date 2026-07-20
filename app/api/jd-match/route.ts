@@ -3,6 +3,7 @@ import { askAIJSON } from "@/lib/openrouter";
 import { createClient } from "@/utils/supabase/server";
 import { JDMatch } from "@/types";
 import { checkAndDeductCredits } from "@/lib/billing";
+import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- CREDIT CONSUMPTION GUARD ---
-    const billingCheck = await checkAndDeductCredits(user.id, 10, "JD Matching");
+    const billingCheck = await checkAndDeductCredits(user.id, CREDIT_COSTS.JD_MATCH, "JD Matching");
     if (!billingCheck.allowed) {
       return NextResponse.json(
         { error: billingCheck.error || "Insufficient credits." },

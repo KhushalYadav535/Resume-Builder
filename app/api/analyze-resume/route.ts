@@ -4,6 +4,7 @@ import { parseResume } from "@/lib/resumeParser";
 import { calculateDynamicATS } from "@/lib/ats";
 import { sanitizeInput, sanitizeObject } from "@/lib/sanitization";
 import { checkAndDeductCredits } from "@/lib/billing";
+import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- CREDIT CONSUMPTION GUARD ---
-    const billingCheck = await checkAndDeductCredits(user.id, 15, "ATS Optimization Check");
+    const billingCheck = await checkAndDeductCredits(user.id, CREDIT_COSTS.ANALYZE_RESUME, "ATS Optimization Check");
     if (!billingCheck.allowed) {
       return NextResponse.json(
         { error: billingCheck.error || "Insufficient credits." },
