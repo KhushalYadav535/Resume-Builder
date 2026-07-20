@@ -124,8 +124,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: message };
       }
 
-      // Check if email confirmation is required or if signed up directly
+      // Explicitly create user profile as a safety net in case the DB trigger hasn't fired.
+      // Uses upsert with ignoreDuplicates so it never errors if trigger already created the row.
       if (data.user) {
+        await supabase
+          .from("user_profiles")
+          .upsert(
+            { id: data.user.id, email: data.user.email ?? email, role: "user", has_completed_onboarding: false },
+            { onConflict: "id", ignoreDuplicates: true }
+          );
         setUser(data.user);
         router.push("/dashboard");
       }
