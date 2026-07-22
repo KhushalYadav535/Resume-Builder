@@ -159,7 +159,7 @@ export default function SignupPage() {
       <div style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 50 }}>
         <Link href="/" className="flex items-center no-underline">
           <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2.5 dark:rounded-[8px] flex items-center">
-            <Image src="/UpRole logo.png" alt="UPROLE" width={120} height={32} style={{ objectFit: 'contain' }} />
+            <Image src="/UpRole logo.png" alt="UPROLE" width={120} height={32} style={{ objectFit: 'contain', height: 'auto' }} />
           </div>
         </Link>
       </div>

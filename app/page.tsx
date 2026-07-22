@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import LandingFeatureTour from "@/components/LandingFeatureTour";
+import PricingSection from "@/components/pricing/PricingSection";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -600,6 +602,13 @@ export default function Home() {
         </section>
 
         {/* ═══════════════════════════════════════
+            SECTION 6: PRICING (Dynamic Orders)
+            ═══════════════════════════════════════ */}
+        <section className="relative z-10 border-t border-[var(--border)]">
+          <PricingSection />
+        </section>
+
+        {/* ═══════════════════════════════════════
             SECTION 7: FINAL CTA
             ═══════════════════════════════════════ */}
         <section className="py-24 bg-gradient-to-r from-[var(--accent)]/10 to-[var(--accent-2)]/10 border-t border-[var(--border)]">
@@ -633,9 +642,10 @@ export default function Home() {
           <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-12">
             {/* Col 1: Logo / Brand tagline */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] rounded-lg flex items-center justify-center text-white font-bold text-lg font-['Syne']">U</div>
-                <span className="font-extrabold text-[var(--text-primary)] font-['Syne'] text-base tracking-tight">UpRole</span>
+              <div className="flex items-center">
+                <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2.5 dark:rounded-[8px] flex items-center">
+                  <Image src="/UpRole logo.png" alt="UPROLE" width={110} height={28} style={{ objectFit: 'contain', height: 'auto' }} />
+                </div>
               </div>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Discover your value. Communicate it better. Grow your career.
@@ -651,6 +661,7 @@ export default function Home() {
               <ul className="space-y-2 text-xs text-[var(--text-secondary)] list-none p-0 m-0">
                 <li><Link href="/dashboard" className="hover:text-[var(--accent)] transition-colors">Dashboard</Link></li>
                 <li><Link href="/resume/builder" className="hover:text-[var(--accent)] transition-colors">Build Resume</Link></li>
+                <li><Link href="/pricing" className="hover:text-[var(--accent)] transition-colors">Pricing</Link></li>
               </ul>
             </div>
 
