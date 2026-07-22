@@ -78,7 +78,7 @@ export default function OnboardingPage() {
         <div style={{ textAlign: "center" }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
             <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2.5 dark:rounded-[8px] flex items-center">
-              <Image src="/UpRole logo.png" alt="UPROLE" width={130} height={32} style={{ objectFit: 'contain' }} />
+              <Image src="/UpRole logo.png" alt="UPROLE" width={130} height={32} style={{ objectFit: 'contain', height: 'auto' }} />
             </div>
           </div>
           <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.5rem", fontWeight: 800, margin: 0 }}>Onboarding Profile Setup</h2>

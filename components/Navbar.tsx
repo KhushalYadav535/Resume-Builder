@@ -117,7 +117,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href={user ? "/dashboard" : "/"} className="flex items-center no-underline">
             <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2.5 dark:rounded-[8px] flex items-center">
-              <Image src="/UpRole logo.png" alt="UPROLE" width={120} height={32} style={{ objectFit: 'contain' }} />
+              <Image src="/UpRole logo.png" alt="UPROLE" width={120} height={32} style={{ objectFit: 'contain', height: 'auto' }} />
             </div>
           </Link>
         </div>
@@ -278,7 +278,7 @@ export default function Navbar() {
       >
         <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
           <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2 dark:rounded-[6px] flex items-center">
-            <Image src="/UpRole logo.png" alt="UPROLE" width={110} height={28} style={{ objectFit: 'contain' }} />
+            <Image src="/UpRole logo.png" alt="UPROLE" width={110} height={28} style={{ objectFit: 'contain', height: 'auto' }} />
           </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
