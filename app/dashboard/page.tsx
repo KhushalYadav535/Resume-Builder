@@ -223,7 +223,7 @@ export default function Dashboard() {
           <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { icon: <Plus size={20} />, label: "Build from Scratch", href: "/resume/builder", color: "var(--accent)", creditCost: null },
+              { icon: <Plus size={20} />, label: "Build from Scratch", href: "/resume/builder?new=true", color: "var(--accent)", creditCost: null },
               { icon: <Upload size={20} />, label: "Upload & Analyze", href: "/resume/upload", color: "var(--score-high)", creditCost: CREDIT_COSTS.ANALYZE_RESUME },
               { icon: <Target size={20} />, label: "Tailor for Job", href: "/resume/tailor", color: "var(--info)", creditCost: CREDIT_COSTS.JD_MATCH },
               { icon: <LayoutTemplate size={20} />, label: "Browse Templates", href: "/resume/templates", color: "var(--warning)", creditCost: null },
@@ -306,7 +306,7 @@ export default function Dashboard() {
                   : "Create your first ATS-optimized resume to start landing interviews."}
               </p>
               {!searchQuery && (
-                <Link href="/resume/builder" className="no-underline">
+                <Link href="/resume/builder?new=true" className="no-underline">
                   <Button size="lg" icon={<Plus size={18} />}>Create Resume</Button>
                 </Link>
               )}
@@ -320,10 +320,11 @@ export default function Dashboard() {
                 
                 return (
                   <motion.div
-                    key={resumeItem.id}
+                    key={`${resumeItem.id}-${searchQuery}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
+                    layout
                   >
                     <Link href={`/resume/${resumeItem.id}`} className="block no-underline h-full">
                       <Card 

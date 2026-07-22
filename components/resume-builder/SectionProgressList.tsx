@@ -40,6 +40,7 @@ export function SectionProgressList({ sections, activeSectionId, onSectionClick 
 
         return (
           <button
+            type="button"
             key={section.id}
             onClick={() => onSectionClick?.(section.id)}
             className={cn(

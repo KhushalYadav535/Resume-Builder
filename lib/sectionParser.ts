@@ -6,6 +6,7 @@ export interface ResumeSections {
   skills: string[];
   certifications: string[];
   languages: string[];
+  ignored: string[];
 }
 
 /**
@@ -22,6 +23,7 @@ export function parseSections(text: string): ResumeSections {
     skills: [],
     certifications: [],
     languages: [],
+    ignored: [],
   };
 
   const headers: Record<keyof ResumeSections, RegExp[]> = {
@@ -45,6 +47,9 @@ export function parseSections(text: string): ResumeSections {
     ],
     languages: [
       /^(?:languages?\s*known|languages?|language skills?|spoken languages?|linguistic skills?)$/i,
+    ],
+    ignored: [
+      /^(?:hobbies|interests|volunteer work|volunteering|references|declaration|personal details|personal information|extra-?curricular|activities|strengths|weaknesses|personal profile)$/i,
     ],
   };
 

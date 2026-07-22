@@ -39,6 +39,9 @@ export const CREDIT_COSTS = {
   /** Mock Interview — STAR answer generation */
   MOCK_INTERVIEW: 30,
 
+  /** PDF Download — Generate/Print PDF */
+  PDF_DOWNLOAD: 5,
+
   // ─── Feature-mapped activities (not listed separately in spec) ────────────
   // These are all AI calls that fall under "AI Resume Edit" (10) or
   // "ATS Optimization Check" (15) in the spec. Costs set accordingly.

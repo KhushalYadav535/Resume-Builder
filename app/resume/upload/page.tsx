@@ -53,11 +53,17 @@ export default function UploadPage() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("");
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    if (!authLoading && !user) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !authLoading && !user) {
       router.push("/login");
     }
-  }, [authLoading, user, router]);
+  }, [mounted, authLoading, user, router]);
 
   const handleFile = async (file: File) => {
     setError("");
@@ -285,7 +291,7 @@ export default function UploadPage() {
     return suggestions.filter(s => selectedSuggestionIds.has(s.id));
   }, [suggestions, selectedSuggestionIds]);
 
-  if (authLoading || !user) {
+  if (!mounted || authLoading || !user) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div className="spinner" style={{ width: 40, height: 40 }} />

@@ -173,9 +173,15 @@ export default function TailorPage() {
   const step2Ref = useRef<HTMLDivElement>(null);
   const step3Ref = useRef<HTMLDivElement>(null);
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    if (!authLoading && !user) router.push("/login");
-  }, [authLoading, user, router]);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !authLoading && !user) router.push("/login");
+  }, [mounted, authLoading, user, router]);
 
   useEffect(() => {
     if (!user) return;
@@ -310,7 +316,7 @@ export default function TailorPage() {
     }
   };
 
-  if (authLoading || !user) {
+  if (!mounted || authLoading || !user) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <ConcentricLoader text="Loading..." />
