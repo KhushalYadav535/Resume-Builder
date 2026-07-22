@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { parseResume } from "@/lib/resumeParser";
+import { parseResume, parseResumeAI } from "@/lib/resumeParser";
 import { calculateDynamicATS } from "@/lib/ats";
 import { sanitizeInput, sanitizeObject } from "@/lib/sanitization";
 import { checkAndDeductCredits } from "@/lib/billing";
@@ -40,15 +40,18 @@ export async function POST(req: NextRequest) {
     }
     // --------------------------------
 
-    let { resumeText, fileName } = await req.json();
+    let { resumeText, fileName, pdfUrl } = await req.json();
     if (!resumeText) {
       return NextResponse.json({ error: "No resume text provided" }, { status: 400 });
     }
     resumeText = sanitizeInput(resumeText);
     fileName = sanitizeInput(fileName);
 
-    // Stage 1, 2 & 3: Run all processing completely LOCALLY (fast, free, 0 rate-limits!)
-    const structuredResume = parseResume(resumeText);
+    // Stage 1, 2 & 3: Run processing (uses AI with local fallback)
+    const structuredResume = await parseResumeAI(resumeText);
+    if (pdfUrl) {
+      (structuredResume as any).pdf_url = pdfUrl;
+    }
     const atsScore = calculateDynamicATS(resumeText);
 
     // Save to Supabase DB immediately

@@ -829,6 +829,7 @@ function BuilderContent() {
       <div className={`builder-workspace transition-all duration-1000 ${showSuggestionsGlow ? 'brightness-110 shadow-[inset_0_0_50px_rgba(34,197,94,0.05)]' : ''}`}>
         
         {/* COLUMN 1: PROGRESS & NAVIGATION SIDEBAR (Sticky) */}
+        {!isFullscreen && (
         <div className="no-print builder-sidebar" style={{ gap: "1rem" }}>
           {/* Steps Navigation list using new SectionProgressList */}
           <SectionProgressList 
@@ -947,8 +948,10 @@ function BuilderContent() {
               </div>
             </div>
           </div>
+        )}
 
-        {/* COLUMN 2: ACTIVE STEP FORM EDITOR */}
+        {/* MAIN AREA */}
+        {!isFullscreen ? (
         <ResizablePanels
           leftPanel={(
             <div className="no-print builder-editor-container" style={{ padding: "1.5rem" }}>
@@ -2299,55 +2302,39 @@ function BuilderContent() {
 
             </div>
           </div>
-        )}
-        rightPanel={isFullscreen ? (
+          )}
+          rightPanel={null}
+        />
+        ) : (
           <>
             {/* COLUMN 3: STICKY LIVE DOCUMENT PREVIEW PANEL */}
-            <div className="no-print builder-preview-container">
-          
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
-              <button onClick={() => setZoomFactor(prev => Math.max(0.5, prev - 0.05))} className="btn-secondary" style={{ padding: "0.3rem 0.6rem", fontSize: "0.8rem" }}>Zoom -</button>
-              <Input variant="static" 
-                type="range" 
-                min="0.5" 
-                max="1.2" 
-                step="0.05" 
-                value={zoomFactor}
-                onChange={(e) => setZoomFactor(parseFloat(e.target.value))}
-                style={{ width: "80px", accentColor: "var(--accent)" }}
-              />
-              <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>{Math.round(zoomFactor * 100)}%</span>
-              <button onClick={() => setZoomFactor(prev => Math.min(1.2, prev + 0.05))} className="btn-secondary" style={{ padding: "0.3rem 0.6rem", fontSize: "0.8rem" }}>Zoom +</button>
-            </div>
-          </div>
-
-          <div 
-            id="resume-preview-container"
-            style={{ 
-            flex: 1, 
-            overflowY: "auto", 
-            background: "var(--bg-3)", 
-            borderRadius: "12px", 
-            border: "1px solid var(--border)", 
-            display: "flex", 
-            justifyContent: "center", 
-            alignItems: "start",
-            padding: "2rem 1rem"
-          }}>
-            <div className="resume-paper resume-print-area" style={{ 
-              transform: `scale(${zoomFactor})`, 
-              transformOrigin: "top center",
-              background: "#ffffff", 
-              color: "#333333", 
-              padding: "40px", 
-              width: "100%",
-              minHeight: "297mm",
-              maxWidth: "800px",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-              WebkitFontSmoothing: "subpixel-antialiased",
-              transformStyle: "preserve-3d",
-              backfaceVisibility: "hidden",
+            <div className="no-print builder-preview-container" style={{ display: "flex", flexDirection: "column", height: "100%", gap: "1rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 0.5rem" }}>
+                 <h3 style={{ margin: 0, fontSize: "1rem", color: "var(--text-primary)", fontWeight: 700 }}>Live Preview</h3>
+                 <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>A4 Format</span>
+              </div>
+              <div 
+                id="resume-preview-container"
+                style={{ 
+                flex: 1, 
+                overflowY: "auto", 
+                background: "var(--bg-3)", 
+                borderRadius: "12px", 
+                border: "1px solid var(--border)", 
+                display: "flex", 
+                justifyContent: "center", 
+                alignItems: "start",
+                padding: "2rem"
+              }}>
+                <div className="resume-paper resume-print-area" style={{ 
+                  background: "#ffffff", 
+                  color: "#333333", 
+                  padding: "40px", 
+                  width: "100%",
+                  maxWidth: "210mm",
+                  minHeight: "297mm",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                  WebkitFontSmoothing: "subpixel-antialiased",
               borderRadius: "4px",
               transition: "transform 0.15s ease-out",
             }}>
@@ -2355,10 +2342,8 @@ function BuilderContent() {
             </div>
           </div>
         </div>
-          </>
-        ) : null}
-        />
-
+        </>
+        )}
       </div>
 
       {/* LINKEDIN IMPORT MODAL */}

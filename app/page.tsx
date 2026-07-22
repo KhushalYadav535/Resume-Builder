@@ -536,7 +536,7 @@ export default function Home() {
                 Your resume is just the beginning.
               </h2>
               <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
-                After you&apos;re hired, UpRole stays with you — track applications on your Kanban board, log wins in your Career Journal, and build your next resume automatically.
+                After you&apos;re hired, UpRole stays with you — track applications on your Kanban board, log wins in your Journal, and build your next resume automatically.
               </p>
             </div>
 
@@ -544,7 +544,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
               {[
                 { icon: <Kanban size={26} />, title: "Kanban Tracker", desc: "Organize your job search pipeline. Track applied links, mock schedule triggers, and negotiation statuses in one workspace." },
-                { icon: <BookOpen size={26} />, title: "Career Journal", desc: "Log wins as they happen, storing crucial metrics before you forget them weeks later." },
+                { icon: <BookOpen size={26} />, title: "Journal", desc: "Log wins as they happen, storing crucial metrics before you forget them weeks later." },
                 { icon: <TrendingUp size={26} />, title: "Promotion Builder", desc: "Collate captured feedback and journal updates to make your next package increase case automatically." }
               ].map((feature, i) => (
                 <motion.div

@@ -152,7 +152,7 @@ export default function CareerJournalPage() {
             <div>
               <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, margin: 0, display: "flex", alignItems: "center", gap: "0.6rem" }}>
                 <BookOpen size={28} className="text-purple-500" />
-                Career Journal
+                Journal
               </h1>
               <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", marginTop: "0.4rem" }}>
                 Log your wins, feedback, and skills. Build your narrative effortlessly.
@@ -331,7 +331,7 @@ export default function CareerJournalPage() {
           {/* Copilot Link */}
           <div className="card" style={{ padding: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", transition: "all 0.2s" }} onClick={() => router.push("/career-copilot")}>
             <div>
-              <h3 style={{ margin: "0 0 0.2rem", fontSize: "1rem", fontWeight: 700 }}>Career Copilot</h3>
+              <h3 style={{ margin: "0 0 0.2rem", fontSize: "1rem", fontWeight: 700 }}>Copilot</h3>
               <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-muted)" }}>Use journal data to generate pitch scripts.</p>
             </div>
             <ChevronRight size={20} className="text-gray-400" />

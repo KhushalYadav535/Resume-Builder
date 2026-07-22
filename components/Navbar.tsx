@@ -82,9 +82,9 @@ export default function Navbar() {
     links = [
       { href: "/dashboard", label: "Dashboard" },
       { href: "/resume/builder?new=true", label: "Build Resume" },
-      { href: "/resume/tailor", label: "JD Matching" },
-      { href: "/career-copilot", label: "Career Copilot" },
-      { href: "/career-journal", label: "Career Journal" },
+      { href: "/resume/tailor", label: "Match" },
+      { href: "/career-copilot", label: "Copilot" },
+      { href: "/career-journal", label: "Journal" },
       { href: "/resume/upload", label: "Upload" },
       { href: "/resume/templates", label: "Templates" },
     ];

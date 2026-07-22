@@ -8,12 +8,12 @@ import { Resume } from "@/types";
 import ResumeDocument from "@/components/ResumeDocument";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ATSRing } from "@/components/ui/ATSRing";
-import ResumeSuggestionsModal from "@/components/ResumeSuggestionsModal";
+import { SuggestionFlow } from "@/components/SuggestionFlow";
 import {
   Edit3, Mail, Printer, FileDown, TrendingUp, Share2, Eye, Clock,
   Maximize2, Minimize2, Sparkles, Save, CheckCircle2, Wand2, X,
   ChevronDown, Copy, AlertTriangle, ZoomIn, ZoomOut,
-  LayoutTemplate, Target, Zap, RotateCcw, RotateCw,
+  LayoutTemplate, Target, Zap, RotateCcw, RotateCw, FileText,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
 import { CREDIT_COSTS } from "@/lib/creditCosts";
@@ -189,6 +189,7 @@ export default function ResumeDetailPage() {
 
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [estimatedNewScore, setEstimatedNewScore] = useState(0);
+  const [isApplyingSuggestions, setIsApplyingSuggestions] = useState(false);
 
   const [showCreditPrompt, setShowCreditPrompt] = useState(false);
 
@@ -287,7 +288,7 @@ export default function ResumeDetailPage() {
     if (!resume || suggestionsFetched || suggestionsLoading) return;
     setSuggestionsLoading(true);
     try {
-      const res = await fetch("/api/resume/suggestions/generate", {
+      const res = await fetch("/api/resume/suggestions/comprehensive-analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -306,8 +307,9 @@ export default function ResumeDetailPage() {
         const data = await res.json();
         if (data.suggestions) {
           setSuggestions(data.suggestions);
-          setEstimatedNewScore(data.estimatedNewScore);
+          setEstimatedNewScore(Math.min(100, (resume.ats_score?.overall || 0) + Math.round(data.suggestions.length * 1.5)));
           setSuggestionsFetched(true);
+          setShowSuggestionsModal(true); // Open flow immediately when fetched
         }
       }
     } catch (err) { console.error(err); }
@@ -445,6 +447,35 @@ export default function ResumeDetailPage() {
     setSuggestions(prev => prev.filter(s => !selectedSuggestions.some(sel => sel.id === s.id)));
     setShowSuggestionsModal(false);
     showToast(`${selectedSuggestions.length} change(s) applied! Click "Save Changes" to persist.`, "success");
+  };
+
+  const handleApplyComprehensive = async (acceptedSuggestionsList: any[]) => {
+    if (acceptedSuggestionsList.length === 0 || !resume) return;
+    setIsApplyingSuggestions(true);
+    try {
+      const ids = acceptedSuggestionsList.map(s => s.id);
+      const res = await fetch("/api/resume/suggestions/apply-comprehensive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          resumeId: resume.id, 
+          applySuggestionIds: ids 
+        })
+      });
+      if (res.ok) {
+        showToast("Changes applied successfully!", "success");
+        setShowSuggestionsModal(false);
+        setSuggestionsFetched(false); // allow fetching again later if needed
+        fetchResumeData();
+      } else {
+        throw new Error("Failed to apply suggestions");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to apply suggestions. Please try again.", "error");
+    } finally {
+      setIsApplyingSuggestions(false);
+    }
   };
 
   const handleApplyNaukriTipPatch = (idx: number, patch: any) => {
@@ -670,22 +701,36 @@ export default function ResumeDetailPage() {
       <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <Navbar />
 
-        {/* Suggestions Modal */}
+        {/* Suggestions Modal (now using SuggestionFlow) */}
         {showSuggestionsModal && resume && resume.ats_score && (
-          <ResumeSuggestionsModal
-            resumeId={resume.id}
-            suggestions={suggestions}
-            currentScore={resume.ats_score.overall}
-            potentialScore={estimatedNewScore}
-            onClose={() => setShowSuggestionsModal(false)}
-            onApply={async (selectedIds) => {
-              const selectedSuggs = suggestions.filter(s => selectedIds.includes(s.id));
-              handleApplySuggestionsInline(selectedSuggs);
-            }}
-            onDismiss={(id) => {
-              setSuggestions(prev => prev.filter(s => s.id !== id));
-            }}
-          />
+          <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "var(--bg)", overflowY: "auto" }}>
+            <div style={{ padding: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.8rem", fontWeight: 800 }}>Comprehensive Analysis</h2>
+                <button 
+                  onClick={() => setShowSuggestionsModal(false)}
+                  style={{ background: "var(--card)", border: "1px solid var(--border)", padding: "0.5rem", borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
+                  <X size={20} color="var(--text)" />
+                </button>
+              </div>
+              
+              {isApplyingSuggestions ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4rem 0" }}>
+                   <div className="spinner" style={{ width: 40, height: 40, marginBottom: "1rem" }} />
+                   <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>Applying Suggestions...</div>
+                   <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>Optimizing your resume directly in the database.</div>
+                </div>
+              ) : (
+                <SuggestionFlow
+                  suggestions={suggestions}
+                  currentScore={resume.ats_score.overall}
+                  estimatedNewScore={estimatedNewScore}
+                  onApplyChanges={handleApplyComprehensive}
+                />
+              )}
+            </div>
+          </div>
         )}
 
         {/* Save-as-New Modal */}
@@ -806,8 +851,8 @@ export default function ResumeDetailPage() {
         {/* ── MAIN SPLIT ── */}
         <div style={{
           flex: 1, display: "grid",
-          gridTemplateColumns: isFullscreen ? "1fr" : "minmax(0, 420px) 1fr",
-          maxWidth: "1500px", width: "100%", margin: "0 auto",
+          gridTemplateColumns: isFullscreen ? "1fr" : (((resume as any).pdf_url || (resume.resume_data as any).pdf_url) ? "minmax(0, 450px) 1fr" : "1fr"),
+          maxWidth: (((resume as any).pdf_url || (resume.resume_data as any).pdf_url) && !isFullscreen) ? "1500px" : "1000px", width: "100%", margin: "0 auto",
           padding: "1.2rem 1.5rem", gap: "1.2rem",
           height: "calc(100vh - 160px)",
           overflow: "hidden",
@@ -1334,150 +1379,25 @@ export default function ResumeDetailPage() {
             </div>
           )}
 
-          {/* ── RIGHT PANEL: PREVIEW ── */}
-          <div className="no-print" style={{ display: "flex", flexDirection: "column", gap: "0", overflow: "hidden", minWidth: 0, background: "var(--card)", borderRadius: "16px", border: "1px solid var(--border)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
-
-            {/* ── Preview Panel Header ── */}
-            <div style={{
-              padding: "0.75rem 1.1rem", borderBottom: "1px solid var(--border)",
-              display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.7rem", flexWrap: "wrap",
-              background: "linear-gradient(135deg, rgba(99,102,241,0.04) 0%, transparent 100%)",
-              flexShrink: 0,
-            }}>
-              {/* Left: template */}
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", minWidth: 0 }}>
-                <div style={{ width: 26, height: 26, borderRadius: "7px", background: "var(--accent-soft)", border: "1px solid var(--border-accent)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <LayoutTemplate size={12} color="var(--accent)" />
-                </div>
-                <select
-                  value={selectedTemplate}
-                  onChange={(e) => handleTemplateChange(e.target.value)}
-                  style={{
-                    background: "var(--bg-2)", border: "1px solid var(--border)", color: "var(--text)",
-                    borderRadius: "8px", padding: "0.28rem 0.6rem", fontSize: "0.78rem", fontWeight: 600,
-                    cursor: "pointer", outline: "none", height: "30px", maxWidth: "150px",
-                  }}
-                >
-                  {TEMPLATES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-                <Link href={`/resume/templates?id=${resume.id}`} style={{ textDecoration: "none" }}>
-                  <button style={{
-                    display: "inline-flex", alignItems: "center", gap: "0.3rem",
-                    background: "var(--bg-2)", border: "1px solid var(--border)",
-                    color: "var(--text-muted)", borderRadius: "7px", padding: "0.28rem 0.7rem",
-                    fontSize: "0.72rem", fontWeight: 600, cursor: "pointer", height: "30px", whiteSpace: "nowrap",
-                  }}>
-                    🖼 Gallery
-                  </button>
-                </Link>
-              </div>
-
-              {/* Center: zoom strip */}
-              <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", background: "var(--bg-2)", border: "1px solid var(--border)", borderRadius: "9px", padding: "0.2rem 0.4rem" }}>
-                <button onClick={() => setZoomFactor(prev => Math.max(0.5, prev - 0.1))}
-                  style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", borderRadius: "5px", transition: "background 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "var(--border)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "none")}>
-                  <ZoomOut size={12} />
-                </button>
-                <button onClick={() => setZoomFactor(0.85)}
-                  style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", minWidth: "2.4rem", textAlign: "center", padding: "0 0.2rem" }}
-                  title="Reset to 85%">
-                  {Math.round(zoomFactor * 100)}%
-                </button>
-                <button onClick={() => setZoomFactor(prev => Math.min(1.2, prev + 0.1))}
-                  style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", borderRadius: "5px", transition: "background 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "var(--border)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "none")}>
-                  <ZoomIn size={12} />
-                </button>
-              </div>
-
-              {/* Right: fullscreen */}
-              <button
-                onClick={() => setIsFullscreen(prev => !prev)}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: "0.35rem",
-                  background: isFullscreen ? "var(--accent-soft)" : "var(--bg-2)",
-                  border: `1px solid ${isFullscreen ? "var(--border-accent)" : "var(--border)"}`,
-                  color: isFullscreen ? "var(--accent)" : "var(--text-muted)",
-                  borderRadius: "8px", padding: "0.28rem 0.8rem", fontSize: "0.74rem",
-                  fontWeight: 600, cursor: "pointer", height: "30px", whiteSpace: "nowrap",
-                  transition: "all 0.2s",
-                }}
-              >
-                {isFullscreen ? <><Minimize2 size={12} /> Exit</> : <><Maximize2 size={12} /> Expand</>}
-              </button>
-            </div>
-
-            {/* changes notice — right panel top bar */}
-            {hasUnappliedChanges && (
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                gap: "0.5rem", padding: "0.4rem 0.9rem",
-                background: "rgba(16,185,129,0.07)", borderBottom: "1px solid rgba(16,185,129,0.18)",
-                fontSize: "0.73rem", flexShrink: 0,
-              }}>
-                <span style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "#10b981", fontWeight: 600 }}>
-                  <CheckCircle2 size={12} /> Preview showing unsaved changes
-                </span>
-                <div style={{ display: "flex", gap: "0.4rem" }}>
-                  <button onClick={handleUndo} disabled={!history.length}
-                    title="Undo (Ctrl+Z)"
-                    style={{ background: "none", border: "none", color: history.length ? "#10b981" : "var(--text-muted)", cursor: history.length ? "pointer" : "not-allowed", padding: "0 4px", display: "flex", alignItems: "center" }}>
-                    <RotateCcw size={12} />
-                  </button>
-                  <button onClick={handleRedo} disabled={!future.length}
-                    title="Redo (Ctrl+Y)"
-                    style={{ background: "none", border: "none", color: future.length ? "#10b981" : "var(--text-muted)", cursor: future.length ? "pointer" : "not-allowed", padding: "0 4px", display: "flex", alignItems: "center" }}>
-                    <RotateCw size={12} />
-                  </button>
-                  <button onClick={handleSaveCurrentResume} disabled={savingCurrent}
-                    style={{
-                      background: "#10b981", border: "none", color: "#fff",
-                      borderRadius: "6px", padding: "0.2rem 0.6rem",
-                      fontSize: "0.68rem", fontWeight: 700, cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", gap: "0.25rem",
-                    }}>
-                    {savingCurrent ? <span className="spinner" style={{ width: 10, height: 10 }} /> : <Save size={10} />}
-                    {savingCurrent ? "Saving..." : "Save Changes"}
-                  </button>
+          {/* ── RIGHT PANEL (ORIGINAL PDF VIEWER) ── */}
+          {((resume as any).pdf_url || (resume.resume_data as any).pdf_url) && !isFullscreen && (
+            <div className="no-print" style={{ display: "flex", flexDirection: "column", gap: "0", overflow: "hidden", minWidth: 0, background: "var(--card)", borderRadius: "16px", border: "1px solid var(--border)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+              <div style={{ padding: "0.75rem 1.1rem", borderBottom: "1px solid var(--border)", background: "linear-gradient(135deg, rgba(99,102,241,0.04) 0%, transparent 100%)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.7rem", flexWrap: "wrap", flexShrink: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 700, fontSize: "0.85rem", color: "var(--text)" }}>
+                  <FileText size={16} color="var(--accent)" />
+                  Original Document
                 </div>
               </div>
-            )}
-
-            {/* Resume paper container */}
-            <div style={{
-              flex: 1, overflow: "auto", borderRadius: "0 0 16px 16px",
-              backgroundImage: "radial-gradient(circle, var(--border) 1px, transparent 1px)",
-              backgroundSize: "20px 20px",
-              backgroundColor: "var(--bg-3)",
-              display: "flex", justifyContent: "center", alignItems: "flex-start",
-              padding: "2rem 1.5rem", position: "relative",
-              transition: "border-color 0.3s",
-            }}>
-              <div style={{
-                transform: `scale(${zoomFactor})`,
-                transformOrigin: "top center",
-                transition: "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-              }}>
-                <div className="resume-paper resume-print-area" style={{
-                  background: "#ffffff", color: "#333333",
-                  padding: "40px", width: "210mm", minHeight: "297mm",
-                  boxShadow: hasUnappliedChanges
-                    ? "0 0 0 2px #10b981, 0 12px 40px rgba(16,185,129,0.2)"
-                    : "0 4px 6px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.15)",
-                  borderRadius: "4px", transition: "box-shadow 0.4s cubic-bezier(0.16,1,0.3,1)",
-                }}>
-                  <ResumeDocument
-                    data={modifiedResumeData || (resume as any).structured_data || resume.resume_data || emptyResumeData}
-                    templateId={selectedTemplate}
-                    highlightChanges={highlightedChanges}
-                  />
-                </div>
+              <div style={{ flex: 1, position: "relative", backgroundColor: "#fff" }}>
+                <iframe
+                  src={`${(resume as any).pdf_url || (resume.resume_data as any).pdf_url}#toolbar=0&navpanes=0&scrollbar=0`}
+                  style={{ width: "100%", height: "100%", border: "none" }}
+                  title="Original Resume PDF"
+                />
               </div>
             </div>
-          </div>
+          )}
+
         </div>
 
         {/* PRINT ONLY */}

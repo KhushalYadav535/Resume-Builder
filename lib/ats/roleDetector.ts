@@ -255,24 +255,19 @@ export function detectRole(resumeText: string): RoleDetectionResult {
         
         let hits = 0;
         for (const item of keywords) {
-          const kw = item.keyword.toLowerCase();
-          const aliases = (item.aliases || []).map((a: string) => a.toLowerCase());
-          
+          const termsToMatch = [item.keyword, ...(item.aliases || [])];
           let matched = false;
-          const escapedKw = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-          if (new RegExp(`\\b${escapedKw}\\b`, 'i').test(lowerText)) {
-            matched = true;
-          } else {
-            for (const alias of aliases) {
-              const escapedAlias = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-              if (new RegExp(`\\b${escapedAlias}\\b`, 'i').test(lowerText)) {
-                matched = true;
-                break;
-              }
+          
+          for (const term of termsToMatch) {
+            const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const regex = new RegExp(`\\b${escaped}\\b`, "i");
+            if (regex.test(lowerText)) {
+              matched = true;
+              break;
             }
           }
           
-          if (matched) hits++;
+          if (matched) hits += item.weight || 1;
         }
         
         if (hits > maxHits) {
