@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
+import TabNavigation from "@/components/ui/TabNavigation";
 import { createClient } from "@/utils/supabase/client";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { useToast } from "@/components/ui/toast-1";
@@ -257,292 +258,353 @@ export default function AdminKeywordsPage() {
     : [];
 
   if (authLoading || isAdmin === null) return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div className="spinner" style={{ width: 32, height: 32 }} />
+    <div className="min-h-screen bg-[#0a0a14] flex items-center justify-center">
+      <div className="spinner w-8 h-8" />
     </div>
   );
 
   if (isAdmin === false) return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
       <Navbar />
-      <div style={{ textAlign: "center", padding: "6rem" }}>
-        <h3 style={{ fontFamily: "Syne, sans-serif" }}>🔒 Forbidden: Admins only</h3>
+      <div className="max-w-7xl mx-auto px-6 py-24 text-center">
+        <h3 className="text-xl font-extrabold font-['Syne',sans-serif] text-rose-500">🔒 Forbidden: Admins only</h3>
       </div>
     </div>
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <Navbar />
-      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "2rem" }}>
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
+      {/* Premium background radial elements */}
+      <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
+      
+      <div className="relative z-10">
+        <Navbar />
         
-        {/* Page Header */}
-        <div style={{ marginBottom: "1.5rem" }}>
-          <p className="section-label" style={{ marginBottom: "0.3rem" }}>Admin Panel</p>
-          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem", margin: 0 }}>
-            <Brain size={28} className="text-indigo-500" />
-            ATS Keyword Management
-          </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", marginTop: "0.3rem" }}>
-            Manage ATS categories, add/edit/delete keywords, create new industries, and run AI scans.
-          </p>
-        </div>
+        <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+          
+          {/* Page Header */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+              Admin Panel
+            </span>
+            <h1 className="text-3xl md:text-4xl font-extrabold font-['Syne',sans-serif] tracking-tight flex items-center gap-2 mt-2">
+              <Brain size={32} className="text-indigo-600 dark:text-indigo-400" />
+              ATS Keyword Management
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-[#9ea3c8] max-w-2xl leading-relaxed">
+              Manage ATS categories, add/edit/delete keywords, create new industries, and run AI scans.
+            </p>
+          </div>
 
-        {/* Admin Nav */}
-        <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--border)", marginBottom: "2rem", overflowX: "auto", whiteSpace: "nowrap" }}>
-          {[
-            { href: "/admin", icon: <BarChart2 size={14} />, label: "Analytics" },
-            { href: "/admin/users", icon: <Users size={14} />, label: "Users" },
-            { href: "/admin/ai-usage", icon: <Bot size={14} />, label: "AI Usage" },
-            { href: "/admin/keywords", icon: <Brain size={14} />, label: "ATS Keywords", active: true },
-            { href: "/admin/billing", icon: <CreditCard size={14} />, label: "Billing & Credits" },
-            { href: "/admin/broadcast", icon: <Megaphone size={14} />, label: "Broadcasts" },
-          ].map(tab => (
-            <Link key={tab.href} href={tab.href} style={{ textDecoration: "none" }}>
-              <button style={{
-                padding: "0.6rem 1.2rem", background: tab.active ? "rgba(108,99,255,0.08)" : "transparent",
-                border: "none", borderBottom: tab.active ? "2px solid var(--accent)" : "2px solid transparent",
-                color: tab.active ? "var(--accent)" : "var(--text-muted)",
-                fontWeight: tab.active ? 700 : 600, fontSize: "0.85rem", cursor: "pointer",
-                display: "inline-flex", alignItems: "center", gap: "0.4rem"
-              }}>
-                {tab.icon}{tab.label}
-              </button>
-            </Link>
-          ))}
-        </div>
+          {/* Admin Nav */}
+          <TabNavigation activeTab="keywords" />
 
-        {/* Main Tabs */}
-        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
-          {[
-            { key: "manage", icon: <Layers size={15} />, label: "Manage Keywords" },
-            { key: "create", icon: <FolderPlus size={15} />, label: "Add New Category" },
-            { key: "scanner", icon: <Brain size={15} />, label: "AI Scanner" },
-          ].map(t => (
-            <button key={t.key} onClick={() => setMainTab(t.key as any)} style={{
-              padding: "0.55rem 1.1rem", borderRadius: "10px", border: "1px solid",
-              borderColor: mainTab === t.key ? "var(--accent)" : "var(--border)",
-              background: mainTab === t.key ? "rgba(108,99,255,0.12)" : "var(--bg-2)",
-              color: mainTab === t.key ? "var(--accent)" : "var(--text-muted)",
-              fontWeight: mainTab === t.key ? 700 : 500, fontSize: "0.88rem",
-              cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem",
-              transition: "all 0.15s"
-            }}>
-              {t.icon}{t.label}
-            </button>
-          ))}
-        </div>
+          {/* Main Tabs */}
+          <div className="flex gap-2 border-b border-slate-200 dark:border-white/10 pb-3 no-scrollbar mb-6 overflow-x-auto">
+            {[
+              { key: "manage", icon: <Layers size={15} />, label: "Manage Keywords" },
+              { key: "create", icon: <FolderPlus size={15} />, label: "Add New Category" },
+              { key: "scanner", icon: <Brain size={15} />, label: "AI Scanner" },
+            ].map(t => {
+              const isSelected = mainTab === t.key;
+              return (
+                <button 
+                  key={t.key} 
+                  onClick={() => setMainTab(t.key as any)} 
+                  className={`
+                    px-4 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2
+                    transition-all duration-200 border cursor-pointer whitespace-nowrap
+                    ${isSelected
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/15"
+                      : "text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-white/[0.02] border-slate-200 dark:border-white/5 hover:text-indigo-600 dark:hover:text-white"
+                    }
+                  `}
+                >
+                  {t.icon}
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
 
         {/* ═══════════════════ TAB: MANAGE KEYWORDS ═══════════════════════════ */}
         {mainTab === "manage" && (
           <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: "1.5rem", alignItems: "start" }}>
             
             {/* Left: Category Sidebar */}
-            <div className="card" style={{ padding: "1rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
-                <strong style={{ fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider">
                   Categories ({allCatKeys.length})
-                </strong>
-                <button onClick={fetchCategories} disabled={catLoading} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: "0.2rem" }}>
+                </span>
+                <button onClick={fetchCategories} disabled={catLoading} className="bg-transparent border-none cursor-pointer text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-white p-1">
                   <RefreshCw size={13} className={catLoading ? "animate-spin" : ""} />
                 </button>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", maxHeight: "70vh", overflowY: "auto" }}>
+              <div className="flex flex-col gap-1.5 max-h-[70vh] overflow-y-auto pr-1">
                 {allCatKeys.map(key => {
                   const d = allCategories[key];
                   const isActive = selectedCategory === key;
                   return (
-                    <button key={key} onClick={() => { setSelectedCategory(key); setKwSearch(""); setAddingKw(false); setEditingKw(null); }}
-                      style={{
-                        background: isActive ? "rgba(108,99,255,0.12)" : "transparent",
-                        border: isActive ? "1px solid var(--accent)" : "1px solid transparent",
-                        borderRadius: "8px", padding: "0.6rem 0.75rem", textAlign: "left",
-                        cursor: "pointer", transition: "all 0.12s", color: isActive ? "var(--accent)" : "var(--text)",
-                        display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.4rem"
-                      }}>
-                      <span style={{ fontSize: "0.83rem", fontWeight: isActive ? 700 : 500 }}>
-                        {d.displayName}
-                      </span>
-                      <span style={{ fontSize: "0.72rem", background: "var(--bg-3)", borderRadius: "4px", padding: "1px 5px", color: "var(--text-muted)", flexShrink: 0 }}>
+                    <button 
+                      key={key} 
+                      onClick={() => { setSelectedCategory(key); setKwSearch(""); setAddingKw(false); setEditingKw(null); }}
+                      className={`
+                        w-full flex items-center justify-between p-3 rounded-xl border text-xs md:text-sm font-semibold transition cursor-pointer
+                        ${isActive 
+                          ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' 
+                          : 'bg-transparent border-transparent text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5'
+                        }
+                      `}
+                    >
+                      <span>{d.displayName}</span>
+                      <span className="text-[10px] bg-slate-200/60 dark:bg-white/5 px-2 py-0.5 rounded text-slate-500 dark:text-gray-400 font-bold">
                         {(d.base?.length || 0) + (d.dynamic?.length || 0)}
                       </span>
                     </button>
                   );
                 })}
-                <button onClick={() => setMainTab("create")} style={{
-                  background: "rgba(16,185,129,0.06)", border: "1px dashed rgba(16,185,129,0.3)",
-                  borderRadius: "8px", padding: "0.6rem 0.75rem", textAlign: "left", cursor: "pointer",
-                  color: "#10b981", fontSize: "0.83rem", display: "flex", alignItems: "center", gap: "0.4rem", marginTop: "0.3rem"
-                }}>
+                <button 
+                  onClick={() => setMainTab("create")} 
+                  className="w-full flex items-center justify-center gap-1.5 p-3 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-500/5 hover:bg-emerald-100/50 dark:hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold cursor-pointer transition mt-2"
+                >
                   <Plus size={13} /> Add New Category
                 </button>
               </div>
             </div>
 
             {/* Right: Keyword Editor */}
-            <div style={{ display: "grid", gap: "1rem" }}>
+            <div className="grid gap-6">
               {!catData ? (
-                <div className="card" style={{ padding: "3rem", textAlign: "center", color: "var(--text-muted)" }}>
-                  {catLoading ? <div className="spinner" style={{ margin: "0 auto" }} /> : "Select a category to manage keywords."}
+                <div className="p-12 text-center rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-gray-400 shadow-sm">
+                  {catLoading ? <div className="spinner mx-auto" /> : "Select a category to manage keywords."}
                 </div>
               ) : (
                 <>
                   {/* Category Header */}
-                  <div className="card" style={{ padding: "1.2rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+                  <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm flex flex-wrap justify-between items-center gap-4">
                     <div>
-                      <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.3rem", fontWeight: 800, margin: 0 }}>
+                      <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0">
                         {catData.displayName}
                       </h2>
-                      <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", margin: "0.2rem 0 0" }}>
-                        <span className="tag tag-purple" style={{ fontSize: "0.72rem" }}>{catData.base.length} base</span>
-                        {" "}
-                        <span className="tag" style={{ fontSize: "0.72rem", background: "rgba(67,233,123,0.12)", color: "#43e97b" }}>{catData.dynamic.length} dynamic</span>
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">{catData.base.length} base</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{catData.dynamic.length} dynamic</span>
+                      </div>
                     </div>
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <div style={{ position: "relative" }}>
-                        <Search size={14} style={{ position: "absolute", left: "0.6rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none" }} />
+                    <div className="flex gap-2">
+                      <div className="relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
                         <input
-                          className="input" placeholder="Search keywords..."
-                          value={kwSearch} onChange={e => setKwSearch(e.target.value)}
-                          style={{ paddingLeft: "2rem", height: "36px", fontSize: "0.83rem", width: "180px" }}
+                          className="pl-8 pr-4 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] focus:border-indigo-500 outline-none transition w-44"
+                          placeholder="Search keywords..."
+                          value={kwSearch} 
+                          onChange={e => setKwSearch(e.target.value)}
                         />
                       </div>
-                      <button onClick={() => { setAddingKw(true); setEditingKw(null); }} className="btn-primary"
-                        style={{ padding: "0.45rem 1rem", fontSize: "0.82rem", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                      <button 
+                        onClick={() => { setAddingKw(true); setEditingKw(null); }} 
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl border-none cursor-pointer transition flex items-center gap-1.5"
+                      >
                         <Plus size={13} /> Add Keyword
                       </button>
                     </div>
                   </div>
 
                   {/* Sub-tab: base / dynamic */}
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    {(["base", "dynamic"] as const).map(tab => (
-                      <button key={tab} onClick={() => setManageSubTab(tab)} style={{
-                        padding: "0.4rem 1rem", borderRadius: "8px", border: "1px solid",
-                        borderColor: manageSubTab === tab ? "var(--accent)" : "var(--border)",
-                        background: manageSubTab === tab ? "rgba(108,99,255,0.1)" : "var(--bg-2)",
-                        color: manageSubTab === tab ? "var(--accent)" : "var(--text-muted)",
-                        fontSize: "0.82rem", fontWeight: manageSubTab === tab ? 700 : 500, cursor: "pointer"
-                      }}>
-                        {tab === "base" ? `📘 Base (${catData.base.length})` : `⚡ Dynamic (${catData.dynamic.length})`}
-                      </button>
-                    ))}
+                  <div className="flex gap-2 border-b border-slate-200 dark:border-white/10 pb-2 overflow-x-auto no-scrollbar">
+                    {(["base", "dynamic"] as const).map(tab => {
+                      const isSubActive = manageSubTab === tab;
+                      return (
+                        <button 
+                          key={tab} 
+                          onClick={() => setManageSubTab(tab)} 
+                          className={`
+                            px-4 py-2 rounded-xl font-bold text-xs transition border cursor-pointer whitespace-nowrap
+                            ${isSubActive
+                              ? "bg-indigo-600/10 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold"
+                              : "bg-transparent border-transparent text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5"
+                            }
+                          `}
+                        >
+                          {tab === "base" ? `📘 Base (${catData.base.length})` : `⚡ Dynamic (${catData.dynamic.length})`}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Add Keyword Form */}
                   {addingKw && (
-                    <div className="card" style={{ padding: "1.2rem", background: "rgba(108,99,255,0.04)", border: "1px solid rgba(108,99,255,0.2)", display: "grid", gap: "0.75rem" }}>
-                      <h4 style={{ margin: 0, fontSize: "0.92rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                        <PlusCircle size={15} className="text-indigo-400" /> Add New Keyword to {catData.displayName}
+                    <div className="p-6 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/5 border border-indigo-200/50 dark:border-indigo-500/10 shadow-sm space-y-4">
+                      <h4 className="m-0 text-sm font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                        <PlusCircle size={15} className="text-indigo-600 dark:text-indigo-400" /> Add New Keyword to {catData.displayName}
                       </h4>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 120px", gap: "0.6rem" }}>
-                        <input className="input" placeholder="Keyword name *" value={newKwKeyword} onChange={e => setNewKwKeyword(e.target.value)}
-                          onKeyDown={e => e.key === "Enter" && handleAddKeyword()} autoFocus style={{ height: "40px" }} />
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", flexShrink: 0 }}>Weight:</span>
-                          <input type="number" min={1} max={10} className="input" value={newKwWeight}
-                            onChange={e => setNewKwWeight(parseInt(e.target.value) || 7)} style={{ height: "40px", width: "60px" }} />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <input 
+                          className="px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-full"
+                          placeholder="Keyword name *" 
+                          value={newKwKeyword} 
+                          onChange={e => setNewKwKeyword(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && handleAddKeyword()} 
+                          autoFocus 
+                        />
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500 dark:text-gray-400 whitespace-nowrap">Weight (1-10):</span>
+                          <input 
+                            type="number" 
+                            min={1} 
+                            max={10} 
+                            className="px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-20"
+                            value={newKwWeight}
+                            onChange={e => setNewKwWeight(parseInt(e.target.value) || 7)} 
+                          />
                         </div>
                       </div>
-                      <input className="input" placeholder="Aliases (comma-separated): e.g. JS, Node.js, NodeJS"
-                        value={newKwAliases} onChange={e => setNewKwAliases(e.target.value)} style={{ height: "40px" }} />
-                      <div style={{ display: "flex", gap: "0.5rem" }}>
-                        <button onClick={handleAddKeyword} disabled={newKwSaving || !newKwKeyword.trim()} className="btn-primary"
-                          style={{ padding: "0.45rem 1.2rem", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                          {newKwSaving ? <><div className="spinner" style={{ width: 12, height: 12 }} /> Saving...</> : <><Check size={13} /> Add Keyword</>}
+                      <input 
+                        className="px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-full"
+                        placeholder="Aliases (comma-separated): e.g. JS, Node.js, NodeJS"
+                        value={newKwAliases} 
+                        onChange={e => setNewKwAliases(e.target.value)} 
+                      />
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={handleAddKeyword} 
+                          disabled={newKwSaving || !newKwKeyword.trim()} 
+                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl border-none cursor-pointer transition flex items-center gap-1.5 disabled:opacity-50"
+                        >
+                          {newKwSaving ? <><div className="spinner w-3 h-3" /> Saving...</> : <><Check size={13} /> Add Keyword</>}
                         </button>
-                        <button onClick={() => setAddingKw(false)} className="btn-secondary" style={{ padding: "0.45rem 0.9rem", fontSize: "0.82rem" }}>Cancel</button>
+                        <button 
+                          onClick={() => setAddingKw(false)} 
+                          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white font-bold text-xs rounded-xl cursor-pointer transition"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     </div>
                   )}
 
                   {/* Keywords Table */}
-                  <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+                  <div className="rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
                     {filteredKeywords.length === 0 ? (
-                      <div style={{ padding: "3rem", textAlign: "center", color: "var(--text-muted)", fontSize: "0.88rem" }}>
+                      <div className="p-12 text-center text-slate-500 dark:text-gray-400 text-xs md:text-sm">
                         {kwSearch ? `No keywords matching "${kwSearch}"` : `No ${manageSubTab} keywords yet.`}
                       </div>
                     ) : (
-                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead>
-                          <tr style={{ background: "var(--bg-3)", borderBottom: "1px solid var(--border)" }}>
-                            {["Keyword", "Weight", "Aliases", "Actions"].map(h => (
-                              <th key={h} style={{ padding: "0.75rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredKeywords.map((kw, i) => {
-                            const isEditing = editingKw?.keyword === kw.keyword && editingKw?.layer === manageSubTab;
-                            const isExpired = kw.expires_on && new Date(kw.expires_on) < new Date();
-                            const isActive = kw.is_active !== false && !isExpired;
-                            return (
-                              <tr key={kw.keyword + i} style={{ borderBottom: "1px solid var(--border)", background: isEditing ? "rgba(108,99,255,0.04)" : "transparent" }}>
-                                {isEditing ? (
-                                  <td colSpan={4} style={{ padding: "0.8rem 1rem" }}>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 1fr auto", gap: "0.5rem", alignItems: "center" }}>
-                                      <input className="input" value={editKwKeyword} onChange={e => setEditKwKeyword(e.target.value)} style={{ height: "36px" }} autoFocus />
-                                      <input type="number" min={1} max={10} className="input" value={editKwWeight} onChange={e => setEditKwWeight(parseInt(e.target.value))} style={{ height: "36px" }} />
-                                      <input className="input" value={editKwAliases} onChange={e => setEditKwAliases(e.target.value)} placeholder="Aliases (comma-sep)" style={{ height: "36px" }} />
-                                      <div style={{ display: "flex", gap: "0.4rem" }}>
-                                        <button onClick={handleEditKeyword} disabled={editKwSaving} className="btn-primary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.78rem" }}>
-                                          {editKwSaving ? "..." : <Save size={13} />}
-                                        </button>
-                                        <button onClick={() => setEditingKw(null)} className="btn-secondary" style={{ padding: "0.4rem 0.7rem", fontSize: "0.78rem" }}>
-                                          <X size={13} />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </td>
-                                ) : (
-                                  <>
-                                    <td style={{ padding: "0.75rem 1rem" }}>
-                                      <span style={{ fontWeight: 600, fontSize: "0.88rem" }}>{kw.keyword}</span>
-                                      {manageSubTab === "dynamic" && (
-                                        <span style={{ marginLeft: "0.4rem", fontSize: "0.7rem", padding: "1px 5px", borderRadius: "4px", background: isActive ? "rgba(67,233,123,0.15)" : "rgba(255,101,132,0.15)", color: isActive ? "#43e97b" : "#ff6584" }}>
-                                          {isActive ? "Active" : "Expired"}
-                                        </span>
-                                      )}
-                                    </td>
-                                    <td style={{ padding: "0.75rem 1rem" }}>
-                                      <span style={{ fontWeight: 800, fontSize: "1rem", color: WEIGHT_COLORS[kw.weight] || "var(--text-muted)" }}>
-                                        {kw.weight}
-                                        <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>/10</span>
-                                      </span>
-                                    </td>
-                                    <td style={{ padding: "0.75rem 1rem" }}>
-                                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
-                                        {(kw.aliases || []).length > 0
-                                          ? kw.aliases.slice(0, 4).map((a, ai) => (
-                                            <span key={ai} className="tag" style={{ fontSize: "0.72rem", padding: "2px 7px" }}>{a}</span>
-                                          ))
-                                          : <span style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>—</span>
-                                        }
-                                        {(kw.aliases || []).length > 4 && (
-                                          <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>+{kw.aliases.length - 4} more</span>
-                                        )}
-                                      </div>
-                                    </td>
-                                    <td style={{ padding: "0.75rem 1rem" }}>
-                                      <div style={{ display: "flex", gap: "0.4rem" }}>
-                                        {manageSubTab === "base" && (
-                                          <button onClick={() => startEdit(kw, "base")} style={{ background: "rgba(108,99,255,0.1)", border: "1px solid rgba(108,99,255,0.2)", borderRadius: "6px", padding: "0.3rem 0.6rem", cursor: "pointer", color: "var(--accent)", display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.78rem" }}>
-                                            <Edit3 size={12} /> Edit
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse text-left text-xs md:text-sm">
+                          <thead>
+                            <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.01]">
+                              {["Keyword", "Weight", "Aliases", "Actions"].map(h => (
+                                <th key={h} className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredKeywords.map((kw, i) => {
+                              const isEditing = editingKw?.keyword === kw.keyword && editingKw?.layer === manageSubTab;
+                              const isExpired = kw.expires_on && new Date(kw.expires_on) < new Date();
+                              const isActive = kw.is_active !== false && !isExpired;
+                              return (
+                                <tr key={kw.keyword + i} className={`border-b border-slate-100 dark:border-white/[0.02] hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition duration-200 ${isEditing ? "bg-indigo-500/[0.04] dark:bg-indigo-500/[0.02]" : ""}`}>
+                                  {isEditing ? (
+                                    <td colSpan={4} className="px-6 py-4">
+                                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-center">
+                                        <input 
+                                          className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition" 
+                                          value={editKwKeyword} 
+                                          onChange={e => setEditKwKeyword(e.target.value)} 
+                                          autoFocus 
+                                        />
+                                        <input 
+                                          type="number" 
+                                          min={1} 
+                                          max={10} 
+                                          className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-20" 
+                                          value={editKwWeight} 
+                                          onChange={e => setEditKwWeight(parseInt(e.target.value))} 
+                                        />
+                                        <input 
+                                          className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition" 
+                                          value={editKwAliases} 
+                                          onChange={e => setEditKwAliases(e.target.value)} 
+                                          placeholder="Aliases (comma-sep)" 
+                                        />
+                                        <div className="flex gap-2">
+                                          <button 
+                                            onClick={handleEditKeyword} 
+                                            disabled={editKwSaving} 
+                                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg border-none cursor-pointer transition flex items-center justify-center"
+                                          >
+                                            {editKwSaving ? "..." : <Save size={13} />}
                                           </button>
-                                        )}
-                                        <button onClick={() => setDeleteConfirm({ keyword: kw.keyword, layer: manageSubTab })} style={{ background: "rgba(255,101,132,0.08)", border: "1px solid rgba(255,101,132,0.2)", borderRadius: "6px", padding: "0.3rem 0.6rem", cursor: "pointer", color: "#ff6584", display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.78rem" }}>
-                                          <Trash2 size={12} /> Delete
-                                        </button>
+                                          <button 
+                                            onClick={() => setEditingKw(null)} 
+                                            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white font-bold text-xs rounded-lg cursor-pointer transition flex items-center justify-center"
+                                          >
+                                            <X size={13} />
+                                          </button>
+                                        </div>
                                       </div>
                                     </td>
-                                  </>
-                                )}
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                                  ) : (
+                                    <>
+                                      <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">
+                                        <span>{kw.keyword}</span>
+                                        {manageSubTab === "dynamic" && (
+                                          <span className={`ml-2 px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                            isActive 
+                                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10" 
+                                              : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/10"
+                                          }`}>
+                                            {isActive ? "Active" : "Expired"}
+                                          </span>
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4 font-extrabold text-xs md:text-sm" style={{ color: WEIGHT_COLORS[kw.weight] }}>
+                                        {kw.weight}
+                                        <span className="text-[10px] text-slate-400 dark:text-gray-500 font-normal">/10</span>
+                                      </td>
+                                      <td className="px-6 py-4">
+                                        <div className="flex flex-wrap gap-1.5">
+                                          {(kw.aliases || []).length > 0
+                                            ? kw.aliases.slice(0, 4).map((a, ai) => (
+                                              <span key={ai} className="px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-300 font-medium border border-slate-200/40 dark:border-white/5">{a}</span>
+                                            ))
+                                            : <span className="text-slate-400">—</span>
+                                          }
+                                          {(kw.aliases || []).length > 4 && (
+                                            <span className="text-[10px] text-slate-400 dark:text-gray-500">+{kw.aliases.length - 4} more</span>
+                                          )}
+                                        </div>
+                                      </td>
+                                      <td className="px-6 py-4">
+                                        <div className="flex gap-2">
+                                          {manageSubTab === "base" && (
+                                            <button 
+                                              onClick={() => startEdit(kw, "base")} 
+                                              className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs font-bold rounded-lg cursor-pointer transition flex items-center gap-1"
+                                            >
+                                              <Edit3 size={12} /> Edit
+                                            </button>
+                                          )}
+                                          <button 
+                                            onClick={() => setDeleteConfirm({ keyword: kw.keyword, layer: manageSubTab })} 
+                                            className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 border border-rose-200 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-lg cursor-pointer transition flex items-center gap-1"
+                                          >
+                                            <Trash2 size={12} /> Delete
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </>
+                                  )}
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                     )}
                   </div>
                 </>
@@ -553,66 +615,71 @@ export default function AdminKeywordsPage() {
 
         {/* ═══════════════════ TAB: CREATE CATEGORY ═══════════════════════════ */}
         {mainTab === "create" && (
-          <div style={{ maxWidth: "760px" }}>
-            <div className="card" style={{ padding: "2rem", display: "grid", gap: "1.5rem" }}>
+          <div className="max-w-3xl">
+            <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6">
               <div>
-                <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.4rem", fontWeight: 800, margin: "0 0 0.3rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <FolderPlus size={20} className="text-emerald-400" /> Create New ATS Category
+                <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0 flex items-center gap-2">
+                  <FolderPlus size={20} className="text-emerald-500 dark:text-emerald-400" /> Create New ATS Category
                 </h2>
-                <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", margin: 0 }}>
+                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
                   Add a brand new industry/role category with initial keywords. It will be instantly active in the ATS engine.
                 </p>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div>
-                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", display: "block", marginBottom: "0.4rem" }}>
-                    Category Slug * <span style={{ fontWeight: 400 }}>(e.g. logistics, banking)</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-500 dark:text-[#9ea3c8] block">
+                    Category Slug * <span className="font-normal">(e.g. logistics_operations)</span>
                   </label>
-                  <input className="input" placeholder="e.g. logistics_operations"
-                    value={newCatSlug} onChange={e => setNewCatSlug(e.target.value.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, ""))}
-                    style={{ height: "42px" }} />
+                  <input 
+                    className="px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-full"
+                    placeholder="e.g. logistics_operations"
+                    value={newCatSlug} 
+                    onChange={e => setNewCatSlug(e.target.value.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, ""))}
+                  />
                 </div>
-                <div>
-                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", display: "block", marginBottom: "0.4rem" }}>
-                    Display Name * <span style={{ fontWeight: 400 }}>(shown in admin + ATS)</span>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-500 dark:text-[#9ea3c8] block">
+                    Display Name * <span className="font-normal">(shown in admin + ATS)</span>
                   </label>
-                  <input className="input" placeholder="e.g. Logistics & Operations"
-                    value={newCatDisplay} onChange={e => setNewCatDisplay(e.target.value)}
-                    style={{ height: "42px" }} />
+                  <input 
+                    className="px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-full"
+                    placeholder="e.g. Logistics & Operations"
+                    value={newCatDisplay} 
+                    onChange={e => setNewCatDisplay(e.target.value)}
+                  />
                 </div>
               </div>
 
-              <div>
-                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", display: "block", marginBottom: "0.4rem" }}>
-                  Initial Keywords <span style={{ fontWeight: 400 }}>— one per line: <code style={{ fontSize: "0.78rem" }}>Keyword Name,Weight,Alias1,Alias2</code></span>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 dark:text-[#9ea3c8] block">
+                  Initial Keywords <span className="font-normal">— one per line: <code className="text-xs text-indigo-500 font-mono">Keyword Name,Weight,Alias1,Alias2</code></span>
                 </label>
                 <textarea
-                  className="input"
-                  rows={12}
+                  className="px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-full font-mono min-h-[160px] resize-y"
+                  rows={8}
                   value={newCatKeywordsRaw}
                   onChange={e => setNewCatKeywordsRaw(e.target.value)}
                   placeholder={"Supply Chain,9,SCM,Logistics\nInventory Management,8,WMS,Stock Control\nVendor Management,7,Procurement,Sourcing"}
-                  style={{ fontFamily: "monospace", fontSize: "0.82rem", resize: "vertical", minHeight: "200px" }}
                 />
-                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.4rem" }}>
-                  Format: <code>Keyword Name,Weight(1-10),Alias1,Alias2,...</code> — Weight is optional (default: 7)
+                <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-1">
+                  Format: <code className="font-mono bg-slate-100 dark:bg-white/5 px-1 py-0.5 rounded">Keyword Name,Weight(1-10),Alias1,Alias2,...</code> — Weight is optional (default: 7)
                 </p>
               </div>
 
               {/* Preview */}
               {newCatKeywordsRaw.trim() && (
-                <div style={{ background: "var(--bg-2)", borderRadius: "10px", padding: "1rem", border: "1px solid var(--border)" }}>
-                  <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-muted)", margin: "0 0 0.5rem" }}>Preview ({newCatKeywordsRaw.split("\n").filter(l => l.trim()).length} keywords):</p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 space-y-2">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider block">Preview ({newCatKeywordsRaw.split("\n").filter(l => l.trim()).length} keywords):</span>
+                  <div className="flex flex-wrap gap-1.5">
                     {newCatKeywordsRaw.split("\n").filter(l => l.trim()).map((line, i) => {
                       const parts = line.split(",");
                       const kw = parts[0]?.trim();
                       const wt = parseInt(parts[1]?.trim()) || 7;
                       if (!kw) return null;
                       return (
-                        <span key={i} className="tag" style={{ fontSize: "0.75rem", background: "var(--bg-3)" }}>
-                          <span style={{ color: WEIGHT_COLORS[wt] || "var(--text)", fontWeight: 700, marginRight: "0.3rem" }}>{wt}</span>
+                        <span key={i} className="px-2 py-0.5 rounded text-[10px] bg-white dark:bg-white/5 text-slate-700 dark:text-gray-300 font-semibold border border-slate-200/40 dark:border-white/5 flex items-center gap-1.5">
+                          <span className="font-extrabold" style={{ color: WEIGHT_COLORS[wt] }}>{wt}</span>
                           {kw}
                         </span>
                       );
@@ -624,10 +691,9 @@ export default function AdminKeywordsPage() {
               <button
                 onClick={handleCreateCategory}
                 disabled={createCatLoading || !newCatSlug.trim() || !newCatDisplay.trim()}
-                className="btn-primary"
-                style={{ padding: "0.75rem 2rem", fontSize: "0.92rem", alignSelf: "start", display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", border: "none" }}
+                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs md:text-sm rounded-xl border-none cursor-pointer transition flex items-center gap-1.5 disabled:opacity-50"
               >
-                {createCatLoading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Creating...</> : <><FolderPlus size={15} /> Create Category</>}
+                {createCatLoading ? <><div className="spinner w-4 h-4" /> Creating...</> : <><FolderPlus size={15} /> Create Category</>}
               </button>
             </div>
           </div>
@@ -635,50 +701,79 @@ export default function AdminKeywordsPage() {
 
         {/* ═══════════════════ TAB: AI SCANNER ═════════════════════════════════ */}
         {mainTab === "scanner" && (
-          <div>
-            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
-              {[{ key: "scan", label: "🤖 AI Scan" }, { key: "pending", label: `⏳ Pending Queue (${pendingKeywords.length})` }].map(t => (
-                <button key={t.key} onClick={() => setScannerSubTab(t.key as any)} style={{
-                  padding: "0.45rem 1.1rem", borderRadius: "8px", border: "1px solid",
-                  borderColor: scannerSubTab === t.key ? "var(--accent)" : "var(--border)",
-                  background: scannerSubTab === t.key ? "rgba(108,99,255,0.1)" : "var(--bg-2)",
-                  color: scannerSubTab === t.key ? "var(--accent)" : "var(--text-muted)",
-                  fontWeight: scannerSubTab === t.key ? 700 : 500, fontSize: "0.85rem", cursor: "pointer"
-                }}>{t.label}</button>
-              ))}
+          <div className="space-y-6">
+            <div className="flex gap-2 border-b border-slate-200 dark:border-white/10 pb-2 overflow-x-auto no-scrollbar">
+              {[{ key: "scan", label: "🤖 AI Scan" }, { key: "pending", label: `⏳ Pending Queue (${pendingKeywords.length})` }].map(t => {
+                const isScannerSubActive = scannerSubTab === t.key;
+                return (
+                  <button 
+                    key={t.key} 
+                    onClick={() => setScannerSubTab(t.key as any)} 
+                    className={`
+                      px-4 py-2 rounded-xl font-bold text-xs transition border cursor-pointer whitespace-nowrap
+                      ${isScannerSubActive
+                        ? "bg-indigo-600/10 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold"
+                        : "bg-transparent border-transparent text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5"
+                      }
+                    `}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
             </div>
 
             {scannerSubTab === "scan" && (
-              <div className="card" style={{ padding: "2rem" }}>
-                <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>AI Market Trend Scanner</h2>
-                <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
-                  Let AI discover new emerging keywords for a category and add them to the pending queue for your review.
-                </p>
-                <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem", flexWrap: "wrap" }}>
-                  <select className="input" style={{ width: "280px" }} value={scanIndustry} onChange={e => setScanIndustry(e.target.value)}>
+              <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6">
+                <div>
+                  <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0">AI Market Trend Scanner</h2>
+                  <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
+                    Let AI discover new emerging keywords for a category and add them to the pending queue for your review.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3 items-center">
+                  <select 
+                    className="px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-72" 
+                    value={scanIndustry} 
+                    onChange={e => setScanIndustry(e.target.value)}
+                  >
                     {Object.entries(allCategories).map(([key, d]) => (
                       <option key={key} value={key}>{d.displayName}</option>
                     ))}
                   </select>
-                  <button className="btn-primary" onClick={runAIScanner} disabled={scanLoading}>
+                  <button 
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs md:text-sm rounded-xl border-none cursor-pointer transition disabled:opacity-50" 
+                    onClick={runAIScanner} 
+                    disabled={scanLoading}
+                  >
                     {scanLoading ? "Scanning..." : "🔍 Run AI Scan"}
                   </button>
                 </div>
                 {scanResults.length > 0 && (
-                  <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {scanResults.map((kw, i) => (
-                      <div key={kw.id || i} style={{ padding: "1.2rem", border: "1px solid var(--border)", borderRadius: "10px", background: "var(--bg-2)", display: "grid", gap: "0.5rem" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <strong style={{ fontSize: "1rem" }}>{kw.keyword}</strong>
-                          <span style={{ fontWeight: 800, color: WEIGHT_COLORS[kw.weight] || "var(--text-muted)", fontSize: "0.9rem" }}>{kw.weight}/10</span>
+                      <div key={kw.id || i} className="p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-500/[0.02] border border-indigo-100 dark:border-indigo-500/10 space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-slate-900 dark:text-white">{kw.keyword}</span>
+                          <span className="text-xs font-bold" style={{ color: WEIGHT_COLORS[kw.weight] }}>{kw.weight}/10</span>
                         </div>
-                        <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>
+                        <p className="text-[11px] text-slate-500 dark:text-gray-400 m-0">
                           {kw.aliases?.length > 0 ? `Aliases: ${kw.aliases.join(", ")}` : "No aliases"}
                         </p>
                         {kw.id && (
-                          <div style={{ display: "flex", gap: "0.5rem" }}>
-                            <button className="btn-primary" style={{ flex: 1, padding: "0.4rem", fontSize: "0.78rem", background: "#43e97b", color: "#000", border: "none" }} onClick={() => handleAction(kw.id, "approve", "scan")}>✓ Approve</button>
-                            <button className="btn-secondary" style={{ flex: 1, padding: "0.4rem", fontSize: "0.78rem", borderColor: "#ff6584", color: "#ff6584" }} onClick={() => handleAction(kw.id, "reject", "scan")}>✕ Reject</button>
+                          <div className="flex gap-2 pt-2">
+                            <button 
+                              className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg border-none cursor-pointer transition" 
+                              onClick={() => handleAction(kw.id, "approve", "scan")}
+                            >
+                              ✓ Approve
+                            </button>
+                            <button 
+                              className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-rose-500 font-bold text-xs rounded-lg cursor-pointer transition" 
+                              onClick={() => handleAction(kw.id, "reject", "scan")}
+                            >
+                              ✕ Reject
+                            </button>
                           </div>
                         )}
                       </div>
@@ -689,29 +784,43 @@ export default function AdminKeywordsPage() {
             )}
 
             {scannerSubTab === "pending" && (
-              <div className="card" style={{ padding: "2rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                  <h2 style={{ fontSize: "1.2rem", margin: 0 }}>Pending Queue ({pendingKeywords.length})</h2>
+              <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0">Pending Queue ({pendingKeywords.length})</h2>
                   {pendingKeywords.length > 0 && (
-                    <button className="btn-primary" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", background: "#43e97b", color: "#000", border: "none" }} onClick={() => setApproveAllConfirmOpen(true)} disabled={pendingLoading}>
+                    <button 
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl border-none cursor-pointer transition" 
+                      onClick={() => setApproveAllConfirmOpen(true)} 
+                      disabled={pendingLoading}
+                    >
                       Approve All
                     </button>
                   )}
                 </div>
-                {pendingLoading ? <div className="spinner" style={{ margin: "2rem auto" }} /> : pendingKeywords.length === 0 ? (
-                  <p style={{ color: "var(--text-muted)", textAlign: "center", padding: "2rem" }}>No pending keywords. Run the AI scanner to add some!</p>
+                {pendingLoading ? <div className="spinner mx-auto" /> : pendingKeywords.length === 0 ? (
+                  <p className="text-slate-500 dark:text-gray-400 text-center py-8 text-xs md:text-sm">No pending keywords. Run the AI scanner to add some!</p>
                 ) : (
-                  <div style={{ display: "grid", gap: "0.6rem" }}>
+                  <div className="grid gap-3">
                     {pendingKeywords.map(kw => (
-                      <div key={kw.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.9rem 1rem", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-2)", gap: "1rem", flexWrap: "wrap" }}>
+                      <div key={kw.id} className="flex flex-wrap justify-between items-center p-4 bg-indigo-50/50 dark:bg-indigo-500/[0.02] border border-indigo-100 dark:border-indigo-500/10 rounded-xl gap-4">
                         <div>
-                          <strong>{kw.keyword}</strong>
-                          <span style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginLeft: "0.5rem" }}>({kw.industry}) — Weight: {kw.weight}</span>
-                          {kw.aliases?.length > 0 && <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Aliases: {kw.aliases.join(", ")}</div>}
+                          <strong className="text-slate-900 dark:text-white text-xs md:text-sm">{kw.keyword}</strong>
+                          <span className="text-[10px] text-slate-500 dark:text-gray-400 ml-2 font-mono">({kw.industry}) — Weight: {kw.weight}</span>
+                          {kw.aliases?.length > 0 && <div className="text-[10px] text-slate-400 dark:text-gray-500 mt-1">Aliases: {kw.aliases.join(", ")}</div>}
                         </div>
-                        <div style={{ display: "flex", gap: "0.5rem" }}>
-                          <button className="btn-primary" style={{ padding: "0.35rem 0.9rem", fontSize: "0.8rem", background: "#43e97b", color: "#000", border: "none" }} onClick={() => handleAction(kw.id, "approve", "pending")}>✓ Approve</button>
-                          <button className="btn-secondary" style={{ padding: "0.35rem 0.8rem", fontSize: "0.8rem", borderColor: "#ff6584", color: "#ff6584" }} onClick={() => handleAction(kw.id, "reject", "pending")}>Reject</button>
+                        <div className="flex gap-2">
+                          <button 
+                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg border-none cursor-pointer transition" 
+                            onClick={() => handleAction(kw.id, "approve", "pending")}
+                          >
+                            ✓ Approve
+                          </button>
+                          <button 
+                            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-rose-500 font-bold text-xs rounded-lg cursor-pointer transition" 
+                            onClick={() => handleAction(kw.id, "reject", "pending")}
+                          >
+                            Reject
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -721,6 +830,7 @@ export default function AdminKeywordsPage() {
             )}
           </div>
         )}
+        </main>
       </div>
 
       {/* Delete Confirm Modal */}

@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { useToast } from "@/components/ui/toast-1";
 import { ShieldCheck, BarChart2, Users, Bot, Brain, CreditCard, Megaphone } from "lucide-react";
+import TabNavigation from "@/components/ui/TabNavigation";
 
 interface UserProfile {
   id: string;
@@ -125,163 +126,128 @@ export default function AdminUsersPage() {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <Navbar />
-      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
-
-        {/* Title */}
-        <div style={{ marginBottom: "2rem" }}>
-          <p className="section-label" style={{ marginBottom: "0.5rem" }}>System Directory</p>
-          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
-            <Users size={32} className="text-indigo-500" />
-            User Management
-          </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.25rem" }}>
-            Promote or demote administrators, inspect onboarding status, and review account registration history.
-          </p>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--border)", marginBottom: "2rem", overflowX: "auto", whiteSpace: "nowrap" }}>
-          <Link href="/admin" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <BarChart2 size={14} />
-              Analytics Overview
-            </button>
-          </Link>
-          <Link href="/admin/users" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "rgba(108,99,255,0.08)", border: "none", borderBottom: "2px solid var(--accent)", color: "var(--accent)", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Users size={14} />
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
+      {/* Premium background radial elements */}
+      <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
+      
+      <div className="relative z-10">
+        <Navbar />
+        
+        <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+          
+          {/* Header */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+              System Control Room
+            </span>
+            <h1 className="text-3xl md:text-4xl font-extrabold font-['Syne',sans-serif] tracking-tight flex items-center gap-2 mt-2">
+              <Users size={32} className="text-indigo-600 dark:text-indigo-400" />
               User Management
-            </button>
-          </Link>
-          <Link href="/admin/ai-usage" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Bot size={14} />
-              AI Usage Log
-            </button>
-          </Link>
-          <Link href="/admin/keywords" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Brain size={14} />
-              ATS Keywords
-            </button>
-          </Link>
-          <Link href="/admin/billing" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <CreditCard size={14} />
-              Billing & Credits
-            </button>
-          </Link>
-          <Link href="/admin/broadcast" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Megaphone size={14} />
-              Broadcasts
-            </button>
-          </Link>
-        </div>
-
-        {errorMsg && (
-          <div style={{ color: "#ff6584", fontSize: "0.88rem", padding: "0.9rem 1.2rem", background: "rgba(255,101,132,0.08)", borderRadius: "10px", borderLeft: "4px solid #ff6584", marginBottom: "2rem" }}>
-            {errorMsg}
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-[#9ea3c8] max-w-2xl leading-relaxed">
+              Promote or demote administrators, inspect onboarding status, and review account registration history.
+            </p>
           </div>
-        )}
 
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "6rem 2rem", background: "var(--card)", borderRadius: "16px", border: "1px solid var(--border)" }}>
-            <div className="spinner" style={{ margin: "0 auto 1rem", width: 32, height: 32 }} />
-            <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>Fetching registered user profiles...</p>
-          </div>
-        ) : users.length === 0 ? (
-          <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
-            No registered users profiles found. Ensure the user_profiles table is populated in Supabase.
-          </div>
-        ) : (
-          <div className="card" style={{ padding: 0, overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.88rem" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.01)" }}>
-                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>User Email</th>
-                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>Platform Role</th>
-                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>Onboarding</th>
-                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>Joined Date</th>
-                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem", textAlign: "right" }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((profile) => (
-                  <tr key={profile.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", transition: "background 0.2s" }} className="table-row-hover">
-                    <td style={{ padding: "1rem 1.2rem", fontWeight: 600, color: "var(--text)" }}>{profile.email}</td>
-                    <td style={{ padding: "1rem 1.2rem" }}>
-                      <span className={`tag ${profile.role === "admin" ? "tag-red" : profile.role === "suspended" ? "tag-amber" : "tag-purple"}`} style={{ fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700 }}>
-                        {profile.role}
-                      </span>
-                    </td>
-                    <td style={{ padding: "1rem 1.2rem" }}>
-                      {profile.has_completed_onboarding ? (
-                        <span style={{ color: "#43e97b" }}>✓ Completed</span>
-                      ) : (
-                        <span style={{ color: "var(--text-dim)" }}>Incomplete</span>
-                      )}
-                    </td>
-                    <td style={{ padding: "1rem 1.2rem", color: "var(--text-muted)" }}>
-                      {new Date(profile.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                    </td>
-                    <td style={{ padding: "1rem 1.2rem", textAlign: "right" }}>
-                      <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
-                        <button
-                          onClick={() => handleRoleChangeTrigger(profile.id, profile.role)}
-                          disabled={updatingId === profile.id || profile.role === "suspended"}
-                          className="btn-secondary"
-                          style={{
-                            padding: "0.35rem 0.6rem",
-                            fontSize: "0.7rem",
-                            borderColor: profile.role === "admin" ? "#ff6584" : "var(--accent)",
-                            color: profile.role === "admin" ? "#ff6584" : "var(--accent)",
-                            opacity: profile.role === "suspended" ? 0.5 : 1
-                          }}
-                        >
-                          {profile.role === "admin" ? "Demote" : "Make Admin"}
-                        </button>
-                        
-                        <button
-                          onClick={() => handleSuspendTrigger(profile.id, profile.role)}
-                          disabled={updatingId === profile.id || profile.role === "admin"}
-                          className="btn-secondary"
-                          style={{
-                            padding: "0.35rem 0.6rem",
-                            fontSize: "0.7rem",
-                            borderColor: profile.role === "suspended" ? "#10b981" : "#f59e0b",
-                            color: profile.role === "suspended" ? "#10b981" : "#f59e0b",
-                            opacity: profile.role === "admin" ? 0.5 : 1
-                          }}
-                        >
-                          {profile.role === "suspended" ? "Activate" : "Suspend"}
-                        </button>
+          {/* Navigation Tabs */}
+          <TabNavigation activeTab="users" />
 
-                        <button
-                          onClick={() => handleDeleteTrigger(profile.id)}
-                          disabled={updatingId === profile.id || profile.role === "admin"}
-                          className="btn-secondary"
-                          style={{
-                            padding: "0.35rem 0.6rem",
-                            fontSize: "0.7rem",
-                            borderColor: "#ff6584",
-                            color: "#ff6584",
-                            opacity: profile.role === "admin" ? 0.5 : 1
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          {errorMsg && (
+            <div className="p-4 rounded-xl bg-rose-500/10 border-l-4 border-rose-500 text-rose-300 text-sm">
+              {errorMsg}
+            </div>
+          )}
 
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 shadow-sm dark:shadow-xl">
+              <div className="spinner mb-4 w-10 h-10" />
+              <p className="text-sm text-slate-500 dark:text-[#9ea3c8]">Fetching registered user profiles...</p>
+            </div>
+          ) : users.length === 0 ? (
+            <div className="p-12 text-center rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-gray-400 shadow-sm">
+              No registered user profiles found. Ensure the user_profiles table is populated in Supabase.
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left text-xs md:text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.01]">
+                      <th className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">User Email</th>
+                      <th className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">Platform Role</th>
+                      <th className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">Onboarding</th>
+                      <th className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">Joined Date</th>
+                      <th className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px] text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((profile) => (
+                      <tr key={profile.id} className="border-b border-slate-100 dark:border-white/[0.02] hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition duration-200">
+                        <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{profile.email}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            profile.role === "admin" 
+                              ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20" 
+                              : profile.role === "suspended" 
+                                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" 
+                                : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                          }`}>
+                            {profile.role}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {profile.has_completed_onboarding ? (
+                            <span className="text-emerald-600 dark:text-emerald-400 font-medium">✓ Completed</span>
+                          ) : (
+                            <span className="text-slate-400 dark:text-gray-500">Incomplete</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-slate-500 dark:text-gray-400">
+                          {new Date(profile.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              onClick={() => handleRoleChangeTrigger(profile.id, profile.role)}
+                              disabled={updatingId === profile.id || profile.role === "suspended"}
+                              className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 rounded-lg text-xs font-bold cursor-pointer transition disabled:opacity-40"
+                              style={{
+                                color: profile.role === "admin" ? "#ef4444" : "var(--accent)"
+                              }}
+                            >
+                              {profile.role === "admin" ? "Demote" : "Make Admin"}
+                            </button>
+                            
+                            <button
+                              onClick={() => handleSuspendTrigger(profile.id, profile.role)}
+                              disabled={updatingId === profile.id || profile.role === "admin"}
+                              className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 rounded-lg text-xs font-bold cursor-pointer transition disabled:opacity-40"
+                              style={{
+                                color: profile.role === "suspended" ? "#10b981" : "#f59e0b"
+                              }}
+                            >
+                              {profile.role === "suspended" ? "Activate" : "Suspend"}
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteTrigger(profile.id)}
+                              disabled={updatingId === profile.id || profile.role === "admin"}
+                              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 border border-rose-200 dark:border-rose-900/30 rounded-lg text-xs font-bold cursor-pointer transition text-rose-600 dark:text-rose-400 disabled:opacity-40"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+        </main>
       </div>
       <ConfirmationModal
         isOpen={!!roleConfirm}
