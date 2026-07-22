@@ -120,20 +120,49 @@ RETURN ONLY VALID JSON ARRAY. NO PREAMBLE. NO MARKDOWN.`;
       throw new Error("AI did not return a valid array of suggestions");
     }
 
-    // Insert into DB
-    const insertData = aiResponse.map(s => ({
-      resume_id: resumeId,
-      user_id: user.id,
-      suggestion_category: s.category || s.suggestion_category || 'ats_keyword',
-      title: s.title || 'Resume Upgrade Recommended',
-      description: s.description || 'Improvement details',
-      current_text: s.currentText || s.current_text || null,
-      suggested_text: s.suggestedText || s.suggested_text || s.suggestion || 'Upgrade recommended text',
-      section: s.section || 'general',
-      impact_level: s.impactLevel || s.impact_level ? String(s.impactLevel || s.impact_level).toLowerCase() : "medium",
-      priority: Math.min(5, Math.max(1, Math.floor(Number(s.priority) || 3))),
-      is_accepted: false
-    }));
+    const ALLOWED_CATEGORIES = new Set([
+      'ats_keyword', 'technical_skill', 'soft_skill', 'experience_bullet', 
+      'achievement_quantification', 'action_verb', 'professional_summary', 
+      'education', 'certification', 'project', 'formatting', 'contact_info', 
+      'skills_organization', 'work_experience_structure'
+    ]);
+
+    const CATEGORY_MAP: Record<string, string> = {
+      "format": "formatting",
+      "summary": "professional_summary",
+      "experience": "experience_bullet",
+      "skills": "technical_skill",
+      "skill": "technical_skill",
+      "projects": "project",
+      "certifications": "certification",
+      "contacts": "contact_info",
+      "contact": "contact_info"
+    };
+
+    // Insert into DB with strict category & impact level mapping
+    const insertData = aiResponse.map(s => {
+      let rawCat = (s.category || s.suggestion_category || 'experience_bullet').toLowerCase().trim();
+      let cat = ALLOWED_CATEGORIES.has(rawCat) 
+        ? rawCat 
+        : (CATEGORY_MAP[rawCat] || 'experience_bullet');
+
+      let rawImpact = (s.impactLevel || s.impact_level || 'medium').toLowerCase().trim();
+      let impact = (rawImpact === 'high' || rawImpact === 'medium' || rawImpact === 'low') ? rawImpact : 'medium';
+
+      return {
+        resume_id: resumeId,
+        user_id: user.id,
+        suggestion_category: cat,
+        title: s.title || 'Resume Upgrade Recommended',
+        description: s.description || 'Improvement details',
+        current_text: s.currentText || s.current_text || null,
+        suggested_text: s.suggestedText || s.suggested_text || s.suggestion || 'Upgrade recommended text',
+        section: s.section || 'general',
+        impact_level: impact,
+        priority: Math.min(5, Math.max(1, Math.floor(Number(s.priority) || 3))),
+        is_accepted: false
+      };
+    });
 
     const { data: inserted, error: dbError } = await supabase
       .from("resume_improvement_suggestions")

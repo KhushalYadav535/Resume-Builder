@@ -279,7 +279,7 @@ export default function ResumeDocument({
           lineHeight: lh,
           color: "#111",
           background: "#fff",
-          padding: "0.5in 0.65in",
+          padding: "0.3in 0.5in",
           maxWidth: "8.5in",
           margin: "0 auto",
           boxSizing: "border-box",

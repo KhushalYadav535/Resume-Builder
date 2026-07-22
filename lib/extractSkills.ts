@@ -3,16 +3,17 @@
  */
 const TECHNICAL_DICTIONARY = [
   "javascript", "typescript", "react", "next.js", "nextjs", "node.js", "nodejs", "express",
-  "python", "django", "flask", "fastapi", "java", "spring", "c++", "c#", "net", "ruby", "rails",
-  "go", "golang", "php", "laravel", "html", "css", "tailwind", "sass", "angular", "vue",
-  "sql", "postgresql", "mysql", "sqlite", "mongodb", "redis", "cassandra", "graphql", "rest api",
+  "python", "django", "flask", "fastapi", "java", "spring", "c++", "c#", ".net", "net", "asp.net", "ruby", "rails",
+  "go", "golang", "php", "laravel", "html", "css", "tailwind", "sass", "angular", "angularjs", "vue",
+  "sql", "t-sql", "postgresql", "mysql", "sqlite", "mongodb", "redis", "cassandra", "graphql", "rest api", "web api",
   "aws", "amazon web services", "azure", "gcp", "google cloud", "docker", "kubernetes", "git",
   "github", "gitlab", "ci/cd", "jenkins", "terraform", "ansible", "linux", "unix", "nginx",
-  "apache", "firebase", "supabase", "prisma", "sequelize", "mongoose", "jest", "mocha", "cypress",
+  "apache", "firebase", "supabase", "prisma", "sequelize", "mongoose", "jest", "nunit", "mstest", "moq", "cypress",
   "figma", "photoshop", "illustrator", "seo", "sem", "google analytics", "data structures",
   "algorithms", "system design", "machine learning", "deep learning", "nlp", "artificial intelligence",
   "tensorflow", "pytorch", "pandas", "numpy", "scikit-learn", "scikit learn", "tableau", "powerbi",
-  "excel", "agile", "scrum", "jira", "webpack", "babel", "vite", "graphql", "restful", "microservices"
+  "excel", "agile", "scrum", "jira", "tfs", "webpack", "babel", "vite", "graphql", "restful", "microservices",
+  "entity framework", "visual studio", "sql server", "fiddler", "soap ui", "resharper", "nuget"
 ];
 
 /**
@@ -27,9 +28,6 @@ const SOFT_DICTIONARY = [
   "customer service", "problem-solving", "interpersonal skills", "time-management"
 ];
 
-/**
- * Mapping of core skills to typical adjacent missing competencies to calculate gaps.
- */
 const SKILL_DEPENDENCIES: Record<string, string[]> = {
   "react": ["next.js", "typescript", "tailwind"],
   "javascript": ["typescript", "react", "node.js"],
@@ -39,8 +37,8 @@ const SKILL_DEPENDENCIES: Record<string, string[]> = {
   "docker": ["kubernetes", "terraform", "aws"],
   "aws": ["docker", "terraform", "gcp"],
   "sql": ["postgresql", "mysql", "database design"],
-  "html": ["css", "javascript", "tailwind"],
-  "figma": ["ui/ux design", "photoshop", "figma"]
+  "c#": [".net core", "entity framework", "web api"],
+  "angular": ["typescript", "rxjs", "web api"]
 };
 
 export interface SkillAnalysis {
@@ -52,39 +50,70 @@ export interface SkillAnalysis {
 
 /**
  * Locally extracts, categorizes, and scores technical and soft skills from resume text.
- * Runs completely locally on the server (fast, free, rate-limit immune).
+ * Also parses explicit skill lines from a TECHNICAL SKILLS section if provided.
  */
-export function extractSkills(text: string): SkillAnalysis {
+export function extractSkills(text: string, rawSkillLines?: string[]): SkillAnalysis {
   const cleanText = text.toLowerCase();
   
-  const technicalSkills: string[] = [];
-  const softSkills: string[] = [];
+  const technicalSet = new Set<string>();
+  const softSet = new Set<string>();
 
-  // 1. Extract technical skills
+  // 1. Extract technical skills from dictionary match
   for (const tech of TECHNICAL_DICTIONARY) {
-    // Avoid partial matches (e.g. "go" in "good") using regex word boundary
     const escaped = tech.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(`\\b${escaped}\\b`, "i");
     if (regex.test(cleanText)) {
-      // Normalize casing based on dictionary
-      const originalCasing = TECHNICAL_DICTIONARY.find(t => t.toLowerCase() === tech) || tech;
-      const formatted = originalCasing.charAt(0).toUpperCase() + originalCasing.slice(1);
-      technicalSkills.push(formatted === "Nextjs" ? "Next.js" : formatted === "Nodejs" ? "Node.js" : formatted);
+      // Normalize casing
+      const formatted = tech === "net" ? ".NET" :
+                        tech === "c#" ? "C#" :
+                        tech === "asp.net" ? "ASP.NET" :
+                        tech === "t-sql" ? "T-SQL" :
+                        tech === "web api" ? "Web API" :
+                        tech === "angularjs" ? "AngularJS" :
+                        tech === "sql server" ? "SQL Server" :
+                        tech === "entity framework" ? "Entity Framework" :
+                        tech.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+      technicalSet.add(formatted);
     }
   }
 
-  // 2. Extract soft skills
+  // 2. Extract soft skills from dictionary match
   for (const soft of SOFT_DICTIONARY) {
     const escaped = soft.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(`\\b${escaped}\\b`, "i");
     if (regex.test(cleanText)) {
-      const originalCasing = SOFT_DICTIONARY.find(s => s.toLowerCase() === soft) || soft;
-      const formatted = originalCasing.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-      softSkills.push(formatted);
+      const formatted = soft.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+      softSet.add(formatted);
     }
   }
 
-  // 3. Find missing skills based on dependencies
+  // 3. Extract explicit skills from rawSkillLines if available
+  if (rawSkillLines && rawSkillLines.length > 0) {
+    for (const line of rawSkillLines) {
+      if (!line) continue;
+      const clean = line.replace(/^[•\-\*■●▪▸◦]\s*/, "").trim();
+      const colonIdx = clean.indexOf(":");
+      const contentStr = colonIdx !== -1 ? clean.slice(colonIdx + 1).trim() : clean;
+
+      const parts = contentStr.split(/[,;|]/).map(p => p.trim()).filter(Boolean);
+      for (const p of parts) {
+        const cleanedItem = p.replace(/\.$/, "").trim();
+        // Skip standalone numbers (like "4.6" or "2019") or generic headers
+        if (
+          cleanedItem.length >= 2 &&
+          cleanedItem.length <= 40 &&
+          !/^\d+(?:\.\d+)?$/.test(cleanedItem)
+        ) {
+          technicalSet.add(cleanedItem);
+        }
+      }
+    }
+  }
+
+  const technicalSkills = Array.from(technicalSet);
+  const softSkills = Array.from(softSet);
+
+  // 4. Find missing skills based on dependencies
   const missingSkillsSet = new Set<string>();
   const detectedLower = [...technicalSkills, ...softSkills].map(s => s.toLowerCase());
 
@@ -92,23 +121,20 @@ export function extractSkills(text: string): SkillAnalysis {
     if (SKILL_DEPENDENCIES[detected]) {
       for (const adj of SKILL_DEPENDENCIES[detected]) {
         if (!detectedLower.includes(adj.toLowerCase())) {
-          // Format missing skill casing nicely
           const formatted = adj.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-          missingSkillsSet.add(formatted === "Nextjs" ? "Next.js" : formatted === "Nodejs" ? "Node.js" : formatted);
+          missingSkillsSet.add(formatted);
         }
       }
     }
   }
 
-  // 4. Compute confidence density score
-  // Baseline is 12 total competencies found
   const totalCompetencies = technicalSkills.length + softSkills.length;
   const confidenceScore = Math.min(100, Math.round((totalCompetencies / 12) * 100));
 
   return {
     technicalSkills,
     softSkills,
-    missingSkills: Array.from(missingSkillsSet).slice(0, 5), // Limit to top 5 recommendations
+    missingSkills: Array.from(missingSkillsSet).slice(0, 5),
     confidenceScore,
   };
 }

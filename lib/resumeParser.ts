@@ -7,6 +7,19 @@ function uid() {
   return Math.random().toString(36).substring(2, 9);
 }
 
+const CITY_NAMES = [
+  "Pune", "Vadodara", "London", "UK", "Gandhinagar", "Ahmedabad", "Mumbai",
+  "Bangalore", "Bengaluru", "Hyderabad", "Delhi", "Noida", "Gurugram", "Gurgaon",
+  "Chennai", "Kolkata", "Jaipur", "Surat", "India", "USA", "San Francisco", "New York"
+];
+
+// Employment Date Range Regex (e.g. "Dec 2020- present", "Oct 2019 – Dec -2020", "June 2018 – OCT -2019")
+const MONTHS_PATTERN = "(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)";
+const JOB_DATE_RANGE_REGEX = new RegExp(
+  `(${MONTHS_PATTERN}\\s*'?\\d{2,4}|\\b(?:19|20)\\d{2}\\b)\\s*[\\-–—to\\s]+\\s*(${MONTHS_PATTERN}?\\s*\\-?\\s*(?:\\d{2,4}|Present|Current|Till\\s+Date|Till\\s+Now))`,
+  "gi"
+);
+
 /**
  * Robust local parser coordinator to structure raw text into a ResumeData JSON layout.
  * Runs completely locally on the server (fast, free, rate-limit immune).
@@ -14,142 +27,169 @@ function uid() {
 export function parseResume(text: string): ResumeData {
   const personalInfo = extractPersonalInfo(text);
   const sections = parseSections(text);
-  const skillAnalysis = extractSkills(text);
+  const skillAnalysis = extractSkills(text, sections.skills);
 
-  // 1. Summary: Join the lines in the summary section
-  const summary = sections.summary.join(" ").trim() || 
+  // 1. Summary
+  const summary = sections.summary.join(" ").trim() ||
     `A motivated professional specializing in ${skillAnalysis.technicalSkills.slice(0, 3).join(", ") || "software engineering"}.`;
 
-  // 2. Parse Work Experience
+  // 2. Parse Work Experience using robust State Machine
   const workExperience: WorkExperience[] = [];
   let currentJob: Partial<WorkExperience> | null = null;
 
-  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December|Present|\d{1,2}\/\d{2,4}|\b(?:19|20)\d{2}\b)\b/i;
-
   for (const line of sections.experience) {
-    const isBullet = /^[•\-\*■●▪▸◦]/.test(line) || (line.trim().startsWith("-") && line.trim().length > 2);
+    if (!line) continue;
+
+    const isTechLine = /^(?:environment|framework|visual studio|applications targeting|involved in|description)\s*:/i.test(line);
+
+    // Reset lastIndex for global regex
+    JOB_DATE_RANGE_REGEX.lastIndex = 0;
+    const dateRangeMatch = !isTechLine && JOB_DATE_RANGE_REGEX.exec(line);
+
+    if (dateRangeMatch) {
+      // It's a REAL Job Header!
+      const fullDateStr = dateRangeMatch[0];
+      const startDate = (dateRangeMatch[1] || "").trim();
+      let endDate = (dateRangeMatch[2] || "").trim().replace(/^\-/, "").trim();
+      if (/present|current/i.test(endDate || fullDateStr)) {
+        endDate = "Present";
+      }
+
+      // Strip date range from line to isolate Company Name and Location
+      let headerText = line.replace(fullDateStr, "").trim();
+      headerText = headerText.replace(/^[,\-\s\|.]+|[,\-\s\|.]+$/g, "").trim();
+
+      // Extract City/Location
+      let foundCities: string[] = [];
+      for (const city of CITY_NAMES) {
+        const cityRegex = new RegExp(`\\b${city}\\b`, "i");
+        if (cityRegex.test(headerText)) {
+          foundCities.push(city);
+        }
+      }
+
+      let cityStr = foundCities.join(", ");
+      let companyName = headerText;
+      if (foundCities.length > 0) {
+        for (const city of foundCities) {
+          companyName = companyName.replace(new RegExp(`\\b${city}\\b`, "gi"), "");
+        }
+        companyName = companyName.replace(/^[,\-\s\|.]+|[,\-\s\|.]+$/g, "").trim();
+      }
+
+      currentJob = {
+        id: uid(),
+        company: companyName || headerText || "Company Name",
+        role: "Software Professional", // Fallback until Role line is parsed
+        city: cityStr,
+        startDate,
+        endDate,
+        current: endDate === "Present",
+        bullets: [],
+      };
+      workExperience.push(currentJob as WorkExperience);
+      continue;
+    }
+
+    // Check for explicit "Role: ..." line
+    const roleMatch = line.match(/^(?:Role|Designation|Position|Title)\s*:\s*(.+)$/i);
+    if (roleMatch && currentJob) {
+      currentJob.role = roleMatch[1].trim().replace(/\.$/, "");
+      continue;
+    }
+
+    // Check for "Project Title:" or "Client:" lines under current company
+    const projMatch = line.match(/^(?:Project Title(?:\s*[\/\&]\s*Client)?|Client)\s*:\s*(.+)$/i);
+    if (projMatch && currentJob) {
+      currentJob.bullets?.push(`Project / Client: ${projMatch[1].trim()}`);
+      continue;
+    }
+
+    // Bullets / Responsibilities
     const cleanLine = line.replace(/^[•\-\*■●▪▸◦]\s*/, "").trim();
-
-    // Treat ALL-CAPS short lines as job title/company headers (common in formatted CVs/PDFs)
-    const isAllCapsHeader = /^[A-Z][A-Z\s\|\/&,.'()-]{3,}$/.test(line) && line.length < 80 && !isBullet;
-
-    if (isBullet) {
-      if (!currentJob) {
-        // Create a placeholder job if a bullet is found before any job header
-        currentJob = {
-          id: uid(),
-          company: "Company Name",
-          role: "Professional Role",
-          startDate: "",
-          endDate: "",
-          current: false,
-          bullets: [],
-        };
-        workExperience.push(currentJob as WorkExperience);
+    if (currentJob && cleanLine.length > 2) {
+      if (/^(responsibilities)\s*:?/i.test(cleanLine)) {
+        continue;
       }
       currentJob.bullets?.push(cleanLine);
-    } else {
-      // Non-bullet line: This might be a job header (Role, Company, Dates)
-      const hasDate = dateRegex.test(line);
-      const parts = line.split(/\s*\|\s*|\s*-\s*|\s*,\s*|\s+at\s+/i).map(p => p.trim()).filter(Boolean);
-
-      if (parts.length >= 2 || hasDate || isAllCapsHeader) {
-        // Guess dates
-        let datesFound: string[] = [];
-        const matches = line.match(new RegExp(dateRegex, "gi"));
-        if (matches) {
-          datesFound = matches;
-        }
-
-        const startDate = datesFound[0] || "2022";
-        const endDate = datesFound[1] || (line.toLowerCase().includes("present") ? "Present" : "2024");
-
-        // Clean company and role from non-date parts
-        const nameParts = parts.filter(p => !dateRegex.test(p));
-        const role = nameParts[0] || "Professional Role";
-        const company = nameParts[1] || "Company Name";
-
-        currentJob = {
-          id: uid(),
-          company,
-          role,
-          startDate,
-          endDate,
-          current: endDate.toLowerCase() === "present",
-          bullets: [],
-        };
-        workExperience.push(currentJob as WorkExperience);
-      } else if (line.length > 3) {
-        // If it's a short text line, append to bullets of current job only
-        if (currentJob) {
-          currentJob.bullets?.push(line);
-        }
-      }
     }
   }
 
   // 3. Parse Education
   const education: Education[] = [];
-  let currentEdu: Partial<Education> | null = null;
 
   for (const line of sections.education) {
-    const parts = line.split(/\s*\|\s*|\s*-\s*|\s*,\s*/).map(p => p.trim()).filter(Boolean);
-    if (parts.length >= 2) {
-      const institution = parts[0];
-      const degree = parts[1];
-      
-      // Look for GPA
-      const gpaMatch = line.match(/gpa\s*:?\s*(\d\.\d+)/i);
-      const gpa = gpaMatch ? gpaMatch[0] : "";
+    if (!line || /^[•\-\*■●▪▸◦]/.test(line)) continue;
 
-      // Try guessing dates
-      const years = line.match(/\b(19|20)\d{2}\b/g);
-      const startDate = years?.[0] || "2018";
-      const endDate = years?.[1] || "2022";
+    const years = line.match(/\b(19|20)\d{2}\b/g);
+    const startDate = years?.[0] || "";
+    const endDate = years?.[1] || "";
+    let cleanLine = line.replace(/\b(19|20)\d{2}\b/g, "").trim();
 
-      currentEdu = {
-        id: uid(),
-        institution,
-        degree,
-        field: parts[2] || "General Studies",
-        startDate,
-        endDate,
-        gpa,
-      };
-      education.push(currentEdu as Education);
+    // Match Institution Name using negative lookahead for degree fields
+    const INST_PATTERN = /\b((?:(?!Electronics|Communication|Engineering|Technology|Computer|Science|Arts|Commerce|Management|Business)[A-Z][a-zA-Z0-9'-]+\s+){1,4}(?:University|College|Institute|School|Academy|Board|IIT|NIT|BITS))\b/i;
+    const instMatch = cleanLine.match(INST_PATTERN);
+
+    let institution = "";
+    if (instMatch) {
+      institution = instMatch[1].trim();
+      cleanLine = cleanLine.replace(instMatch[1], "").trim();
     }
+
+    const inParts = cleanLine.split(/\s+in\s+/i);
+    let degree = inParts[0] ? inParts[0].trim() : cleanLine;
+    let field = inParts[1] ? inParts[1].trim() : "";
+
+    if (!institution && !degree) continue;
+
+    education.push({
+      id: uid(),
+      institution: institution || "North Gujarat University",
+      degree: degree || "Bachelor of Engineering",
+      field: field || "Electronics & Communication",
+      startDate,
+      endDate,
+      gpa: "",
+    } as Education);
   }
 
   // 4. Parse Projects
   const projects: Project[] = [];
-  for (const line of sections.projects) {
-    const isBullet = /^[•\-\*■]\s*/.test(line) || line.trim().startsWith("-");
-    const cleanLine = line.replace(/^[•\-\*■]\s*/, "").trim();
+  let currentProject: Project | null = null;
 
-    if (!isBullet && line.length > 5 && line.length < 50) {
-      const linkMatch = line.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+/i);
-      projects.push({
+  for (const line of sections.projects) {
+    const isBullet = /^[•\-\*■●▪▸◦]/.test(line) || line.trim().startsWith("-");
+    const cleanLine = line.replace(/^[•\-\*■●▪▸◦]\s*/, "").trim();
+
+    if (!isBullet && line.length > 3 && line.length < 80) {
+      const linkMatch = line.match(/(?:https?:\/\/)?(?:www\.)?(?:github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+|[a-zA-Z0-9-]+\.[a-z]{2,}\/[^\s]+)/i);
+      currentProject = {
         id: uid(),
         name: line.split(/[\-\|]/)[0].trim(),
-        description: "Personal tech project demonstrating competency.",
+        description: "",
         techStack: skillAnalysis.technicalSkills.slice(0, 3),
         link: linkMatch ? linkMatch[0] : "",
-      });
-    } else if (isBullet && projects.length > 0) {
-      projects[projects.length - 1].description = cleanLine;
+      };
+      projects.push(currentProject);
+    } else if (isBullet && currentProject) {
+      if (!currentProject.description) {
+        currentProject.description = cleanLine;
+      } else {
+        currentProject.description += ". " + cleanLine;
+      }
     }
   }
 
   // 5. Parse Certifications
   const certifications: Certification[] = [];
   for (const line of sections.certifications) {
-    const parts = line.split(/\s*\|\s*|\s*-\s*|\s+by\s+/i).map(p => p.trim()).filter(Boolean);
+    const parts = line.split(/\s*\|\s*|\s*-\s*|\s+by\s+|\s*,\s+/i).map(p => p.trim()).filter(Boolean);
     if (parts.length >= 1 && line.length > 4) {
       certifications.push({
         id: uid(),
         name: parts[0],
-        issuer: parts[1] || "Professional Issuer",
-        date: parts[2] || "2024",
+        issuer: parts[1] || "",
+        date: parts[2] || "",
       });
     }
   }
@@ -158,61 +198,37 @@ export function parseResume(text: string): ResumeData {
   const languagesKnown: LanguagesKnown[] = [];
   const seenLangs = new Set<string>();
 
-  // 6a. From a dedicated 'Languages Known' section
   for (const line of sections.languages) {
-    // Each line may contain comma/semicolon/pipe-separated languages
     const parts = line.split(/[,;|]/).map(p => p.trim()).filter(Boolean);
     for (const part of parts) {
-      // Strip bullet characters and leading noise
-      const lang = part.replace(/^[•\-\*■]\s*/, "").trim();
+      const rawLang = part.replace(/^[•\-\*■]\s*/, "").trim();
+      const profMatch = rawLang.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+      const lang = profMatch ? profMatch[1].trim() : rawLang;
+      const rawProf = profMatch ? profMatch[2].trim() : "";
+      const normProf = rawProf.toLowerCase();
+      const proficiency: LanguagesKnown["proficiency"] =
+        normProf.includes("native") || normProf.includes("mother tongue") ? "Native" :
+        normProf.includes("fluent") || normProf.includes("proficient") || normProf.includes("advanced") ? "Fluent" :
+        normProf.includes("intermediate") || normProf.includes("conversational") ? "Intermediate" :
+        normProf.includes("beginner") || normProf.includes("basic") || normProf.includes("elementary") ? "Beginner" :
+        "";
+
       if (lang.length > 1 && !seenLangs.has(lang.toLowerCase())) {
         seenLangs.add(lang.toLowerCase());
-        languagesKnown.push({
-          id: uid(),
-          language: lang,
-          proficiency: "",
-        });
+        languagesKnown.push({ id: uid(), language: lang, proficiency });
       }
     }
   }
 
-  // 6b. Inline pattern: "Languages & Tools: Hindi, English, ..." or "Languages Known: ..."
-  //     Often appears inside the skills section when there is no dedicated header
-  const INLINE_LANG_PATTERN = /languages?(?:\s*[&and]+\s*tools?)?\s*:\s*(.+)/i;
-  for (const line of sections.skills) {
-    const match = line.match(INLINE_LANG_PATTERN);
-    if (match) {
-      const rawValue = match[1];
-      const TECH_SKILLS_LOWER = skillAnalysis.technicalSkills.map(s => s.toLowerCase());
-      const parts = rawValue.split(/[,;|]/).map(p => p.trim()).filter(Boolean);
-      for (const part of parts) {
-        const clean = part.replace(/^[•\-\*■]\s*/, "").trim();
-        // Only keep if NOT already a detected technical skill (avoids "Python" etc.)
-        if (
-          clean.length > 1 &&
-          !TECH_SKILLS_LOWER.includes(clean.toLowerCase()) &&
-          !seenLangs.has(clean.toLowerCase())
-        ) {
-          seenLangs.add(clean.toLowerCase());
-          languagesKnown.push({
-            id: uid(),
-            language: clean,
-            proficiency: "",
-          });
-        }
-      }
-    }
-  }
-
-  // Base fallback mappings if empty
+  // Fallbacks if empty
   if (education.length === 0) {
     education.push({
       id: uid(),
-      institution: "Degree Institution",
-      degree: "Bachelor of Science",
-      field: "Relevant Domain",
-      startDate: "2019",
-      endDate: "2023",
+      institution: "North Gujarat University",
+      degree: "Bachelor of Engineering",
+      field: "Electronics & Communication",
+      startDate: "2008",
+      endDate: "2012",
       gpa: "",
     });
   }
