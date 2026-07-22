@@ -584,7 +584,28 @@ export default function ResumeDetailPage() {
     }
   };
 
-  const handlePrint = () => window.print();
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  const handlePrint = async () => {
+    setIsPrinting(true);
+    try {
+      const res = await fetch("/api/billing/charge-pdf", {
+        method: "POST",
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        showToast(data.error || "Insufficient credits for PDF download", "error");
+        return;
+      }
+      
+      window.print();
+    } catch (err: any) {
+      showToast("Error processing request. Try again.", "error");
+    } finally {
+      setIsPrinting(false);
+    }
+  };
 
   const getMissingSections = (data: any) => {
     const missing = [];
@@ -746,8 +767,8 @@ export default function ResumeDetailPage() {
                     <Mail size={13} /> Cover Letter
                   </button>
                 </Link>
-                <button onClick={handlePrint} className="btn-secondary" style={{ fontSize: "0.82rem", padding: "0.48rem 1.1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                  <Printer size={13} /> Print / PDF
+                <button onClick={handlePrint} disabled={isPrinting} className="btn-secondary" style={{ fontSize: "0.82rem", padding: "0.48rem 1.1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <Printer size={13} /> {isPrinting ? "Processing..." : "Print / PDF"}
                 </button>
                 <button onClick={handleDownloadDocx} disabled={docxLoading} className="btn-secondary" style={{ fontSize: "0.82rem", padding: "0.48rem 1.1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
                   <FileDown size={13} /> {docxLoading ? "Downloading..." : "DOCX"}
