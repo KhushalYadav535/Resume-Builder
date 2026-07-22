@@ -24,9 +24,6 @@ import { SectionProgressList } from "@/components/resume-builder/SectionProgress
 import { SessionBanner } from "@/components/resume-builder/SessionBanner";
 import { ComparisonGuard } from "@/components/resume-builder/ComparisonGuard";
 import { RepetitionFlag } from "@/components/resume-builder/RepetitionFlag";
-import { SkillsForm } from "@/components/resume/skills/SkillsForm";
-import { ExperienceForm } from "@/components/resume/experience/ExperienceForm";
-import { ExperienceCDEProvider } from "@/context/ExperienceCDEContext";
 
 
 const defaultEmptyResume: ResumeData = {
@@ -154,7 +151,6 @@ function BuilderContent() {
   // Suggestions Application State
   const [showSuggestionsGlow, setShowSuggestionsGlow] = useState(false);
   const [showAiHistory, setShowAiHistory] = useState(false);
-  const [showExperienceWizardFor, setShowExperienceWizardFor] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get("suggestionsApplied")) {
@@ -212,9 +208,6 @@ function BuilderContent() {
     setCoachLoading(true);
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
-
       const res = await fetch("/api/ai-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -222,11 +215,8 @@ function BuilderContent() {
           messages: updatedMessages,
           resumeData: resume,
           currentStep: activeStep
-        }),
-        signal: controller.signal
+        })
       });
-
-      clearTimeout(timeoutId);
 
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || "Chat failed");
@@ -234,11 +224,7 @@ function BuilderContent() {
       setCoachMessages(prev => [...prev, { role: "coach" as const, content: data.message }]);
     } catch (err: any) {
       console.error(err);
-      if (err.name === 'AbortError') {
-        setCoachMessages(prev => [...prev, { role: "coach" as const, content: "⚠️ Sorry, the request timed out. Please try again." }]);
-      } else {
-        setCoachMessages(prev => [...prev, { role: "coach" as const, content: "⚠️ Sorry, I encountered a connection error. Please try again." }]);
-      }
+      setCoachMessages(prev => [...prev, { role: "coach" as const, content: "⚠️ Sorry, I encountered a connection error. Please try again." }]);
     } finally {
       setCoachLoading(false);
     }
@@ -839,42 +825,6 @@ function BuilderContent() {
         </div>
       </div>
 
-      {showExperienceWizardFor && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8 overflow-y-auto">
-          <div className="w-full max-w-4xl bg-white dark:bg-neutral-900 rounded-3xl overflow-hidden relative shadow-2xl mt-12 mb-12 flex-shrink-0 border border-neutral-200 dark:border-neutral-800">
-            <button 
-              onClick={() => setShowExperienceWizardFor(null)}
-              className="absolute top-4 right-4 z-50 p-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-            <ExperienceCDEProvider
-              initialAnchor={{
-                designation: resume.workExperience.find(w => w.id === showExperienceWizardFor)?.role || '',
-                company: resume.workExperience.find(w => w.id === showExperienceWizardFor)?.company || '',
-                start_date: resume.workExperience.find(w => w.id === showExperienceWizardFor)?.startDate || '',
-                end_date: resume.workExperience.find(w => w.id === showExperienceWizardFor)?.endDate || null,
-                location: resume.workExperience.find(w => w.id === showExperienceWizardFor)?.city || '',
-              }}
-              onComplete={(newBullets) => {
-                setResume(r => ({
-                  ...r,
-                  workExperience: r.workExperience.map(w => 
-                    w.id === showExperienceWizardFor ? { ...w, bullets: newBullets } : w
-                  )
-                }));
-                setShowExperienceWizardFor(null);
-                showToast("AI generated bullets saved to resume!", "success");
-              }}
-            >
-              <div className="h-[85vh] overflow-y-auto no-scrollbar">
-                <ExperienceForm />
-              </div>
-            </ExperienceCDEProvider>
-          </div>
-        </div>
-      )}
-
       {/* CORE 3-COLUMN WORKSPACE */}
       <div className={`builder-workspace transition-all duration-1000 ${showSuggestionsGlow ? 'brightness-110 shadow-[inset_0_0_50px_rgba(34,197,94,0.05)]' : ''}`}>
         
@@ -1261,15 +1211,7 @@ function BuilderContent() {
                           </div>
 
                           <div style={{ marginTop: "0.5rem" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-                              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Accomplishments (Action verbs & quantified metrics)</label>
-                              <button 
-                                onClick={() => setShowExperienceWizardFor(exp.id)}
-                                className="text-white bg-pink-500 hover:bg-pink-600 font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
-                              >
-                                <Sparkles size={14} /> Launch AI Career Discovery
-                              </button>
-                            </div>
+                            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.30rem" }}>Accomplishments (Action verbs & quantified metrics)</label>
                             {exp.bullets.map((bullet, bi) => {
                               const hasMetric = /\b(\d+|percent|%|lakhs?|crores?|lpa)\b/i.test(bullet) || bullet.includes("₹");
                               return (
@@ -1525,14 +1467,64 @@ function BuilderContent() {
 
             {/* STEP 5: Skills */}
             {activeStep === "skills" && (
-              <div className="grid gap-6 grid-cols-1 items-start w-full">
-                <SkillsForm 
-                  initialSkills={resume.skills.technical}
-                  onSave={(techSkills) => {
-                    setResume(r => ({ ...r, skills: { ...r.skills, technical: techSkills } }));
-                    showToast("Skills updated successfully!", "success");
-                  }}
-                />
+              <div style={{ display: "grid", gap: "1.5rem" }}>
+                <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Skills</h2>
+                  <button style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "1px solid var(--accent)", color: "var(--accent)", fontWeight: 700, background: "transparent", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.4rem" }} disabled={!!aiLoading} onClick={() => {
+                    const context = resume.workExperience[0]?.role || resume.summary || resume.projects[0]?.name;
+                    if (!context || context.trim() === "") {
+                      showToast("Please add at least one Work Experience, Summary, or Project first so AI can generate relevant skills.", "error");
+                      return;
+                    }
+                    handleAIEngineCall("skills", context, (r) => {
+                      const techMatch = r.match(/Technical:(.*?)(\||$)/i);
+                      const softMatch = r.match(/Soft:(.*?)(\||$)/i);
+                      const tech = techMatch ? techMatch[1].split(",").map((s) => s.trim()).filter(Boolean) : [];
+                      const soft = softMatch ? softMatch[1].split(",").map((s) => s.trim()).filter(Boolean) : [];
+                      setResume((prev) => ({ ...prev, skills: { technical: [...prev.skills.technical, ...tech], soft: [...prev.skills.soft, ...soft] } }));
+                    });
+                  }}>
+                    {aiLoading === "skills" ? "Generating..." : "✦ AI Suggest Skills"}
+                  </button>
+                </div>
+
+                <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)", display: "grid", gap: "1.2rem" }}>
+                  <div>
+                    <label style={{ fontSize: "0.82rem", color: "var(--text-muted)", display: "block", marginBottom: "0.5rem" }}>Technical Skills ({resume.skills.technical.length} added)</label>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.5rem" }}>
+                      {resume.skills.technical.map((skill) => (
+                        <span key={skill} style={{ background: "rgba(99,102,241,0.1)", color: "var(--accent)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "20px", padding: "0.3rem 0.8rem", fontSize: "0.8rem", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }} onClick={() => setResume((r) => ({ ...r, skills: { ...r.skills, technical: r.skills.technical.filter((s) => s !== skill) } }))}>
+                          {skill} <span style={{ fontSize: "1rem", lineHeight: 1 }}>×</span>
+                        </span>
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", gap: "0.8rem" }}>
+                      <div style={{ flex: 1 }}>
+                        <Input variant="floating" label="Add Technical Skill" placeholder="React, SQL, Python..." value={skillInput.tech} onChange={(e) => setSkillInput((s) => ({ ...s, tech: e.target.value }))}
+                          onKeyDown={(e) => { if (e.key === "Enter" && skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }} />
+                      </div>
+                      <button style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", fontWeight: 600, borderRadius: "8px", padding: "0 1.5rem", height: "52px", cursor: "pointer", transition: "all 0.2s" }} onClick={() => { if (skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }}>Add</button>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: "1rem" }}>
+                    <label style={{ fontSize: "0.82rem", color: "var(--text-muted)", display: "block", marginBottom: "0.5rem" }}>Soft Skills ({resume.skills.soft.length} added)</label>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.5rem" }}>
+                      {resume.skills.soft.map((skill) => (
+                        <span key={skill} style={{ background: "rgba(16,185,129,0.1)", color: "#10b981", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "20px", padding: "0.3rem 0.8rem", fontSize: "0.8rem", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }} onClick={() => setResume((r) => ({ ...r, skills: { ...r.skills, soft: r.skills.soft.filter((s) => s !== skill) } }))}>
+                          {skill} <span style={{ fontSize: "1rem", lineHeight: 1 }}>×</span>
+                        </span>
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", gap: "0.8rem" }}>
+                      <div style={{ flex: 1 }}>
+                        <Input variant="floating" label="Add Soft Skill" placeholder="Leadership, Negotiation..." value={skillInput.soft} onChange={(e) => setSkillInput((s) => ({ ...s, soft: e.target.value }))}
+                          onKeyDown={(e) => { if (e.key === "Enter" && skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }} />
+                      </div>
+                      <button style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", fontWeight: 600, borderRadius: "8px", padding: "0 1.5rem", height: "52px", cursor: "pointer", transition: "all 0.2s" }} onClick={() => { if (skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }}>Add</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
