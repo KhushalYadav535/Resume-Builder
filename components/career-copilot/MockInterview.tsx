@@ -131,18 +131,25 @@ export default function MockInterview({ resumeId, questions }: MockInterviewProp
       </div>
 
       {!result ? (
-        <button
-          onClick={handleGenerate}
-          disabled={loading || questions.length === 0}
-          className="btn-primary"
-          style={{ width: "fit-content", display: "flex", alignItems: "center", gap: "0.5rem" }}
-        >
-          {loading ? (
-            <><Loader2 size={14} className="animate-spin" /> Drafting STAR Answers...</>
-          ) : (
-            <><Star size={14} /> Build STAR Answers from Journal</>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <button
+            onClick={handleGenerate}
+            disabled={loading || questions.length === 0}
+            className="btn-primary"
+            style={{ width: "fit-content", display: "flex", alignItems: "center", gap: "0.5rem" }}
+          >
+            {loading ? (
+              <><Loader2 size={14} className="animate-spin" /> Drafting STAR Answers...</>
+            ) : (
+              <><Star size={14} /> Build STAR Answers from Journal</>
+            )}
+          </button>
+          {!loading && questions.length > 0 && (
+            <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--accent)", display: "flex", alignItems: "center", gap: "0.2rem", padding: "0.3rem 0.6rem", background: "var(--accent-soft)", borderRadius: "6px" }}>
+              ⚡ 30 credits
+            </span>
           )}
-        </button>
+        </div>
       ) : (
         <div style={{ display: "grid", gap: "1.2rem" }}>
           {/* Readiness Summary */}

@@ -6,17 +6,12 @@ import Navbar from "@/components/Navbar";
 import ConcentricLoader, { ClassicLoader } from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
 import { ATSScore } from "@/types";
-import { UploadCloud, CheckCircle2, Sparkles, TrendingUp } from "lucide-react";
+import { UploadCloud, CheckCircle2, Sparkles, TrendingUp, X } from "lucide-react";
 import { useToast } from "@/components/ui/toast-1";
 
-// New Comprehensive Architecture Imports
-import { ResumeSuggestion } from "@/lib/types/comprehensive-suggestions";
-import { groupSuggestions } from "@/lib/suggestions/categorize";
-import { ImprovementCategory } from "@/components/ImprovementCategory";
-import { ComprehensivePreview } from "@/components/ComprehensivePreview";
-import { SuggestionFlow } from "@/components/SuggestionFlow";
+// Comprehensive Architecture Imports removed (moved to dashboard)
 
-type Step = "upload" | "analyzing" | "results" | "applied";
+type Step = "upload" | "analyzing";
 
 interface LoadingStage {
   label: string;
@@ -25,10 +20,9 @@ interface LoadingStage {
 }
 
 const localStages: LoadingStage[] = [
-  { label: "Stage 1: Parsing raw resume layout & text headers...", minPercent: 0, maxPercent: 20 },
-  { label: "Stage 2: Segmenting structure (Summary, Work, Education)...", minPercent: 20, maxPercent: 40 },
-  { label: "Stage 3: Calibrating local ATS formatting...", minPercent: 40, maxPercent: 60 },
-  { label: "Stage 4: Comprehensive AI Engine (12-dimensions)...", minPercent: 60, maxPercent: 100 },
+  { label: "Stage 1: Parsing raw resume layout & text headers...", minPercent: 0, maxPercent: 33 },
+  { label: "Stage 2: Segmenting structure (Summary, Work, Education)...", minPercent: 33, maxPercent: 66 },
+  { label: "Stage 3: Calibrating local ATS formatting...", minPercent: 66, maxPercent: 100 },
 ];
 
 export default function UploadPage() {
@@ -41,14 +35,12 @@ export default function UploadPage() {
   
   const [atsScore, setAtsScore] = useState<ATSScore | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [parsing, setParsing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-
-  // Comprehensive Suggestions States
-  const [suggestions, setSuggestions] = useState<ResumeSuggestion[]>([]);
-  const [selectedSuggestionIds, setSelectedSuggestionIds] = useState<Set<string>>(new Set());
-  const [isApplying, setIsApplying] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [showPaste, setShowPaste] = useState(false);
 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("");
@@ -72,7 +64,7 @@ export default function UploadPage() {
     const allowedTypes = ["application/pdf", "text/plain"];
     const fileExtension = file.name.split(".").pop()?.toLowerCase();
     
-    if (!allowedTypes.includes(file.type) && fileExtension !== "txt" && fileExtension !== "pdf") {
+    if (fileExtension !== "txt" && fileExtension !== "pdf" && !allowedTypes.includes(file.type)) {
       setError("Unsupported file format. Please upload a PDF or TXT file.");
       return;
     }
@@ -91,7 +83,8 @@ export default function UploadPage() {
       const res = await fetch("/api/parse-resume", { method: "POST", body: formData });
       
       if (!res.ok) {
-        throw new Error(`Server returned error status: ${res.status}`);
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || `Server returned error status: ${res.status}`);
       }
       
       const data = await res.json();
@@ -102,9 +95,12 @@ export default function UploadPage() {
       }
       setResumeText(data.text);
       setFileName(data.fileName);
+      if (data.pdfUrl) {
+        setPdfUrl(data.pdfUrl);
+      }
     } catch (err: any) {
       console.error(err);
-      setError("Failed to parse the file. Please check your network or try pasting text.");
+      setError(err.message || "Failed to parse the file. Please check your network or try pasting text.");
     } finally {
       setParsing(false);
     }
@@ -112,6 +108,7 @@ export default function UploadPage() {
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setIsDragging(false);
     if (parsing) return;
     const file = e.dataTransfer.files[0];
     if (file) handleFile(file);
@@ -132,7 +129,7 @@ export default function UploadPage() {
       const apiPromise = fetch("/api/analyze-resume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeText, fileName }),
+        body: JSON.stringify({ resumeText, fileName, pdfUrl }),
       });
 
       animInterval = setInterval(() => {
@@ -163,63 +160,13 @@ export default function UploadPage() {
       setAtsScore(row.ats_score);
       setSavedId(row.id);
       
-      // Step 2: Comprehensive AI Analysis
-      if (row.ats_score?.overall < 100) {
-        try {
-          // Slow down animation for deep AI stage
-          clearInterval(animInterval);
-          animInterval = setInterval(() => {
-            if (animPercent < 98) animPercent += 0.5;
-            setLoadingProgress(Math.floor(animPercent));
-            setLoadingText("Stage 4: Comprehensive AI Engine running (This may take up to 20s)...");
-          }, 200);
-
-          const sugRes = await fetch("/api/resume/suggestions/comprehensive-analyze", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              resumeId: row.id,
-              resumeText: resumeText,
-              detectedRole: row.ats_score?.detectedRole,
-              detectedIndustry: row.ats_score?.detectedIndustry
-            })
-          });
-          
-          if (sugRes.ok) {
-            const sugData = await sugRes.json();
-            if (sugData.suggestions && sugData.suggestions.length > 0) {
-              setSuggestions(sugData.suggestions);
-              // Auto-select High Priority items (4 & 5 stars)
-              const initialSelected = new Set<string>();
-              sugData.suggestions.forEach((s: ResumeSuggestion) => {
-                if (s.priority >= 4) initialSelected.add(s.id);
-              });
-              setSelectedSuggestionIds(initialSelected);
-            }
-          } else {
-            const errText = await sugRes.text();
-            console.warn("Comprehensive API returned error:", sugRes.status, errText);
-            let errData: any = {};
-            try { errData = JSON.parse(errText); } catch(e) {}
-            if (errData.error && errData.error.includes("Database error")) {
-               setError("Notice: The 'resume_improvement_suggestions' table is missing in Supabase.");
-            } else if (errData.error) {
-               setError(`AI Analysis Error: ${errData.error}`);
-            } else {
-               setError(`Failed to generate AI suggestions. Please try again. (Status ${sugRes.status})`);
-            }
-          }
-        } catch (sugErr) {
-          console.warn("Failed to generate comprehensive suggestions:", sugErr);
-        }
-      }
-
+      // Step 2: Redirect to dashboard
       clearInterval(animInterval);
       setLoadingProgress(100);
       setLoadingText("✓ Complete!");
 
       setTimeout(() => {
-        setStep("results");
+        router.push(`/resume/${row.id}`);
       }, 300);
 
     } catch (err: any) {
@@ -230,66 +177,11 @@ export default function UploadPage() {
     }
   };
 
-  const handleApplySuggestions = async (acceptedSuggestionsList: ResumeSuggestion[]) => {
-    if (acceptedSuggestionsList.length === 0 || !savedId) return;
-    setIsApplying(true);
-    try {
-      const ids = acceptedSuggestionsList.map(s => s.id);
-      setSelectedSuggestionIds(new Set(ids));
-
-      const res = await fetch("/api/resume/suggestions/apply-comprehensive", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          resumeId: savedId, 
-          applySuggestionIds: ids 
-        })
-      });
-      if (res.ok) {
-        setStep("applied");
-      } else {
-        throw new Error("Failed to apply suggestions");
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to apply suggestions. Please try again.", "error");
-    } finally {
-      setIsApplying(false);
-    }
-  };
-
-  const toggleSuggestionSelection = (id: string) => {
-    const next = new Set(selectedSuggestionIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedSuggestionIds(next);
-  };
-
-  const handleAcceptAllInCategory = (ids: string[]) => {
-    const next = new Set(selectedSuggestionIds);
-    const allSelected = ids.every(id => next.has(id));
-    
-    if (allSelected) {
-      ids.forEach(id => next.delete(id));
-    } else {
-      ids.forEach(id => next.add(id));
-    }
-    setSelectedSuggestionIds(next);
-  };
-
   const getScoreColor = (score: number) => {
     if (score >= 70) return "#43e97b";
     if (score >= 45) return "#f6d365";
     return "#ff6584";
   };
-
-  // Grouped suggestions
-  const grouped = useMemo(() => groupSuggestions(suggestions), [suggestions]);
-
-  // Applied logic
-  const appliedSuggestionsList = useMemo(() => {
-    return suggestions.filter(s => selectedSuggestionIds.has(s.id));
-  }, [suggestions, selectedSuggestionIds]);
 
   if (!mounted || authLoading || !user) {
     return (
@@ -300,18 +192,34 @@ export default function UploadPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", paddingBottom: "100px" }}>
-      <Navbar />
+    <div style={{ minHeight: "100vh", background: "var(--bg)", paddingBottom: "100px", position: "relative", overflow: "hidden" }}>
+      <style>{`
+        @keyframes float1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-30px, 30px) scale(1.05); } }
+        @keyframes float2 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, -30px) scale(0.95); } }
+        @keyframes dashLine { to { stroke-dashoffset: -20; } }
+        @keyframes shimmerBtn { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+      `}</style>
+      
+      {/* Ambient glowing background blobs */}
+      <div style={{ position: "fixed", top: "-10%", left: "-5%", width: "500px", height: "500px", background: "var(--accent)", filter: "blur(180px)", opacity: 0.15, borderRadius: "50%", pointerEvents: "none", zIndex: 0, animation: "float1 15s ease-in-out infinite" }} />
+      <div style={{ position: "fixed", bottom: "-10%", right: "-5%", width: "600px", height: "600px", background: "#43e97b", filter: "blur(180px)", opacity: 0.08, borderRadius: "50%", pointerEvents: "none", zIndex: 0, animation: "float2 18s ease-in-out infinite" }} />
+      
+      <div style={{ position: "relative", zIndex: 10 }}>
+        <Navbar />
+      </div>
 
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1.5rem" }}>
-        {step !== "results" && (
-          <div style={{ marginBottom: "2rem" }}>
-            <p className="section-label" style={{ marginBottom: "0.5rem" }}>Complete Resume Engine</p>
-            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800 }}>
-              Upload & Optimize
+      <div style={{ position: "relative", zIndex: 1, maxWidth: "1200px", margin: "0 auto", padding: "2rem 1.5rem" }}>
+        {step === "upload" && (
+          <div style={{ marginBottom: "2.5rem", textAlign: "center", animation: "fadeInDown 0.5s ease" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "var(--accent-soft)", padding: "0.4rem 1rem", borderRadius: "99px", marginBottom: "1rem", border: "1px solid var(--border-accent)", boxShadow: "0 4px 20px var(--accent-soft)" }}>
+              <Sparkles size={14} color="var(--accent)" className="animate-pulse" />
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--accent)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Next-Gen Resume Engine</span>
+            </div>
+            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "3rem", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "1rem" }}>
+              Upload & <span style={{ background: "var(--accent-grad)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Analyze</span>
             </h1>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.25rem" }}>
-              ATS scoring combined with an elite 12-dimension AI coaching engine to perfect your resume.
+            <p style={{ color: "var(--text-muted)", fontSize: "1.05rem", maxWidth: "500px", margin: "0 auto", lineHeight: 1.6, fontWeight: 500 }}>
+              Drop your resume to instantly extract data and calculate your ATS score with high precision.
             </p>
           </div>
         )}
@@ -321,123 +229,240 @@ export default function UploadPage() {
           <div style={{ display: "grid", gap: "1.5rem", animation: "fadeInUp 0.4s ease" }}>
             <div
               onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setIsDragging(false);
+                }
+              }}
               onClick={() => !parsing && fileRef.current?.click()}
               style={{
-                border: "2px dashed var(--border-light)",
-                borderRadius: "20px",
+                position: "relative",
+                borderRadius: "32px",
                 padding: "4rem 2rem",
                 textAlign: "center",
-                cursor: parsing ? "not-allowed" : "pointer",
-                transition: "all 0.2s ease-in-out",
-                background: resumeText ? "rgba(67,233,123,0.03)" : "var(--card)",
+                cursor: parsing ? "wait" : "pointer",
+                transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+                background: resumeText ? "rgba(67,233,123,0.03)" : "var(--bg-glass)",
+                backdropFilter: "blur(24px)",
+                WebkitBackdropFilter: "blur(24px)",
+                transform: isDragging ? "scale(1.02) translateY(-4px)" : "scale(1) translateY(0)",
+                boxShadow: isDragging 
+                  ? "0 30px 60px rgba(99,102,241,0.15), 0 0 0 2px var(--accent)" 
+                  : resumeText 
+                    ? "0 4px 20px rgba(67,233,123,0.05), inset 0 1px 1px rgba(255,255,255,0.1), 0 0 0 1px rgba(67,233,123,0.3)"
+                    : "0 10px 40px rgba(0,0,0,0.03), inset 0 1px 1px rgba(255,255,255,0.1), 0 0 0 1px var(--border-light)",
+                overflow: "hidden",
               }}
             >
-              <input ref={fileRef} type="file" accept=".pdf,.txt" style={{ display: "none" }} onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} disabled={parsing} />
-              {parsing ? (
-                <>
-                  <ClassicLoader className="mx-auto mb-4 h-9 w-9" />
-                  <div style={{ fontWeight: 600, fontSize: "1.05rem" }}>Extracting document layout...</div>
-                </>
-              ) : resumeText ? (
-                <>
-                  <CheckCircle2 className="mx-auto text-[#43e97b] mb-3" size={40} />
-                  <div style={{ fontWeight: 700, fontSize: "1.1rem", color: "#43e97b" }}>{fileName} loaded!</div>
-                </>
-              ) : (
-                <>
-                  <UploadCloud className="mx-auto text-[var(--text-muted)] mb-3 opacity-80" size={44} />
-                  <div style={{ fontWeight: 700, fontSize: "1.15rem" }}>Drag & Drop Resume</div>
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>Supports PDF or TXT</div>
-                </>
+              {/* Animated Dashed Border using SVG for crisp rendering */}
+              {!resumeText && !isDragging && (
+                <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none", borderRadius: "32px" }}>
+                  <rect width="100%" height="100%" rx="32" fill="none" stroke="var(--border-strong)" strokeWidth="2" strokeDasharray="10 10" opacity="0.3" style={{ animation: "dashLine 1s linear infinite" }} />
+                </svg>
               )}
+
+              {/* Grid Background Pattern */}
+              <div style={{
+                position: "absolute", inset: 0, pointerEvents: "none",
+                backgroundImage: "radial-gradient(var(--text-muted) 1px, transparent 1px)",
+                backgroundSize: "24px 24px",
+                transition: "opacity 0.4s",
+                opacity: isDragging ? 0.15 : 0.05
+              }} />
+              <input ref={fileRef} type="file" accept=".pdf,.txt" style={{ display: "none" }} onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} disabled={parsing} />
+              
+              {isDragging && (
+                <div style={{
+                  position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+                  width: "300px", height: "300px", background: "var(--accent)", filter: "blur(120px)", opacity: 0.15, borderRadius: "50%", pointerEvents: "none"
+                }} />
+              )}
+
+              <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", gap: "1.2rem" }}>
+                {parsing ? (
+                  <div style={{ animation: "fadeIn 0.3s ease" }}>
+                    <ClassicLoader className="mx-auto mb-5 h-14 w-14 text-[var(--accent)]" />
+                    <div style={{ fontWeight: 800, fontSize: "1.3rem", fontFamily: "Syne, sans-serif", letterSpacing: "-0.02em" }}>Extracting Intelligence...</div>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.95rem", marginTop: "0.4rem", fontWeight: 500 }}>Parsing your document structure securely</div>
+                  </div>
+                ) : resumeText ? (
+                  <div style={{ animation: "zoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}>
+                    <div style={{ display: "inline-flex", padding: "1.25rem", borderRadius: "50%", background: "rgba(67,233,123,0.12)", marginBottom: "1rem", boxShadow: "0 0 30px rgba(67,233,123,0.2)" }}>
+                      <CheckCircle2 className="text-[#43e97b]" size={48} strokeWidth={2.5} />
+                    </div>
+                    <div style={{ fontWeight: 800, fontSize: "1.4rem", color: "#43e97b", fontFamily: "Syne, sans-serif", letterSpacing: "-0.02em" }}>Ready for Analysis</div>
+                    <div style={{ color: "var(--text)", fontSize: "1rem", marginTop: "1rem", fontWeight: 600, background: "var(--bg)", padding: "0.5rem 1.2rem", borderRadius: "99px", display: "inline-block", border: "1px solid var(--border)", boxShadow: "0 2px 10px rgba(0,0,0,0.03)" }}>
+                      {fileName}
+                    </div>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "1.2rem", fontWeight: 500 }}>Click or drop another file to replace</div>
+                  </div>
+                ) : (
+                  <div style={{ transition: "transform 0.4s", transform: isDragging ? "scale(1.05)" : "scale(1)" }}>
+                    <div style={{ 
+                      display: "inline-flex", padding: "1.25rem", borderRadius: "24px", 
+                      background: isDragging ? "var(--accent)" : "var(--bg-2)", 
+                      color: isDragging ? "#fff" : "var(--accent)",
+                      marginBottom: "1.2rem",
+                      boxShadow: isDragging ? "0 15px 30px rgba(99,102,241,0.3)" : "inset 0 2px 4px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.04)",
+                      transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                      transform: isDragging ? "translateY(-5px)" : "none"
+                    }}>
+                      <UploadCloud 
+                        className={isDragging ? "animate-bounce" : ""} 
+                        size={42} 
+                        strokeWidth={isDragging ? 2.5 : 2}
+                      />
+                    </div>
+                    <div style={{ fontWeight: 800, fontSize: "1.6rem", fontFamily: "Syne, sans-serif", color: isDragging ? "var(--accent)" : "var(--text)", letterSpacing: "-0.02em", transition: "color 0.3s" }}>
+                      {isDragging ? "Drop it like it's hot!" : "Upload your resume"}
+                    </div>
+                    <div style={{ color: "var(--text-muted)", fontSize: "1rem", fontWeight: 500, marginTop: "0.5rem", maxWidth: "300px", margin: "0.5rem auto 0", lineHeight: 1.5 }}>
+                      Drag and drop your file here, or click to browse
+                    </div>
+                    
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem", marginTop: "1.5rem" }}>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "0.3rem 0.8rem", borderRadius: "6px", background: "var(--bg-3)", color: "var(--text-secondary)", letterSpacing: "0.05em", textTransform: "uppercase" }}>PDF</span>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "0.3rem 0.8rem", borderRadius: "6px", background: "var(--bg-3)", color: "var(--text-secondary)", letterSpacing: "0.05em", textTransform: "uppercase" }}>TXT</span>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)" }}>Up to 5MB</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {error && <div style={{ color: "#ff6584", fontSize: "0.88rem", padding: "0.9rem 1.2rem", background: "rgba(255,101,132,0.08)", borderRadius: "10px", borderLeft: "4px solid #ff6584" }}>{error}</div>}
 
-            <div className="card">
-              <p className="section-label" style={{ marginBottom: "0.75rem" }}>Or paste CV text directly</p>
-              <textarea
-                className="input"
-                rows={6}
-                placeholder="Paste your raw text layout here to parse without document extraction..."
-                value={resumeText}
-                onChange={(e) => { setResumeText(e.target.value); setFileName("Pasted Resume Data"); }}
-                disabled={parsing}
-                style={{ fontSize: "0.88rem", lineHeight: 1.6 }}
-              />
-            </div>
+            {!showPaste ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem", marginTop: "0.5rem" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", opacity: 0.7 }}>
+                  <div style={{ height: "1px", background: "var(--border)", width: "80px" }} />
+                  <span style={{ color: "var(--text-muted)", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>OR</span>
+                  <div style={{ height: "1px", background: "var(--border)", width: "80px" }} />
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <button 
+                    onClick={() => setShowPaste(true)}
+                    style={{ background: "transparent", border: "1px solid var(--border-accent)", color: "var(--accent)", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer", padding: "0.7rem 1.8rem", borderRadius: "99px", transition: "all 0.2s", boxShadow: "0 2px 10px var(--accent-soft)" }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "var(--accent-soft)"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                  >
+                    Paste Raw Text Instead
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="card" style={{ animation: "fadeInUp 0.3s ease", border: "1px solid var(--border-accent)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                  <p className="section-label" style={{ margin: 0, color: "var(--accent)" }}>Paste CV text directly</p>
+                  <button onClick={() => setShowPaste(false)} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", padding: "4px", borderRadius: "4px" }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-2)"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                  ><X size={16} /></button>
+                </div>
+                <textarea
+                  className="input"
+                  rows={6}
+                  placeholder="Paste your raw text layout here to parse without document extraction..."
+                  value={resumeText}
+                  onChange={(e) => { setResumeText(e.target.value); setFileName("Pasted Resume Data"); }}
+                  disabled={parsing}
+                  style={{ fontSize: "0.88rem", lineHeight: 1.6, resize: "vertical" }}
+                />
+              </div>
+            )}
 
-            <button className="btn-primary" onClick={runAnalysis} disabled={!resumeText || parsing} style={{ alignSelf: "flex-start", padding: "1rem 2.2rem", fontSize: "0.95rem" }}>
-              ✦ Comprehensive Analysis
-            </button>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem", animation: "fadeIn 0.4s ease" }}>
+              <button 
+                onClick={runAnalysis} 
+                disabled={!resumeText || parsing} 
+                style={{ 
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.75rem",
+                  padding: "1.2rem 3rem", 
+                  fontSize: "1.1rem",
+                  fontWeight: 700,
+                  fontFamily: "Syne, sans-serif",
+                  borderRadius: "99px",
+                  background: (!resumeText || parsing) ? "var(--bg-3)" : "linear-gradient(110deg, var(--accent) 0%, var(--accent-2) 25%, #A78BFA 50%, var(--accent-2) 75%, var(--accent) 100%)",
+                  backgroundSize: (!resumeText || parsing) ? "auto" : "200% auto",
+                  color: (!resumeText || parsing) ? "var(--text-muted)" : "#fff",
+                  boxShadow: (!resumeText || parsing) ? "none" : "0 10px 30px var(--accent-soft)",
+                  transform: (!resumeText || parsing) ? "none" : "translateY(-2px)",
+                  transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                  cursor: (!resumeText || parsing) ? "not-allowed" : "pointer",
+                  border: (!resumeText || parsing) ? "1px solid var(--border-light)" : "none",
+                  outline: "none",
+                  width: "100%",
+                  maxWidth: "350px",
+                  letterSpacing: "0.02em",
+                  animation: (!resumeText || parsing) ? "none" : "shimmerBtn 4s linear infinite"
+                }}
+                onMouseEnter={(e) => {
+                  if (resumeText && !parsing) {
+                    e.currentTarget.style.transform = "translateY(-4px)";
+                    e.currentTarget.style.boxShadow = "0 15px 35px var(--accent-soft)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (resumeText && !parsing) {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 10px 25px var(--accent-soft)";
+                  }
+                }}
+              >
+                <Sparkles size={22} className={resumeText && !parsing ? "animate-pulse" : ""} opacity={(!resumeText || parsing) ? 0.5 : 1} />
+                {parsing ? "Extracting..." : "Analyze Resume"}
+              </button>
+            </div>
           </div>
         )}
 
         {/* STEP 2: Analyzing */}
         {step === "analyzing" && (
-          <div style={{ textAlign: "center", padding: "5rem 2rem", background: "var(--card)", borderRadius: "20px", border: "1px solid var(--border)" }}>
-            <ConcentricLoader className="mb-4" />
-            <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.6rem", marginBottom: "0.5rem" }}>
-              Hybrid Engine Analyzing
-            </h2>
-            <p style={{ color: "var(--accent)", fontWeight: 600, fontSize: "0.95rem", marginBottom: "2rem" }}>
-              {loadingText}
-            </p>
-            <div style={{ maxWidth: "450px", margin: "0 auto", height: "8px", background: "var(--bg-3)", borderRadius: "4px", overflow: "hidden" }}>
-              <div 
-                style={{ 
-                  height: "100%", 
-                  width: `${loadingProgress}%`, 
-                  background: "linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 50%, var(--accent-3) 100%)", 
-                  transition: "width 0.1s linear",
-                }} 
-              />
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: Results */}
-        {step === "results" && atsScore && (
-          <div style={{ animation: "fadeInUp 0.4s ease" }}>
-            <SuggestionFlow
-              suggestions={suggestions}
-              currentScore={atsScore.overall}
-              estimatedNewScore={Math.min(100, atsScore.overall + Math.round(suggestions.length * 1.5))}
-              onApplyChanges={handleApplySuggestions}
-            />
-          </div>
-        )}
-
-        {/* STEP 4: Applied Preview */}
-        {step === "applied" && (
-          <div className="animate-in fade-in zoom-in-95 duration-400">
-            <div className="text-center py-8">
-              <div className="text-[var(--accent)] mb-4 flex justify-center animate-bounce">
-                <TrendingUp size={56} />
-              </div>
-              <h2 className="text-3xl font-black font-syne text-white mb-2">Upgrades Applied!</h2>
-              <p className="text-muted-foreground">Your resume has been successfully enhanced with AI intelligence.</p>
-            </div>
-
-            <ComprehensivePreview appliedSuggestions={appliedSuggestionsList} />
-
-            <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
-              <button 
-                onClick={() => { setStep("upload"); setAtsScore(null); setResumeText(""); setFileName(""); }}
-                className="btn-secondary py-3 px-8 text-[15px]"
-              >
-                Analyze Another Resume
-              </button>
+          <div style={{ textAlign: "center", padding: "6rem 2rem", background: "var(--card)", borderRadius: "32px", border: "1px solid var(--border)", boxShadow: "0 20px 60px rgba(0,0,0,0.06)", position: "relative", overflow: "hidden", animation: "fadeInUp 0.4s ease" }}>
+            
+            {/* Ambient background styling */}
+            <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "linear-gradient(var(--accent) 1px, transparent 1px)", backgroundSize: "100% 4px" }} />
+            
+            <div style={{ position: "relative", zIndex: 10 }}>
+              <ConcentricLoader className="mb-6" />
+              <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.8rem", marginBottom: "0.5rem", letterSpacing: "-0.02em" }}>
+                Hybrid Engine Analyzing
+              </h2>
+              <p style={{ color: "var(--text-muted)", fontWeight: 500, fontSize: "1.05rem", marginBottom: "3.5rem" }}>
+                {loadingText}
+              </p>
               
-              <Link href={`/resume/builder?id=${savedId}&suggestionsApplied=${appliedSuggestionsList.length}`}>
-                <button className="btn-primary py-3 px-8 text-[15px] w-full sm:w-auto shadow-[0_0_20px_rgba(67,233,123,0.3)]">
-                  Proceed to Builder to Refine ↗
-                </button>
-              </Link>
+              <div style={{ maxWidth: "500px", margin: "0 auto", position: "relative" }}>
+                {/* Glow behind progress bar */}
+                <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "100%", height: "40px", background: "var(--accent)", filter: "blur(25px)", opacity: 0.25, borderRadius: "50%" }} />
+                
+                <div style={{ position: "relative", height: "12px", background: "var(--bg-3)", borderRadius: "99px", overflow: "hidden", border: "1px solid var(--border-light)" }}>
+                  <div 
+                    style={{ 
+                      height: "100%", 
+                      width: `${loadingProgress}%`, 
+                      background: "linear-gradient(90deg, var(--accent) 0%, #43e97b 100%)", 
+                      transition: "width 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                      position: "relative"
+                    }} 
+                  >
+                    <div style={{ position: "absolute", right: 0, top: "-5px", bottom: "-5px", width: "20px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.9))", filter: "blur(2px)" }} />
+                  </div>
+                </div>
+                
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem", fontSize: "0.85rem", fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.08em" }}>
+                  <span style={{ color: "var(--accent)" }}>PROCESSING</span>
+                  <span style={{ color: "var(--text)" }}>{Math.round(loadingProgress)}%</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
+
       </div>
     </div>
   );

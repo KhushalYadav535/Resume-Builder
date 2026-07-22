@@ -48,10 +48,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File extension not allowed." }, { status: 400 });
     }
 
-    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      return NextResponse.json({ error: "MIME type not allowed." }, { status: 400 });
-    }
-
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
@@ -110,7 +106,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!text.trim()) {
-      return NextResponse.json({ error: "Could not extract text from file" }, { status: 400 });
+      return NextResponse.json({ error: "Could not extract text. If this is a scanned image, please upload a text-based PDF or paste your text directly." }, { status: 400 });
     }
 
     // Normalize parsed text: fix spacing/bullet/formatting issues from PDF extraction
@@ -129,9 +125,34 @@ export async function POST(req: NextRequest) {
       .split("\n").map(l => l.trimEnd()).join("\n")
       .trim();
 
+    // Upload original file to Supabase storage bypassing RLS
+    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+    const adminSupabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_SERVICE_ROLE_KEY!
+    );
+    const storageFileName = `${user.id}/${Date.now()}_${fileName.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
+    const { error: uploadError } = await adminSupabase.storage
+      .from("resumes")
+      .upload(storageFileName, buffer, {
+        contentType: file.type || "application/pdf",
+        upsert: false
+      });
+      
+    let pdfUrl = null;
+    if (!uploadError) {
+      const { data: publicUrlData } = adminSupabase.storage
+        .from("resumes")
+        .getPublicUrl(storageFileName);
+      pdfUrl = publicUrlData?.publicUrl;
+    } else {
+      console.error("Storage upload failed:", uploadError);
+    }
+
     return NextResponse.json({
       text: cleanText,
       fileName: file.name,
+      pdfUrl: pdfUrl,
     });
   } catch (err: unknown) {
     console.error("Parse Route Error:", err);

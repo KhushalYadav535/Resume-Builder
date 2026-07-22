@@ -2,6 +2,7 @@ import { ResumeData, WorkExperience, Education, Project, Certification, Language
 import { extractPersonalInfo } from "./extractPersonalInfo";
 import { parseSections } from "./sectionParser";
 import { extractSkills } from "./extractSkills";
+import { askAIJSON } from "./openrouter";
 
 function uid() {
   return Math.random().toString(36).substring(2, 9);
@@ -117,66 +118,103 @@ export function parseResume(text: string): ResumeData {
 
   // 3. Parse Education
   const education: Education[] = [];
+  let currentEducation: Partial<Education> | null = null;
 
   for (const line of sections.education) {
     if (!line || /^[•\-\*■●▪▸◦]/.test(line)) continue;
+    if (/^(education|academic background|academics)$/i.test(line.trim())) continue;
 
     const years = line.match(/\b(19|20)\d{2}\b/g);
     const startDate = years?.[0] || "";
     const endDate = years?.[1] || "";
-    let cleanLine = line.replace(/\b(19|20)\d{2}\b/g, "").trim();
+    let cleanLine = line.replace(/\b(19|20)\d{2}\b/g, "").replace(/[-–—]+$/, "").trim();
 
-    // Match Institution Name using negative lookahead for degree fields
-    const INST_PATTERN = /\b((?:(?!Electronics|Communication|Engineering|Technology|Computer|Science|Arts|Commerce|Management|Business)[A-Z][a-zA-Z0-9'-]+\s+){1,4}(?:University|College|Institute|School|Academy|Board|IIT|NIT|BITS))\b/i;
+    // Match Institution Name
+    const INST_PATTERN = /((?:[a-zA-Z]+\s+|of\s+|and\s+|at\s+){1,6}(?:University|College|Institute|School|Academy|Board|IIT|NIT|BITS)(?:\s+of\s+[a-zA-Z\s]+)?)/i;
     const instMatch = cleanLine.match(INST_PATTERN);
 
     let institution = "";
     if (instMatch) {
       institution = instMatch[1].trim();
-      cleanLine = cleanLine.replace(instMatch[1], "").trim();
+      cleanLine = cleanLine.replace(instMatch[1], "").replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim();
     }
 
-    const inParts = cleanLine.split(/\s+in\s+/i);
-    let degree = inParts[0] ? inParts[0].trim() : cleanLine;
-    let field = inParts[1] ? inParts[1].trim() : "";
+    const inParts = cleanLine.split(/(?:\s+in\s+| - | \- )/i);
+    let degree = inParts[0] ? inParts[0].replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim() : cleanLine;
+    let field = inParts[1] ? inParts[1].replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim() : "";
 
-    if (!institution && !degree) continue;
+    // GPA checking
+    const gpaMatch = cleanLine.match(/CGPA[\s:-]*([\d.]+)/i) || cleanLine.match(/([\d.]+)%|([\d.]+)\s*\/10/);
+    const gpa = gpaMatch ? (gpaMatch[1] || gpaMatch[2]).trim() : "";
 
-    education.push({
-      id: uid(),
-      institution: institution || "North Gujarat University",
-      degree: degree || "Bachelor of Engineering",
-      field: field || "Electronics & Communication",
-      startDate,
-      endDate,
-      gpa: "",
-    } as Education);
+    if (institution) {
+       currentEducation = {
+         id: uid(),
+         institution: institution,
+         degree: (degree && degree.length > 2) ? degree : "Bachelor's Degree",
+         field: field,
+         startDate,
+         endDate,
+         gpa
+       };
+       education.push(currentEducation as Education);
+    } else if (currentEducation) {
+       // if we have a degree line following an institution line
+       if (degree && degree.length > 2 && (!currentEducation.degree || currentEducation.degree === "Bachelor's Degree" || currentEducation.degree.length < 10)) {
+          currentEducation.degree = degree;
+       }
+       if (field && !currentEducation.field) currentEducation.field = field;
+       if (gpa && !currentEducation.gpa) currentEducation.gpa = gpa;
+       if (startDate && !currentEducation.startDate) currentEducation.startDate = startDate;
+       if (endDate && !currentEducation.endDate) currentEducation.endDate = endDate;
+    }
   }
 
   // 4. Parse Projects
   const projects: Project[] = [];
   let currentProject: Project | null = null;
 
-  for (const line of sections.projects) {
+  for (let i = 0; i < sections.projects.length; i++) {
+    let line = sections.projects[i];
+    if (!line.trim() || line.trim().length < 2) continue;
+    if (/^(projects|personal projects|key projects|portfolio)$/i.test(line.trim())) continue;
+    
     const isBullet = /^[•\-\*■●▪▸◦]/.test(line) || line.trim().startsWith("-");
     const cleanLine = line.replace(/^[•\-\*■●▪▸◦]\s*/, "").trim();
 
-    if (!isBullet && line.length > 3 && line.length < 80) {
+    // A line is likely a title if it's short, doesn't end with a period, and isn't continuing a sentence.
+    const isLikelyTitle = !isBullet && cleanLine.length < 60 && !cleanLine.endsWith('.') && !/^(and|to|with|for|using|built|developed|created|improving|which|where)\b/i.test(cleanLine);
+    const hasSeparator = /\|/.test(cleanLine);
+    
+    if (isLikelyTitle && (!currentProject || currentProject.description.length > 15)) {
       const linkMatch = line.match(/(?:https?:\/\/)?(?:www\.)?(?:github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+|[a-zA-Z0-9-]+\.[a-z]{2,}\/[^\s]+)/i);
       currentProject = {
         id: uid(),
-        name: line.split(/[\-\|]/)[0].trim(),
+        name: cleanLine.split(/[\-\|]/)[0].trim(),
         description: "",
-        techStack: skillAnalysis.technicalSkills.slice(0, 3),
+        techStack: skillAnalysis.technicalSkills.slice(0, 3), // default fallback
         link: linkMatch ? linkMatch[0] : "",
       };
       projects.push(currentProject);
-    } else if (isBullet && currentProject) {
-      if (!currentProject.description) {
-        currentProject.description = cleanLine;
-      } else {
-        currentProject.description += ". " + cleanLine;
+      
+      const parts = cleanLine.split(/[\-\|]/);
+      if (parts.length > 1) {
+         currentProject.techStack = parts.slice(1).join(" ").split(",").map(s => s.trim()).filter(Boolean);
       }
+    } else if (currentProject) {
+      if (hasSeparator && !currentProject.description) {
+         const parts = cleanLine.split(/[\-\|]/);
+         currentProject.techStack = parts.map(s => s.trim()).filter(s => s.length > 0 && s.length < 30);
+      } else {
+         if (!currentProject.description) {
+           currentProject.description = cleanLine;
+         } else {
+           currentProject.description += " " + cleanLine;
+         }
+      }
+    } else {
+      currentProject = { id: uid(), name: cleanLine, description: "", techStack: [], link: "" };
+      projects.push(currentProject);
     }
   }
 
@@ -244,7 +282,6 @@ export function parseResume(text: string): ResumeData {
       bullets: ["Led tasks contributing to product feature development.", "Collaborated with multi-disciplinary teams."],
     });
   }
-
   return {
     personalInfo,
     summary,
@@ -259,3 +296,79 @@ export function parseResume(text: string): ResumeData {
     languagesKnown: languagesKnown.length > 0 ? languagesKnown : undefined,
   };
 }
+
+/**
+ * AI-powered robust resume parser.
+ * Connects to OpenRouter to accurately extract sections regardless of unstructured layouts.
+ * Automatically falls back to the local `parseResume` heuristic engine if AI fails.
+ */
+export async function parseResumeAI(text: string): Promise<ResumeData> {
+  const personalInfo = extractPersonalInfo(text);
+  
+  const systemPrompt = `You are an expert ATS resume data extractor. 
+Extract the resume data from the text into the exact JSON schema provided. 
+- Ensure 'bullets' in workExperience and 'description' in projects are well-formatted. 
+- Ensure dates are string formats like "Jan 2020", "2024", or "Present".
+- IMPORTANT: If the resume contains a 'Projects' section, intelligently check if those projects were performed as part of a role in 'workExperience' (e.g. the project name is mentioned in the job description, or the dates align). If they are company projects, MERGE the project details (name, description, tech stack) into the 'bullets' array of that specific workExperience entry. Do NOT output them in the 'projects' array. Only keep independent/personal projects in the 'projects' array.
+- If a section is missing, return an empty array for it.
+- Assign a random 6-character alphanumeric string to all 'id' fields.
+
+Respond ONLY with valid JSON matching this TypeScript interface exactly:
+{
+  "personalInfo": {
+    "fullName": string,
+    "email": string,
+    "phone": string,
+    "location": string,
+    "linkedin": string,
+    "github": string,
+    "portfolio": string,
+    "title": string
+  },
+  "summary": string,
+  "workExperience": [
+    { "id": string, "company": string, "role": string, "city": string, "startDate": string, "endDate": string, "current": boolean, "bullets": string[] }
+  ],
+  "education": [
+    { "id": string, "institution": string, "degree": string, "field": string, "startDate": string, "endDate": string, "gpa": string }
+  ],
+  "skills": {
+    "technical": string[],
+    "soft": string[]
+  },
+  "projects": [
+    { "id": string, "name": string, "description": string, "techStack": string[], "link": string }
+  ],
+  "certifications": [
+    { "id": string, "name": string, "issuer": string, "date": string }
+  ]
+}`;
+
+  try {
+    const aiParsed = await askAIJSON<any>(
+      `Here is the raw resume text:\n\n${text}`, 
+      systemPrompt
+    );
+    
+    // Merge AI extracted data with local heuristic fallbacks for absolute safety
+    const safeData: ResumeData = {
+      personalInfo: { ...personalInfo, ...aiParsed?.personalInfo },
+      summary: aiParsed?.summary || "",
+      workExperience: Array.isArray(aiParsed?.workExperience) ? aiParsed.workExperience : [],
+      education: Array.isArray(aiParsed?.education) ? aiParsed.education : [],
+      skills: {
+        technical: Array.isArray(aiParsed?.skills?.technical) ? aiParsed.skills.technical : [],
+        soft: Array.isArray(aiParsed?.skills?.soft) ? aiParsed.skills.soft : []
+      },
+      projects: Array.isArray(aiParsed?.projects) ? aiParsed.projects : [],
+      certifications: Array.isArray(aiParsed?.certifications) ? aiParsed.certifications : []
+    };
+    
+    return safeData;
+  } catch (err) {
+    console.error("AI Parsing failed, falling back to local heuristic extraction", err);
+    // Fallback to old heuristic parser
+    return parseResume(text);
+  }
+}
+

@@ -4,20 +4,16 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import ParticleBackground from "@/components/ui/ParticleBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { Resume } from "@/types";
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/components/ui/toast-1";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { ATSRing } from "@/components/ui/ATSRing";
-import { Badge } from "@/components/ui/Badge";
-import { Input } from "@/components/ui/Input";
-import { Plus, Upload, Target, LayoutTemplate, FileText, Search, Trash2, Calendar, TrendingUp, ArrowRight, Zap } from "lucide-react";
+import {
+  Upload, Plus, FileText, Target as TargetIcon,
+  Bot, BookOpen, LayoutTemplate, Search, ArrowRight, CheckCircle2,
+  AlertTriangle, Sparkles, Clock, ChevronRight, Trash2
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
-import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 export default function Dashboard() {
   const { user, role, loading: authLoading } = useAuth();
@@ -26,11 +22,11 @@ export default function Dashboard() {
   const { showToast } = useToast();
   const [fetchingResumes, setFetchingResumes] = useState(true);
 
-  // Search & Sort states
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "ats">("newest");
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  
+  const [showAllImprovements, setShowAllImprovements] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -67,7 +63,6 @@ export default function Dashboard() {
 
   const fetchResumesList = () => {
     if (authLoading || !user) return;
-
     setFetchingResumes(true);
     fetch("/api/get-resumes")
       .then((r) => r.json())
@@ -82,13 +77,9 @@ export default function Dashboard() {
     fetchResumesList();
   }, [authLoading, user]);
 
-  const handleDeleteTrigger = (id: string, e: React.MouseEvent) => {
+  const executeDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    setDeleteConfirmId(id);
-  };
-
-  const executeDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this resume?")) return;
     setDeletingId(id);
     try {
       const res = await fetch("/api/delete-resume", {
@@ -97,9 +88,7 @@ export default function Dashboard() {
         body: JSON.stringify({ id }),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to delete resume record.");
-      }
+      if (!res.ok) throw new Error("Failed to delete resume record.");
 
       setResumes((prev) => prev.filter((r) => r.id !== id));
       showToast("Resume deleted successfully.", "success");
@@ -115,9 +104,7 @@ export default function Dashboard() {
     return resumes
       .filter((r) => r.file_name.toLowerCase().includes(searchQuery.toLowerCase()))
       .sort((a, b) => {
-        if (sortBy === "oldest") {
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        }
+        if (sortBy === "oldest") return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         if (sortBy === "ats") {
           const scoreA = a.ats_score ? (a.ats_score as any).overall || 0 : 0;
           const scoreB = b.ats_score ? (b.ats_score as any).overall || 0 : 0;
@@ -127,14 +114,11 @@ export default function Dashboard() {
       });
   }, [resumes, searchQuery, sortBy]);
 
-  // Derived stats
   const totalResumes = resumes.length;
   const avgATSScore = totalResumes 
     ? Math.round(resumes.reduce((acc, r) => acc + (r.ats_score ? (r.ats_score as any).overall || 0 : 0), 0) / totalResumes)
     : 0;
   
-  const currentDate = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date());
-
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -142,7 +126,25 @@ export default function Dashboard() {
     return "Good evening";
   };
   
-  const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || "User";
+  const userName = user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || user?.user_metadata?.name?.split(' ')[0] || user?.email?.split('@')[0] || "User";
+
+  const topResume = resumes.length > 0 ? [...resumes].sort((a, b) => {
+    const scoreA = a.ats_score ? (a.ats_score as any).overall || 0 : 0;
+    const scoreB = b.ats_score ? (b.ats_score as any).overall || 0 : 0;
+    return scoreB - scoreA;
+  })[0] : null;
+  const topScore = topResume?.ats_score ? (topResume.ats_score as any).overall || 0 : 0;
+
+  const wins = [
+    "ATS friendly formatting",
+    "Contact info complete",
+    "Strong action verbs",
+  ];
+  const improvements = [
+    { label: "Add 3 more measurable wins", detail: "e.g. numbers, %, ₹ impact" },
+    { label: "Tighten your summary", detail: "2–3 lines, lead with your strongest skill" },
+    { label: "Work in missing keywords", detail: "pulled from your JD matches" },
+  ];
 
   if (authLoading || !user) {
     return (
@@ -153,120 +155,178 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] pb-20 relative overflow-hidden">
-      <ParticleBackground count={50} connectionDist={110} />
-      <div style={{ position: 'relative', zIndex: 10 }}>
-        <Navbar />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        {/* Dynamic Header & Greeting */}
-        <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans pb-20">
+      <Navbar />
+
+      <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-8">
+        {/* Greeting */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-7 gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-2 text-[var(--text-muted)] text-sm font-medium">
-              <Calendar size={16} />
-              {currentDate}
-              {role === "admin" && (
-                <Badge variant="danger">Admin</Badge>
-              )}
-            </div>
-            <h1 className="font-['Syne',sans-serif] text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
-              {getGreeting()}, <span className="gradient-text">{userName}</span>
+            <h1 className="text-[26px] font-semibold tracking-tight">
+              {getGreeting()}, <span className="text-indigo-600 dark:text-indigo-400">{userName}</span> 👋
             </h1>
+            <p className="text-neutral-500 dark:text-neutral-400 text-[15px] mt-1">Here's where your career stands today.</p>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/resume/upload" className="no-underline">
-              <Button variant="secondary" icon={<Upload size={16} />}>Upload PDF</Button>
+          <div className="flex items-center gap-3">
+            <Link href="/resume/upload" className="flex items-center gap-2 px-4 h-10 rounded-lg border border-neutral-200 dark:border-neutral-800 text-[14px] font-medium hover:bg-white dark:hover:bg-neutral-900 transition-colors">
+              <Upload className="w-4 h-4" /> Upload PDF
             </Link>
-            <Link href="/resume/builder?new=true" className="no-underline">
-              <Button icon={<Plus size={16} />}>Create New</Button>
+            <Link href="/resume/builder?new=true" className="flex items-center gap-2 px-4 h-10 rounded-lg bg-indigo-600 text-white text-[14px] font-medium hover:bg-indigo-700 transition-colors">
+              <Plus className="w-4 h-4" /> Create New
             </Link>
-          </div>
-        </header>
-
-        {/* Mini-Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="flex items-center p-6 gap-5 bg-[var(--card)]/50 backdrop-blur-sm">
-            <div className="w-12 h-12 rounded-xl bg-[var(--accent)]/15 text-[var(--accent)] flex items-center justify-center">
-              <FileText size={24} />
-            </div>
-            <div>
-              <p className="text-[var(--text-muted)] text-sm font-medium mb-1">Total Resumes</p>
-              <p className="font-['Syne',sans-serif] text-2xl font-bold text-[var(--text-primary)]">{fetchingResumes ? "-" : totalResumes}</p>
-            </div>
-          </Card>
-          
-          <Card className="flex items-center p-6 gap-5 bg-[var(--card)]/50 backdrop-blur-sm">
-            <div className="w-12 h-12 rounded-xl bg-[var(--score-high)]/15 text-[var(--score-high)] flex items-center justify-center">
-              <Target size={24} />
-            </div>
-            <div>
-              <p className="text-[var(--text-muted)] text-sm font-medium mb-1">Avg ATS Score</p>
-              <p className="font-['Syne',sans-serif] text-2xl font-bold text-[var(--text-primary)]">{fetchingResumes ? "-" : `${avgATSScore}/100`}</p>
-            </div>
-          </Card>
-
-          <Card className="flex items-center p-6 gap-5 bg-[var(--card)]/50 backdrop-blur-sm">
-            <div className="w-12 h-12 rounded-xl bg-[var(--info)]/15 text-[var(--info)] flex items-center justify-center">
-              <TrendingUp size={24} />
-            </div>
-            <div>
-              <p className="text-[var(--text-muted)] text-sm font-medium mb-1">Recent Activity</p>
-              <p className="font-['Syne',sans-serif] text-xl font-bold text-[var(--text-primary)]">
-                {fetchingResumes ? "-" : resumes.length > 0 ? new Date(resumes[0].created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "None"}
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mb-12">
-          <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { icon: <Plus size={20} />, label: "Build from Scratch", href: "/resume/builder?new=true", color: "var(--accent)", creditCost: null },
-              { icon: <Upload size={20} />, label: "Upload & Analyze", href: "/resume/upload", color: "var(--score-high)", creditCost: CREDIT_COSTS.ANALYZE_RESUME },
-              { icon: <Target size={20} />, label: "Tailor for Job", href: "/resume/tailor", color: "var(--info)", creditCost: CREDIT_COSTS.JD_MATCH },
-              { icon: <LayoutTemplate size={20} />, label: "Browse Templates", href: "/resume/templates", color: "var(--warning)", creditCost: null },
-            ].map((action) => (
-              <Link key={action.label} href={action.href} className="no-underline">
-                <Card hoverable className="p-4 flex items-center gap-4 transition-all duration-300 hover:border-[var(--accent)] hover:shadow-md">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0" style={{ backgroundColor: action.color }}>
-                    {action.icon}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-sm text-[var(--text-primary)] block">{action.label}</span>
-                    {action.creditCost !== null && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold mt-0.5" style={{ color: "#d97706" }}>
-                        <Zap size={9} />{action.creditCost} credits
-                      </span>
-                    )}
-                  </div>
-                </Card>
-              </Link>
-            ))}
           </div>
         </div>
 
-        {/* Resumes Library */}
-        <div>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <FileText size={20} className="text-[var(--accent)]" />
-              Your Resumes
-            </h2>
-            
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <Input
-                placeholder="Search resumes..."
-                icon={<Search size={16} />}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full sm:w-64"
+        {/* Stat strip */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatCard icon={<FileText className="w-5 h-5" />} label="Total Resumes" value={fetchingResumes ? "-" : totalResumes.toString()} delta="Your active versions" />
+          <StatCard icon={<TargetIcon className="w-5 h-5" />} label="Avg ATS Score" value={fetchingResumes ? "-" : `${avgATSScore} / 100`} delta="Across all resumes" />
+          <StatCard icon={<LayoutTemplate className="w-5 h-5" />} label="JD Matches" value="0" delta="No recent matches" />
+          <StatCard icon={<Clock className="w-5 h-5" />} label="Last Activity" value={fetchingResumes ? "-" : resumes.length > 0 ? new Date(resumes[0].created_at).toLocaleDateString() : "None"} delta="View all activity" isLink />
+        </div>
+
+        {/* Primary focus */}
+        <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 p-7 mb-6 text-white flex flex-col md:flex-row md:items-center justify-between overflow-hidden relative shadow-lg">
+          <div className="relative z-10 max-w-[640px] mb-4 md:mb-0">
+            <div className="flex items-center gap-2 text-[13px] font-medium text-white/80 mb-2">
+              <Sparkles className="w-4 h-4" /> Recommended next step
+            </div>
+            <h2 className="text-[21px] font-semibold mb-1.5">Your resume is in good shape — sharpen your pitch next.</h2>
+            <p className="text-white/80 text-[14px]">You're mid-way through Interview Prep & Pitch. Finish your elevator pitch script while your recent JD match is still fresh.</p>
+          </div>
+          <Link href="/career-copilot" className="relative z-10 flex items-center justify-center gap-2 px-5 h-11 rounded-lg bg-white text-indigo-600 text-[14px] font-semibold whitespace-nowrap hover:bg-white/90 transition-colors">
+            Continue Interview Prep <ArrowRight className="w-4 h-4" />
+          </Link>
+          <div className="absolute -right-10 -bottom-16 w-56 h-56 rounded-full bg-white/10" />
+        </div>
+
+        {/* Secondary insight row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
+          {/* Resume Health */}
+          <Card>
+            <CardHeader icon={<CheckCircle2 className="w-4.5 h-4.5 text-green-600" />} title="Resume Health" meta={topResume ? "Based on top resume" : "No resumes"} />
+            <div className="flex items-center gap-4 mt-3 mb-4">
+              <RingScore value={topScore} />
+              <div>
+                <div className="text-[13px] font-semibold text-green-600">{topScore >= 70 ? "Good" : topScore >= 40 ? "Fair" : "Needs Work"}</div>
+                <div className="text-[12px] text-neutral-500 dark:text-neutral-400 mt-0.5">Based on latest ATS scan</div>
+              </div>
+            </div>
+            <div className="space-y-1.5 mb-3">
+              {wins.map((w) => (
+                <div key={w} className="flex items-center gap-2 text-[13px] text-neutral-700 dark:text-neutral-300">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0" /> {w}
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowAllImprovements((v) => !v)}
+              className="w-full flex items-center justify-between text-[13px] font-medium text-amber-700 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-2 mb-1 transition-colors"
+            >
+              <span className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" /> 3 ways to strengthen it</span>
+              <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showAllImprovements ? "rotate-90" : ""}`} />
+            </button>
+            {showAllImprovements && (
+              <div className="space-y-2 mt-2 mb-2">
+                {improvements.map((it) => (
+                  <div key={it.label} className="text-[12.5px] text-neutral-600 dark:text-neutral-400 pl-2 border-l-2 border-amber-200 dark:border-amber-900/50">
+                    <div className="font-medium text-neutral-800 dark:text-neutral-200">{it.label}</div>
+                    <div className="text-neutral-500 dark:text-neutral-400">{it.detail}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Link href={topResume ? `/resume/${topResume.id}` : "#"} className="text-[13px] font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1 mt-2 hover:underline">
+              View full health report <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </Card>
+
+          {/* Journal */}
+          <Card>
+            <CardHeader icon={<BookOpen className="w-4.5 h-4.5 text-indigo-600" />} title="Journal" meta="Quick Entry" />
+            <p className="text-[13px] text-neutral-500 dark:text-neutral-400 mt-2 mb-4">Log a win while it's fresh — 30 seconds now saves an hour later.</p>
+            <div className="space-y-2.5 mb-3">
+              <select className="w-full text-[13px] border border-neutral-200 dark:border-neutral-800 rounded-lg px-3 py-2 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 outline-none focus:border-indigo-500">
+                <option>Win / Achievement</option>
+                <option>Certification</option>
+                <option>Feedback received</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Today I led a migration for 12 branches…"
+                className="w-full text-[13px] border border-neutral-200 dark:border-neutral-800 rounded-lg px-3 py-2 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 outline-none focus:border-indigo-500"
               />
-              <select
+            </div>
+            <button 
+              onClick={() => showToast("Quick logging feature coming soon!", "info")}
+              className="w-full h-9 rounded-lg bg-indigo-600 text-white text-[13px] font-medium hover:bg-indigo-700 transition-colors mb-2"
+            >
+              Log Event
+            </button>
+            <Link href="/career-journal" className="text-[13px] font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1 hover:underline">
+              View my journal <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </Card>
+
+          {/* JD Match */}
+          <Card>
+            <CardHeader icon={<TargetIcon className="w-4.5 h-4.5 text-indigo-600" />} title="Latest Match" meta="Pasted job description" />
+            <div className="flex items-center gap-4 mt-3 mb-4">
+              <RingScore value={0} color="#4F46E5" />
+              <div>
+                <div className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">0 matched</div>
+                <div className="text-[12px] text-red-500">No match data</div>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5 mb-4 opacity-50 pointer-events-none">
+              {["SQL", "Tableau", "Snowflake", "ETL"].map((k) => (
+                <span key={k} className="text-[11.5px] px-2 py-1 rounded-md bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">{k}</span>
+              ))}
+              <span className="text-[11.5px] px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">+5 more</span>
+            </div>
+            <Link href="/resume/tailor" className="text-[13px] font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1 hover:underline">
+              Start a new match analysis <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </Card>
+        </div>
+
+        {/* Career Copilot link-out */}
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/50 px-5 py-3.5 flex flex-col sm:flex-row items-center justify-between mb-8 gap-4 transition-colors hover:border-indigo-300 dark:hover:border-indigo-800">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0">
+              <Bot className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div className="text-[13.5px] truncate">
+              <span className="font-medium text-neutral-900 dark:text-neutral-100">Copilot</span>
+              <span className="text-neutral-500 dark:text-neutral-400 hidden sm:inline"> — Skill Gap · Market Awareness · Negotiation & Offers</span>
+            </div>
+          </div>
+          <Link href="/career-copilot" className="text-[13px] font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1 shrink-0 hover:underline">
+            Open Copilot <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {/* Resumes list */}
+        <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-5 gap-4">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4.5 h-4.5 text-neutral-700 dark:text-neutral-300" />
+              <h3 className="font-semibold text-[15px] text-neutral-900 dark:text-neutral-100">Your Resumes</h3>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+              <div className="flex items-center gap-2 border border-neutral-200 dark:border-neutral-800 rounded-lg px-3 h-9 w-full sm:w-56 bg-white dark:bg-neutral-900 focus-within:border-indigo-500 transition-colors">
+                <Search className="w-3.5 h-3.5 text-neutral-400" />
+                <input 
+                  placeholder="Search resumes..." 
+                  className="text-[13px] outline-none w-full bg-transparent text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <select 
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="h-[42px] px-3 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent)] transition-colors w-full sm:w-auto"
+                className="flex items-center gap-1 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-lg px-3 h-9 text-[13px] w-full sm:w-auto outline-none focus:border-indigo-500"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -274,145 +334,163 @@ export default function Dashboard() {
               </select>
             </div>
           </div>
-
-          {fetchingResumes ? (
-            /* Skeleton Loading State */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="p-6 h-[220px] flex flex-col justify-between">
-                  <div>
-                    <div className="h-6 w-3/4 bg-[var(--bg-elevated)] rounded-md mb-2 skeleton" />
-                    <div className="h-4 w-1/3 bg-[var(--bg-elevated)] rounded-md skeleton" />
-                  </div>
-                  <div className="flex justify-between items-end mt-6">
-                    <div className="w-16 h-16 rounded-full border-4 border-[var(--bg-elevated)] skeleton" />
-                    <div className="h-8 w-24 bg-[var(--bg-elevated)] rounded-md skeleton" />
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : filteredResumes.length === 0 ? (
-            /* Empty State */
-            <Card className="py-20 flex flex-col items-center justify-center text-center border-dashed border-2">
-              <div className="w-20 h-20 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center mb-6 text-[var(--text-muted)]">
-                <FileText size={40} />
+          
+          <div className="min-h-[200px]">
+            {fetchingResumes ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="spinner w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
               </div>
-              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
-                {searchQuery ? "No matches found" : "No resumes yet"}
-              </h3>
-              <p className="text-[var(--text-muted)] mb-8 max-w-sm">
-                {searchQuery 
-                  ? "Try adjusting your search query." 
-                  : "Create your first ATS-optimized resume to start landing interviews."}
-              </p>
-              {!searchQuery && (
-                <Link href="/resume/builder?new=true" className="no-underline">
-                  <Button size="lg" icon={<Plus size={18} />}>Create Resume</Button>
-                </Link>
-              )}
-            </Card>
-          ) : (
-            /* Resume Grid using 3D Cards */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredResumes.map((resumeItem, index) => {
-                const score = resumeItem.ats_score ? (resumeItem.ats_score as any).overall || 0 : 0;
-                const jdMatch = resumeItem.jd_match ? (resumeItem.jd_match as any).matchScore || 0 : 0;
-                
-                return (
-                  <motion.div
-                    key={`${resumeItem.id}-${searchQuery}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    layout
-                  >
-                    <Link href={`/resume/${resumeItem.id}`} className="block no-underline h-full">
-                      <Card 
-                        hoverable 
-                        glowColor={score >= 70 ? "var(--score-high)" : score >= 40 ? "var(--score-mid)" : "var(--score-low)"}
-                        className="h-full flex flex-col p-6"
-                      >
-                        <div className="flex justify-between items-start mb-6">
-                          <div className="flex-1 pr-4">
-                            <h3 className="font-bold text-lg text-[var(--text-primary)] line-clamp-2 leading-tight mb-1">
-                              {resumeItem.file_name}
-                            </h3>
-                            <p className="text-xs text-[var(--text-muted)] flex items-center gap-1">
-                              <Calendar size={12} />
-                              {new Date(resumeItem.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                            </p>
-                          </div>
-                          
-                          <button
-                            onClick={(e) => handleDeleteTrigger(resumeItem.id, e)}
-                            disabled={deletingId === resumeItem.id}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 transition-colors z-10"
-                            title="Delete resume"
-                          >
-                            {deletingId === resumeItem.id ? (
-                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                              <Trash2 size={16} />
-                            )}
-                          </button>
-                        </div>
-
-                        <div className="mt-auto flex items-end justify-between">
-                          <div className="flex gap-4">
-                            {score > 0 ? (
-                              <div className="flex flex-col items-center">
-                                <ATSRing score={score} size={64} strokeWidth={6} />
-                                <span className="text-[10px] font-bold text-[var(--text-muted)] mt-1 uppercase tracking-wider">ATS Score</span>
-                              </div>
-                            ) : (
-                              <div className="w-16 h-16 rounded-full border-4 border-[var(--bg-elevated)] flex items-center justify-center text-[var(--text-muted)] text-xs font-bold bg-[var(--bg-surface)]">
-                                N/A
-                              </div>
-                            )}
-
-                            {jdMatch > 0 && (
-                              <div className="flex flex-col items-center">
-                                <div className="w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-lg bg-[var(--bg-surface)]" 
-                                  style={{ 
-                                    borderColor: jdMatch >= 70 ? 'var(--score-high)' : jdMatch >= 40 ? 'var(--score-mid)' : 'var(--score-low)',
-                                    color: jdMatch >= 70 ? 'var(--score-high)' : jdMatch >= 40 ? 'var(--score-mid)' : 'var(--score-low)'
-                                  }}>
-                                  {jdMatch}%
-                                </div>
-                                <span className="text-[10px] font-bold text-[var(--text-muted)] mt-1 uppercase tracking-wider">JD Match</span>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="text-[var(--accent)] font-medium text-sm flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                            View <ArrowRight size={16} />
-                          </div>
-                        </div>
-                      </Card>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
+            ) : filteredResumes.length === 0 ? (
+               <div className="flex flex-col items-center justify-center py-12 text-neutral-500">
+                 <FileText className="w-12 h-12 mb-3 opacity-20" />
+                 <p className="text-sm">{searchQuery ? "No resumes matched your search." : "No resumes created yet."}</p>
+                 {!searchQuery && (
+                   <Link href="/resume/builder?new=true" className="mt-4 text-sm text-indigo-600 hover:underline">
+                     Create your first resume
+                   </Link>
+                 )}
+               </div>
+            ) : (
+              <AnimatePresence>
+                {filteredResumes.map((resumeItem) => {
+                  const score = resumeItem.ats_score ? (resumeItem.ats_score as any).overall || 0 : 0;
+                  const status = score >= 70 ? "Good" : score >= 40 ? "Fair" : "Needs Work";
+                  return (
+                    <motion.div 
+                      key={resumeItem.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      layout
+                    >
+                      <ResumeRow 
+                        id={resumeItem.id}
+                        name={resumeItem.file_name} 
+                        updated={new Date(resumeItem.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} 
+                        score={score} 
+                        status={status} 
+                        onDelete={(e: any) => executeDelete(resumeItem.id, e)}
+                        isDeleting={deletingId === resumeItem.id}
+                      />
+                    </motion.div>
+                  )
+                })}
+              </AnimatePresence>
+            )}
+          </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+// -------------------------------------------------------------
+// HELPER COMPONENTS FOR NEW DASHBOARD
+// -------------------------------------------------------------
+
+function StatCard({ icon, label, value, delta, isLink = false }: any) {
+  return (
+    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 flex items-center gap-3.5 shadow-sm transition-colors">
+      <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+        {icon}
       </div>
-      <ConfirmationModal
-        isOpen={deleteConfirmId !== null}
-        title="Delete Resume?"
-        message="Are you sure you want to permanently delete this resume from your history? This action cannot be undone."
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        isDanger={true}
-        onConfirm={() => {
-          if (deleteConfirmId) {
-            executeDelete(deleteConfirmId);
-            setDeleteConfirmId(null);
-          }
-        }}
-        onCancel={() => setDeleteConfirmId(null)}
-      />
+      <div>
+        <div className="text-[12.5px] text-neutral-500 dark:text-neutral-400">{label}</div>
+        <div className="text-[18px] font-semibold leading-tight text-neutral-900 dark:text-neutral-100">{value}</div>
+        <div className={`text-[11.5px] mt-0.5 ${isLink ? "text-indigo-600 dark:text-indigo-400 font-medium cursor-pointer hover:underline" : "text-green-600 dark:text-green-500"}`}>
+          {delta}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Card({ children }: any) {
+  return <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 shadow-sm transition-colors h-full">{children}</div>;
+}
+
+function CardHeader({ icon, title, meta }: any) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2 text-neutral-900 dark:text-neutral-100">
+        {icon}
+        <h3 className="font-semibold text-[14.5px]">{title}</h3>
+      </div>
+      <span className="text-[11.5px] text-neutral-400">{meta}</span>
+    </div>
+  );
+}
+
+function RingScore({ value, color = "#16A34A" }: any) {
+  const r = 26;
+  const c = 2 * Math.PI * r;
+  const offset = c - (value / 100) * c;
+  return (
+    <div className="relative w-[64px] h-[64px] shrink-0">
+      <svg width="64" height="64" viewBox="0 0 64 64" className="rotate-[-90deg]">
+        <circle cx="32" cy="32" r={r} stroke="currentColor" className="text-neutral-100 dark:text-neutral-800" strokeWidth="6" fill="none" />
+        <circle
+          cx="32" cy="32" r={r} stroke={color} strokeWidth="6" fill="none"
+          strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-neutral-900 dark:text-neutral-100">{value}%</div>
+    </div>
+  );
+}
+
+function ResumeRow({ id, name, updated, score, status, onDelete, isDeleting }: any) {
+  const statusColor = status === "Good" ? "#16A34A" : status === "Fair" ? "#D97706" : "#DC2626";
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-neutral-100 dark:border-neutral-800 last:border-0 gap-4 group">
+      <Link href={`/resume/${id}`} className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
+        <div className="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0">
+          <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-[13.5px] font-medium text-neutral-900 dark:text-neutral-100 truncate">{name}</div>
+          <div className="text-[12px] text-neutral-400">{updated}</div>
+        </div>
+      </Link>
+      <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-auto w-full">
+        <div className="flex items-center gap-2">
+          <RingScoreSmall value={score} color={statusColor} />
+          <div>
+            <div className="text-[12.5px] font-semibold" style={{ color: statusColor }}>{status}</div>
+            <div className="text-[10.5px] text-neutral-400">ATS SCORE</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link href={`/resume/${id}`} className="flex items-center justify-center px-4 h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+            View Resume
+          </Link>
+          <button 
+            onClick={onDelete}
+            disabled={isDeleting}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+          >
+            {isDeleting ? <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RingScoreSmall({ value, color }: any) {
+  const r = 16;
+  const c = 2 * Math.PI * r;
+  const offset = c - (value / 100) * c;
+  return (
+    <div className="relative w-[40px] h-[40px] shrink-0">
+      <svg width="40" height="40" viewBox="0 0 40 40" className="rotate-[-90deg]">
+        <circle cx="20" cy="20" r={r} stroke="currentColor" className="text-neutral-100 dark:text-neutral-800" strokeWidth="4" fill="none" />
+        <circle
+          cx="20" cy="20" r={r} stroke={color} strokeWidth="4" fill="none"
+          strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-neutral-900 dark:text-neutral-100">{value}</div>
     </div>
   );
 }

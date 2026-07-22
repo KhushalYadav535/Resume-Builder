@@ -197,7 +197,7 @@ export default function CareerCopilotPage() {
         <div style={{ marginBottom: "2rem", borderBottom: "1px solid var(--border)", paddingBottom: "1.5rem" }}>
           <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.6rem" }}>
             <Compass size={28} className="text-blue-500" />
-            Career Copilot
+            Copilot
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", marginTop: "0.4rem", maxWidth: "600px" }}>
             Your AI-powered career assistant. Select a resume profile to get tailored interview prep, skill gap analysis, and career trajectory recommendations.
