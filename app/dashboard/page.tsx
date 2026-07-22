@@ -177,7 +177,7 @@ export default function Dashboard() {
             <Link href="/resume/upload" className="no-underline">
               <Button variant="secondary" icon={<Upload size={16} />}>Upload PDF</Button>
             </Link>
-            <Link href="/resume/builder" className="no-underline">
+            <Link href="/resume/builder?new=true" className="no-underline">
               <Button icon={<Plus size={16} />}>Create New</Button>
             </Link>
           </div>

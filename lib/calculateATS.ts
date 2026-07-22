@@ -42,6 +42,16 @@ function estimateYearsOfExperience(text: string): number {
 }
 
 export function calculateATS(text: string): ATSScore {
+  if (!text || text.trim().length === 0) {
+    return {
+      overall: 0,
+      breakdown: { keywords: 0, formatting: 0, sections: 0, readability: 0 },
+      missingKeywords: [],
+      matchedKeywords: [],
+      suggestions: ["Resume is empty. Please add content to generate a score."],
+    };
+  }
+
   const sections = parseSections(text);
   const personalInfo = extractPersonalInfo(text);
   const skillAnalysis = extractSkills(text);
