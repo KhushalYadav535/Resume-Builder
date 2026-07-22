@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { ShieldCheck, BarChart2, Users, Bot, Brain, CreditCard, Megaphone } from "lucide-react";
+import TabNavigation from "@/components/ui/TabNavigation";
 
 interface RequestLog {
   id: string;
@@ -57,183 +58,154 @@ export default function AdminAIUsagePage() {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <Navbar />
-      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
-
-        {/* Title */}
-        <div style={{ marginBottom: "2rem" }}>
-          <p className="section-label" style={{ marginBottom: "0.5rem" }}>LLM Telemetry</p>
-          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
-            <Bot size={32} className="text-indigo-500" />
-            AI API Usage Tracker
-          </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.25rem" }}>
-            Track token estimations, cascading failover success rates, and monitor API traffic for Gemini & OpenRouter.
-          </p>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--border)", marginBottom: "2rem", overflowX: "auto", whiteSpace: "nowrap" }}>
-          <Link href="/admin" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <BarChart2 size={14} />
-              Analytics Overview
-            </button>
-          </Link>
-          <Link href="/admin/users" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Users size={14} />
-              User Management
-            </button>
-          </Link>
-          <Link href="/admin/ai-usage" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "rgba(108,99,255,0.08)", border: "none", borderBottom: "2px solid var(--accent)", color: "var(--accent)", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Bot size={14} />
-              AI Usage Log
-            </button>
-          </Link>
-          <Link href="/admin/keywords" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Brain size={14} />
-              ATS Keywords
-            </button>
-          </Link>
-          <Link href="/admin/billing" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <CreditCard size={14} />
-              Billing & Credits
-            </button>
-          </Link>
-          <Link href="/admin/broadcast" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Megaphone size={14} />
-              Broadcasts
-            </button>
-          </Link>
-        </div>
-
-        {errorMsg && (
-          <div style={{ color: "#ff6584", fontSize: "0.88rem", padding: "0.9rem 1.2rem", background: "rgba(255,101,132,0.08)", borderRadius: "10px", borderLeft: "4px solid #ff6584", marginBottom: "2rem" }}>
-            {errorMsg}
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
+      {/* Premium background radial elements */}
+      <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
+      
+      <div className="relative z-10">
+        <Navbar />
+        
+        <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+          
+          {/* Header */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+              LLM Telemetry
+            </span>
+            <h1 className="text-3xl md:text-4xl font-extrabold font-['Syne',sans-serif] tracking-tight flex items-center gap-2 mt-2">
+              <Bot size={32} className="text-indigo-600 dark:text-indigo-400" />
+              AI API Usage Tracker
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-[#9ea3c8] max-w-2xl leading-relaxed">
+              Track token estimations, cascading failover success rates, and monitor API traffic for Gemini & OpenRouter.
+            </p>
           </div>
-        )}
 
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "6rem 2rem", background: "var(--card)", borderRadius: "16px", border: "1px solid var(--border)" }}>
-            <div className="spinner" style={{ margin: "0 auto 1rem", width: 32, height: 32 }} />
-            <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>Compiling AI query performance reports...</p>
-          </div>
-        ) : !stats || stats.totalRequests === 0 ? (
-          <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
-            No AI requests logged yet. Records will be generated as users run resume analysis and translations.
-          </div>
-        ) : (
-          <div style={{ display: "grid", gap: "1.8rem" }}>
-            
-            {/* Stats Cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1.2rem" }}>
-              <div className="card" style={{ textAlign: "center", padding: "1.5rem" }}>
-                <p className="section-label" style={{ marginBottom: "0.3rem" }}>Total LLM Invocations</p>
-                <div style={{ fontSize: "2.2rem", fontWeight: 800, fontFamily: "Syne, sans-serif" }}>
-                  {stats.totalRequests}
-                </div>
-              </div>
+          {/* Navigation Tabs */}
+          <TabNavigation activeTab="ai-usage" />
 
-              <div className="card" style={{ textAlign: "center", padding: "1.5rem" }}>
-                <p className="section-label" style={{ marginBottom: "0.3rem" }}>Failover Success Rate</p>
-                <div style={{ fontSize: "2.2rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: stats.successRate >= 90 ? "#43e97b" : stats.successRate >= 70 ? "#f6d365" : "#ff6584" }}>
-                  {stats.successRate}%
-                </div>
-                <div style={{ fontSize: "0.74rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
-                  {stats.successCount} OK / {stats.failCount} ERR
-                </div>
-              </div>
-
-              <div className="card" style={{ textAlign: "center", padding: "1.5rem" }}>
-                <p className="section-label" style={{ marginBottom: "0.3rem" }}>Est. Total Tokens</p>
-                <div style={{ fontSize: "2.2rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: "var(--accent)" }}>
-                  {stats.totalTokens.toLocaleString()}
-                </div>
-              </div>
+          {errorMsg && (
+            <div className="p-4 rounded-xl bg-rose-500/10 border-l-4 border-rose-500 text-rose-300 text-sm">
+              {errorMsg}
             </div>
+          )}
 
-            {/* Split layout: Model breakdown + Log table */}
-            <div className="detail-split-grid" style={{ alignItems: "start" }}>
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 shadow-sm dark:shadow-xl">
+              <div className="spinner mb-4 w-10 h-10" />
+              <p className="text-sm text-slate-500 dark:text-[#9ea3c8]">Compiling AI query performance reports...</p>
+            </div>
+          ) : !stats || stats.totalRequests === 0 ? (
+            <div className="p-12 text-center rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-gray-400 shadow-sm">
+              No AI requests logged yet. Records will be generated as users run resume analysis and translations.
+            </div>
+          ) : (
+            <div className="space-y-8">
               
-              {/* Recent logs table */}
-              <div className="card" style={{ padding: 0 }}>
-                <div style={{ padding: "1rem 1.2rem", borderBottom: "1px solid var(--border)" }}>
-                  <span style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text)" }}>Recent Executions Logs</span>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm text-center">
+                  <h3 className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider mb-2">Total LLM Invocations</h3>
+                  <div className="text-3xl font-extrabold font-['Syne',sans-serif] bg-gradient-to-r from-slate-900 via-indigo-600 to-slate-900 dark:from-white dark:via-indigo-400 dark:to-white bg-clip-text text-transparent">
+                    {stats.totalRequests}
+                  </div>
                 </div>
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.82rem" }}>
-                    <thead>
-                      <tr style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.01)" }}>
-                        <th style={{ padding: "0.8rem 1rem", fontWeight: 700, color: "var(--text-muted)" }}>User</th>
-                        <th style={{ padding: "0.8rem 1rem", fontWeight: 700, color: "var(--text-muted)" }}>Model Used</th>
-                        <th style={{ padding: "0.8rem 1rem", fontWeight: 700, color: "var(--text-muted)" }}>Tokens</th>
-                        <th style={{ padding: "0.8rem 1rem", fontWeight: 700, color: "var(--text-muted)", textAlign: "right" }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {logs.map((log) => (
-                        <tr key={log.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
-                          <td style={{ padding: "0.8rem 1rem", color: "var(--text)", textOverflow: "ellipsis", overflow: "hidden", maxWidth: "160px", whiteSpace: "nowrap" }} title={log.user_profiles?.email || "Anonymous"}>
-                            {log.user_profiles?.email || <span style={{ fontStyle: "italic", color: "var(--text-dim)" }}>Anonymous</span>}
-                          </td>
-                          <td style={{ padding: "0.8rem 1rem", color: "var(--text-muted)", fontSize: "0.78rem" }}>
-                            {log.model_used.replace("openrouter/", "")}
-                          </td>
-                          <td style={{ padding: "0.8rem 1rem" }}>{log.tokens_estimated}</td>
-                          <td style={{ padding: "0.8rem 1rem", textAlign: "right" }}>
-                            <span
-                              style={{
-                                display: "inline-block",
-                                padding: "2px 8px",
-                                borderRadius: "20px",
-                                fontSize: "0.68rem",
-                                fontWeight: 700,
-                                background: log.success ? "rgba(67,233,123,0.12)" : "rgba(255,101,132,0.12)",
-                                color: log.success ? "#43e97b" : "#ff6584",
-                              }}
-                            >
-                              {log.success ? "SUCCESS" : "FAILED"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm text-center">
+                  <h3 className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider mb-2">Failover Success Rate</h3>
+                  <div className={`text-3xl font-extrabold font-['Syne',sans-serif] ${
+                    stats.successRate >= 90 ? "text-emerald-600 dark:text-emerald-400" : stats.successRate >= 70 ? "text-amber-500 dark:text-amber-400" : "text-rose-500 dark:text-rose-400"
+                  }`}>
+                    {stats.successRate}%
+                  </div>
+                  <div className="text-[10px] text-slate-400 dark:text-gray-500 mt-1">
+                    {stats.successCount} OK / {stats.failCount} ERR
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm text-center">
+                  <h3 className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider mb-2">Est. Total Tokens</h3>
+                  <div className="text-3xl font-extrabold font-['Syne',sans-serif] text-purple-600 dark:text-purple-400">
+                    {stats.totalTokens.toLocaleString()}
+                  </div>
                 </div>
               </div>
 
-              {/* Model count distributions */}
-              <div className="card">
-                <p className="section-label" style={{ marginBottom: "1.2rem" }}>Model Traffic Distribution</p>
-                <div style={{ display: "grid", gap: "1rem" }}>
-                  {Object.entries(stats.modelCounts).map(([model, count]) => {
-                    const percent = stats.totalRequests > 0 ? Math.round((count / stats.totalRequests) * 100) : 0;
-                    return (
-                      <div key={model}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem", fontSize: "0.8rem" }}>
-                          <strong style={{ color: "var(--text)", fontSize: "0.78rem" }}>{model.replace("openrouter/", "")}</strong>
-                          <span style={{ color: "var(--text-muted)" }}>{count} runs ({percent}%)</span>
-                        </div>
-                        <div style={{ height: 6, background: "var(--bg-3)", borderRadius: 3, overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${percent}%`, background: "var(--accent)" }} />
-                        </div>
-                      </div>
-                    );
-                  })}
+              {/* Split layout: Model breakdown + Log table */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                
+                {/* Recent logs table */}
+                <div className="lg:col-span-2 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
+                  <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.01]">
+                    <span className="font-bold text-xs md:text-sm text-slate-800 dark:text-white">Recent Execution Logs</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-left text-xs md:text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-200 dark:border-white/10">
+                          <th className="px-6 py-3 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">User</th>
+                          <th className="px-6 py-3 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">Model Used</th>
+                          <th className="px-6 py-3 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">Tokens</th>
+                          <th className="px-6 py-3 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px] text-right">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {logs.map((log) => (
+                          <tr key={log.id} className="border-b border-slate-100 dark:border-white/[0.02] hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition duration-200">
+                            <td className="px-6 py-3.5 font-semibold text-slate-800 dark:text-[#e8e9f5] truncate max-w-[160px]" title={log.user_profiles?.email || "Anonymous"}>
+                              {log.user_profiles?.email || <span className="italic text-slate-400 dark:text-gray-500">Anonymous</span>}
+                            </td>
+                            <td className="px-6 py-3.5 text-slate-500 dark:text-gray-400 text-xs font-mono">
+                              {log.model_used.replace("openrouter/", "")}
+                            </td>
+                            <td className="px-6 py-3.5 text-slate-700 dark:text-gray-300 font-mono">{log.tokens_estimated.toLocaleString()}</td>
+                            <td className="px-6 py-3.5 text-right">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                log.success
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                  : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                              }`}>
+                                {log.success ? "SUCCESS" : "FAILED"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
+
+                {/* Model count distributions */}
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm space-y-6">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">Model Traffic</h3>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400">Gemini vs. Llama failover loads</p>
+                  </div>
+                  <div className="space-y-4">
+                    {Object.entries(stats.modelCounts).map(([model, count]) => {
+                      const percent = stats.totalRequests > 0 ? Math.round((count / stats.totalRequests) * 100) : 0;
+                      return (
+                        <div key={model} className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="font-semibold text-slate-800 dark:text-[#e8e9f5] truncate max-w-[150px]">{model.replace("openrouter/", "")}</span>
+                            <span className="text-slate-500 dark:text-gray-400">{count} runs ({percent}%)</span>
+                          </div>
+                          <div className="h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-full bg-indigo-600 dark:bg-indigo-400 rounded-full" style={{ width: `${percent}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
 
             </div>
+          )}
 
-          </div>
-        )}
-
+        </main>
       </div>
     </div>
   );

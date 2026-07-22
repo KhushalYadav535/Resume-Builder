@@ -4,6 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/components/ui/toast-1";
 import { BarChart2, Users, Bot, Brain, CreditCard, X, Receipt, Settings, Megaphone } from "lucide-react";
+import TabNavigation from "@/components/ui/TabNavigation";
 
 interface Transaction {
   id: string;
@@ -116,189 +117,161 @@ export default function AdminBillingPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <Navbar />
-      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
-
-        {/* Title */}
-        <div style={{ marginBottom: "2rem" }}>
-          <p className="section-label" style={{ marginBottom: "0.5rem" }}>System Directory</p>
-          <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
-            <CreditCard size={32} className="text-emerald-500" />
-            Billing & Credits
-          </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.25rem" }}>
-            Monitor user credit balances, active subscription tiers, and complete payment histories.
-          </p>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--border)", marginBottom: "2rem", overflowX: "auto", whiteSpace: "nowrap" }}>
-          <Link href="/admin" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <BarChart2 size={14} />
-              Analytics Overview
-            </button>
-          </Link>
-          <Link href="/admin/users" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Users size={14} />
-              User Management
-            </button>
-          </Link>
-          <Link href="/admin/ai-usage" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Bot size={14} />
-              AI Usage Log
-            </button>
-          </Link>
-          <Link href="/admin/keywords" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Brain size={14} />
-              ATS Keywords
-            </button>
-          </Link>
-          <Link href="/admin/billing" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "rgba(16, 185, 129, 0.08)", border: "none", borderBottom: "2px solid #10b981", color: "#10b981", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <CreditCard size={14} />
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
+      {/* Premium background radial elements */}
+      <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
+      
+      <div className="relative z-10">
+        <Navbar />
+        
+        <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+          
+          {/* Header */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+              System Directory
+            </span>
+            <h1 className="text-3xl md:text-4xl font-extrabold font-['Syne',sans-serif] tracking-tight flex items-center gap-2 mt-2">
+              <CreditCard size={32} className="text-indigo-600 dark:text-indigo-400" />
               Billing & Credits
-            </button>
-          </Link>
-          <Link href="/admin/broadcast" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Megaphone size={14} />
-              Broadcasts
-            </button>
-          </Link>
-          <Link href="/admin/settings" style={{ textDecoration: "none" }}>
-            <button style={{ padding: "0.6rem 1.2rem", background: "transparent", border: "none", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-              <Settings size={14} />
-              Settings
-            </button>
-          </Link>
-        </div>
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-[#9ea3c8] max-w-2xl leading-relaxed">
+              Monitor user credit balances, active subscription tiers, and complete payment histories.
+            </p>
+          </div>
 
-        {errorMsg && (
-          <div style={{ color: "#ff6584", fontSize: "0.88rem", padding: "0.9rem 1.2rem", background: "rgba(255,101,132,0.08)", borderRadius: "10px", borderLeft: "4px solid #ff6584", marginBottom: "2rem" }}>
-            {errorMsg}
-          </div>
-        )}
+          {/* Navigation Tabs */}
+          <TabNavigation activeTab="billing" />
 
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "6rem 2rem", background: "var(--card)", borderRadius: "16px", border: "1px solid var(--border)" }}>
-            <div className="spinner" style={{ margin: "0 auto 1rem", width: 32, height: 32 }} />
-            <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>Fetching billing and credit reports...</p>
-          </div>
-        ) : profiles.length === 0 ? (
-          <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
-            No billing profiles found.
-          </div>
-        ) : (
-          <div className="card" style={{ padding: 0, overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.88rem" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.01)" }}>
-                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>User Email</th>
-                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>Tier</th>
-                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>Credits</th>
-                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem" }}>Referrals</th>
-                  <th style={{ padding: "1rem 1.2rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", fontSize: "0.74rem", textAlign: "right" }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {profiles.map((profile) => (
-                  <tr key={profile.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", transition: "background 0.2s" }} className="table-row-hover">
-                    <td style={{ padding: "1rem 1.2rem", fontWeight: 600, color: "var(--text)" }}>{profile.email}</td>
-                    <td style={{ padding: "1rem 1.2rem" }}>
-                      <span className={`tag ${profile.tier === "free" ? "tag-gray" : "tag-purple"}`} style={{ fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700 }}>
-                        {profile.tier}
-                      </span>
-                      {profile.tier_expiry_date && (
-                        <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "4px" }}>
-                          Expires: {new Date(profile.tier_expiry_date).toLocaleDateString()}
-                        </div>
-                      )}
-                    </td>
-                    <td style={{ padding: "1rem 1.2rem", fontWeight: 700, color: profile.credit_balance > 0 ? "#10b981" : "var(--text-muted)" }}>
-                      {profile.credit_balance}
-                    </td>
-                    <td style={{ padding: "1rem 1.2rem", fontWeight: 600, color: profile.referral_count > 0 ? "var(--accent)" : "var(--text-muted)" }}>
-                      {profile.referral_count || 0}
-                    </td>
-                    <td style={{ padding: "1rem 1.2rem", textAlign: "right" }}>
-                      <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
-                        <button
-                          onClick={() => setSelectedUser(profile)}
-                          className="btn-secondary"
-                          style={{ padding: "0.35rem 0.6rem", fontSize: "0.75rem", borderColor: "var(--border)", color: "var(--text)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
-                        >
-                          <Receipt size={14} />
-                          View ({profile.transactions.length})
-                        </button>
-                        <button
-                          onClick={() => openManageModal(profile)}
-                          className="btn-secondary"
-                          style={{ padding: "0.35rem 0.6rem", fontSize: "0.75rem", borderColor: "var(--accent)", color: "var(--accent)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
-                        >
-                          <Settings size={14} />
-                          Manage
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          {errorMsg && (
+            <div className="p-4 rounded-xl bg-rose-500/10 border-l-4 border-rose-500 text-rose-300 text-sm">
+              {errorMsg}
+            </div>
+          )}
 
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 shadow-sm dark:shadow-xl">
+              <div className="spinner mb-4 w-10 h-10" />
+              <p className="text-sm text-slate-500 dark:text-[#9ea3c8]">Fetching billing and credit reports...</p>
+            </div>
+          ) : profiles.length === 0 ? (
+            <div className="p-12 text-center rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-gray-400 shadow-sm">
+              No billing profiles found.
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left text-xs md:text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.01]">
+                      <th className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">User Email</th>
+                      <th className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">Tier</th>
+                      <th className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">Credits</th>
+                      <th className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">Referrals</th>
+                      <th className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px] text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {profiles.map((profile) => (
+                      <tr key={profile.id} className="border-b border-slate-100 dark:border-white/[0.02] hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition duration-200">
+                        <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{profile.email}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            profile.tier === "free" 
+                              ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 border border-slate-200/40 dark:border-white/5" 
+                              : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                          }`}>
+                            {profile.tier}
+                          </span>
+                          {profile.tier_expiry_date && (
+                            <div className="text-[10px] text-slate-400 dark:text-gray-500 mt-1">
+                              Expires: {new Date(profile.tier_expiry_date).toLocaleDateString()}
+                            </div>
+                          )}
+                        </td>
+                        <td className={`px-6 py-4 font-bold ${profile.credit_balance > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-gray-500"}`}>
+                          {profile.credit_balance}
+                        </td>
+                        <td className={`px-6 py-4 font-semibold ${profile.referral_count > 0 ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-gray-500"}`}>
+                          {profile.referral_count || 0}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              onClick={() => setSelectedUser(profile)}
+                              className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white hover:border-slate-300 rounded-lg text-xs font-bold cursor-pointer transition flex items-center gap-1.5"
+                            >
+                              <Receipt size={14} />
+                              View ({profile.transactions.length})
+                            </button>
+                            <button
+                              onClick={() => openManageModal(profile)}
+                              className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-indigo-600 dark:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-400 rounded-lg text-xs font-bold cursor-pointer transition flex items-center gap-1.5"
+                            >
+                              <Settings size={14} />
+                              Manage
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+        </main>
       </div>
 
       {/* Transactions Modal */}
       {selectedUser && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1rem" }} onClick={() => setSelectedUser(null)}>
-          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", width: "100%", maxWidth: "700px", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+        <div className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setSelectedUser(null)}>
+          <div className="bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto shadow-2xl space-y-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-white/5">
               <div>
-                <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--text-primary)" }}>Transaction Report</h2>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{selectedUser.email}</p>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Transaction Report</h2>
+                <p className="text-xs text-slate-500 dark:text-gray-400">{selectedUser.email}</p>
               </div>
-              <button onClick={() => setSelectedUser(null)} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "0.5rem", borderRadius: "8px", transition: "all 0.2s" }} className="hover:bg-white/5">
+              <button onClick={() => setSelectedUser(null)} className="p-1 bg-transparent border-none text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-white cursor-pointer transition">
                 <X size={20} />
               </button>
             </div>
 
             {selectedUser.transactions.length === 0 ? (
-              <div style={{ padding: "3rem", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px dashed var(--border)" }}>
+              <div className="py-12 text-center text-slate-500 dark:text-gray-400 border border-dashed border-slate-200 dark:border-white/5 rounded-xl text-xs md:text-sm">
                 No transactions found for this user.
               </div>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                    <th style={{ padding: "0.75rem 0", color: "var(--text-muted)", fontWeight: 600 }}>Date</th>
-                    <th style={{ padding: "0.75rem 0", color: "var(--text-muted)", fontWeight: 600 }}>Amount</th>
-                    <th style={{ padding: "0.75rem 0", color: "var(--text-muted)", fontWeight: 600 }}>Reason</th>
-                    <th style={{ padding: "0.75rem 0", color: "var(--text-muted)", fontWeight: 600 }}>Category</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedUser.transactions.map((tx) => (
-                    <tr key={tx.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
-                      <td style={{ padding: "1rem 0", color: "var(--text)" }}>{new Date(tx.created_at).toLocaleString()}</td>
-                      <td style={{ padding: "1rem 0", fontWeight: 700, color: tx.amount > 0 ? "#10b981" : "#ff6584" }}>
-                        {tx.amount > 0 ? `+${tx.amount}` : tx.amount}
-                      </td>
-                      <td style={{ padding: "1rem 0", color: "var(--text)" }}>{tx.reason}</td>
-                      <td style={{ padding: "1rem 0" }}>
-                        <span style={{ fontSize: "0.7rem", padding: "0.2rem 0.5rem", borderRadius: "12px", background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-muted)", textTransform: "uppercase" }}>
-                          {tx.category || "General"}
-                        </span>
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left text-xs md:text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 dark:border-white/5">
+                      <th className="pb-3 text-slate-500 dark:text-gray-400 font-bold uppercase tracking-wider text-[10px]">Date</th>
+                      <th className="pb-3 text-slate-500 dark:text-gray-400 font-bold uppercase tracking-wider text-[10px]">Amount</th>
+                      <th className="pb-3 text-slate-500 dark:text-gray-400 font-bold uppercase tracking-wider text-[10px]">Reason</th>
+                      <th className="pb-3 text-slate-500 dark:text-gray-400 font-bold uppercase tracking-wider text-[10px]">Category</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {selectedUser.transactions.map((tx) => (
+                      <tr key={tx.id} className="border-b border-slate-50 dark:border-white/[0.01]">
+                        <td className="py-3 text-slate-800 dark:text-[#e8e9f5] font-mono text-[11px]">{new Date(tx.created_at).toLocaleString()}</td>
+                        <td className={`py-3 font-bold ${tx.amount > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}>
+                          {tx.amount > 0 ? `+${tx.amount}` : tx.amount}
+                        </td>
+                        <td className="py-3 text-slate-700 dark:text-[#e8e9f5]">{tx.reason}</td>
+                        <td className="py-3">
+                          <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase">
+                            {tx.category || "General"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
@@ -306,35 +279,39 @@ export default function AdminBillingPage() {
 
       {/* Management Modal */}
       {managingUser && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1rem" }} onClick={() => setManagingUser(null)}>
-          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "2rem", width: "100%", maxWidth: "500px", boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+        <div className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setManagingUser(null)}>
+          <div className="bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-white/5">
               <div>
-                <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--text-primary)" }}>Manage Credit Scheme</h2>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{managingUser.email}</p>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Manage Credit Scheme</h2>
+                <p className="text-xs text-slate-500 dark:text-gray-400">{managingUser.email}</p>
               </div>
-              <button onClick={() => setManagingUser(null)} style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: "0.5rem", borderRadius: "8px" }} className="hover:bg-white/5">
+              <button onClick={() => setManagingUser(null)} className="p-1 bg-transparent border-none text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-white cursor-pointer transition">
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleManageSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            <form onSubmit={handleManageSubmit} className="space-y-6">
               {/* Tier Section */}
-              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "12px", padding: "1rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                  <h3 style={{ fontSize: "0.95rem", fontWeight: 600 }}>Subscription Tier</h3>
-                  <button type="button" onClick={suspendPremium} className="btn-secondary" style={{ fontSize: "0.7rem", padding: "0.3rem 0.6rem", borderColor: "#ff6584", color: "#ff6584" }}>
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-150 dark:border-white/5 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-white">Subscription Tier</h3>
+                  <button 
+                    type="button" 
+                    onClick={suspendPremium} 
+                    className="px-2 py-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 border border-rose-200 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 text-[10px] font-bold rounded-lg cursor-pointer transition"
+                  >
                     Suspend Premium
                   </button>
                 </div>
                 
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  <label style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                    Tier Type
+                <div className="grid grid-cols-1 gap-4">
+                  <label className="text-xs font-bold text-slate-500 dark:text-[#9ea3c8] block space-y-1">
+                    <span>Tier Type</span>
                     <select
                       value={manageForm.tier}
                       onChange={(e) => setManageForm({ ...manageForm, tier: e.target.value })}
-                      style={{ padding: "0.6rem", borderRadius: "8px", background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+                      className="px-3 py-2 rounded-lg bg-white dark:bg-[#0d0d1e] border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none w-full"
                     >
                       <option value="free">Free</option>
                       <option value="sprint">Sprint</option>
@@ -344,13 +321,13 @@ export default function AdminBillingPage() {
                   </label>
 
                   {manageForm.tier !== "free" && (
-                    <label style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                      Tier Expiration Date
+                    <label className="text-xs font-bold text-slate-500 dark:text-[#9ea3c8] block space-y-1">
+                      <span>Tier Expiration Date</span>
                       <input
                         type="date"
                         value={manageForm.tierExpiryDate}
                         onChange={(e) => setManageForm({ ...manageForm, tierExpiryDate: e.target.value })}
-                        style={{ padding: "0.6rem", borderRadius: "8px", background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+                        className="px-3 py-2 rounded-lg bg-white dark:bg-[#0d0d1e] border border-slate-200/10 text-xs md:text-sm text-[var(--text)] outline-none w-full"
                       />
                     </label>
                   )}
@@ -358,43 +335,49 @@ export default function AdminBillingPage() {
               </div>
 
               {/* Credits Section */}
-              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "12px", padding: "1rem" }}>
-                <h3 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "1rem" }}>
-                  Credit Balance Adjustments
-                </h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  <label style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                    Amount (use negative number to deduct)
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-150 dark:border-white/5 space-y-4">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-white">Credit Balance Adjustments</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <label className="text-xs font-bold text-slate-500 dark:text-[#9ea3c8] block space-y-1">
+                    <span>Amount (use negative number to deduct)</span>
                     <input
                       type="number"
                       placeholder="0"
                       value={manageForm.creditAdjustment}
                       onChange={(e) => setManageForm({ ...manageForm, creditAdjustment: Number(e.target.value) })}
-                      style={{ padding: "0.6rem", borderRadius: "8px", background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+                      className="px-3 py-2 rounded-lg bg-white dark:bg-[#0d0d1e] border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none w-full"
                     />
                   </label>
                   
                   {(manageForm.creditAdjustment !== 0 || manageForm.tier !== managingUser.tier) && (
-                    <label style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                      Reason for Adjustment / Change (Required)
+                    <label className="text-xs font-bold text-slate-500 dark:text-[#9ea3c8] block space-y-1">
+                      <span>Reason for Adjustment / Change (Required)</span>
                       <input
                         type="text"
                         placeholder="e.g. Promotional Bonus, Manual Refund..."
                         required
                         value={manageForm.reason}
                         onChange={(e) => setManageForm({ ...manageForm, reason: e.target.value })}
-                        style={{ padding: "0.6rem", borderRadius: "8px", background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+                        className="px-3 py-2 rounded-lg bg-white dark:bg-[#0d0d1e] border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none w-full"
                       />
                     </label>
                   )}
                 </div>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "0.5rem" }}>
-                <button type="button" onClick={() => setManagingUser(null)} className="btn-secondary" style={{ padding: "0.6rem 1.2rem", fontSize: "0.85rem" }}>
+              <div className="flex justify-end gap-2">
+                <button 
+                  type="button" 
+                  onClick={() => setManagingUser(null)} 
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white font-bold text-xs rounded-xl cursor-pointer transition"
+                >
                   Cancel
                 </button>
-                <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ padding: "0.6rem 1.2rem", fontSize: "0.85rem", background: "var(--accent)" }}>
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl border-none cursor-pointer transition disabled:opacity-50"
+                >
                   {isSubmitting ? "Saving..." : "Save Changes"}
                 </button>
               </div>
