@@ -696,11 +696,11 @@ textarea.input {
     max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    /* Handled by page margin */
     border: none !important;
     box-shadow: none !important;
     background: #ffffff !important;
     color: #000000 !important;
+    overflow: visible !important;
   }
 
   .resume-print-area * {
@@ -737,7 +737,7 @@ textarea.input {
   }
 
   @page {
-    size: auto;
+    size: A4;
     margin: 0;
   }
 }

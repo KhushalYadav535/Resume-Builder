@@ -6,62 +6,90 @@ import { PersonalInfo } from "@/types";
  */
 export function extractPersonalInfo(text: string): PersonalInfo {
   const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-  const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/;
-  const linkedinRegex = /linkedin\.com\/in\/[a-zA-Z0-9_-]+/;
-  
-  // Website regex excluding email domains, linkedin, and github
-  const websiteRegex = /(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\/[^\s]*)?/;
+  const phoneRegex = /(?:\+?\d{1,3}[\s\-.]?)?\(?\d{3,5}\)?[\s\-.]?\d{3,4}[\s\-.]?\d{4}/;
+  const linkedinRegex = /linkedin\.com\/in\/[a-zA-Z0-9_%-]+/i;
 
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-  
-  // 1. Full Name: usually the first non-empty line
+
+  // ── 1. Full Name ─────────────────────────────────────────────────────────────
+  // Scan first 8 lines for name (letters + spaces only, 1-5 words, 3-45 chars)
   let fullName = "Untitled Candidate";
-  if (lines.length > 0) {
-    for (const line of lines.slice(0, 3)) {
-      if (
-        !line.includes("@") && 
-        !line.includes("linkedin.com") && 
-        !line.includes("github.com") && 
-        !line.includes("http") && 
-        line.length > 2 && 
-        line.length < 40 &&
-        /^[a-zA-Z\s]+$/.test(line) // Must only contain letters and spaces
-      ) {
+  for (const line of lines.slice(0, 8)) {
+    if (
+      !line.includes("@") &&
+      !line.includes("linkedin.com") &&
+      !line.includes("github.com") &&
+      !line.includes("http") &&
+      !line.includes("|") &&
+      !line.includes("+") &&
+      !line.includes("/") &&
+      line.length >= 3 &&
+      line.length <= 45 &&
+      /^[a-zA-Z]/.test(line) &&
+      /^[a-zA-Z\s.\-']+$/.test(line)
+    ) {
+      const commonNonNames = /^(summary|summery|objective|profile|education|experience|skills|projects|certifications|languages|resume|cv|contact|references|phone|email|address|location)$/i;
+      if (!commonNonNames.test(line.trim())) {
         fullName = line;
         break;
       }
     }
   }
 
+  // ── 2. Email ─────────────────────────────────────────────────────────────────
   const emailMatch = text.match(emailRegex);
+
+  // ── 3. Phone ─────────────────────────────────────────────────────────────────
   const phoneMatch = text.match(phoneRegex);
+
+  // ── 4. LinkedIn ───────────────────────────────────────────────────────────────
   const linkedinMatch = text.match(linkedinRegex);
-  
+
+  // ── 5. Personal Website / Portfolio ──────────────────────────────────────────
+  // Search ONLY in top 15 lines of header area to avoid picking up project URLs
   let website = "";
-  const websiteMatches = text.match(new RegExp(websiteRegex, "gi"));
-  if (websiteMatches) {
-    for (const m of websiteMatches) {
+  const headerText = lines.slice(0, 15).join("\n");
+  const websiteRegex = /(?:https?:\/\/|www\.)[a-zA-Z0-9.\-_]+(?:\/[^\s]*)?/gi;
+  const webMatches = headerText.match(websiteRegex);
+  if (webMatches) {
+    for (const m of webMatches) {
       const lower = m.toLowerCase();
-      if (!lower.includes("@") && !lower.includes("linkedin.com") && !lower.includes("github.com")) {
+      if (!lower.includes("linkedin.com") && !lower.includes("github.com")) {
         website = m;
         break;
       }
     }
   }
 
-  // Try finding location (e.g. "San Francisco, CA" or "New York, NY")
+  // ── 6. Location ──────────────────────────────────────────────────────────────
   let location = "";
-  const locationRegex = /\b[A-Z][a-zA-Z\s]+,\s*[A-Z]{2}\b/; // e.g. City, ST
-  const locationMatch = text.match(locationRegex);
-  if (locationMatch) {
-    location = locationMatch[0];
-  } else {
-    // Fallback search for common city indicators
-    const commonCities = ["new york", "san francisco", "chicago", "london", "seattle", "boston", "austin", "mumbai", "pune", "bangalore"];
-    for (const city of commonCities) {
-      if (text.toLowerCase().includes(city)) {
-        location = city.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-        break;
+
+  // Check top 15 lines for common cities
+  const commonCities = [
+    "new york", "san francisco", "chicago", "london", "seattle", "boston",
+    "austin", "mumbai", "pune", "bangalore", "bengaluru", "hyderabad",
+    "delhi", "new delhi", "chennai", "kolkata", "ahmedabad", "surat",
+    "jaipur", "lucknow", "noida", "gurugram", "gurgaon", "vadodara", "gandhinagar",
+    "indore", "bhopal", "kochi", "coimbatore", "toronto", "singapore", "dubai"
+  ];
+
+  const headerTextLower = headerText.toLowerCase();
+  for (const city of commonCities) {
+    if (headerTextLower.includes(city)) {
+      location = city.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+      break;
+    }
+  }
+
+  // Fallback: "City, State" pattern if not matched by city list (excluding tech keywords)
+  if (!location) {
+    const locMatch = headerText.match(/\b([A-Z][a-zA-Z\s]{2,20}),\s*([A-Z]{2,3}|[A-Z][a-zA-Z\s]{2,15})\b/);
+    if (locMatch) {
+      const candidateLoc = locMatch[0];
+      // Exclude matches that contain programming or technical framework terms
+      const isTech = /framework|using|net|asp|c#|sql|js|react|angular|node|api|html|css/i.test(candidateLoc);
+      if (!isTech) {
+        location = candidateLoc;
       }
     }
   }
