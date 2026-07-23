@@ -265,7 +265,7 @@ export default function AdminKeywordsPage() {
     : [];
 
   if (authLoading || isAdmin === null) return (
-    <div className="min-h-screen bg-[#0a0a14] flex items-center justify-center">
+    <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
       <div className="spinner w-8 h-8" />
     </div>
   );
