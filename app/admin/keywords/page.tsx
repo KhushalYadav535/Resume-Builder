@@ -1,9 +1,16 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
-import TabNavigation from "@/components/ui/TabNavigation";
+
+const KeywordsSkeleton = () => (
+  <div className="grid gap-6 animate-pulse" style={{ gridTemplateColumns: "260px 1fr" }}>
+    <div className="h-[450px] rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+    <div className="space-y-6">
+      <div className="h-20 rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+      <div className="h-[350px] rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+    </div>
+  </div>
+);
 import { createClient } from "@/utils/supabase/client";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { useToast } from "@/components/ui/toast-1";
@@ -264,41 +271,25 @@ export default function AdminKeywordsPage() {
   );
 
   if (isAdmin === false) return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-6 py-24 text-center">
-        <h3 className="text-xl font-extrabold font-['Syne',sans-serif] text-rose-500">🔒 Forbidden: Admins only</h3>
-      </div>
+    <div className="py-24 text-center">
+      <h3 className="text-xl font-extrabold font-['Syne',sans-serif] text-rose-500">🔒 Forbidden: Admins only</h3>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
-      {/* Premium background radial elements */}
-      <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
-      
-      <div className="relative z-10">
-        <Navbar />
-        
-        <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+    <div className="space-y-8">
           
-          {/* Page Header */}
           <div className="space-y-2">
             <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
               Admin Panel
             </span>
             <h1 className="text-3xl md:text-4xl font-extrabold font-['Syne',sans-serif] tracking-tight flex items-center gap-2 mt-2">
-              <Brain size={32} className="text-indigo-600 dark:text-indigo-400" />
               ATS Keyword Management
             </h1>
             <p className="text-sm text-slate-600 dark:text-[#9ea3c8] max-w-2xl leading-relaxed">
               Manage ATS categories, add/edit/delete keywords, create new industries, and run AI scans.
             </p>
           </div>
-
-          {/* Admin Nav */}
-          <TabNavigation activeTab="keywords" />
 
           {/* Main Tabs */}
           <div className="flex gap-2 border-b border-slate-200 dark:border-white/10 pb-3 no-scrollbar mb-6 overflow-x-auto">
@@ -330,10 +321,13 @@ export default function AdminKeywordsPage() {
 
         {/* ═══════════════════ TAB: MANAGE KEYWORDS ═══════════════════════════ */}
         {mainTab === "manage" && (
-          <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: "1.5rem", alignItems: "start" }}>
+          catLoading && Object.keys(allCategories).length === 0 ? (
+            <KeywordsSkeleton />
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: "1.5rem", alignItems: "start" }}>
             
             {/* Left: Category Sidebar */}
-            <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm space-y-4">
+            <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm space-y-4 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider">
                   Categories ({allCatKeys.length})
@@ -383,7 +377,7 @@ export default function AdminKeywordsPage() {
               ) : (
                 <>
                   {/* Category Header */}
-                  <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm flex flex-wrap justify-between items-center gap-4">
+                  <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm flex flex-wrap justify-between items-center gap-4 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                     <div>
                       <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0">
                         {catData.displayName}
@@ -486,7 +480,7 @@ export default function AdminKeywordsPage() {
                   )}
 
                   {/* Keywords Table */}
-                  <div className="rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
+                  <div className="rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
                     {filteredKeywords.length === 0 ? (
                       <div className="p-12 text-center text-slate-500 dark:text-gray-400 text-xs md:text-sm">
                         {kwSearch ? `No keywords matching "${kwSearch}"` : `No ${manageSubTab} keywords yet.`}
@@ -611,12 +605,13 @@ export default function AdminKeywordsPage() {
               )}
             </div>
           </div>
-        )}
+        )
+      )}
 
         {/* ═══════════════════ TAB: CREATE CATEGORY ═══════════════════════════ */}
         {mainTab === "create" && (
           <div className="max-w-3xl">
-            <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6">
+            <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6 hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
               <div>
                 <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0 flex items-center gap-2">
                   <FolderPlus size={20} className="text-emerald-500 dark:text-emerald-400" /> Create New ATS Category
@@ -724,7 +719,7 @@ export default function AdminKeywordsPage() {
             </div>
 
             {scannerSubTab === "scan" && (
-              <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6">
+              <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6 hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
                 <div>
                   <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0">AI Market Trend Scanner</h2>
                   <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
@@ -784,7 +779,7 @@ export default function AdminKeywordsPage() {
             )}
 
             {scannerSubTab === "pending" && (
-              <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6">
+              <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6 hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
                 <div className="flex justify-between items-center">
                   <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0">Pending Queue ({pendingKeywords.length})</h2>
                   {pendingKeywords.length > 0 && (
@@ -822,16 +817,15 @@ export default function AdminKeywordsPage() {
                             Reject
                           </button>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                       </div>
+                     ))}
+                   </div>
+                 )}
               </div>
             )}
           </div>
         )}
-        </main>
-      </div>
+
 
       {/* Delete Confirm Modal */}
       <ConfirmationModal

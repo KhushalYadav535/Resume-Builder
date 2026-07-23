@@ -1,10 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import { useToast } from "@/components/ui/toast-1";
-import { BarChart2, Users, Bot, Brain, CreditCard, Megaphone, Send, Clock } from "lucide-react";
-import TabNavigation from "@/components/ui/TabNavigation";
+import { Megaphone, Send, Clock } from "lucide-react";
+
+const BroadcastSkeleton = () => (
+  <div className="space-y-4 animate-pulse">
+    {[1, 2, 3].map((i) => (
+      <div key={i} className="h-28 rounded-xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+    ))}
+  </div>
+);
 
 interface BroadcastHistory {
   message: string;
@@ -86,15 +91,7 @@ export default function AdminBroadcastPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
-      {/* Premium background radial elements */}
-      <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
-      
-      <div className="relative z-10">
-        <Navbar />
-        
-        <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+    <div className="space-y-8">
           
           {/* Header */}
           <div className="space-y-2">
@@ -110,13 +107,10 @@ export default function AdminBroadcastPage() {
             </p>
           </div>
 
-          {/* Navigation Tabs */}
-          <TabNavigation activeTab="broadcast" />
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             
             {/* Compose Form */}
-            <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6">
+            <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6 hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 m-0 border-b border-slate-100 dark:border-white/5 pb-3">
                 <Send size={18} className="text-indigo-600 dark:text-indigo-400" /> Compose Broadcast
               </h2>
@@ -186,14 +180,14 @@ export default function AdminBroadcastPage() {
             </div>
 
             {/* History */}
-            <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl flex flex-col max-h-[620px]">
+            <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl flex flex-col max-h-[620px] hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 m-0 border-b border-slate-100 dark:border-white/5 pb-3">
                 <Clock size={18} className="text-indigo-600 dark:text-indigo-400" /> Recent Broadcasts
               </h2>
               
               <div className="flex-1 overflow-y-auto pr-1 space-y-4 mt-4 no-scrollbar">
                 {loadingHistory ? (
-                  <div className="text-center py-8 text-slate-400 dark:text-gray-500 text-xs">Loading history...</div>
+                  <BroadcastSkeleton />
                 ) : history.length === 0 ? (
                   <div className="py-12 text-center text-slate-500 dark:text-gray-400 border border-dashed border-slate-200 dark:border-white/5 rounded-xl text-xs md:text-sm">
                     No previous broadcasts found.
@@ -238,8 +232,6 @@ export default function AdminBroadcastPage() {
             </div>
 
           </div>
-        </main>
-      </div>
     </div>
   );
 }

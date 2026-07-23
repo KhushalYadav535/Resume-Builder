@@ -1,10 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import { useToast } from "@/components/ui/toast-1";
-import { BarChart2, Users, Bot, Brain, CreditCard, X, Receipt, Settings, Megaphone } from "lucide-react";
-import TabNavigation from "@/components/ui/TabNavigation";
+import { CreditCard, X, Receipt, Settings } from "lucide-react";
+
+const BillingSkeleton = () => (
+  <div className="space-y-6 animate-pulse">
+    <div className="h-[400px] rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+  </div>
+);
 
 interface Transaction {
   id: string;
@@ -117,15 +120,7 @@ export default function AdminBillingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
-      {/* Premium background radial elements */}
-      <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
-      
-      <div className="relative z-10">
-        <Navbar />
-        
-        <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+    <div className="space-y-8">
           
           {/* Header */}
           <div className="space-y-2">
@@ -134,15 +129,12 @@ export default function AdminBillingPage() {
             </span>
             <h1 className="text-3xl md:text-4xl font-extrabold font-['Syne',sans-serif] tracking-tight flex items-center gap-2 mt-2">
               <CreditCard size={32} className="text-indigo-600 dark:text-indigo-400" />
-              Billing & Credits
+              Billing &amp; Credits
             </h1>
             <p className="text-sm text-slate-600 dark:text-[#9ea3c8] max-w-2xl leading-relaxed">
               Monitor user credit balances, active subscription tiers, and complete payment histories.
             </p>
           </div>
-
-          {/* Navigation Tabs */}
-          <TabNavigation activeTab="billing" />
 
           {errorMsg && (
             <div className="p-4 rounded-xl bg-rose-500/10 border-l-4 border-rose-500 text-rose-300 text-sm">
@@ -151,16 +143,13 @@ export default function AdminBillingPage() {
           )}
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-24 rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 shadow-sm dark:shadow-xl">
-              <div className="spinner mb-4 w-10 h-10" />
-              <p className="text-sm text-slate-500 dark:text-[#9ea3c8]">Fetching billing and credit reports...</p>
-            </div>
+            <BillingSkeleton />
           ) : profiles.length === 0 ? (
             <div className="p-12 text-center rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-gray-400 shadow-sm">
               No billing profiles found.
             </div>
           ) : (
-            <div className="rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
+            <div className="rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-left text-xs md:text-sm">
                   <thead>
@@ -222,22 +211,19 @@ export default function AdminBillingPage() {
             </div>
           )}
 
-        </main>
-      </div>
-
-      {/* Transactions Modal */}
-      {selectedUser && (
-        <div className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setSelectedUser(null)}>
-          <div className="bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto shadow-2xl space-y-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-white/5">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Transaction Report</h2>
-                <p className="text-xs text-slate-500 dark:text-gray-400">{selectedUser.email}</p>
-              </div>
-              <button onClick={() => setSelectedUser(null)} className="p-1 bg-transparent border-none text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-white cursor-pointer transition">
-                <X size={20} />
-              </button>
-            </div>
+          {/* Transactions Modal */}
+          {selectedUser && (
+            <div className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setSelectedUser(null)}>
+              <div className="bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto shadow-2xl space-y-6" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-white/5">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">Transaction Report</h2>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">{selectedUser.email}</p>
+                  </div>
+                  <button onClick={() => setSelectedUser(null)} className="p-1 bg-transparent border-none text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-white cursor-pointer transition">
+                    <X size={20} />
+                  </button>
+                </div>
 
             {selectedUser.transactions.length === 0 ? (
               <div className="py-12 text-center text-slate-500 dark:text-gray-400 border border-dashed border-slate-200 dark:border-white/5 rounded-xl text-xs md:text-sm">

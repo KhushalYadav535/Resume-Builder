@@ -1,9 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import { ShieldCheck, BarChart2, Users, Bot, Brain, CreditCard, Megaphone } from "lucide-react";
-import TabNavigation from "@/components/ui/TabNavigation";
+import { Bot, Zap, CheckCircle, AlertTriangle, BarChart3, Clock } from "lucide-react";
+
+const AIUsageSkeleton = () => (
+  <div className="space-y-8 animate-pulse">
+    {/* Stats Cards Skeleton */}
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="h-32 rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+      ))}
+    </div>
+    {/* Split Layout Skeleton */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 h-[450px] rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+      <div className="h-[300px] rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+    </div>
+  </div>
+);
 
 interface RequestLog {
   id: string;
@@ -58,15 +71,7 @@ export default function AdminAIUsagePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
-      {/* Premium background radial elements */}
-      <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
-      
-      <div className="relative z-10">
-        <Navbar />
-        
-        <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+    <div className="space-y-8">
           
           {/* Header */}
           <div className="space-y-2">
@@ -82,9 +87,6 @@ export default function AdminAIUsagePage() {
             </p>
           </div>
 
-          {/* Navigation Tabs */}
-          <TabNavigation activeTab="ai-usage" />
-
           {errorMsg && (
             <div className="p-4 rounded-xl bg-rose-500/10 border-l-4 border-rose-500 text-rose-300 text-sm">
               {errorMsg}
@@ -92,10 +94,7 @@ export default function AdminAIUsagePage() {
           )}
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-24 rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 shadow-sm dark:shadow-xl">
-              <div className="spinner mb-4 w-10 h-10" />
-              <p className="text-sm text-slate-500 dark:text-[#9ea3c8]">Compiling AI query performance reports...</p>
-            </div>
+            <AIUsageSkeleton />
           ) : !stats || stats.totalRequests === 0 ? (
             <div className="p-12 text-center rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-gray-400 shadow-sm">
               No AI requests logged yet. Records will be generated as users run resume analysis and translations.
@@ -105,14 +104,14 @@ export default function AdminAIUsagePage() {
               
               {/* Stats Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm text-center">
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 text-center">
                   <h3 className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider mb-2">Total LLM Invocations</h3>
                   <div className="text-3xl font-extrabold font-['Syne',sans-serif] bg-gradient-to-r from-slate-900 via-indigo-600 to-slate-900 dark:from-white dark:via-indigo-400 dark:to-white bg-clip-text text-transparent">
                     {stats.totalRequests}
                   </div>
                 </div>
 
-                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm text-center">
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 text-center">
                   <h3 className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider mb-2">Failover Success Rate</h3>
                   <div className={`text-3xl font-extrabold font-['Syne',sans-serif] ${
                     stats.successRate >= 90 ? "text-emerald-600 dark:text-emerald-400" : stats.successRate >= 70 ? "text-amber-500 dark:text-amber-400" : "text-rose-500 dark:text-rose-400"
@@ -124,7 +123,7 @@ export default function AdminAIUsagePage() {
                   </div>
                 </div>
 
-                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm text-center">
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 text-center">
                   <h3 className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider mb-2">Est. Total Tokens</h3>
                   <div className="text-3xl font-extrabold font-['Syne',sans-serif] text-purple-600 dark:text-purple-400">
                     {stats.totalTokens.toLocaleString()}
@@ -136,7 +135,7 @@ export default function AdminAIUsagePage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 
                 {/* Recent logs table */}
-                <div className="lg:col-span-2 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
+                <div className="lg:col-span-2 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
                   <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.01]">
                     <span className="font-bold text-xs md:text-sm text-slate-800 dark:text-white">Recent Execution Logs</span>
                   </div>
@@ -177,7 +176,7 @@ export default function AdminAIUsagePage() {
                 </div>
 
                 {/* Model count distributions */}
-                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm space-y-6">
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm space-y-6 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">Model Traffic</h3>
                     <p className="text-[11px] text-slate-500 dark:text-gray-400">Gemini vs. Llama failover loads</p>
@@ -204,9 +203,6 @@ export default function AdminAIUsagePage() {
 
             </div>
           )}
-
-        </main>
-      </div>
     </div>
   );
 }

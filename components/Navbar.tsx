@@ -6,7 +6,22 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Menu, X, Coins, Sparkles, LogOut, ArrowRight, User } from "lucide-react";
+import {
+  Menu,
+  X,
+  Coins,
+  Sparkles,
+  LogOut,
+  ArrowRight,
+  User,
+  LayoutDashboard,
+  Users,
+  Zap,
+  Key,
+  CreditCard,
+  Megaphone,
+  Settings,
+} from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createClient } from "@/utils/supabase/client";
@@ -27,11 +42,10 @@ export default function Navbar() {
       const fetchProfile = async () => {
         try {
           const supabase = createClient();
-          const { data, error } = await supabase.from("profiles").select("tier, credit_balance").eq("id", user.id).single();
+          const { data } = await supabase.from("profiles").select("tier, credit_balance").eq("id", user.id).single();
           if (data) {
             setProfile(data);
           } else {
-            // Fallback if profile doesn't exist (e.g. table missing or trigger failed)
             setProfile({ tier: "Free", credit_balance: 0 });
           }
         } catch (err) {
@@ -45,7 +59,6 @@ export default function Navbar() {
     }
   }, [user]);
 
-  // Scroll listener for fade behavior
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 40) {
@@ -58,12 +71,10 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -72,11 +83,16 @@ export default function Navbar() {
     }
   }, [mobileMenuOpen]);
 
-  let links = [];
-  if (role === "admin") {
+  let links: { href: string; label: string; icon?: any }[] = [];
+  if (role === "admin" || pathname.startsWith("/admin")) {
     links = [
-      { href: "/admin", label: "Admin Panel" },
-      { href: "/analytics", label: "Analytics" },
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/admin/users", label: "User Management", icon: Users },
+      { href: "/admin/ai-usage", label: "AI Usage Log", icon: Zap },
+      { href: "/admin/keywords", label: "ATS Keywords", icon: Key },
+      { href: "/admin/billing", label: "Billing & Credits", icon: CreditCard },
+      { href: "/admin/broadcast", label: "Broadcasts", icon: Megaphone },
+      { href: "/admin/settings", label: "Settings", icon: Settings },
     ];
   } else {
     links = [
@@ -97,14 +113,14 @@ export default function Navbar() {
       <nav
         className={cn(
           "sticky top-0 z-[100] flex items-center justify-between border-b border-[var(--border)] transition-all duration-300 ease-out",
-          scrolled ? "bg-[var(--bg-glass-nav)] backdrop-blur-xl shadow-sm" : "bg-transparent"
+          scrolled ? "bg-[var(--bg-glass-nav)] backdrop-blur-xl shadow-sm" : "bg-[var(--bg-glass-nav)] backdrop-blur-md"
         )}
         style={{
           height: "60px",
           padding: "0 clamp(16px, 4vw, 32px)",
         }}
       >
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 shrink-0">
           {/* Mobile Menu Button */}
           <button
             className="md:hidden text-[var(--text-primary)] p-1 -ml-2"
@@ -115,42 +131,47 @@ export default function Navbar() {
           </button>
 
           {/* Logo */}
-          <Link href={user ? "/dashboard" : "/"} className="flex items-center no-underline">
+          <Link href={user ? (role === "admin" ? "/admin" : "/dashboard") : "/"} className="flex items-center no-underline">
             <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2.5 dark:rounded-[8px] flex items-center">
               <Image src="/UpRole logo.png" alt="UPROLE" width={120} height={32} style={{ objectFit: 'contain', height: 'auto' }} />
             </div>
           </Link>
         </div>
 
-        {/* Desktop Links */}
+        {/* Desktop Links (Centered, Scrollbar Hidden) */}
         {user && (
-          <div className="hidden md:flex items-center gap-2">
+          <div
+            className="hidden md:flex flex-1 items-center justify-center gap-1.5 px-3 py-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
             {links.map((link) => {
-              const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+              const Icon = link.icon;
+              const isActive =
+                link.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname === link.href || pathname.startsWith(link.href + "/");
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "relative px-3 py-1.5 text-[14px] font-[500] rounded-[var(--radius-md)] transition-all duration-[var(--dur-fast)] no-underline group",
+                    "relative px-3.5 py-1.5 text-[13.5px] font-semibold rounded-full transition-all duration-300 ease-out no-underline flex items-center gap-1.5 whitespace-nowrap shrink-0 group hover:scale-[1.03] active:scale-[0.98] hover:-translate-y-[1px]",
                     isActive
-                      ? "text-[var(--accent)] bg-[var(--accent-soft)]"
-                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)]"
+                      ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-md shadow-indigo-500/25 border-transparent px-4"
+                      : "text-slate-600 dark:text-slate-300 bg-slate-100/70 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-white/10 hover:shadow-xs"
                   )}
                 >
-                  {link.label}
-                  {/* Hover Underline effect */}
+                  {Icon && <Icon size={14} className="shrink-0 transition-transform duration-300 group-hover:scale-110" />}
+                  <span>{link.label}</span>
+                  {/* Hover Underline animation indicator */}
                   <span
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-[var(--accent-grad)] transition-all duration-[var(--dur-fast)] ease-[var(--ease-out)] rounded-t-full"
-                    style={{
-                      width: isActive ? "0%" : "0%",
-                    }}
+                    className={cn(
+                      "absolute bottom-0.5 left-1/2 -translate-x-1/2 h-[2px] rounded-full transition-all duration-300 ease-out pointer-events-none",
+                      isActive
+                        ? "w-[40%] bg-white/60"
+                        : "w-0 bg-indigo-500 dark:bg-indigo-400 group-hover:w-[60%]"
+                    )}
                   />
-                  <style jsx>{`
-                    a:hover span {
-                      width: 80% !important;
-                    }
-                  `}</style>
                 </Link>
               );
             })}
@@ -158,7 +179,7 @@ export default function Navbar() {
         )}
 
         {/* Right Side */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <ThemeToggle />
           {user && (
             <>
@@ -290,20 +311,25 @@ export default function Navbar() {
         <div className="flex flex-col p-4 gap-2 flex-1 overflow-y-auto">
           {user ? (
             links.map((link) => {
-              const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+              const Icon = link.icon;
+              const isActive =
+                link.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname === link.href || pathname.startsWith(link.href + "/");
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "flex items-center h-[48px] px-4 rounded-[var(--radius-md)] text-[15px] font-medium transition-colors no-underline",
+                    "flex items-center gap-2.5 h-[48px] px-4 rounded-[var(--radius-md)] text-[15px] font-medium transition-colors no-underline",
                     isActive
-                      ? "text-[var(--accent)] bg-[var(--accent-soft)]"
+                      ? "text-[var(--accent)] bg-[var(--accent-soft)] font-bold"
                       : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
                   )}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {link.label}
+                  {Icon && <Icon size={18} className="shrink-0" />}
+                  <span>{link.label}</span>
                 </Link>
               );
             })

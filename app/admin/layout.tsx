@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import AdminShell from "@/components/admin/AdminShell";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,6 @@ export default async function AdminLayout({
 }) {
   const supabase = await createClient();
 
-  // 1. Get current authenticated user
   const {
     data: { user },
     error: authError,
@@ -20,7 +20,6 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  // 2. Fetch role from user_profiles table
   const { data: profile, error: profileError } = await supabase
     .from("user_profiles")
     .select("role")
@@ -32,5 +31,5 @@ export default async function AdminLayout({
     redirect("/dashboard");
   }
 
-  return <>{children}</>;
+  return <AdminShell>{children}</AdminShell>;
 }

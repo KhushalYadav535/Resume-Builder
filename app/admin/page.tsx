@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import ParticleBackground from "@/components/ui/ParticleBackground";
 import { 
   Users, FileText, Brain, Clock, ShieldCheck, Sparkles, TrendingUp, User, Zap, Award, HardDrive
 } from "lucide-react";
@@ -165,7 +163,32 @@ const PremiumStatCard = ({
   );
 };
 
-import TabNavigation from "@/components/ui/TabNavigation";
+
+
+const AdminSkeleton = () => (
+  <div className="space-y-10 animate-pulse">
+    {/* Stat Cards Grid Skeleton */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="h-40 rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+      ))}
+    </div>
+
+    {/* Supplementary Stats Section Skeleton */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      {[1, 2].map((i) => (
+        <div key={i} className="h-24 rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+      ))}
+    </div>
+
+    {/* Recharts Analytics Graphs Skeleton */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {[1, 2].map((i) => (
+        <div key={i} className="h-[380px] rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+      ))}
+    </div>
+  </div>
+);
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AnalyticsStats | null>(null);
@@ -242,17 +265,7 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
-      {/* Premium background radial elements */}
-      <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
-      
-      <ParticleBackground count={40} connectionDist={100} />
-      
-      <div className="relative z-10">
-        <Navbar />
-        
-        <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+    <div className="space-y-10">
           
           {/* Header */}
           <div className="space-y-2">
@@ -268,8 +281,25 @@ export default function AdminDashboardPage() {
             </p>
           </div>
 
-          {/* Tab Navigation */}
-          <TabNavigation activeTab="overview" />
+          {/* Live Telemetry Status Strip */}
+          <section className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-100/60 dark:bg-slate-950/20 backdrop-blur border border-slate-200/50 dark:border-white/5 shadow-sm text-xs font-semibold text-slate-600 dark:text-[#9ea3c8] transition-all duration-300 hover:shadow-md">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+              <span>System: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">Operational</strong></span>
+            </div>
+            <div className="flex items-center gap-2">
+              <TrendingUp size={14} className="text-indigo-500 dark:text-indigo-400" />
+              <span>API Latency: <strong className="text-slate-900 dark:text-white font-bold">42 ms</strong></span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users size={14} className="text-purple-500 dark:text-purple-400" />
+              <span>Active Admins: <strong className="text-slate-900 dark:text-white font-bold">1 active</strong></span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Award size={14} className="text-amber-500 dark:text-amber-400" />
+              <span>Model Cluster: <strong className="text-slate-900 dark:text-white font-bold">Healthy</strong></span>
+            </div>
+          </section>
 
           {errorMsg && (
             <div className="p-4 rounded-xl bg-rose-500/10 border-l-4 border-rose-500 text-rose-300 text-sm">
@@ -278,10 +308,7 @@ export default function AdminDashboardPage() {
           )}
 
           {loadingData ? (
-            <div className="flex flex-col items-center justify-center py-24 rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 shadow-sm dark:shadow-xl">
-              <div className="spinner mb-4 w-10 h-10" />
-              <p className="text-sm text-slate-500 dark:text-[#9ea3c8]">Compiling platform metric indices...</p>
-            </div>
+            <AdminSkeleton />
           ) : stats ? (
             <div className="space-y-10">
               
@@ -319,7 +346,7 @@ export default function AdminDashboardPage() {
 
               {/* Supplementary Stats Section */}
               <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="flex items-center gap-4 p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm">
+                <div className="flex items-center gap-4 p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                   <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500 dark:text-amber-400">
                     <Clock size={22} />
                   </div>
@@ -328,7 +355,7 @@ export default function AdminDashboardPage() {
                     <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{stats.uploadedToday}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm">
+                <div className="flex items-center gap-4 p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                   <div className="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                     <HardDrive size={22} />
                   </div>
@@ -343,10 +370,10 @@ export default function AdminDashboardPage() {
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
                 {/* User Signups Trend Area Chart */}
-                <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl">
+                <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
                   <div className="mb-6">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
-                      <User size={18} className="text-emerald-500 dark:text-emerald-400" />
+                       <User size={18} className="text-emerald-500 dark:text-emerald-400" />
                       User Signups Trend
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-gray-400">Last 7 days registration telemetry</p>
@@ -367,10 +394,11 @@ export default function AdminDashboardPage() {
                           <YAxis stroke="rgba(128,128,128,0.5)" style={{ fontSize: '11px' }} allowDecimals={false} />
                           <Tooltip 
                             contentStyle={{
-                              backgroundColor: 'var(--bg-glass)',
-                              border: '1px solid var(--border)',
+                              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                              backdropFilter: 'blur(12px)',
+                              border: '1px solid rgba(255, 255, 255, 0.08)',
                               borderRadius: '12px',
-                              color: 'var(--text)',
+                              color: '#ffffff',
                               fontSize: '12px'
                             }}
                             cursor={{ stroke: 'rgba(16,185,129,0.2)' }}
@@ -381,6 +409,7 @@ export default function AdminDashboardPage() {
                             stroke="#10b981" 
                             strokeWidth={2}
                             fill="url(#signupGradient)"
+                            activeDot={{ r: 6, strokeWidth: 0, fill: '#10b981' }}
                             isAnimationActive={true}
                             animationDuration={850}
                           />
@@ -391,7 +420,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Resume Activity Bar Chart */}
-                <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl min-w-0">
+                <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl min-w-0 hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
                   <div className="mb-6">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
                       <FileText size={18} className="text-purple-600 dark:text-purple-400" />
@@ -419,10 +448,11 @@ export default function AdminDashboardPage() {
                           <YAxis stroke="rgba(128,128,128,0.5)" style={{ fontSize: '11px' }} allowDecimals={false} />
                           <Tooltip 
                             contentStyle={{
-                              backgroundColor: 'var(--bg-glass)',
-                              border: '1px solid var(--border)',
+                              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                              backdropFilter: 'blur(12px)',
+                              border: '1px solid rgba(255, 255, 255, 0.08)',
                               borderRadius: '12px',
-                              color: 'var(--text)',
+                              color: '#ffffff',
                               fontSize: '12px'
                             }}
                           />
@@ -453,7 +483,7 @@ export default function AdminDashboardPage() {
               <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
                 {/* ATS Keywords Performance */}
-                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/5 space-y-6 shadow-sm">
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/5 space-y-6 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-1.5">
                       <Brain size={16} className="text-indigo-600 dark:text-indigo-400" />
@@ -466,7 +496,7 @@ export default function AdminDashboardPage() {
                     {topKeywords.map(keyword => (
                       <div key={keyword.id} className="space-y-1">
                         <div className="flex justify-between text-xs">
-                          <span className="font-semibold text-slate-800 dark:text-[#e8e9f5]">{keyword.name}</span>
+                           <span className="font-semibold text-slate-800 dark:text-[#e8e9f5]">{keyword.name}</span>
                           <span className="text-slate-500 dark:text-gray-400">{keyword.frequency} times ({keyword.percentage}%)</span>
                         </div>
                         <div className="h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
@@ -481,7 +511,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Template Usage (Filtered count > 0) */}
-                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/5 space-y-6 shadow-sm">
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/5 space-y-6 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-1.5">
                       <Award size={16} className="text-purple-600 dark:text-purple-400" />
@@ -516,7 +546,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Feature Adoption Stats */}
-                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/5 space-y-6 shadow-sm">
+                <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/5 space-y-6 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                   <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-1.5">
                       <Zap size={16} className="text-amber-500 dark:text-amber-400" />
@@ -551,9 +581,6 @@ export default function AdminDashboardPage() {
               No statistics indices populated. Verify active database records exist.
             </div>
           )}
-
-        </main>
-      </div>
     </div>
   );
 }

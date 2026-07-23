@@ -1,11 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { useToast } from "@/components/ui/toast-1";
-import { ShieldCheck, BarChart2, Users, Bot, Brain, CreditCard, Megaphone } from "lucide-react";
-import TabNavigation from "@/components/ui/TabNavigation";
+import { Users } from "lucide-react";
+
+const UsersSkeleton = () => (
+  <div className="space-y-6 animate-pulse">
+    <div className="h-[400px] rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
+  </div>
+);
 
 interface UserProfile {
   id: string;
@@ -126,15 +129,7 @@ export default function AdminUsersPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
-      {/* Premium background radial elements */}
-      <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
-      
-      <div className="relative z-10">
-        <Navbar />
-        
-        <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+    <div className="space-y-8">
           
           {/* Header */}
           <div className="space-y-2">
@@ -150,9 +145,6 @@ export default function AdminUsersPage() {
             </p>
           </div>
 
-          {/* Navigation Tabs */}
-          <TabNavigation activeTab="users" />
-
           {errorMsg && (
             <div className="p-4 rounded-xl bg-rose-500/10 border-l-4 border-rose-500 text-rose-300 text-sm">
               {errorMsg}
@@ -160,16 +152,13 @@ export default function AdminUsersPage() {
           )}
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-24 rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 shadow-sm dark:shadow-xl">
-              <div className="spinner mb-4 w-10 h-10" />
-              <p className="text-sm text-slate-500 dark:text-[#9ea3c8]">Fetching registered user profiles...</p>
-            </div>
+            <UsersSkeleton />
           ) : users.length === 0 ? (
             <div className="p-12 text-center rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-gray-400 shadow-sm">
               No registered user profiles found. Ensure the user_profiles table is populated in Supabase.
             </div>
           ) : (
-            <div className="rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden">
+            <div className="rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-left text-xs md:text-sm">
                   <thead>
@@ -247,9 +236,7 @@ export default function AdminUsersPage() {
             </div>
           )}
 
-        </main>
-      </div>
-      <ConfirmationModal
+          <ConfirmationModal
         isOpen={!!roleConfirm}
         title={
           roleConfirm?.actionType === "delete" 
