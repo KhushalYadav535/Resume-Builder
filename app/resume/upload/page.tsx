@@ -148,11 +148,17 @@ export default function UploadPage() {
       }, 50); // Slightly slower to account for deep AI
 
       const response = await apiPromise;
-      if (!response.ok) {
+      let row;
+      try {
+        row = await response.json();
+      } catch (e) {
         throw new Error("Failed to process local resume analysis. Please verify your connection.");
       }
 
-      const row = await response.json();
+      if (!response.ok) {
+        throw new Error(row.error || "Failed to process local resume analysis. Please verify your connection.");
+      }
+
       if (row.error) {
         throw new Error(row.error);
       }
