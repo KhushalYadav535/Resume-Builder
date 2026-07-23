@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     // Get the resume
     const { data: dbResume, error: fetchError } = await supabase
       .from("resumes")
-      .select("id, raw_text, resume_data")
+      .select("id, raw_text, resume_data, file_name, ats_score, content_review, jd_match, template_id")
       .eq("id", resumeId)
       .eq("user_id", user.id)
       .single();
