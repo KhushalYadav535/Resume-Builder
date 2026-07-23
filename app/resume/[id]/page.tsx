@@ -241,7 +241,7 @@ export default function ResumeDetailPage() {
     });
   }, [modifiedResumeData]);
 
-  // ── Save Changes → update the CURRENT resume record (in-place) ──────────
+  // ── Save Changes → always create a NEW resume record ──────────
   const handleSaveCurrentResume = useCallback(async () => {
     if (!resume || !modifiedResumeData) return;
     setSavingCurrent(true);
@@ -259,8 +259,8 @@ export default function ResumeDetailPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: resume.id, // ← same ID = UPDATE existing record
-          file_name: resume.file_name,
+          // OMITTING ID to force an INSERT (save as new)
+          file_name: `${resume.file_name} (Optimized)`,
           raw_text: rawText,
           resume_data: modifiedResumeData,
           template_id: selectedTemplate,
@@ -270,19 +270,20 @@ export default function ResumeDetailPage() {
         }),
       });
       if (res.ok) {
-        const updated = await res.json();
-        setResume(updated);
+        const newResume = await res.json();
         setHasUnappliedChanges(false);
         setHistory([]); // clear after save
         setFuture([]);
         setHighlightedChanges([]);
-        showToast("Changes saved to this resume ✓", "success");
+        showToast("Changes saved as a new resume!", "success");
+        // Redirect to the newly created resume
+        router.push(`/resume/${newResume.id}`);
       } else {
         showToast("Failed to save. Please try again.", "error");
       }
     } catch { showToast("Error saving resume.", "error"); }
     finally { setSavingCurrent(false); }
-  }, [resume, modifiedResumeData, selectedTemplate, showToast]);
+  }, [resume, modifiedResumeData, selectedTemplate, showToast, router]);
 
   const fetchSuggestions = async () => {
     if (!resume || suggestionsFetched || suggestionsLoading) return;
@@ -463,10 +464,15 @@ export default function ResumeDetailPage() {
         })
       });
       if (res.ok) {
-        showToast("Changes applied successfully!", "success");
+        const data = await res.json();
+        showToast("Changes applied successfully to a new resume!", "success");
         setShowSuggestionsModal(false);
         setSuggestionsFetched(false); // allow fetching again later if needed
-        fetchResumeData();
+        if (data.newResumeId) {
+          router.push(`/resume/${data.newResumeId}`);
+        } else {
+          fetchResumeData();
+        }
       } else {
         throw new Error("Failed to apply suggestions");
       }
@@ -911,7 +917,7 @@ export default function ResumeDetailPage() {
                       </button>
                     </div>
                   </div>
-                  {/* Row 2: Save Changes (primary) + Save as Copy (ghost) */}
+                  {/* Row 2: Save as New Resume (primary) */}
                   <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                     <button
                       onClick={handleSaveCurrentResume}
@@ -924,20 +930,8 @@ export default function ResumeDetailPage() {
                       }}
                     >
                       {savingCurrent
-                        ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Saving...</>
-                        : <><Save size={12} /> Save Changes</>}
-                    </button>
-                    <button
-                      onClick={() => { setSaveNewName(""); setShowSaveNewModal(true); }}
-                      style={{
-                        background: "none", border: "1px solid var(--border)", borderRadius: "8px",
-                        color: "var(--text-muted)", fontSize: "0.72rem", fontWeight: 600,
-                        padding: "0.45rem 0.7rem", cursor: "pointer", whiteSpace: "nowrap",
-                        transition: "all 0.15s",
-                      }}
-                      title="Save as a separate copy instead"
-                    >
-                      Save as Copy
+                        ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Saving as New...</>
+                        : <><Save size={12} /> Save as New Resume</>}
                     </button>
                   </div>
                 </div>
@@ -1204,6 +1198,73 @@ export default function ResumeDetailPage() {
                           ))
                         }
                       </div>
+                    </div>
+                  )}
+                </Section>
+              )}
+
+              {/* ── Health Check (Deep AI Analysis) ── */}
+              {resume.ats_score && (
+                <Section title="Health Check" icon={Zap} defaultOpen={false} accentColor="#10b981">
+                  {!resume.content_review ? (
+                    <div>
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: "0 0 0.7rem", lineHeight: 1.5 }}>
+                        Perform a deep AI audit of your resume for active voice, metrics, and quality.
+                      </p>
+                      {deepError && (
+                        <div style={{ color: "#ef4444", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{deepError}</div>
+                      )}
+                      {deepLoading ? (
+                        <div style={{ padding: "1rem", background: "var(--bg-2)", borderRadius: "8px", textAlign: "center" }}>
+                          <span className="spinner" style={{ width: 24, height: 24, margin: "0 auto 0.5rem" }} />
+                          <div style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>{deepProgress}% - {deepText}</div>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                          <textarea
+                            className="input"
+                            style={{ fontSize: "0.75rem", padding: "0.5rem", minHeight: "60px" }}
+                            placeholder="Optional: Paste Job Description to match against..."
+                            value={jobDescription}
+                            onChange={(e) => setJobDescription(e.target.value)}
+                          />
+                          <button
+                            onClick={runDeepAI}
+                            className="btn-primary"
+                            style={{ fontSize: "0.78rem", padding: "0.4rem 0.9rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", alignSelf: "flex-start" }}
+                          >
+                            <Zap size={12} /> Run Health Check <CreditBadge cost={CREDIT_COSTS.DEEP_AI_ENHANCEMENT} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid", gap: "0.8rem" }}>
+                      <div style={{ background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.22)", borderRadius: "9px", padding: "0.7rem 0.9rem" }}>
+                        <h4 style={{ fontSize: "0.8rem", color: "#10b981", margin: "0 0 0.3rem" }}>Overall Feedback</h4>
+                        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>{resume.content_review.overallFeedback}</p>
+                      </div>
+                      
+                      {resume.content_review.sections?.map((sec: any, idx: number) => (
+                        <div key={idx} style={{ background: "var(--bg-2)", border: "1px solid var(--border)", borderRadius: "9px", padding: "0.7rem 0.9rem" }}>
+                          <strong style={{ fontSize: "0.8rem", display: "block", marginBottom: "0.4rem" }}>{sec.section}</strong>
+                          {sec.issues?.length > 0 && (
+                            <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.2rem", fontSize: "0.75rem", color: "#ef4444" }}>
+                              {sec.issues.map((iss: string, i: number) => <li key={i}>{iss}</li>)}
+                            </ul>
+                          )}
+                          {sec.suggestions?.length > 0 && (
+                            <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.2rem", fontSize: "0.75rem", color: "#f59e0b" }}>
+                              {sec.suggestions.map((sug: string, i: number) => <li key={i}>{sug}</li>)}
+                            </ul>
+                          )}
+                          {sec.improvedVersion && (
+                            <div style={{ background: "rgba(16,185,129,0.05)", borderLeft: "2px solid #10b981", padding: "0.4rem 0.6rem", fontSize: "0.72rem", color: "var(--text)", marginTop: "0.4rem" }}>
+                              <strong>Improved:</strong> {sec.improvedVersion}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </Section>

@@ -249,7 +249,8 @@ export function detectRole(resumeText: string): RoleDetectionResult {
     try {
       const filePath = path.join(process.cwd(), 'keywords', 'base', `${industry}.json`);
       if (fs.existsSync(filePath)) {
-        const fileContent = fs.readFileSync(filePath, 'utf8');
+        let fileContent = fs.readFileSync(filePath, 'utf8');
+        fileContent = fileContent.replace(/^\uFEFF/, ''); // Strip BOM
         const data = JSON.parse(fileContent);
         const keywords = data.keywords || [];
         

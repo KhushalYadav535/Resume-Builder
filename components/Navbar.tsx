@@ -97,7 +97,7 @@ export default function Navbar() {
   } else {
     links = [
       { href: "/dashboard", label: "Dashboard" },
-      { href: "/resume/builder?new=true", label: "Build Resume" },
+      { href: "/resume/builder?new=true", label: "Discovery" },
       { href: "/resume/tailor", label: "Match" },
       { href: "/career-copilot", label: "Copilot" },
       { href: "/career-journal", label: "Journal" },

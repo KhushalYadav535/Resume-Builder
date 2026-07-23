@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     // Get the resume
     const { data: dbResume, error: fetchError } = await supabase
       .from("resumes")
-      .select("id, raw_text, resume_data")
+      .select("id, raw_text, resume_data, file_name, ats_score, content_review, jd_match, template_id")
       .eq("id", resumeId)
       .eq("user_id", user.id)
       .single();
@@ -69,18 +69,23 @@ export async function POST(req: NextRequest) {
       formattedSuggestions
     );
 
-    // Save back to DB
-    const { error: updateError } = await supabase
+    // Save back to DB as a NEW resume
+    const { data: insertedResumes, error: insertError } = await supabase
       .from("resumes")
-      .update({
+      .insert([{
+        user_id: user.id,
+        file_name: dbResume.file_name ? `${dbResume.file_name} (AI Improved)` : "AI Improved Resume",
         raw_text: updatedText,
         resume_data: updatedStructured,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", resumeId)
-      .eq("user_id", user.id);
+        ats_score: dbResume.ats_score,
+        content_review: dbResume.content_review,
+        jd_match: dbResume.jd_match,
+        template_id: dbResume.template_id || "standard"
+      }])
+      .select();
 
-    if (updateError) throw updateError;
+    if (insertError || !insertedResumes || insertedResumes.length === 0) throw insertError || new Error("Failed to insert new resume");
+    const newResume = insertedResumes[0];
 
     // Mark suggestions as accepted in DB
     await supabase
@@ -92,7 +97,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      changesApplied 
+      changesApplied,
+      newResumeId: newResume.id
     });
 
   } catch (error: unknown) {
