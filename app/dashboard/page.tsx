@@ -155,7 +155,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-sans pb-20">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 pb-20">
       <Navbar />
 
       <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-8">
@@ -169,7 +169,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-3">
             <Link href="/resume/upload" className="flex items-center gap-2 px-4 h-10 rounded-lg border border-neutral-200 dark:border-neutral-800 text-[14px] font-medium hover:bg-white dark:hover:bg-neutral-900 transition-colors">
-              <Upload className="w-4 h-4" /> Upload PDF
+              <Upload className="w-4 h-4" /> Upload Resume
             </Link>
             <Link href="/resume/builder?new=true" className="flex items-center gap-2 px-4 h-10 rounded-lg bg-indigo-600 text-white text-[14px] font-medium hover:bg-indigo-700 transition-colors">
               <Plus className="w-4 h-4" /> Create New
@@ -182,7 +182,7 @@ export default function Dashboard() {
           <StatCard icon={<FileText className="w-5 h-5" />} label="Total Resumes" value={fetchingResumes ? "-" : totalResumes.toString()} delta="Your active versions" />
           <StatCard icon={<TargetIcon className="w-5 h-5" />} label="Avg ATS Score" value={fetchingResumes ? "-" : `${avgATSScore} / 100`} delta="Across all resumes" />
           <StatCard icon={<LayoutTemplate className="w-5 h-5" />} label="JD Matches" value="0" delta="No recent matches" />
-          <StatCard icon={<Clock className="w-5 h-5" />} label="Last Activity" value={fetchingResumes ? "-" : resumes.length > 0 ? new Date(resumes[0].created_at).toLocaleDateString() : "None"} delta="View all activity" isLink />
+          <StatCard icon={<Clock className="w-5 h-5" />} label="Last Activity" value={fetchingResumes ? "-" : resumes.length > 0 ? new Date(resumes[0].created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : "None"} delta="View all activity" isLink onClick={() => document.getElementById("resumes-list")?.scrollIntoView({ behavior: "smooth" })} />
         </div>
 
         {/* Primary focus */}
@@ -307,7 +307,7 @@ export default function Dashboard() {
         </div>
 
         {/* Resumes list */}
-        <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm">
+        <div id="resumes-list" className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-5 gap-4">
             <div className="flex items-center gap-2">
               <FileText className="w-4.5 h-4.5 text-neutral-700 dark:text-neutral-300" />
@@ -366,7 +366,7 @@ export default function Dashboard() {
                       <ResumeRow 
                         id={resumeItem.id}
                         name={resumeItem.file_name} 
-                        updated={new Date(resumeItem.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} 
+                        updated={new Date(resumeItem.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })} 
                         score={score} 
                         status={status} 
                         onDelete={(e: any) => executeDelete(resumeItem.id, e)}
@@ -388,7 +388,7 @@ export default function Dashboard() {
 // HELPER COMPONENTS FOR NEW DASHBOARD
 // -------------------------------------------------------------
 
-function StatCard({ icon, label, value, delta, isLink = false }: any) {
+function StatCard({ icon, label, value, delta, isLink = false, onClick }: any) {
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 flex items-center gap-3.5 shadow-sm transition-colors">
       <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
@@ -397,7 +397,10 @@ function StatCard({ icon, label, value, delta, isLink = false }: any) {
       <div>
         <div className="text-[12.5px] text-neutral-500 dark:text-neutral-400">{label}</div>
         <div className="text-[18px] font-semibold leading-tight text-neutral-900 dark:text-neutral-100">{value}</div>
-        <div className={`text-[11.5px] mt-0.5 ${isLink ? "text-indigo-600 dark:text-indigo-400 font-medium cursor-pointer hover:underline" : "text-green-600 dark:text-green-500"}`}>
+        <div 
+          className={`text-[11.5px] mt-0.5 ${isLink ? "text-indigo-600 dark:text-indigo-400 font-medium cursor-pointer hover:underline" : "text-green-600 dark:text-green-500"}`}
+          onClick={onClick}
+        >
           {delta}
         </div>
       </div>

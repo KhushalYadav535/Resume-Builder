@@ -660,7 +660,7 @@ export default function Home() {
               <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">Product</h4>
               <ul className="space-y-2 text-xs text-[var(--text-secondary)] list-none p-0 m-0">
                 <li><Link href="/dashboard" className="hover:text-[var(--accent)] transition-colors">Dashboard</Link></li>
-                <li><Link href="/resume/builder" className="hover:text-[var(--accent)] transition-colors">Build Resume</Link></li>
+                <li><Link href="/resume/builder" className="hover:text-[var(--accent)] transition-colors">Discovery</Link></li>
                 <li><Link href="/pricing" className="hover:text-[var(--accent)] transition-colors">Pricing</Link></li>
               </ul>
             </div>

@@ -228,7 +228,7 @@ export default function AdminBillingPage() {
       {/* Transactions Modal */}
       {selectedUser && (
         <div className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setSelectedUser(null)}>
-          <div className="bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto shadow-2xl space-y-6" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-[var(--bg-page)] border border-slate-200 dark:border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto shadow-2xl space-y-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-white/5">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">Transaction Report</h2>
@@ -280,7 +280,7 @@ export default function AdminBillingPage() {
       {/* Management Modal */}
       {managingUser && (
         <div className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setManagingUser(null)}>
-          <div className="bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-6" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-[var(--bg-page)] border border-slate-200 dark:border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-white/5">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">Manage Credit Scheme</h2>
