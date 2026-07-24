@@ -101,8 +101,7 @@ export default function Navbar() {
       { href: "/resume/tailor", label: "Match" },
       { href: "/career-copilot", label: "Copilot" },
       { href: "/career-journal", label: "Journal" },
-      { href: "/resume/upload", label: "Upload" },
-      { href: "/resume/templates", label: "Templates" },
+      // { href: "/resume/upload", label: "Upload" },
     ];
   }
 

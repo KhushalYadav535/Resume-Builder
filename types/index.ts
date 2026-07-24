@@ -154,6 +154,7 @@ export interface Resume {
   template_id: string;
   created_at: string;
   updated_at?: string;
+  is_base_resume?: boolean;
 }
 
 export interface CareerJournalEntry {

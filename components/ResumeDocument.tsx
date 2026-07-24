@@ -51,9 +51,12 @@ function HL({ text, kw }: { text: string; kw: string[] }) {
   if (!kw || kw.length === 0) return <>{text}</>;
 
   const sorted = [...kw].sort((a, b) => b.length - a.length);
-  const escaped = sorted.map((k) =>
-    k.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&")
-  );
+  const escaped = sorted.map((k) => {
+    let esc = k.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
+    if (/^[a-zA-Z0-9_]/.test(k)) esc = `\\b${esc}`;
+    if (/[a-zA-Z0-9_]$/.test(k)) esc = `${esc}\\b`;
+    return esc;
+  });
   const regex = new RegExp(`(${escaped.join("|")})`, "gi");
   const parts = text.split(regex);
 
@@ -82,7 +85,12 @@ function DiffHL({ text, changes }: { text: string; changes: string[] }) {
     .sort((a, b) => b.length - a.length);
   if (sorted.length === 0) return <>{text}</>;
 
-  const escaped = sorted.map(k => k.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&"));
+  const escaped = sorted.map(k => {
+    let esc = k.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
+    if (/^[a-zA-Z0-9_]/.test(k)) esc = `\\b${esc}`;
+    if (/[a-zA-Z0-9_]$/.test(k)) esc = `${esc}\\b`;
+    return esc;
+  });
   const regex = new RegExp(`(${escaped.join("|")})`, "gi");
   const parts = text.split(regex);
 

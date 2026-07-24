@@ -107,12 +107,34 @@ export function parseResume(text: string): ResumeData {
     }
 
     // Bullets / Responsibilities
+    const hasBullet = /^[•\-\*■●▪▸◦]/.test(line.trim());
     const cleanLine = line.replace(/^[•\-\*■●▪▸◦]\s*/, "").trim();
     if (currentJob && cleanLine.length > 2) {
       if (/^(responsibilities)\s*:?/i.test(cleanLine)) {
         continue;
       }
-      currentJob.bullets?.push(cleanLine);
+      
+      const bullets = currentJob.bullets || [];
+      if (!currentJob.bullets) currentJob.bullets = bullets;
+      
+      if (!hasBullet && bullets.length > 0) {
+        const lastIndex = bullets.length - 1;
+        const lastBullet = bullets[lastIndex];
+        
+        // Don't merge if the last line is clearly a metadata label
+        const isLastLineLabel = /^(?:Project(?:\s*Title)?|Client|Environment|Framework|Role|Description)\b/i.test(lastBullet);
+        const endsWithPunctuation = /[.!?]\s*$/.test(lastBullet);
+        
+        // If the current line is a label, it shouldn't be merged into the previous bullet
+        const isCurrentLineLabel = /^(?:Project(?:\s*Title)?|Client|Environment|Framework|Role|Description|Involved in)\b/i.test(cleanLine);
+        
+        if (!isLastLineLabel && !endsWithPunctuation && !isCurrentLineLabel) {
+          bullets[lastIndex] = `${lastBullet} ${cleanLine}`;
+          continue;
+        }
+      }
+      
+      bullets.push(cleanLine);
     }
   }
 
@@ -312,6 +334,8 @@ Extract the resume data from the text into the exact JSON schema provided.
 - IMPORTANT: If the resume contains a 'Projects' section, intelligently check if those projects were performed as part of a role in 'workExperience' (e.g. the project name is mentioned in the job description, or the dates align). If they are company projects, MERGE the project details (name, description, tech stack) into the 'bullets' array of that specific workExperience entry. Do NOT output them in the 'projects' array. Only keep independent/personal projects in the 'projects' array.
 - If a section is missing, return an empty array for it.
 - Assign a random 6-character alphanumeric string to all 'id' fields.
+- For 'linkedin', ONLY extract a valid URL (e.g. linkedin.com/in/...). DO NOT extract "Contact Information" or names into the linkedin field. If no URL is found, leave it empty.
+
 
 Respond ONLY with valid JSON matching this TypeScript interface exactly:
 {

@@ -4,8 +4,8 @@ import { createClient } from "@/utils/supabase/server";
 export const dynamic = "force-dynamic";
 
 /**
- * Secure API endpoint to delete a user's resume by ID.
- * POST /api/delete-resume
+ * Secure API endpoint to set a user's base resume by ID.
+ * POST /api/set-base-resume
  */
 export async function POST(req: NextRequest) {
   try {
@@ -31,25 +31,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify it's not a base resume before deleting
-    const { data: existing } = await supabase
+    // Step 1: Update all resumes to not be the base resume
+    const { error: updateAllError } = await supabase
       .from("resumes")
-      .select("is_base_resume")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single();
+      .update({ is_base_resume: false })
+      .eq("user_id", user.id);
 
-    if (existing?.is_base_resume) {
-      return NextResponse.json(
-        { error: "Base resume cannot be deleted. Set another resume as base first." },
-        { status: 400 }
-      );
+    if (updateAllError) {
+      throw updateAllError;
     }
 
-    // Execute deletion strictly scoped to the active user to enforce RLS
+    // Step 2: Set the specific resume as the base resume
     const { data, error } = await supabase
       .from("resumes")
-      .delete()
+      .update({ is_base_resume: true })
       .eq("id", id)
       .eq("user_id", user.id)
       .select();
@@ -58,8 +53,8 @@ export async function POST(req: NextRequest) {
       throw error;
     }
 
-    const deletedRecord = data && data.length > 0 ? data[0] : null;
-    if (!deletedRecord) {
+    const updatedRecord = data && data.length > 0 ? data[0] : null;
+    if (!updatedRecord) {
       return NextResponse.json(
         { error: "Resume record not found or access denied." },
         { status: 404 }
@@ -68,13 +63,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Resume deleted successfully.",
-      deletedRecord,
+      message: "Base resume updated successfully.",
+      updatedRecord,
     });
   } catch (err: unknown) {
-    console.error("Failed to delete resume:", err);
+    console.error("Failed to set base resume:", err);
     return NextResponse.json(
-      { error: "An unexpected error occurred while deleting the resume." },
+      { error: "An unexpected error occurred while setting the base resume." },
       { status: 500 }
     );
   }

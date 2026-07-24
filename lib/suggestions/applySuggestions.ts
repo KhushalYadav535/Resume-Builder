@@ -99,18 +99,15 @@ export function applyComprehensiveSuggestions(
           updatedStructured.skills.technical = [];
         }
         // Extract comma-separated skills
-        const skillsList = suggestion.suggestedText.split(/,|\n/).map(s => s.trim()).filter(s => s.length > 0 && s.length < 30);
-        if (skillsList.length > 0) {
-          for (const skill of skillsList) {
+        const skillsList = suggestion.suggestedText.split(/,|\n/).map(s => s.trim()).filter(s => s.length > 0);
+        const validSkills = skillsList.filter(s => s.length <= 60);
+        
+        if (validSkills.length > 0) {
+          for (const skill of validSkills) {
             if (!updatedStructured.skills.technical.includes(skill)) {
               updatedStructured.skills.technical.push(skill);
               appliedToStructured = true;
             }
-          }
-        } else {
-          if (!updatedStructured.skills.technical.includes(suggestion.suggestedText)) {
-            updatedStructured.skills.technical.push(suggestion.suggestedText);
-            appliedToStructured = true;
           }
         }
       } else if (sectionName === "summary") {
@@ -191,13 +188,69 @@ function recursiveReplace(obj: any, currentText: string, suggestedText: string):
   }
 
   if (Array.isArray(obj)) {
-    const newArray = [];
-    for (const item of obj) {
-      const res = recursiveReplace(item, currentText, suggestedText);
-      newArray.push(res.newObj);
-      if (res.replaced) replaced = true;
+    const isStringArray = obj.length > 0 && obj.every(i => typeof i === 'string');
+    
+    if (isStringArray) {
+      const newArray = [];
+      let i = 0;
+      while (i < obj.length) {
+        const item = obj[i];
+        
+        // Exact or flexible match inside the single item
+        const res = recursiveReplace(item, currentText, suggestedText);
+        
+        const normItem = item.toLowerCase().replace(/\s+/g, '');
+        const normCurrent = currentText.toLowerCase().replace(/\s+/g, '');
+        
+        if (res.replaced) {
+           replaced = true;
+           const splitSuggested = suggestedText.split(/\n/).map(s => s.replace(/^[-•]\s*/, '').trim()).filter(Boolean);
+           if (splitSuggested.length > 1) {
+             newArray.push(...splitSuggested);
+           } else {
+             newArray.push(res.newObj);
+           }
+           i++;
+           continue;
+        } else if (normItem.length > 5 && normCurrent.includes(normItem)) {
+           // Fragment match: this bullet is part of a larger multi-sentence block that the AI is replacing
+           replaced = true;
+           
+           const splitSuggested = suggestedText.split(/\n/).map(s => s.replace(/^[-•]\s*/, '').trim()).filter(Boolean);
+           if (splitSuggested.length > 1) {
+             newArray.push(...splitSuggested);
+           } else {
+             newArray.push(suggestedText);
+           }
+           
+           // Absorb subsequent items that are ALSO fragments of the currentText
+           let j = i + 1;
+           while (j < obj.length) {
+             const nextItem = obj[j];
+             const normNext = nextItem.toLowerCase().replace(/\s+/g, '');
+             if (normNext.length > 3 && normCurrent.includes(normNext)) {
+               j++;
+             } else {
+               break;
+             }
+           }
+           i = j;
+           continue;
+        }
+        
+        newArray.push(item);
+        i++;
+      }
+      return { replaced, newObj: newArray };
+    } else {
+      const newArray = [];
+      for (const item of obj) {
+        const res = recursiveReplace(item, currentText, suggestedText);
+        newArray.push(res.newObj);
+        if (res.replaced) replaced = true;
+      }
+      return { replaced, newObj: newArray };
     }
-    return { replaced, newObj: newArray };
   }
 
   if (typeof obj === 'object' && obj !== null) {
