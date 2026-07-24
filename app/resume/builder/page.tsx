@@ -299,8 +299,11 @@ function BuilderContent() {
         
         let found = null;
         if (searchParams.get("new") === "true") {
-          // Explicitly requested a new blank resume session
-          found = null;
+          // Start a new tailored session by prefilling the base resume
+          if (data && Array.isArray(data) && data.length > 0) {
+            found = data.find((r: any) => r.is_base_resume === true) || 
+                   [...data].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
+          }
         } else if (editId) {
           found = data.find((r: any) => r.id === editId);
         } else if (data && Array.isArray(data) && data.length > 0) {
