@@ -64,7 +64,7 @@ export default function Dashboard() {
   const fetchResumesList = () => {
     if (authLoading || !user) return;
     setFetchingResumes(true);
-    fetch("/api/get-resumes")
+    fetch(`/api/get-resumes?t=${Date.now()}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         setResumes(Array.isArray(data) ? data : []);
@@ -77,8 +77,43 @@ export default function Dashboard() {
     fetchResumesList();
   }, [authLoading, user]);
 
+  const [settingBaseId, setSettingBaseId] = useState<string | null>(null);
+
+  const executeSetBase = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!confirm("Set this as your Base Resume?")) return;
+    setSettingBaseId(id);
+    try {
+      const res = await fetch("/api/set-base-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!res.ok) throw new Error("Failed to set base resume.");
+
+      setResumes((prev) => 
+        prev.map(r => ({
+          ...r,
+          is_base_resume: r.id === id
+        }))
+      );
+      showToast("Base resume updated.", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Error updating base resume. Please try again.", "error");
+    } finally {
+      setSettingBaseId(null);
+    }
+  };
+
   const executeDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
+    const resumeToDelete = resumes.find(r => r.id === id);
+    if (resumeToDelete?.is_base_resume) {
+      showToast("Base resume cannot be deleted.", "error");
+      return;
+    }
     if (!confirm("Are you sure you want to delete this resume?")) return;
     setDeletingId(id);
     try {
@@ -371,6 +406,9 @@ export default function Dashboard() {
                         status={status} 
                         onDelete={(e: any) => executeDelete(resumeItem.id, e)}
                         isDeleting={deletingId === resumeItem.id}
+                        isBaseResume={resumeItem.is_base_resume}
+                        onSetBase={(e: any) => executeSetBase(resumeItem.id, e)}
+                        isSettingBase={settingBaseId === resumeItem.id}
                       />
                     </motion.div>
                   )
@@ -442,7 +480,7 @@ function RingScore({ value, color = "#16A34A" }: any) {
   );
 }
 
-function ResumeRow({ id, name, updated, score, status, onDelete, isDeleting }: any) {
+function ResumeRow({ id, name, updated, score, status, onDelete, isDeleting, isBaseResume, onSetBase, isSettingBase }: any) {
   const statusColor = status === "Good" ? "#16A34A" : status === "Fair" ? "#D97706" : "#DC2626";
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-neutral-100 dark:border-neutral-800 last:border-0 gap-4 group">
@@ -451,7 +489,14 @@ function ResumeRow({ id, name, updated, score, status, onDelete, isDeleting }: a
           <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
         </div>
         <div className="min-w-0">
-          <div className="text-[13.5px] font-medium text-neutral-900 dark:text-neutral-100 truncate">{name}</div>
+          <div className="flex items-center gap-2">
+            <div className="text-[13.5px] font-medium text-neutral-900 dark:text-neutral-100 truncate">{name}</div>
+            {isBaseResume && (
+              <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-semibold dark:bg-blue-900/30 dark:text-blue-400 whitespace-nowrap border border-blue-200 dark:border-blue-800/50">
+                Base
+              </span>
+            )}
+          </div>
           <div className="text-[12px] text-neutral-400">{updated}</div>
         </div>
       </Link>
@@ -464,16 +509,29 @@ function ResumeRow({ id, name, updated, score, status, onDelete, isDeleting }: a
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {!isBaseResume && (
+            <button
+              onClick={onSetBase}
+              disabled={isSettingBase}
+              className="px-3 h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 text-[11.5px] font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            >
+              {isSettingBase ? "Setting..." : "Set as Base"}
+            </button>
+          )}
           <Link href={`/resume/${id}`} className="flex items-center justify-center px-4 h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
-            View Resume
+            View
           </Link>
-          <button 
-            onClick={onDelete}
-            disabled={isDeleting}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-          >
-            {isDeleting ? <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
-          </button>
+          {!isBaseResume ? (
+            <button 
+              onClick={onDelete}
+              disabled={isDeleting}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            >
+              {isDeleting ? <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            </button>
+          ) : (
+             <div className="w-8 h-8" />
+          )}
         </div>
       </div>
     </div>

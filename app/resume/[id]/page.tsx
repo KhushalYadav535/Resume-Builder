@@ -19,16 +19,7 @@ import { useToast } from "@/components/ui/toast-1";
 import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 /* ─── helpers ─── */
-const ROTATING_MESSAGES = [
-  "Handshaking with strictly-free AI reasoning models...",
-  "Rewriting experience bullets with active action verbs & metrics...",
-  "Performing semantic keyword match against Job Description...",
-  "Generating professional CV summary & gap recommendations...",
-  "Analyzing keywords against Indian recruiter portals...",
-  "Comparing achievements with LPA benchmarks...",
-  "Assessing tone clarity for IT vs BFSI sectors...",
-  "Resolving skills taxonomy with modern technology stacks...",
-];
+
 
 const emptyResumeData = {
   personalInfo: { fullName: "", email: "", phone: "", linkedin: "", location: "", website: "" },
@@ -166,11 +157,7 @@ export default function ResumeDetailPage() {
   const [zoomFactor, setZoomFactor] = useState(0.85);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const [deepLoading, setDeepLoading] = useState(false);
-  const [deepProgress, setDeepProgress] = useState(0);
-  const [deepText, setDeepText] = useState("");
-  const [deepError, setDeepError] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
+
 
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [isSharePublic, setIsSharePublic] = useState(true);
@@ -190,6 +177,8 @@ export default function ResumeDetailPage() {
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [estimatedNewScore, setEstimatedNewScore] = useState(0);
   const [isApplyingSuggestions, setIsApplyingSuggestions] = useState(false);
+
+  const [previewMode, setPreviewMode] = useState<"pdf" | "live">("live");
 
   const [showCreditPrompt, setShowCreditPrompt] = useState(false);
 
@@ -406,7 +395,7 @@ export default function ResumeDetailPage() {
   const fetchResumeData = () => {
     if (authLoading || !user) return;
     setLoading(true);
-    fetch("/api/get-resumes")
+    fetch(`/api/get-resumes?t=${Date.now()}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((data: Resume[]) => {
         const found = data.find((r) => r.id === params.id);
@@ -566,6 +555,14 @@ export default function ResumeDetailPage() {
   useEffect(() => { fetchResumeData(); fetchShareStatus(); }, [authLoading, user, params.id]);
   useEffect(() => { if (resume && !naukriFetched) fetchNaukriTips(); }, [resume, naukriFetched]);
 
+  useEffect(() => {
+    if (resume?.file_name?.includes("AI Improved") || hasUnappliedChanges || !((resume as any)?.pdf_url || (resume?.resume_data as any)?.pdf_url)) {
+      setPreviewMode("live");
+    } else {
+      setPreviewMode("pdf");
+    }
+  }, [resume?.file_name, hasUnappliedChanges, (resume as any)?.pdf_url, (resume?.resume_data as any)?.pdf_url]);
+
   // ── Keyboard shortcuts: Ctrl+Z = Undo, Ctrl+Y / Ctrl+Shift+Z = Redo ────
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -586,40 +583,7 @@ export default function ResumeDetailPage() {
     } catch { console.error("Failed to update template:"); }
   };
 
-  const runDeepAI = async () => {
-    if (!resume) return;
-    setDeepLoading(true); setDeepError(""); setDeepProgress(0);
-    let animPercent = 0;
-    const animInterval = setInterval(() => {
-      animPercent += 1;
-      if (animPercent > 98) animPercent = 98;
-      setDeepProgress(animPercent);
-      setDeepText(ROTATING_MESSAGES[Math.floor(animPercent / 12) % ROTATING_MESSAGES.length]);
-    }, 250);
-    try {
-      const res = await fetch("/api/analyze-resume/deep", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ resumeId: resume.id, jobDescription }) });
-      // Handle credit exhaustion specifically
-      if (res.status === 403) {
-        clearInterval(animInterval);
-        setShowCreditPrompt(true);
-        setDeepLoading(false);
-        return;
-      }
-      if (!res.ok) throw new Error("Deep AI response failed. AI service might be loaded. Please retry.");
-      const updatedRow = await res.json();
-      if (updatedRow.error) throw new Error(updatedRow.error);
-      clearInterval(animInterval);
-      setDeepProgress(100);
-      setDeepText("Deep AI Enhancements integrated successfully!");
-      setResume(updatedRow);
-      setShowCreditPrompt(false);
-      setTimeout(() => setDeepLoading(false), 350);
-    } catch (err: any) {
-      clearInterval(animInterval);
-      setDeepError(err.message || "Deep AI analysis failed. Please try again.");
-      setDeepLoading(false);
-    }
-  };
+
 
   const [isPrinting, setIsPrinting] = useState(false);
 
@@ -728,12 +692,57 @@ export default function ResumeDetailPage() {
                    <div style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>Optimizing your resume directly in the database.</div>
                 </div>
               ) : (
-                <SuggestionFlow
-                  suggestions={suggestions}
-                  currentScore={resume.ats_score.overall}
-                  estimatedNewScore={estimatedNewScore}
-                  onApplyChanges={handleApplyComprehensive}
-                />
+                <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: "2rem", alignItems: "start" }}>
+                  <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.8rem" }}>
+                    <h3 style={{ fontSize: "1.2rem", fontWeight: 800, marginBottom: "1.5rem", fontFamily: "Syne, sans-serif" }}>ATS Score</h3>
+                    
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginBottom: "2.5rem" }}>
+                       <span style={{ fontSize: "3.5rem", fontWeight: 800, lineHeight: 1, color: resume.ats_score.overall >= 80 ? "#10b981" : resume.ats_score.overall >= 60 ? "#f59e0b" : "#ef4444" }}>
+                         {resume.ats_score.overall}
+                       </span>
+                       <span style={{ fontSize: "1rem", color: "var(--text-muted)", fontWeight: 600 }}>/ 100</span>
+                       <span style={{ marginLeft: "auto", fontSize: "0.8rem", fontWeight: 700, padding: "0.25rem 0.7rem", borderRadius: "12px", background: resume.ats_score.overall >= 80 ? "rgba(16,185,129,0.15)" : resume.ats_score.overall >= 60 ? "rgba(245,158,11,0.15)" : "rgba(239,68,68,0.15)", color: resume.ats_score.overall >= 80 ? "#10b981" : resume.ats_score.overall >= 60 ? "#f59e0b" : "#ef4444" }}>
+                         {resume.ats_score.overall >= 80 ? "Excellent" : resume.ats_score.overall >= 60 ? "Average" : "Needs Work"}
+                       </span>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                      {[
+                        { key: "profile_fill", label: "Profile Fill", val: resume.ats_score.breakdown.profile_fill },
+                        { key: "keywords", label: "Keywords", val: resume.ats_score.breakdown.keywords },
+                        { key: "sections", label: "Sections", val: resume.ats_score.breakdown.sections },
+                        { key: "formatting", label: "Formatting", val: resume.ats_score.breakdown.formatting },
+                        { key: "readability", label: "Readability", val: resume.ats_score.breakdown.readability }
+                      ].map(m => {
+                        const color = m.val >= 80 ? "#10b981" : m.val >= 60 ? "#f59e0b" : "#ef4444";
+                        const label = m.val >= 80 ? "Excellent" : m.val >= 60 ? "Average" : "Needs Work";
+                        return (
+                          <div key={m.key}>
+                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: 700, color: "var(--text)" }}>
+                              <span>{m.label}</span>
+                              <span style={{ color }}>{m.val} <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>/100</span></span>
+                            </div>
+                            <div style={{ height: "6px", background: "var(--bg-2)", borderRadius: "3px", overflow: "hidden", marginBottom: "0.4rem" }}>
+                               <div style={{ height: "100%", width: `${m.val}%`, background: color, borderRadius: "3px" }} />
+                            </div>
+                            <div style={{ textAlign: "right", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)" }}>
+                              {label}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div style={{ minWidth: 0 }}>
+                    <SuggestionFlow
+                      suggestions={suggestions}
+                      currentScore={resume.ats_score.overall}
+                      estimatedNewScore={estimatedNewScore}
+                      onApplyChanges={handleApplyComprehensive}
+                    />
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -813,11 +822,7 @@ export default function ResumeDetailPage() {
                     <Edit3 size={13} /> Edit in Builder
                   </button>
                 </Link>
-                <Link href={`/resume/${resume.id}/cover-letter`}>
-                  <button className="btn-secondary" style={{ fontSize: "0.82rem", padding: "0.48rem 1.1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                    <Mail size={13} /> Cover Letter
-                  </button>
-                </Link>
+
                 <button onClick={handlePrint} disabled={isPrinting} className="btn-secondary" style={{ fontSize: "0.82rem", padding: "0.48rem 1.1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
                   <Printer size={13} /> {isPrinting ? "Processing..." : "Print / PDF"}
                 </button>
@@ -985,152 +990,156 @@ export default function ResumeDetailPage() {
                 </div>
               )}
 
-              {/* Missing sections alert */}
-              {missingSecs.length > 0 && (
-                <div style={{ background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)", borderLeft: "3px solid #f59e0b", padding: "0.75rem 1rem", borderRadius: "10px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.35rem" }}>
-                    <AlertTriangle size={13} color="#f59e0b" />
-                    <strong style={{ color: "#f59e0b", fontSize: "0.8rem" }}>Incomplete Resume Profile</strong>
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
-                    {missingSecs.map((sec, i) => (
-                      <span key={i} style={{ fontSize: "0.7rem", padding: "0.15rem 0.5rem", borderRadius: "6px", background: "rgba(245,158,11,0.1)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.2)", fontWeight: 600 }}>
-                        Missing: {sec}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ── Score Summary Row ── */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-                {/* ATS Score */}
-                {resume.ats_score && (() => {
-                  const s = sc(resume.ats_score.overall);
-                  return (
-                    <div style={{
-                      background: `linear-gradient(145deg, ${s.bg} 0%, var(--card) 70%)`,
-                      border: `1px solid ${s.border}`,
-                      borderRadius: "14px", padding: "1.1rem 0.9rem",
-                      textAlign: "center", position: "relative", overflow: "hidden",
-                      boxShadow: `0 4px 20px ${s.glow}`,
-                      transition: "box-shadow 0.3s",
-                    }}>
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: s.grad }} />
-                      <div style={{ position: "absolute", bottom: "-20px", right: "-20px", width: 70, height: 70, borderRadius: "50%", background: `radial-gradient(circle, ${s.color}12 0%, transparent 70%)`, pointerEvents: "none" }} />
-                      <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.45rem" }}>ATS Score</div>
-                      <div style={{
-                        fontSize: "2.6rem", fontWeight: 900, fontFamily: "Syne, sans-serif",
-                        color: s.color, lineHeight: 1,
-                        textShadow: `0 0 20px ${s.color}40`,
-                      }}>{resume.ats_score.overall}</div>
-                      <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>/ 100</div>
-                      <div style={{ height: 5, background: "var(--bg-3)", borderRadius: 99, overflow: "hidden", marginTop: "0.6rem" }}>
-                        <div style={{ height: "100%", width: `${resume.ats_score.overall}%`, background: s.grad, borderRadius: 99, transition: "width 1s cubic-bezier(0.16,1,0.3,1)", boxShadow: `0 0 8px ${s.color}60` }} />
-                      </div>
-                      <div style={{ marginTop: "0.45rem", display: "inline-block", fontSize: "0.62rem", fontWeight: 700, padding: "0.1rem 0.5rem", borderRadius: "9999px", background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}30` }}>{s.label}</div>
-                    </div>
-                  );
-                })()}
-
-                {/* Profile Completion */}
-                {(() => {
-                  const s = sc(completionPercent);
-                  return (
-                    <div style={{
-                      background: `linear-gradient(145deg, ${s.bg} 0%, var(--card) 70%)`,
-                      border: `1px solid ${s.border}`,
-                      borderRadius: "14px", padding: "1.1rem 0.9rem",
-                      textAlign: "center", position: "relative", overflow: "hidden",
-                      boxShadow: `0 4px 20px ${s.glow}`,
-                      transition: "box-shadow 0.3s",
-                    }}>
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: s.grad }} />
-                      <div style={{ position: "absolute", bottom: "-20px", left: "-20px", width: 70, height: 70, borderRadius: "50%", background: `radial-gradient(circle, ${s.color}12 0%, transparent 70%)`, pointerEvents: "none" }} />
-                      <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.45rem" }}>Profile Fill</div>
-                      <div style={{
-                        fontSize: "2.6rem", fontWeight: 900, fontFamily: "Syne, sans-serif",
-                        color: s.color, lineHeight: 1,
-                        textShadow: `0 0 20px ${s.color}40`,
-                      }}>{completionPercent}%</div>
-                      <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>completed</div>
-                      <div style={{ height: 5, background: "var(--bg-3)", borderRadius: 99, overflow: "hidden", marginTop: "0.6rem" }}>
-                        <div style={{ height: "100%", width: `${completionPercent}%`, background: s.grad, borderRadius: 99, transition: "width 1s cubic-bezier(0.16,1,0.3,1)", boxShadow: `0 0 8px ${s.color}60` }} />
-                      </div>
-                      <div style={{ marginTop: "0.45rem", display: "inline-block", fontSize: "0.62rem", fontWeight: 700, padding: "0.1rem 0.5rem", borderRadius: "9999px", background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}30` }}>{s.label}</div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* ── contextual next-action nudge ── */}
-              {resume.ats_score && !hasUnappliedChanges && !savedNewResumeId && (() => {
-                const missing = (resume.ats_score.missingKeywordDetails || resume.ats_score.missingKeywords || []).length;
-                const score = resume.ats_score.overall;
-                if (score >= 80) return (
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.9rem", background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "12px" }}>
-                    <CheckCircle2 size={15} color="#10b981" style={{ flexShrink: 0 }} />
-                    <div>
-                      <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#10b981" }}>Great score! Ready to share</div>
-                      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Generate a public link below and share with recruiters.</div>
-                    </div>
-                  </div>
-                );
-                if (missing > 0) return (
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.9rem", background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "12px" }}>
-                    <Sparkles size={15} color="var(--accent)" style={{ flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>Recommended: Add {missing} missing keyword{missing !== 1 ? "s" : ""}</div>
-                      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Could boost your score by ~{Math.min(30, missing * 3)}pts. Scroll to Keywords →</div>
-                    </div>
-                  </div>
-                );
-                return null;
-              })()}
-
-              {/* ── ATS Score Breakdown ── */}
+              {/* ── ATS Score Breakdown (Renamed to Health Check) ── */}
               {resume.ats_score && (
-                <Section title="Score Breakdown" icon={TrendingUp} defaultOpen={false}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
-                    {Object.entries(resume.ats_score.breakdown).map(([key, val]) => {
-                      const v = val as number;
-                      return (
-                        <div key={key} style={{
-                          display: "flex", alignItems: "center", gap: "0.6rem",
-                          padding: "0.6rem 0.7rem", borderRadius: "9px",
-                          background: "var(--bg-2)", border: "1px solid var(--border)",
-                        }}>
-                          <ATSRing score={v} size={38} strokeWidth={4} />
+                <Section title="Health Check" icon={TrendingUp} defaultOpen={true}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    
+                    {/* Missing sections alert */}
+                    {missingSecs.length > 0 && (
+                      <div style={{ background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)", borderLeft: "3px solid #f59e0b", padding: "0.75rem 1rem", borderRadius: "10px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.35rem" }}>
+                          <AlertTriangle size={13} color="#f59e0b" />
+                          <strong style={{ color: "#f59e0b", fontSize: "0.8rem" }}>Incomplete Resume Profile</strong>
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
+                          {missingSecs.map((sec, i) => (
+                            <span key={i} style={{ fontSize: "0.7rem", padding: "0.15rem 0.5rem", borderRadius: "6px", background: "rgba(245,158,11,0.1)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.2)", fontWeight: 600 }}>
+                              Missing: {sec}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Score Summary Row ── */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                      {/* ATS Score */}
+                      {(() => {
+                        const s = sc(resume.ats_score.overall);
+                        return (
+                          <div style={{
+                            background: `linear-gradient(145deg, ${s.bg} 0%, var(--card) 70%)`,
+                            border: `1px solid ${s.border}`,
+                            borderRadius: "14px", padding: "1.1rem 0.9rem",
+                            textAlign: "center", position: "relative", overflow: "hidden",
+                            boxShadow: `0 4px 20px ${s.glow}`,
+                            transition: "box-shadow 0.3s",
+                          }}>
+                            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: s.grad }} />
+                            <div style={{ position: "absolute", bottom: "-20px", right: "-20px", width: 70, height: 70, borderRadius: "50%", background: `radial-gradient(circle, ${s.color}12 0%, transparent 70%)`, pointerEvents: "none" }} />
+                            <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.45rem" }}>ATS Score</div>
+                            <div style={{
+                              fontSize: "2.6rem", fontWeight: 900, fontFamily: "Syne, sans-serif",
+                              color: s.color, lineHeight: 1,
+                              textShadow: `0 0 20px ${s.color}40`,
+                            }}>{resume.ats_score.overall}</div>
+                            <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>/ 100</div>
+                            <div style={{ height: 5, background: "var(--bg-3)", borderRadius: 99, overflow: "hidden", marginTop: "0.6rem" }}>
+                              <div style={{ height: "100%", width: `${resume.ats_score.overall}%`, background: s.grad, borderRadius: 99, transition: "width 1s cubic-bezier(0.16,1,0.3,1)", boxShadow: `0 0 8px ${s.color}60` }} />
+                            </div>
+                            <div style={{ marginTop: "0.45rem", display: "inline-block", fontSize: "0.62rem", fontWeight: 700, padding: "0.1rem 0.5rem", borderRadius: "9999px", background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}30` }}>{s.label}</div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Profile Completion */}
+                      {(() => {
+                        const s = sc(completionPercent);
+                        return (
+                          <div style={{
+                            background: `linear-gradient(145deg, ${s.bg} 0%, var(--card) 70%)`,
+                            border: `1px solid ${s.border}`,
+                            borderRadius: "14px", padding: "1.1rem 0.9rem",
+                            textAlign: "center", position: "relative", overflow: "hidden",
+                            boxShadow: `0 4px 20px ${s.glow}`,
+                            transition: "box-shadow 0.3s",
+                          }}>
+                            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: s.grad }} />
+                            <div style={{ position: "absolute", bottom: "-20px", left: "-20px", width: 70, height: 70, borderRadius: "50%", background: `radial-gradient(circle, ${s.color}12 0%, transparent 70%)`, pointerEvents: "none" }} />
+                            <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.45rem" }}>Profile Fill</div>
+                            <div style={{
+                              fontSize: "2.6rem", fontWeight: 900, fontFamily: "Syne, sans-serif",
+                              color: s.color, lineHeight: 1,
+                              textShadow: `0 0 20px ${s.color}40`,
+                            }}>{completionPercent}%</div>
+                            <div style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>completed</div>
+                            <div style={{ height: 5, background: "var(--bg-3)", borderRadius: 99, overflow: "hidden", marginTop: "0.6rem" }}>
+                              <div style={{ height: "100%", width: `${completionPercent}%`, background: s.grad, borderRadius: 99, transition: "width 1s cubic-bezier(0.16,1,0.3,1)", boxShadow: `0 0 8px ${s.color}60` }} />
+                            </div>
+                            <div style={{ marginTop: "0.45rem", display: "inline-block", fontSize: "0.62rem", fontWeight: 700, padding: "0.1rem 0.5rem", borderRadius: "9999px", background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}30` }}>{s.label}</div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* ── contextual next-action nudge ── */}
+                    {!hasUnappliedChanges && !savedNewResumeId && (() => {
+                      const missing = (resume.ats_score.missingKeywordDetails || resume.ats_score.missingKeywords || []).length;
+                      const score = resume.ats_score.overall;
+                      if (score >= 80) return (
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.9rem", background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "12px" }}>
+                          <CheckCircle2 size={15} color="#10b981" style={{ flexShrink: 0 }} />
                           <div>
-                            <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text)", textTransform: "capitalize" }}>{key}</div>
-                            <div style={{ fontSize: "0.65rem", color: sc(v).color, fontWeight: 700 }}>{sc(v).label}</div>
+                            <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#10b981" }}>Great score! Ready to share</div>
+                            <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Generate a public link below and share with recruiters.</div>
                           </div>
                         </div>
                       );
-                    })}
-                  </div>
+                      if (missing > 0) return (
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.7rem 0.9rem", background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "12px" }}>
+                          <Sparkles size={15} color="var(--accent)" style={{ flexShrink: 0 }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>Recommended: Add {missing} missing keyword{missing !== 1 ? "s" : ""}</div>
+                            <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Could boost your score by ~{Math.min(30, missing * 3)}pts. Scroll to Keywords →</div>
+                          </div>
+                        </div>
+                      );
+                      return null;
+                    })()}
 
-                  {/* AI Role inference */}
-                  {resume.ats_score.detectedRole && (
-                    <div style={{ marginTop: "0.7rem", padding: "0.7rem 0.9rem", background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.15)", borderRadius: "9px" }}>
-                      <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--accent)", marginBottom: "0.45rem" }}>AI Role Inference</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
-                        <span style={{ padding: "0.2rem 0.6rem", borderRadius: "7px", background: "var(--accent-soft)", color: "var(--accent)", fontSize: "0.75rem", fontWeight: 700, border: "1px solid var(--border-accent)" }}>
-                          {resume.ats_score.detectedRole}
-                        </span>
-                        {resume.ats_score.detectedIndustry && (
-                          <span style={{ padding: "0.2rem 0.6rem", borderRadius: "7px", background: "var(--bg-3)", color: "var(--text)", fontSize: "0.75rem", fontWeight: 600, border: "1px solid var(--border)" }}>
-                            {resume.ats_score.detectedIndustry}
-                          </span>
-                        )}
-                        {resume.ats_score.confidence && (
-                          <span style={{ padding: "0.2rem 0.6rem", borderRadius: "7px", background: "rgba(245,158,11,0.1)", color: "#f59e0b", fontSize: "0.7rem", fontWeight: 700, border: "1px solid rgba(245,158,11,0.2)" }}>
-                            {resume.ats_score.confidence}% confidence
-                          </span>
-                        )}
-                      </div>
+                    {/* ── Original ATS Breakdown ── */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
+                      {Object.entries(resume.ats_score.breakdown).map(([key, val]) => {
+                        const v = val as number;
+                        return (
+                          <div key={key} style={{
+                            display: "flex", alignItems: "center", gap: "0.6rem",
+                            padding: "0.6rem 0.7rem", borderRadius: "9px",
+                            background: "var(--bg-2)", border: "1px solid var(--border)",
+                          }}>
+                            <ATSRing score={v} size={38} strokeWidth={4} />
+                            <div>
+                              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text)", textTransform: "capitalize" }}>{key}</div>
+                              <div style={{ fontSize: "0.65rem", color: sc(v).color, fontWeight: 700 }}>{sc(v).label}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  )}
+
+                    {/* AI Role inference */}
+                    {resume.ats_score.detectedRole && (
+                      <div style={{ padding: "0.7rem 0.9rem", background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.15)", borderRadius: "9px" }}>
+                        <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--accent)", marginBottom: "0.45rem" }}>AI Role Inference</div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
+                          <span style={{ padding: "0.2rem 0.6rem", borderRadius: "7px", background: "var(--accent-soft)", color: "var(--accent)", fontSize: "0.75rem", fontWeight: 700, border: "1px solid var(--border-accent)" }}>
+                            {resume.ats_score.detectedRole}
+                          </span>
+                          {resume.ats_score.detectedIndustry && (
+                            <span style={{ padding: "0.2rem 0.6rem", borderRadius: "7px", background: "var(--bg-3)", color: "var(--text)", fontSize: "0.75rem", fontWeight: 600, border: "1px solid var(--border)" }}>
+                              {resume.ats_score.detectedIndustry}
+                            </span>
+                          )}
+                          {resume.ats_score.confidence && (
+                            <span style={{ padding: "0.2rem 0.6rem", borderRadius: "7px", background: "rgba(245,158,11,0.1)", color: "#f59e0b", fontSize: "0.7rem", fontWeight: 700, border: "1px solid rgba(245,158,11,0.2)" }}>
+                              {resume.ats_score.confidence}% confidence
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </Section>
               )}
 
@@ -1198,73 +1207,6 @@ export default function ResumeDetailPage() {
                           ))
                         }
                       </div>
-                    </div>
-                  )}
-                </Section>
-              )}
-
-              {/* ── Health Check (Deep AI Analysis) ── */}
-              {resume.ats_score && (
-                <Section title="Health Check" icon={Zap} defaultOpen={false} accentColor="#10b981">
-                  {!resume.content_review ? (
-                    <div>
-                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: "0 0 0.7rem", lineHeight: 1.5 }}>
-                        Perform a deep AI audit of your resume for active voice, metrics, and quality.
-                      </p>
-                      {deepError && (
-                        <div style={{ color: "#ef4444", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{deepError}</div>
-                      )}
-                      {deepLoading ? (
-                        <div style={{ padding: "1rem", background: "var(--bg-2)", borderRadius: "8px", textAlign: "center" }}>
-                          <span className="spinner" style={{ width: 24, height: 24, margin: "0 auto 0.5rem" }} />
-                          <div style={{ fontSize: "0.75rem", color: "var(--text)", fontWeight: 600 }}>{deepProgress}% - {deepText}</div>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                          <textarea
-                            className="input"
-                            style={{ fontSize: "0.75rem", padding: "0.5rem", minHeight: "60px" }}
-                            placeholder="Optional: Paste Job Description to match against..."
-                            value={jobDescription}
-                            onChange={(e) => setJobDescription(e.target.value)}
-                          />
-                          <button
-                            onClick={runDeepAI}
-                            className="btn-primary"
-                            style={{ fontSize: "0.78rem", padding: "0.4rem 0.9rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", alignSelf: "flex-start" }}
-                          >
-                            <Zap size={12} /> Run Health Check <CreditBadge cost={CREDIT_COSTS.DEEP_AI_ENHANCEMENT} />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div style={{ display: "grid", gap: "0.8rem" }}>
-                      <div style={{ background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.22)", borderRadius: "9px", padding: "0.7rem 0.9rem" }}>
-                        <h4 style={{ fontSize: "0.8rem", color: "#10b981", margin: "0 0 0.3rem" }}>Overall Feedback</h4>
-                        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>{resume.content_review.overallFeedback}</p>
-                      </div>
-                      
-                      {resume.content_review.sections?.map((sec: any, idx: number) => (
-                        <div key={idx} style={{ background: "var(--bg-2)", border: "1px solid var(--border)", borderRadius: "9px", padding: "0.7rem 0.9rem" }}>
-                          <strong style={{ fontSize: "0.8rem", display: "block", marginBottom: "0.4rem" }}>{sec.section}</strong>
-                          {sec.issues?.length > 0 && (
-                            <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.2rem", fontSize: "0.75rem", color: "#ef4444" }}>
-                              {sec.issues.map((iss: string, i: number) => <li key={i}>{iss}</li>)}
-                            </ul>
-                          )}
-                          {sec.suggestions?.length > 0 && (
-                            <ul style={{ margin: "0 0 0.5rem", paddingLeft: "1.2rem", fontSize: "0.75rem", color: "#f59e0b" }}>
-                              {sec.suggestions.map((sug: string, i: number) => <li key={i}>{sug}</li>)}
-                            </ul>
-                          )}
-                          {sec.improvedVersion && (
-                            <div style={{ background: "rgba(16,185,129,0.05)", borderLeft: "2px solid #10b981", padding: "0.4rem 0.6rem", fontSize: "0.72rem", color: "var(--text)", marginTop: "0.4rem" }}>
-                              <strong>Improved:</strong> {sec.improvedVersion}
-                            </div>
-                          )}
-                        </div>
-                      ))}
                     </div>
                   )}
                 </Section>
@@ -1440,21 +1382,39 @@ export default function ResumeDetailPage() {
             </div>
           )}
 
-          {/* ── RIGHT PANEL (ORIGINAL PDF VIEWER) ── */}
-          {((resume as any).pdf_url || (resume.resume_data as any).pdf_url) && !isFullscreen && (
+          {/* ── RIGHT PANEL (PREVIEW VIEWER) ── */}
+          {!isFullscreen && (
             <div className="no-print" style={{ display: "flex", flexDirection: "column", gap: "0", overflow: "hidden", minWidth: 0, background: "var(--card)", borderRadius: "16px", border: "1px solid var(--border)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
               <div style={{ padding: "0.75rem 1.1rem", borderBottom: "1px solid var(--border)", background: "linear-gradient(135deg, rgba(99,102,241,0.04) 0%, transparent 100%)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.7rem", flexWrap: "wrap", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 700, fontSize: "0.85rem", color: "var(--text)" }}>
                   <FileText size={16} color="var(--accent)" />
-                  Original Document
+                  {previewMode === "live" ? "Live AI Preview" : "Original Document"}
                 </div>
+                {((resume as any)?.pdf_url || (resume?.resume_data as any)?.pdf_url) && (
+                  <div style={{ display: "flex", gap: "0.2rem", background: "var(--bg-2)", padding: "0.2rem", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                    <button onClick={() => setPreviewMode("live")} style={{ padding: "0.25rem 0.6rem", fontSize: "0.7rem", fontWeight: 700, borderRadius: "5px", background: previewMode === "live" ? "var(--accent)" : "transparent", color: previewMode === "live" ? "#fff" : "var(--text-muted)", border: "none", cursor: "pointer", transition: "all 0.2s" }}>Live Preview</button>
+                    <button onClick={() => setPreviewMode("pdf")} style={{ padding: "0.25rem 0.6rem", fontSize: "0.7rem", fontWeight: 700, borderRadius: "5px", background: previewMode === "pdf" ? "var(--accent)" : "transparent", color: previewMode === "pdf" ? "#fff" : "var(--text-muted)", border: "none", cursor: "pointer", transition: "all 0.2s" }}>Original PDF</button>
+                  </div>
+                )}
               </div>
-              <div style={{ flex: 1, position: "relative", backgroundColor: "#fff" }}>
-                <iframe
-                  src={`${(resume as any).pdf_url || (resume.resume_data as any).pdf_url}#toolbar=0&navpanes=0&scrollbar=0`}
-                  style={{ width: "100%", height: "100%", border: "none" }}
-                  title="Original Resume PDF"
-                />
+              <div style={{ flex: 1, position: "relative", backgroundColor: "#f3f4f6", overflow: "auto", display: "flex", justifyContent: "center", padding: "1.5rem 0" }}>
+                {previewMode === "live" ? (
+                  <div style={{
+                    width: "210mm", minHeight: "297mm", backgroundColor: "#fff",
+                    boxShadow: "0 10px 40px rgba(0,0,0,0.12)",
+                    transform: `scale(${zoomFactor})`,
+                    transformOrigin: "top center",
+                    transition: "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                  }}>
+                    <ResumeDocument data={modifiedResumeData || (resume as any).structured_data || resume.resume_data || emptyResumeData} templateId={selectedTemplate} />
+                  </div>
+                ) : (
+                  <iframe
+                    src={`${(resume as any).pdf_url || (resume.resume_data as any).pdf_url}#toolbar=0&navpanes=0&scrollbar=0`}
+                    style={{ width: "100%", height: "100%", border: "none", position: "absolute", top: 0, left: 0 }}
+                    title="Original Resume PDF"
+                  />
+                )}
               </div>
             </div>
           )}

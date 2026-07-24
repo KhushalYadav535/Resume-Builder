@@ -98,9 +98,14 @@ export async function POST(req: NextRequest) {
       }
       if (!data || data.length === 0) {
         // ID didn't match any owned row — insert as new
+        const { count } = await supabase
+          .from("resumes")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
         const { data: insertData, error: insertError } = await supabase
           .from("resumes")
-          .insert([{ user_id: user.id, ...payload }])
+          .insert([{ user_id: user.id, is_base_resume: count === 0, ...payload }])
           .select();
         if (insertError) {
           console.error("Supabase insert (fallback) error:", insertError.message, insertError.details, insertError.hint);
@@ -112,9 +117,14 @@ export async function POST(req: NextRequest) {
       }
     } else {
       // INSERT NEW RECORD
+      const { count } = await supabase
+        .from("resumes")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
       const { data, error } = await supabase
         .from("resumes")
-        .insert([{ user_id: user.id, ...payload }])
+        .insert([{ user_id: user.id, is_base_resume: count === 0, ...payload }])
         .select();
 
       if (error) {

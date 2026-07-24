@@ -66,11 +66,24 @@ export async function POST(req: NextRequest) {
       .from("resumes")
       .select("resume_data, id")
       .eq("user_id", user.id)
-      .order("created_at", { ascending: true })
+      .eq("is_base_resume", true)
       .limit(1);
 
-    if (baseResumes && baseResumes.length > 0) {
-      const baseResumeData = baseResumes[0].resume_data;
+    // Fallback if no resume is explicitly marked as base
+    let baseResumeData = baseResumes && baseResumes.length > 0 ? baseResumes[0].resume_data : null;
+    if (!baseResumeData) {
+      const { data: oldestResumes } = await supabase
+        .from("resumes")
+        .select("resume_data, id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(1);
+      if (oldestResumes && oldestResumes.length > 0) {
+        baseResumeData = oldestResumes[0].resume_data;
+      }
+    }
+
+    if (baseResumeData) {
       const baseEmail = baseResumeData?.personalInfo?.email || "";
       const baseName = baseResumeData?.personalInfo?.fullName || "";
       const newEmail = structuredResume.personalInfo.email || "";
@@ -92,17 +105,20 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Allow if either matches, or if we have NO identifying info to compare against
-      isMatch = emailMatch || nameMatch;
-
-      // 3. Fallback: If neither have meaningful identifiable data, we allow it to prevent locking users out
-      if (!baseEmail && !newEmail && (!baseName || baseName === "Untitled Candidate") && (!newName || newName === "Untitled Candidate")) {
+      // If either matches, or both are blank but we matched on something else, it's valid.
+      // Strict rule: if emails exist and don't match, block it.
+      if (baseEmail && newEmail && !emailMatch) {
+        isMatch = false;
+      } else if (nameMatch || emailMatch) {
+        isMatch = true;
+      } else if (!baseEmail && !baseName) {
+        // Edge case: Base resume was completely blank. Let them establish identity now.
         isMatch = true;
       }
 
       if (!isMatch) {
         return NextResponse.json(
-          { error: "Identity Mismatch: You can only upload resumes belonging to the same person as your first uploaded resume." },
+          { error: "Identity Mismatch: You can only upload resumes belonging to the same person as your base resume." },
           { status: 400 }
         );
       }
@@ -118,6 +134,12 @@ export async function POST(req: NextRequest) {
       );
     }
     // --------------------------------
+    
+    // Check if this is the first resume
+    const { count } = await supabase
+      .from("resumes")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
 
     // Save to Supabase DB immediately
     const { data, error } = await supabase
@@ -132,6 +154,7 @@ export async function POST(req: NextRequest) {
           content_review: null,
           jd_match: null,
           template_id: "standard",
+          is_base_resume: count === 0,
         }
       ])
       .select();

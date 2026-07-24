@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { applyComprehensiveSuggestions } from "@/lib/suggestions/applySuggestions";
+import { calculateDynamicATS } from "@/lib/ats";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,8 @@ export async function POST(req: NextRequest) {
     );
 
     // Save back to DB as a NEW resume
+    const newAtsScore = calculateDynamicATS(updatedText);
+
     const { data: insertedResumes, error: insertError } = await supabase
       .from("resumes")
       .insert([{
@@ -77,7 +80,7 @@ export async function POST(req: NextRequest) {
         file_name: dbResume.file_name ? `${dbResume.file_name} (AI Improved)` : "AI Improved Resume",
         raw_text: updatedText,
         resume_data: updatedStructured,
-        ats_score: dbResume.ats_score,
+        ats_score: newAtsScore,
         content_review: dbResume.content_review,
         jd_match: dbResume.jd_match,
         template_id: dbResume.template_id || "standard"
