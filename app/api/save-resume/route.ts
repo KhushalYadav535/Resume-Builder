@@ -60,6 +60,12 @@ export async function POST(req: NextRequest) {
     const resumeText = sanitizeStr(rawResumeText || raw_text || "");
     const structuredResume = sanitizeDeep(rawStructuredResume || resume_data || {});
     
+    // Explicitly clean up LinkedIn URL in case AI or UI sent dirty header text
+    if (structuredResume?.personalInfo?.linkedin) {
+      const match = structuredResume.personalInfo.linkedin.match(/linkedin\.com\/in\/[a-zA-Z0-9_%-]+/i);
+      structuredResume.personalInfo.linkedin = match ? match[0] : "";
+    }
+    
     // Auto-calculate ATS score if omitted (bridges the Builder ATS score gap)
     let atsScore = rawAtsScore !== undefined ? rawAtsScore : (ats_score !== undefined ? ats_score : null);
     if (atsScore == null && resumeText) {
