@@ -708,7 +708,7 @@ export default function ResumeDetailPage() {
 
                     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
                       {[
-                        { key: "profile_fill", label: "Profile Fill", val: resume.ats_score.breakdown.profile_fill },
+                        { key: "profile_fill", label: "Profile Fill", val: completionPercent },
                         { key: "keywords", label: "Keywords", val: resume.ats_score.breakdown.keywords },
                         { key: "sections", label: "Sections", val: resume.ats_score.breakdown.sections },
                         { key: "formatting", label: "Formatting", val: resume.ats_score.breakdown.formatting },
