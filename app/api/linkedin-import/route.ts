@@ -142,6 +142,12 @@ ${cleanedText}`;
 
     if (!extractedJSON.experience) extractedJSON.experience = [];
     if (!extractedJSON.skills) extractedJSON.skills = [];
+    
+    // Sanitize linkedin_url just in case AI hallucinated the header line
+    if (extractedJSON.personal?.linkedin_url) {
+      const match = extractedJSON.personal.linkedin_url.match(/linkedin\.com\/in\/[a-zA-Z0-9_%-]+/i);
+      extractedJSON.personal.linkedin_url = match ? match[0] : "";
+    }
 
     return NextResponse.json({
       success: true,

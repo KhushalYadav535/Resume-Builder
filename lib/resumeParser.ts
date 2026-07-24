@@ -151,19 +151,35 @@ export function parseResume(text: string): ResumeData {
     const endDate = years?.[1] || "";
     let cleanLine = line.replace(/\b(19|20)\d{2}\b/g, "").replace(/[-–—]+$/, "").trim();
 
-    // Match Institution Name
-    const INST_PATTERN = /((?:[a-zA-Z]+\s+|of\s+|and\s+|at\s+){1,6}(?:University|College|Institute|School|Academy|Board|IIT|NIT|BITS)(?:\s+of\s+[a-zA-Z\s]+)?)/i;
-    const instMatch = cleanLine.match(INST_PATTERN);
-
+    // Try to split into degree/field and institution if there's a clear delimiter
     let institution = "";
-    if (instMatch) {
-      institution = instMatch[1].trim();
-      cleanLine = cleanLine.replace(instMatch[1], "").replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim();
+    const inParts = cleanLine.split(/(?:\s+in\s+|\s+-\s+|\s+–\s+|\s+at\s+|, | \| )/i);
+    let degreeStr = inParts[0] || cleanLine;
+    let fieldStr = inParts.length > 1 ? inParts[1] : "";
+    
+    // If it split correctly into multiple parts, try to identify the institution from the parts
+    if (inParts.length > 2) {
+       // Usually it's Degree - Field - Institution
+       institution = inParts[inParts.length - 1].trim();
+       fieldStr = inParts[1].trim();
+    } else if (inParts.length === 2 && /(University|College|Institute|School|Academy|Board|IIT|NIT|BITS)/i.test(inParts[1])) {
+       institution = inParts[1].trim();
+       fieldStr = "";
+    } else {
+       // Fallback to regex if no clear delimiters were found
+       const INST_PATTERN = /((?:[A-Z][a-zA-Z]*\s+|of\s+|and\s+){1,4}(?:University|College|Institute|School|Academy|Board|IIT|NIT|BITS)(?:\s+of\s+[A-Z][a-zA-Z\s]+)?)/;
+       const instMatch = cleanLine.match(INST_PATTERN);
+       if (instMatch) {
+         institution = instMatch[1].trim();
+         cleanLine = cleanLine.replace(instMatch[1], "").replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim();
+       }
+       const parts = cleanLine.split(/(?:\s+in\s+)/i);
+       degreeStr = parts[0] || cleanLine;
+       fieldStr = parts[1] || "";
     }
 
-    const inParts = cleanLine.split(/(?:\s+in\s+| - | \- )/i);
-    let degree = inParts[0] ? inParts[0].replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim() : cleanLine;
-    let field = inParts[1] ? inParts[1].replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim() : "";
+    let degree = degreeStr.replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim();
+    let field = fieldStr.replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim();
 
     // GPA checking
     const gpaMatch = cleanLine.match(/CGPA[\s:-]*([\d.]+)/i) || cleanLine.match(/([\d.]+)%|([\d.]+)\s*\/10/);
