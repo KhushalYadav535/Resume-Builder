@@ -166,7 +166,7 @@ export default function CreditsPage() {
                 </div>
                 <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.3rem" }}>credits available</div>
                 {profile && profile.credit_balance < 50 && (
-                  <Link href="/pricing" style={{ display: "inline-block", marginTop: "0.8rem", fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)", textDecoration: "none" }}>
+                  <Link href="/pricing#topup" style={{ display: "inline-block", marginTop: "0.8rem", fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)", textDecoration: "none" }}>
                     Top Up →
                   </Link>
                 )}

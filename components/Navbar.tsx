@@ -228,7 +228,7 @@ export default function Navbar() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           {profile.credit_balance < 50 && profile.tier === 'free' && (
-                            <Link href="/pricing" className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded transition-colors">Top Up</Link>
+                            <Link href="/pricing#topup" className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded transition-colors">Top Up</Link>
                           )}
                           <span
                             className={`text-[12px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-md ${
