@@ -605,7 +605,7 @@ export default function Home() {
             SECTION 6: PRICING (Dynamic Orders)
             ═══════════════════════════════════════ */}
         <section className="relative z-10 border-t border-[var(--border)]">
-          <PricingSection />
+          <PricingSection showCards={false} />
         </section>
 
         {/* ═══════════════════════════════════════
