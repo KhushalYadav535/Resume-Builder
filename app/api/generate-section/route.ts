@@ -15,6 +15,17 @@ export async function POST(req: NextRequest) {
     }
 
     const { section, context, industryMode = "IT" } = await req.json();
+
+    // Deduct credits based on section type (5 for bullet, 10 for others)
+    const { checkAndDeductCredits } = await import("@/lib/billing");
+    const { CREDIT_COSTS } = await import("@/lib/creditCosts");
+    
+    const cost = section === "bullet" ? 5 : CREDIT_COSTS.AI_REWRITE;
+    const billing = await checkAndDeductCredits(user.id, cost, `AI Generate: ${section}`);
+    if (!billing.allowed) {
+      return NextResponse.json({ error: billing.error }, { status: 403 });
+    }
+
     const industryGuideline = industryPrompts[industryMode] || industryPrompts.IT;
 
     const prompts: Record<string, string> = {

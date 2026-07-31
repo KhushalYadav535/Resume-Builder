@@ -53,7 +53,7 @@ export default function RecruiterVisibility() {
           onChange={e => setHeadline(e.target.value)} 
           style={{ flex: 1, padding: "0.6rem 1rem", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-elevated)" }} 
         />
-        <button onClick={handleAudit} disabled={loading} className="btn-secondary">
+        <button onClick={handleAudit} disabled={loading} className="btn-primary">
           {loading ? "Auditing..." : "Audit Headline"}
         </button>
       </div>

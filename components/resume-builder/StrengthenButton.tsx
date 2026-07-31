@@ -48,7 +48,7 @@ export function StrengthenButton({ originalText, onRewrite, onAccept, onReject }
         disabled={!originalText.trim()}
       >
         <Sparkles size={14} />
-        Strengthen
+        Strengthen <span style={{fontSize: "0.65rem", opacity: 0.8, marginLeft: "2px"}}>⚡10</span>
       </button>
     );
   }

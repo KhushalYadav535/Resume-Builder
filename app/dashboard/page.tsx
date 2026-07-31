@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/toast-1";
 import {
   Upload, Plus, FileText, Target as TargetIcon,
   Bot, BookOpen, LayoutTemplate, Search, ArrowRight, CheckCircle2,
-  AlertTriangle, Sparkles, Clock, ChevronRight, Trash2
+  AlertTriangle, Sparkles, Clock, ChevronRight, Trash2, MoreVertical, Star
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -27,6 +27,48 @@ export default function Dashboard() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   
   const [showAllImprovements, setShowAllImprovements] = useState(false);
+
+  const carouselItems = useMemo(() => [
+    {
+      label: "Recommended next step",
+      title: "Your resume is in good shape — sharpen your pitch next.",
+      description: "You're mid-way through Interview Prep & Pitch. Finish your elevator pitch script while your recent JD match is still fresh.",
+      actionText: "Continue Interview Prep",
+      actionLink: "/career-copilot",
+      icon: <Sparkles className="w-4 h-4" />,
+      bg: "bg-gradient-to-r from-indigo-600 to-indigo-500",
+      textClass: "text-indigo-600"
+    },
+    {
+      label: "Discover Opportunities",
+      title: "Found a job you like? See how you match up.",
+      description: "Paste a job description to instantly see your match score and get AI suggestions to tailor your resume.",
+      actionText: "Analyze JD Match",
+      actionLink: "/resume/tailor",
+      icon: <TargetIcon className="w-4 h-4" />,
+      bg: "bg-gradient-to-r from-blue-600 to-blue-500",
+      textClass: "text-blue-600"
+    },
+    {
+      label: "Career Maintenance",
+      title: "Don't forget to log your recent wins.",
+      description: "Keep your career journal updated with new skills, promotions, or successful projects for your next resume update.",
+      actionText: "Open Journal",
+      actionLink: "/career-journal",
+      icon: <BookOpen className="w-4 h-4" />,
+      bg: "bg-gradient-to-r from-emerald-600 to-emerald-500",
+      textClass: "text-emerald-600"
+    }
+  ], []);
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [carouselItems.length]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -220,19 +262,43 @@ export default function Dashboard() {
           <StatCard icon={<Clock className="w-5 h-5" />} label="Last Activity" value={fetchingResumes ? "-" : resumes.length > 0 ? new Date(resumes[0].created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : "None"} delta="View all activity" isLink onClick={() => document.getElementById("resumes-list")?.scrollIntoView({ behavior: "smooth" })} />
         </div>
 
-        {/* Primary focus */}
-        <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 p-7 mb-6 text-white flex flex-col md:flex-row md:items-center justify-between overflow-hidden relative shadow-lg">
-          <div className="relative z-10 max-w-[640px] mb-4 md:mb-0">
-            <div className="flex items-center gap-2 text-[13px] font-medium text-white/80 mb-2">
-              <Sparkles className="w-4 h-4" /> Recommended next step
-            </div>
-            <h2 className="text-[21px] font-semibold mb-1.5">Your resume is in good shape — sharpen your pitch next.</h2>
-            <p className="text-white/80 text-[14px]">You're mid-way through Interview Prep & Pitch. Finish your elevator pitch script while your recent JD match is still fresh.</p>
+        {/* Primary focus Carousel */}
+        <div className={`rounded-2xl ${carouselItems[currentSlide].bg} p-7 pb-10 mb-6 text-white flex flex-col md:flex-row md:items-center justify-between overflow-hidden relative shadow-lg transition-colors duration-700`}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="relative z-10 flex flex-col md:flex-row md:items-center justify-between w-full"
+            >
+              <div className="max-w-[640px] mb-4 md:mb-0">
+                <div className="flex items-center gap-2 text-[13px] font-medium text-white/80 mb-2">
+                  {carouselItems[currentSlide].icon} {carouselItems[currentSlide].label}
+                </div>
+                <h2 className="text-[21px] font-semibold mb-1.5">{carouselItems[currentSlide].title}</h2>
+                <p className="text-white/80 text-[14px]">{carouselItems[currentSlide].description}</p>
+              </div>
+              <Link href={carouselItems[currentSlide].actionLink} className={`relative z-10 flex items-center justify-center gap-2 px-5 h-11 rounded-lg bg-white ${carouselItems[currentSlide].textClass} text-[14px] font-semibold whitespace-nowrap hover:bg-white/90 transition-colors shrink-0`}>
+                {carouselItems[currentSlide].actionText} <ArrowRight className="w-4 h-4" />
+              </Link>
+            </motion.div>
+          </AnimatePresence>
+          
+          <div className="absolute -right-10 -bottom-16 w-56 h-56 rounded-full bg-white/10 pointer-events-none" />
+          
+          {/* Navigation Dots */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+            {carouselItems.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                className={`w-2 h-2 rounded-full transition-all ${idx === currentSlide ? "bg-white w-5" : "bg-white/40 hover:bg-white/60"}`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
           </div>
-          <Link href="/career-copilot" className="relative z-10 flex items-center justify-center gap-2 px-5 h-11 rounded-lg bg-white text-indigo-600 text-[14px] font-semibold whitespace-nowrap hover:bg-white/90 transition-colors">
-            Continue Interview Prep <ArrowRight className="w-4 h-4" />
-          </Link>
-          <div className="absolute -right-10 -bottom-16 w-56 h-56 rounded-full bg-white/10" />
         </div>
 
         {/* Secondary insight row */}
@@ -482,6 +548,20 @@ function RingScore({ value, color = "#16A34A" }: any) {
 
 function ResumeRow({ id, name, updated, score, status, onDelete, isDeleting, isBaseResume, onSetBase, isSettingBase }: any) {
   const statusColor = status === "Good" ? "#16A34A" : status === "Fair" ? "#D97706" : "#DC2626";
+  
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-neutral-100 dark:border-neutral-800 last:border-0 gap-4 group">
       <Link href={`/resume/${id}`} className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
@@ -508,30 +588,39 @@ function ResumeRow({ id, name, updated, score, status, onDelete, isDeleting, isB
             <div className="text-[10.5px] text-neutral-400">ATS SCORE</div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {!isBaseResume && (
-            <button
-              onClick={onSetBase}
-              disabled={isSettingBase}
-              className="px-3 h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 text-[11.5px] font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-            >
-              {isSettingBase ? "Setting..." : "Set as Base"}
-            </button>
-          )}
+        <div className="flex items-center gap-2">
           <Link href={`/resume/${id}`} className="flex items-center justify-center px-4 h-8 rounded-lg border border-neutral-200 dark:border-neutral-700 text-[12.5px] font-medium text-indigo-600 dark:text-indigo-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
             View
           </Link>
-          {!isBaseResume ? (
+          <div className="relative" ref={menuRef}>
             <button 
-              onClick={onDelete}
-              disabled={isDeleting}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
-              {isDeleting ? <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              <MoreVertical className="w-4 h-4" />
             </button>
-          ) : (
-             <div className="w-8 h-8" />
-          )}
+            
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-lg py-1 z-20">
+                <button 
+                  onClick={(e) => { setMenuOpen(false); onSetBase(e); }}
+                  disabled={isBaseResume || isSettingBase}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-[13px] ${isBaseResume ? "opacity-50 cursor-not-allowed text-neutral-400" : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"}`}
+                >
+                  <Star className="w-3.5 h-3.5" />
+                  {isSettingBase ? "Setting..." : "Set Base"}
+                </button>
+                <button 
+                  onClick={(e) => { setMenuOpen(false); onDelete(e); }}
+                  disabled={isBaseResume || isDeleting}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-[13px] ${isBaseResume ? "opacity-50 cursor-not-allowed text-neutral-400" : "text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"}`}
+                >
+                  {isDeleting ? <div className="w-3.5 h-3.5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

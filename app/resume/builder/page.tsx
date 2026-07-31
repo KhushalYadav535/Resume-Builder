@@ -789,18 +789,7 @@ function BuilderContent() {
             {saveStatus === "saved" && <span style={{ fontSize: "0.75rem", color: "#10b981", marginRight: "0.5rem", display: "flex", alignItems: "center", gap: "0.3rem" }}><Check size={12} /> Saved</span>}
             {saveStatus === "error" && <span style={{ fontSize: "0.75rem", color: "#ef4444", marginRight: "0.5rem" }}>✗ Autosave failed</span>}
 
-            <button onClick={() => setShowCoach(prev => !prev)}
-              style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "1px solid rgba(139,92,246,0.3)", color: "#8b5cf6", fontWeight: 700, background: "rgba(139,92,246,0.1)", borderRadius: "8px", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}
-              onMouseOver={e => e.currentTarget.style.background = "rgba(139,92,246,0.15)"} onMouseOut={e => e.currentTarget.style.background = "rgba(139,92,246,0.1)"}>
-              <Sparkles size={14} /> AI Career Coach
-            </button>
-            
-            <button onClick={() => setShowLinkedinModal(true)} 
-              className="btn-secondary" 
-              style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", height: "34px" }}>
-              <Briefcase size={14} /> Import LinkedIn
-            </button>
-            
+
             <button onClick={() => setIsFullscreen(prev => !prev)} 
               className="btn-primary" 
               style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", height: "34px", background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", border: "none" }}>
@@ -1000,7 +989,7 @@ function BuilderContent() {
                     style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "1px solid rgba(139,92,246,0.3)", color: "#8b5cf6", fontWeight: 700, background: "rgba(139,92,246,0.1)", borderRadius: "8px", transition: "all 0.2s", display: "inline-flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}
                     onMouseOver={e => e.currentTarget.style.background = "rgba(139,92,246,0.15)"} onMouseOut={e => e.currentTarget.style.background = "rgba(139,92,246,0.1)"}
                   >
-                    {aiLoading === "summary" ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Generating...</> : <><Sparkles size={14} /> AI Generate</>}
+                    {aiLoading === "summary" ? <><span className="spinner" style={{ width: 12, height: 12 }} /> Generating...</> : <><Sparkles size={14} /> AI Generate <span style={{fontSize: "0.65rem", opacity: 0.8, marginLeft: "4px"}}>⚡10</span></>}
                   </button>
                 </div>
                 
@@ -1237,7 +1226,7 @@ function BuilderContent() {
                                         setResume(prev => ({ ...prev, workExperience: prev.workExperience.map(w => w.id === exp.id ? { ...w, bullets: w.bullets.map((b, bIdx) => bIdx === bi ? r : b) } : w) }));
                                       })}
                                     >
-                                      ✦ Improve
+                                      ✦ Improve <span style={{fontSize: "0.65rem", opacity: 0.8, marginLeft: "4px"}}>⚡5</span>
                                     </button>
                                     <button
                                       className="btn-secondary"
@@ -1283,7 +1272,7 @@ function BuilderContent() {
                                         {inlineRewriteLoading && inlineRewriteKey === `work-${idx}-${bi}` ? "Rewriting..." : (
                                           <span style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
                                             <Sparkles size={11} />
-                                            AI Rewrite
+                                            AI Rewrite <span style={{fontSize: "0.65rem", opacity: 0.8, marginLeft: "4px"}}>⚡5</span>
                                           </span>
                                         )}
                                       </button>
@@ -1490,7 +1479,7 @@ function BuilderContent() {
                       setResume((prev) => ({ ...prev, skills: { technical: [...prev.skills.technical, ...tech], soft: [...prev.skills.soft, ...soft] } }));
                     });
                   }}>
-                    {aiLoading === "skills" ? "Generating..." : "✦ AI Suggest Skills"}
+                    {aiLoading === "skills" ? "Generating..." : <>✦ AI Suggest Skills <span style={{fontSize: "0.65rem", opacity: 0.8, marginLeft: "4px"}}>⚡10</span></>}
                   </button>
                 </div>
 
@@ -2100,7 +2089,7 @@ function BuilderContent() {
                               {inlineRewriteLoading && inlineRewriteKey === "ats-summary" ? "Generating..." : (
                                 <span style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
                                   <Sparkles size={11} />
-                                  Inject Keywords
+                                  Inject Keywords <span style={{fontSize: "0.65rem", opacity: 0.8, marginLeft: "4px"}}>⚡5</span>
                                 </span>
                               )}
                             </button>
@@ -2145,7 +2134,7 @@ function BuilderContent() {
                                   {inlineRewriteLoading && inlineRewriteKey === key ? "Generating..." : (
                                     <span style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem" }}>
                                       <Sparkles size={11} />
-                                      Inject Keywords
+                                      Inject Keywords <span style={{fontSize: "0.65rem", opacity: 0.8, marginLeft: "4px"}}>⚡5</span>
                                     </span>
                                   )}
                                 </button>

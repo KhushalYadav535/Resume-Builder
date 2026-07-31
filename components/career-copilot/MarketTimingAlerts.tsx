@@ -78,7 +78,7 @@ export default function MarketTimingAlerts() {
           onKeyDown={e => e.key === 'Enter' && handleAnalyze()}
           style={{ flex: 1, padding: "0.6rem 1rem", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-elevated)" }} 
         />
-        <button onClick={handleAnalyze} disabled={loading} className="btn-secondary">
+        <button onClick={handleAnalyze} disabled={loading} className="btn-primary">
           {loading ? "Analyzing..." : "Analyze Market"}
         </button>
       </div>
