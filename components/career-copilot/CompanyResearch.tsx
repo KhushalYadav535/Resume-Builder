@@ -54,7 +54,7 @@ export default function CompanyResearch() {
           onKeyDown={e => e.key === 'Enter' && handleResearch()}
           style={{ flex: 1, padding: "0.6rem 1rem", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-elevated)" }} 
         />
-        <button onClick={handleResearch} disabled={loading} className="btn-secondary">
+        <button onClick={handleResearch} disabled={loading} className="btn-primary">
           {loading ? "Researching..." : "Generate Brief"}
         </button>
       </div>

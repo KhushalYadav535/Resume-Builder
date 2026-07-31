@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- CREDIT CONSUMPTION GUARD ---
-    const billingCheck = await checkAndDeductCredits(user.id, CREDIT_COSTS.AI_REWRITE, "AI Resume Edit");
+    const billingCheck = await checkAndDeductCredits(user.id, 5, "AI Resume Edit");
     if (!billingCheck.allowed) {
       return NextResponse.json(
         { error: billingCheck.error || "Insufficient credits." },

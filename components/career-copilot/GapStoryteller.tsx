@@ -117,7 +117,7 @@ export default function GapStoryteller() {
         <button
           onClick={generateGapStory}
           disabled={!gapReason.trim() || loading}
-          className="btn-secondary"
+          className="btn-primary"
           style={{ width: "fit-content", display: "flex", alignItems: "center", gap: "0.5rem" }}
         >
           {loading ? (
