@@ -73,6 +73,11 @@ export async function POST(req: NextRequest) {
     // Save back to DB as a NEW resume
     const newAtsScore = calculateDynamicATS(updatedText);
 
+    // If the original was the base resume, transfer the base status to the new one
+    if (dbResume.is_base_resume) {
+      await supabase.from("resumes").update({ is_base_resume: false }).eq("user_id", user.id);
+    }
+
     const { data: insertedResumes, error: insertError } = await supabase
       .from("resumes")
       .insert([{
@@ -83,7 +88,8 @@ export async function POST(req: NextRequest) {
         ats_score: newAtsScore,
         content_review: dbResume.content_review,
         jd_match: dbResume.jd_match,
-        template_id: dbResume.template_id || "standard"
+        template_id: dbResume.template_id || "standard",
+        is_base_resume: dbResume.is_base_resume || false
       }])
       .select();
 
