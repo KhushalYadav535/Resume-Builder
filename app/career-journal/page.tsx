@@ -181,7 +181,7 @@ export default function CareerJournalPage() {
                 style={{ paddingLeft: "2.2rem", height: "38px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "8px", width: "100%" }}
               />
             </div>
-            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "nowrap", overflowX: "auto", alignItems: "center", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: "0.2rem" }}>
               <Filter size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
               {ENTRY_TYPES.map((t) => (
                 <button
@@ -197,6 +197,8 @@ export default function CareerJournalPage() {
                     fontWeight: 600,
                     cursor: "pointer",
                     transition: "all 0.15s",
+                    flexShrink: 0,
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {t.label}

@@ -267,7 +267,7 @@ export default function CareerCopilotPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", borderBottom: "1px solid var(--border)", marginBottom: "1.5rem", paddingBottom: "1rem" }}>
+            <div style={{ display: "flex", flexWrap: "nowrap", overflowX: "auto", gap: "0.5rem", borderBottom: "1px solid var(--border)", marginBottom: "1.5rem", paddingBottom: "1rem", scrollbarWidth: "none", msOverflowStyle: "none" }}>
               {[
                 { key: "interview", label: "Interview Prep & Pitch" },
                 { key: "skillgap", label: "Skill Gap & Career Path" },
@@ -286,6 +286,7 @@ export default function CareerCopilotPage() {
                     cursor: "pointer",
                     transition: "all 0.2s",
                     flexShrink: 0,
+                    whiteSpace: "nowrap",
                     border: activeTab === tab.key ? "1px solid var(--accent)" : "1px solid var(--border)",
                     background: activeTab === tab.key ? "var(--accent)" : "var(--bg-elevated)",
                     color: activeTab === tab.key ? "#fff" : "var(--text)",

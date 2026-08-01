@@ -62,7 +62,7 @@ export default function NetworkingAssistant() {
           onChange={e => setContext(e.target.value)} 
           style={{ width: "100%", padding: "0.6rem 1rem", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-elevated)" }} 
         />
-        <button onClick={handleGenerate} disabled={loading} className="btn-secondary" style={{ width: "fit-content" }}>
+        <button onClick={handleGenerate} disabled={loading} className="btn-primary" style={{ width: "fit-content" }}>
           {loading ? "Drafting Message..." : "Draft Outreach Message"}
         </button>
       </div>
