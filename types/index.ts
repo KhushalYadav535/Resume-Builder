@@ -56,6 +56,8 @@ export interface Project {
   description: string;
   techStack: string[];
   link: string;
+  date?: string;
+  bullets?: string[];
 }
 
 export interface Certification {

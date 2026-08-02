@@ -53,9 +53,8 @@ export async function POST(req: NextRequest) {
     resumeText = sanitizeInput(resumeText);
     fileName = sanitizeInput(fileName);
 
-    // Stage 1: Run processing (uses local fast parsing)
-    // Run this BEFORE billing so we can validate identity for free
-    const structuredResume = parseResume(resumeText);
+    // Stage 1: Run processing using AI parser (falls back gracefully to heuristic parser if AI fails)
+    const structuredResume = await parseResumeAI(resumeText);
     if (pdfUrl) {
       (structuredResume as any).pdf_url = pdfUrl;
     }

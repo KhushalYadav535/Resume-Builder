@@ -80,7 +80,7 @@ export function parseSections(text: string): ResumeSections {
     if (currentSection) {
       sections[currentSection].push(line);
     } else {
-      sections.summary.push(line);
+      sections.ignored.push(line);
     }
   }
 
