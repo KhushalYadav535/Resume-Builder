@@ -23,8 +23,15 @@ export const metadata: Metadata = {
   title: "UpRole — Discover Your Value. Communicate It Better.",
   description: "UpRole's AI finds the achievements you forgot to mention — and turns them into a resume that's ATS-ready and interview-ready. Free to start.",
   icons: {
-    icon: "/logo symbol.png",
-    apple: "/UpRole logo.jpeg",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/icon.png", type: "image/png", sizes: "192x192" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 
@@ -36,7 +43,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <link rel="icon" type="image/png" href="/logo symbol.png" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body>
         <Script
