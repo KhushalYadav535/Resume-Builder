@@ -20,18 +20,42 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "UpRole — Discover Your Value. Communicate It Better.",
-  description: "UpRole's AI finds the achievements you forgot to mention — and turns them into a resume that's ATS-ready and interview-ready. Free to start.",
+  metadataBase: new URL("https://www.uprole.me"),
+  title: "UPROLE — Build & Optimize Your Resume",
+  description: "Outsmart the ATS. Land the Interview. Stop guessing what recruiters want. Let our elite AI engine perfect, optimize, and score your resume in seconds.",
+  manifest: "/site.webmanifest",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
       { url: "/favicon.png", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/icon.png", type: "image/png", sizes: "192x192" },
     ],
     shortcut: "/favicon.ico",
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
+  },
+  openGraph: {
+    title: "UPROLE — Build & Optimize Your Resume",
+    description: "Outsmart the ATS. Land the Interview. Stop guessing what recruiters want. Let our elite AI engine perfect, optimize, and score your resume in seconds.",
+    url: "https://www.uprole.me",
+    siteName: "UpRole",
+    images: [
+      {
+        url: "/icon.png",
+        width: 512,
+        height: 512,
+        alt: "UpRole Logo",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "UPROLE — Build & Optimize Your Resume",
+    description: "Outsmart the ATS. Land the Interview. Stop guessing what recruiters want.",
+    images: ["/icon.png"],
   },
 };
 
@@ -46,8 +70,10 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icon.png" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body>
         <Script
