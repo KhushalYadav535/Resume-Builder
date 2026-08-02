@@ -553,7 +553,7 @@ export default function ResumeDetailPage() {
 
   useEffect(() => { if (!authLoading && !user) router.push("/login"); }, [authLoading, user, router]);
   useEffect(() => { fetchResumeData(); fetchShareStatus(); }, [authLoading, user, params.id]);
-  useEffect(() => { if (resume && !naukriFetched) fetchNaukriTips(); }, [resume, naukriFetched]);
+  // Naukri/LinkedIn SEO tips are now ON DEMAND ONLY (triggered only when user explicitly clicks "Load Visibility Tips")
 
   useEffect(() => {
     if (resume?.file_name?.includes("AI Improved") || hasUnappliedChanges || !((resume as any)?.pdf_url || (resume?.resume_data as any)?.pdf_url)) {

@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
-import LandingFeatureTour from "@/components/LandingFeatureTour";
 import PricingSection from "@/components/pricing/PricingSection";
 import ParticleBackground from "@/components/ui/ParticleBackground";
 import { Button } from "@/components/ui/Button";
@@ -451,11 +450,6 @@ export default function Home() {
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{step.desc}</p>
                 </motion.div>
               ))}
-            </div>
-
-            {/* Existing Interactive Features Tour */}
-            <div className="pt-8">
-              <LandingFeatureTour />
             </div>
           </div>
         </section>

@@ -142,6 +142,10 @@ export function parseResume(text: string): ResumeData {
   const education: Education[] = [];
   let currentEducation: Partial<Education> | null = null;
 
+  const monthTokensRegex = /\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b/gi;
+  const instKeywordsRegex = /(?:University|College|Institute|School|Academy|Board|IIT|NIT|BITS|Polytechnic|Vidyalaya|Vidhyalaya)/i;
+  const degreeKeywordsRegex = /(?:B\.?\s*Tech|M\.?\s*Tech|B\.?\s*E\.?|B\.?\s*S\.?|M\.?\s*S\.?|B\.?\s*Sc|M\.?\s*Sc|B\.?\s*A\.?|M\.?\s*A\.?|Ph\.?\s*D|Bachelor|Master|Doctor|Diploma|Higher\s+Secondary|High\s+School|12th|10th)/i;
+
   for (const line of sections.education) {
     if (!line || /^[•\-\*■●▪▸◦]/.test(line)) continue;
     if (/^(education|academic background|academics)$/i.test(line.trim())) continue;
@@ -149,62 +153,66 @@ export function parseResume(text: string): ResumeData {
     const years = line.match(/\b(19|20)\d{2}\b/g);
     const startDate = years?.[0] || "";
     const endDate = years?.[1] || "";
-    let cleanLine = line.replace(/\b(19|20)\d{2}\b/g, "").replace(/[-–—]+$/, "").trim();
 
-    // Try to split into degree/field and institution if there's a clear delimiter
-    let institution = "";
-    const inParts = cleanLine.split(/(?:\s+in\s+|\s+-\s+|\s+–\s+|\s+at\s+|, | \| )/i);
-    let degreeStr = inParts[0] || cleanLine;
-    let fieldStr = inParts.length > 1 ? inParts[1] : "";
-    
-    // If it split correctly into multiple parts, try to identify the institution from the parts
-    if (inParts.length > 2) {
-       // Usually it's Degree - Field - Institution
-       institution = inParts[inParts.length - 1].trim();
-       fieldStr = inParts[1].trim();
-    } else if (inParts.length === 2 && /(University|College|Institute|School|Academy|Board|IIT|NIT|BITS)/i.test(inParts[1])) {
-       institution = inParts[1].trim();
-       fieldStr = "";
-    } else {
-       // Fallback to regex if no clear delimiters were found
-       const INST_PATTERN = /((?:[A-Z][a-zA-Z]*\s+|of\s+|and\s+){1,4}(?:University|College|Institute|School|Academy|Board|IIT|NIT|BITS)(?:\s+of\s+[A-Z][a-zA-Z\s]+)?)/;
-       const instMatch = cleanLine.match(INST_PATTERN);
-       if (instMatch) {
-         institution = instMatch[1].trim();
-         cleanLine = cleanLine.replace(instMatch[1], "").replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim();
-       }
-       const parts = cleanLine.split(/(?:\s+in\s+)/i);
-       degreeStr = parts[0] || cleanLine;
-       fieldStr = parts[1] || "";
-    }
+    let cleanLine = line
+      .replace(/\b(19|20)\d{2}\b/g, "")
+      .replace(monthTokensRegex, "")
+      .replace(/[-–—:]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
 
-    let degree = degreeStr.replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim();
-    let field = fieldStr.replace(/^[,\-\s]+|[,\-\s]+$/g, "").trim();
+    if (!cleanLine || cleanLine.length < 2) continue;
 
-    // GPA checking
-    const gpaMatch = cleanLine.match(/CGPA[\s:-]*([\d.]+)/i) || cleanLine.match(/([\d.]+)%|([\d.]+)\s*\/10/);
+    const gpaMatch = line.match(/CGPA[\s:-]*([\d.]+)/i) || line.match(/([\d.]+)%|([\d.]+)\s*\/10/);
     const gpa = gpaMatch ? (gpaMatch[1] || gpaMatch[2]).trim() : "";
 
-    if (institution) {
-       currentEducation = {
-         id: uid(),
-         institution: institution,
-         degree: (degree && degree.length > 2) ? degree : "Bachelor's Degree",
-         field: field,
-         startDate,
-         endDate,
-         gpa
-       };
-       education.push(currentEducation as Education);
+    const parts = cleanLine.split(/(?:, | \| |\s+-\s+|\s+–\s+)/).map(p => p.trim()).filter(Boolean);
+
+    let instPart = parts.find(p => instKeywordsRegex.test(p)) || "";
+    let degreePart = parts.find(p => degreeKeywordsRegex.test(p)) || "";
+    let fieldPart = parts.find(p => p !== instPart && p !== degreePart && !/^(India|Maharashtra|Madhya Pradesh|Sehore|Bhopal|Delhi|California|NY|US|UK)$/i.test(p)) || "";
+
+    if (instPart) {
+      currentEducation = {
+        id: uid(),
+        institution: instPart,
+        degree: degreePart || (fieldPart && degreeKeywordsRegex.test(fieldPart) ? fieldPart : "Degree / Secondary Education"),
+        field: fieldPart && fieldPart !== degreePart ? fieldPart : "",
+        startDate,
+        endDate,
+        gpa,
+      };
+      education.push(currentEducation as Education);
+    } else if (degreeKeywordsRegex.test(cleanLine)) {
+      if (currentEducation) {
+        if (!currentEducation.degree || currentEducation.degree === "Degree / Secondary Education") {
+          currentEducation.degree = degreePart || cleanLine;
+        }
+        if (fieldPart && !currentEducation.field) {
+          currentEducation.field = fieldPart;
+        }
+        if (startDate && !currentEducation.startDate) currentEducation.startDate = startDate;
+        if (endDate && !currentEducation.endDate) currentEducation.endDate = endDate;
+        if (gpa && !currentEducation.gpa) currentEducation.gpa = gpa;
+      } else {
+        currentEducation = {
+          id: uid(),
+          institution: "School / Institution",
+          degree: cleanLine,
+          field: fieldPart,
+          startDate,
+          endDate,
+          gpa,
+        };
+        education.push(currentEducation as Education);
+      }
     } else if (currentEducation) {
-       // if we have a degree line following an institution line
-       if (degree && degree.length > 2 && (!currentEducation.degree || currentEducation.degree === "Bachelor's Degree" || currentEducation.degree.length < 10)) {
-          currentEducation.degree = degree;
-       }
-       if (field && !currentEducation.field) currentEducation.field = field;
-       if (gpa && !currentEducation.gpa) currentEducation.gpa = gpa;
-       if (startDate && !currentEducation.startDate) currentEducation.startDate = startDate;
-       if (endDate && !currentEducation.endDate) currentEducation.endDate = endDate;
+      if (startDate && !currentEducation.startDate) currentEducation.startDate = startDate;
+      if (endDate && !currentEducation.endDate) currentEducation.endDate = endDate;
+      if (gpa && !currentEducation.gpa) currentEducation.gpa = gpa;
+      if (cleanLine.length > 3 && !currentEducation.field) {
+        currentEducation.field = cleanLine;
+      }
     }
   }
 
@@ -212,25 +220,40 @@ export function parseResume(text: string): ResumeData {
   const projects: Project[] = [];
   let currentProject: Project | null = null;
 
+  const monthsPattern = "(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)";
+  const projectDateRegex = new RegExp(`(?:\\s+|^|(?<=[a-z]))(${monthsPattern}\\s*'?\\d{2,4}\\s*(?:[\\-–—to\\s]+\\s*(?:${monthsPattern}?\\s*'?\\d{2,4}|Present|Current))?)`, "i");
+
   for (let i = 0; i < sections.projects.length; i++) {
     let line = sections.projects[i];
     if (!line.trim() || line.trim().length < 2) continue;
     if (/^(projects|personal projects|key projects|portfolio)$/i.test(line.trim())) continue;
     
     const isBullet = /^[•\-\*■●▪▸◦]/.test(line) || line.trim().startsWith("-");
-    const cleanLine = line.replace(/^[•\-\*■●▪▸◦]\s*/, "").trim();
+    let cleanLine = line.replace(/^[•\-\*■●▪▸◦]\s*/, "").trim();
 
-    // A line is likely a title if it's short, doesn't end with a period, and isn't continuing a sentence.
-    const isLikelyTitle = !isBullet && cleanLine.length < 60 && !cleanLine.endsWith('.') && !/^(and|to|with|for|using|built|developed|created|improving|which|where)\b/i.test(cleanLine);
+    const isSubtitleLine = /^(?:Frontend|Backend|Fullstack|Software)\s+Development\s+Project/i.test(cleanLine);
     const hasSeparator = /\|/.test(cleanLine);
+
+    const isLikelyTitle = !isBullet && !isSubtitleLine && cleanLine.length < 60 && !cleanLine.endsWith('.') && !/^(and|to|with|for|using|built|developed|created|improving|which|where)\b/i.test(cleanLine);
     
     if (isLikelyTitle && (!currentProject || currentProject.description.length > 15)) {
       const linkMatch = line.match(/(?:https?:\/\/)?(?:www\.)?(?:github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+|[a-zA-Z0-9-]+\.[a-z]{2,}\/[^\s]+)/i);
+      
+      let projName = cleanLine.split(/[\-\|]/)[0].trim();
+      let projDate = "";
+      const dateMatch = projName.match(projectDateRegex);
+      if (dateMatch) {
+        projDate = dateMatch[1].trim();
+        projName = projName.replace(projectDateRegex, "").trim().replace(/[\-\|:\s]+$/, "").replace(/^[\-\|:\s]+/, "").trim();
+      }
+
       currentProject = {
         id: uid(),
-        name: cleanLine.split(/[\-\|]/)[0].trim(),
+        name: projName,
+        date: projDate,
         description: "",
-        techStack: skillAnalysis.technicalSkills.slice(0, 3), // default fallback
+        bullets: [],
+        techStack: skillAnalysis.technicalSkills.slice(0, 3),
         link: linkMatch ? linkMatch[0] : "",
       };
       projects.push(currentProject);
@@ -243,15 +266,27 @@ export function parseResume(text: string): ResumeData {
       if (hasSeparator && !currentProject.description) {
          const parts = cleanLine.split(/[\-\|]/);
          currentProject.techStack = parts.map(s => s.trim()).filter(s => s.length > 0 && s.length < 30);
+      } else if (isSubtitleLine) {
+         (currentProject as any).subtitle = cleanLine.split(/REACT|CSS|HTML|JS/i)[0].trim();
+         const techParts = cleanLine.match(/(?:REACT|JS|CSS|HTML|PYTHON|JAVA|NODE|EXPRESS|TAILWIND|FIREBASE|SQL)[A-Z0-9.,\s]*/gi);
+         if (techParts) {
+           currentProject.techStack = techParts.join(",").split(/[,.\s]+/).map(s => s.trim()).filter(s => s.length > 1);
+         }
       } else {
-         if (!currentProject.description) {
-           currentProject.description = cleanLine;
-         } else {
-           currentProject.description += " " + cleanLine;
+         const cleanBullet = cleanLine.replace(/^(?:Frontend|Backend|Fullstack|Software)\s+Development\s+Project(?:REACT\.JS|React\.js|CSS|HTML|JS|Javascript|,|\s)*/i, "").trim();
+         if (cleanBullet.length > 2) {
+           if (!currentProject.bullets) currentProject.bullets = [];
+           currentProject.bullets.push(cleanBullet);
+
+           if (!currentProject.description) {
+             currentProject.description = cleanBullet;
+           } else {
+             currentProject.description += "\n" + cleanBullet;
+           }
          }
       }
     } else {
-      currentProject = { id: uid(), name: cleanLine, description: "", techStack: [], link: "" };
+      currentProject = { id: uid(), name: cleanLine, description: "", techStack: [], link: "", bullets: [] };
       projects.push(currentProject);
     }
   }
@@ -296,30 +331,6 @@ export function parseResume(text: string): ResumeData {
     }
   }
 
-  // Fallbacks if empty
-  if (education.length === 0) {
-    education.push({
-      id: uid(),
-      institution: "North Gujarat University",
-      degree: "Bachelor of Engineering",
-      field: "Electronics & Communication",
-      startDate: "2008",
-      endDate: "2012",
-      gpa: "",
-    });
-  }
-
-  if (workExperience.length === 0) {
-    workExperience.push({
-      id: uid(),
-      company: "Company Name",
-      role: "Professional Role",
-      startDate: "2023",
-      endDate: "Present",
-      current: true,
-      bullets: ["Led tasks contributing to product feature development.", "Collaborated with multi-disciplinary teams."],
-    });
-  }
   return {
     personalInfo,
     summary,

@@ -571,26 +571,41 @@ function BuilderContent() {
       bullets: (exp.bullets && exp.bullets.length > 0) ? exp.bullets : (exp.description ? [exp.description] : []),
     }));
 
-    const education = (data.education || []).map((edu: any, idx: number) => ({
-      id: `edu_${idx}_${Date.now()}`,
-      institution: edu.institution || "",
-      boardOrUniversity: edu.boardOrUniversity || "",
-      degree: edu.degree || "",
-      field: edu.field || "",
-      startDate: edu.startDate || "",
-      endDate: edu.endDate || "",
-      gpa: edu.grade || "",
-      gpaType: (edu.grade && (edu.grade.includes("%") || parseFloat(edu.grade) > 10)) ? "percentage" : "cgpa",
-    }));
+    const education = (data.education || []).map((edu: any, idx: number) => {
+      let inst = edu.institution || edu.boardOrUniversity || "";
+      let deg = edu.degree || "";
+      let fld = edu.field || "";
+
+      if (/Sehore|Madhya Pradesh|Maharashtra|Bhopal|Delhi|Mumbai/i.test(deg)) {
+        deg = fld || "Bachelor of Technology";
+      }
+
+      fld = fld.replace(/(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s*[\-–—]*\s*$/gi, "").trim();
+
+      return {
+        id: edu.id || `edu_${idx}_${Date.now()}`,
+        institution: inst,
+        boardOrUniversity: edu.boardOrUniversity || inst,
+        degree: deg,
+        field: fld,
+        startDate: edu.startDate || "",
+        endDate: edu.endDate || "",
+        gpa: edu.gpa || edu.grade || "",
+        gpaType: (edu.gpa || edu.grade) && (String(edu.gpa || edu.grade).includes("%") || parseFloat(String(edu.gpa || edu.grade)) > 10) ? "percentage" : "cgpa",
+      };
+    });
 
     const technicalSkills = data.skills || [];
 
     const projects = (data.projects || []).map((proj: any, idx: number) => ({
-      id: `proj_${idx}_${Date.now()}`,
-      name: proj.name || "",
-      description: proj.description || "",
-      techStack: proj.technologies || [],
-      link: "",
+      id: proj.id || `proj_${idx}_${Date.now()}`,
+      name: proj.name || proj.title || "",
+      date: proj.date || proj.period || "",
+      description: proj.description || (proj.bullets && Array.isArray(proj.bullets) ? proj.bullets.join("\n") : ""),
+      techStack: (proj.techStack && proj.techStack.length > 0)
+        ? proj.techStack
+        : (proj.technologies && Array.isArray(proj.technologies) ? proj.technologies : []),
+      link: proj.link || proj.url || "",
     }));
 
     const certifications = (data.certifications || []).map((cert: any, idx: number) => ({

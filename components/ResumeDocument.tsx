@@ -23,6 +23,7 @@ const TEMPLATE_ACCENT: Record<string, string> = {
 
 // ─── Safe font map (ATS + browser safe) ──────────────────────────────────────
 const FONT_MAP: Record<string, string> = {
+  "Roboto":             "'Roboto', sans-serif",
   "Plus Jakarta Sans":  "'Plus Jakarta Sans', sans-serif",
   "Inter":              "'Inter', sans-serif",
   "DM Sans":            "'DM Sans', sans-serif",
@@ -117,13 +118,19 @@ function DiffHL({ text, changes }: { text: string; changes: string[] }) {
   );
 }
 
+import { ResumeTransformer } from "@/lib/resumeTransformer";
+
+const transformer = new ResumeTransformer();
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ResumeDocument({
-  data,
+  data: rawData,
   templateId,
   highlightKeywords = [],
   highlightChanges = [],
 }: ResumeDocumentProps) {
+  const data = React.useMemo(() => transformer.transformResume(rawData), [rawData]);
+
   const {
     personalInfo = {
       fullName: "",
@@ -164,12 +171,35 @@ export default function ResumeDocument({
   const lh = spacing;            // line-height
   const accent = TEMPLATE_ACCENT[templateId] || "#111";
 
+  const cleanSummary = (text: string) => {
+    if (!text) return "";
+    let s = text.trim();
+    s = s.replace(/^(?:summary|professional summary|executive summary|career summary|career objective|objective|profile|about me|overview)[:\s\-–—]*/i, "").trim();
+    if (personalInfo?.fullName) {
+      const nameEsc = personalInfo.fullName.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
+      s = s.replace(new RegExp(`^${nameEsc}[\\s|•,:\\-–—]*`, "i"), "").trim();
+    }
+    if (personalInfo?.email) {
+      const emailEsc = personalInfo.email.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
+      s = s.replace(new RegExp(`${emailEsc}`, "gi"), "").trim();
+    }
+    s = s.replace(/^[|•,\-–—:\s]+/, "").trim();
+    s = s.replace(/^(?:summary|professional summary|executive summary)[:\s\-–—]*/i, "").trim();
+    return s;
+  };
+
+  const cleanUrl = (url: string) => {
+    if (!url) return "";
+    return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+  };
+
   const contactParts = [
-    personalInfo.email,
     personalInfo.phone,
+    personalInfo.email,
     personalInfo.location,
-    personalInfo.linkedin,
-    personalInfo.website,
+    personalInfo.linkedin ? (personalInfo.linkedin.includes("linkedin.com") ? cleanUrl(personalInfo.linkedin) : `linkedin.com/in/${cleanUrl(personalInfo.linkedin)}`) : "",
+    (personalInfo as any).github ? (cleanUrl((personalInfo as any).github).includes("github.com") ? cleanUrl((personalInfo as any).github) : `github.com/${cleanUrl((personalInfo as any).github)}`) : "",
+    personalInfo.website ? cleanUrl(personalInfo.website) : "",
   ].filter(Boolean);
 
   const dateStr = (w: WorkExperience) =>
@@ -190,9 +220,9 @@ export default function ResumeDocument({
     const SectionHdr = ({ title }: { title: string }) => (
       <div
         style={{
-          marginTop: "14px",
-          marginBottom: "3px",
-          borderBottom: "1.5px solid #555",
+          marginTop: "12px",
+          marginBottom: "4px",
+          borderBottom: "1.5px solid #222",
           paddingBottom: "2px",
         }}
       >
@@ -214,15 +244,17 @@ export default function ResumeDocument({
     const Entry = ({
       left,
       right,
-      sub,
+      subLeft,
+      subRight,
       bullets,
     }: {
       left: React.ReactNode;
-      right: string;
-      sub?: React.ReactNode;
+      right?: React.ReactNode;
+      subLeft?: React.ReactNode;
+      subRight?: React.ReactNode;
       bullets?: string[];
     }) => (
-      <div style={{ marginBottom: "6px" }}>
+      <div style={{ marginBottom: "8px" }}>
         <div
           style={{
             display: "flex",
@@ -230,27 +262,35 @@ export default function ResumeDocument({
             alignItems: "baseline",
           }}
         >
-          <span style={{ fontWeight: 700, fontSize: `${fs}pt` }}>{left}</span>
-          <span
-            style={{
-              fontSize: `${fs - 0.5}pt`,
-              color: "#444",
-              whiteSpace: "nowrap",
-              marginLeft: "8px",
-            }}
-          >
-            {right}
-          </span>
+          <span style={{ fontWeight: 700, fontSize: `${fs}pt`, color: "#111" }}>{left}</span>
+          {right && (
+            <span
+              style={{
+                fontSize: `${fs - 1}pt`,
+                color: "#444",
+                whiteSpace: "nowrap",
+                marginLeft: "8px",
+                fontWeight: 500,
+              }}
+            >
+              {right}
+            </span>
+          )}
         </div>
-        {sub && (
+        {(subLeft || subRight) && (
           <div
             style={{
-              fontSize: `${fs - 0.5}pt`,
-              fontStyle: "italic",
-              color: "#444",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              fontSize: `${fs - 1}pt`,
+              color: "#555",
+              marginTop: "1px",
+              marginBottom: "2px",
             }}
           >
-            {sub}
+            {subLeft ? <span style={{ fontStyle: "italic" }}>{subLeft}</span> : <span />}
+            {subRight ? <span style={{ fontStyle: "italic", whiteSpace: "nowrap", marginLeft: "8px" }}>{subRight}</span> : null}
           </div>
         )}
         {bullets && bullets.length > 0 && (
@@ -265,10 +305,11 @@ export default function ResumeDocument({
               <li
                 key={i}
                 style={{
-                  fontSize: `${fs - 0.5}pt`,
-                  lineHeight: lh,
-                  marginBottom: "2px",
+                  fontSize: `${fs - 1}pt`,
+                  lineHeight: 1.45,
+                  marginBottom: "2.5px",
                   textAlign: "justify",
+                  color: "#222",
                 }}
               >
                 {ch.length > 0 ? <DiffHL text={b} changes={ch} /> : <HL text={b} kw={kw} />}
@@ -279,29 +320,38 @@ export default function ResumeDocument({
       </div>
     );
 
+    const safeSummary = cleanSummary(summary);
+    const achievementsList = [
+      ...(data.hackathons || []),
+      ...(data.campusAchievements || []),
+      ...(data.codingContests || []),
+    ].filter(Boolean);
+
     return (
       <div
         style={{
-          fontFamily: "'Times New Roman', serif",
+          fontFamily: font,
           fontSize: `${fs}pt`,
           lineHeight: lh,
           color: "#111",
           background: "#fff",
-          padding: "0.3in 0.5in",
+          padding: "0.6in 0.75in",
           maxWidth: "8.5in",
+          minHeight: "11in",
           margin: "0 auto",
           boxSizing: "border-box",
         }}
       >
         {/* ── Header ── */}
-        <div style={{ textAlign: "center", marginBottom: "8px" }}>
+        <div style={{ textAlign: "center", marginBottom: "12px" }}>
           <div
             style={{
               fontSize: `${fs + 9}pt`,
               fontWeight: 700,
-              letterSpacing: "2px",
+              letterSpacing: "1px",
               textTransform: "uppercase",
               marginBottom: "4px",
+              color: "#111",
             }}
           >
             {personalInfo.fullName}
@@ -310,9 +360,10 @@ export default function ResumeDocument({
             style={{
               fontSize: `${fs - 1}pt`,
               color: "#444",
+              lineHeight: 1.4,
             }}
           >
-            {contactParts.join(" | ")}
+            {contactParts.join("  |  ")}
           </div>
         </div>
 
@@ -320,17 +371,19 @@ export default function ResumeDocument({
         {sectionOrder.map((key) => {
           switch (key) {
             case "summary":
-              return summary ? (
+              return safeSummary ? (
                 <div key={key}>
                   <SectionHdr title="Summary" />
                   <p
                     style={{
                       fontSize: `${fs - 0.5}pt`,
-                      margin: "4px 0",
+                      lineHeight: "1.45",
+                      margin: "4px 0 8px 0",
                       textAlign: "justify",
+                      color: "#222",
                     }}
                   >
-                    {ch.length > 0 ? <DiffHL text={summary} changes={ch} /> : <HL text={summary} kw={kw} />}
+                    {ch.length > 0 ? <DiffHL text={safeSummary} changes={ch} /> : <HL text={safeSummary} kw={kw} />}
                   </p>
                 </div>
               ) : null;
@@ -344,7 +397,7 @@ export default function ResumeDocument({
                       key={i}
                       left={w.role}
                       right={dateStr(w)}
-                      sub={w.company + (w.city ? `, ${w.city}` : "")}
+                      subLeft={w.company + (w.city ? `, ${w.city}` : "")}
                       bullets={w.bullets}
                     />
                   ))}
@@ -355,23 +408,37 @@ export default function ResumeDocument({
               return education.length > 0 ? (
                 <div key={key}>
                   <SectionHdr title="Education" />
-                  {education.map((e, i) => (
-                    <Entry
-                      key={i}
-                      left={`${e.degree}${e.field ? ", " + e.field : ""}`}
-                      right={e.endDate}
-                      sub={
-                        <>
-                          {e.institution}
-                          {gpaLabel(e) && (
-                            <span style={{ marginLeft: "6px" }}>
-                              — {gpaLabel(e)}
-                            </span>
-                          )}
-                        </>
-                      }
-                    />
-                  ))}
+                  {education.map((e, i) => {
+                    let inst = e.institution || "";
+                    let degree = e.degree || "";
+                    let field = e.field || "";
+
+                    const singleMonthRegex = /^(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?|\s|[\-–—])+$/i;
+                    if (singleMonthRegex.test(inst.trim())) {
+                      inst = "";
+                    }
+
+                    const monthLeakRegex = /(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s*[\-–—]*\s*$/gi;
+                    degree = degree.replace(monthLeakRegex, "").trim();
+                    field = field.replace(monthLeakRegex, "").trim();
+
+                    if (!inst) {
+                      inst = degree || field || "University / School";
+                    }
+
+                    const degField = `${degree}${field ? (degree ? ", " : "") + field : ""}${gpaLabel(e) ? " — " + gpaLabel(e) : ""}`;
+                    const loc = (e as any).location || (e as any).city || (e as any).boardOrUniversity || "";
+                    const dates = e.startDate ? `${e.startDate} – ${e.endDate}` : e.endDate;
+                    return (
+                      <Entry
+                        key={i}
+                        left={inst}
+                        right={loc || dates}
+                        subLeft={degField !== inst ? degField : ""}
+                        subRight={loc ? dates : ""}
+                      />
+                    );
+                  })}
                 </div>
               ) : null;
 
@@ -382,11 +449,13 @@ export default function ResumeDocument({
                   <div
                     style={{
                       fontSize: `${fs - 0.5}pt`,
-                      lineHeight: "1.6",
+                      lineHeight: "1.5",
+                      margin: "4px 0 6px 0",
+                      color: "#222",
                     }}
                   >
                     {skills.technical.length > 0 && (
-                      <div>
+                      <div style={{ marginBottom: "3px" }}>
                         <strong>Languages &amp; Tools: </strong>
                         {ch.length > 0
                           ? skills.technical.map((s, si) => (
@@ -421,61 +490,94 @@ export default function ResumeDocument({
               return projects.length > 0 ? (
                 <div key={key}>
                   <SectionHdr title="Projects" />
-                  {projects.map((p, i) => (
-                    <Entry
-                      key={i}
-                      left={
-                        <>
-                          {p.name}
-                          {p.techStack.length > 0 && (
-                            <span
-                              style={{
-                                fontWeight: 400,
-                                fontStyle: "italic",
-                                marginLeft: "6px",
-                                fontSize: `${fs - 1}pt`,
-                              }}
-                            >
-                              {p.techStack.join(", ")}
-                            </span>
-                          )}
-                        </>
-                      }
-                      right={p.link || ""}
-                      bullets={
-                        p.description
-                          ? p.description
-                              .split("\n")
-                              .map((l) => l.replace(/^[-•]\s*/, ""))
-                              .filter(Boolean)
-                          : []
-                      }
-                    />
-                  ))}
+                  {projects.map((p, i) => {
+                    let pName = p.name || "";
+                    let pDate = (p as any).date || (p as any).period || "";
+
+                    const monthsPattern = "(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)";
+                    const dateRegex = new RegExp(`(?:\\s+|^|(?<=[a-z]))(${monthsPattern}\\s*'?\\d{2,4}\\s*(?:[\\-–—to\\s]+\\s*(?:${monthsPattern}?\\s*'?\\d{2,4}|Present|Current))?)`, "i");
+
+                    const dateMatch = pName.match(dateRegex);
+                    if (dateMatch) {
+                      if (!pDate) pDate = dateMatch[1].trim();
+                      pName = pName.replace(dateRegex, "").trim();
+                      pName = pName.replace(/[\-\|:\s]+$/, "").replace(/^[\-\|:\s]+/, "").trim();
+                    }
+
+                    const pSub = (p as any).subtitle || (p as any).role || (p.link ? cleanUrl(p.link) : "Project");
+                    const pTech = p.techStack && p.techStack.length > 0 ? p.techStack.join(", ").toUpperCase() : "";
+                    const pBullets = p.description
+                      ? p.description
+                          .split(/(?:\n|•)/)
+                          .map((l) => l.replace(/^[-•]\s*/, "").trim())
+                          .map((l) => l.replace(/^(?:Frontend|Backend|Fullstack|Software)\s+Development\s+Project(?:REACT\.JS|React\.js|CSS|HTML|JS|Javascript|,|\s)*/i, "").trim())
+                          .filter(Boolean)
+                      : [];
+
+                    return (
+                      <Entry
+                        key={i}
+                        left={pName}
+                        right={pDate || (p.link ? cleanUrl(p.link) : "")}
+                        subLeft={pSub}
+                        subRight={pTech}
+                        bullets={pBullets}
+                      />
+                    );
+                  })}
                 </div>
               ) : null;
 
             case "certifications":
-              return certifications.length > 0 ? (
+              return certifications.length > 0 || achievementsList.length > 0 ? (
                 <div key={key}>
-                  <SectionHdr title="Certifications" />
-                  {certifications.map((c, i) => (
-                    <Entry
-                      key={i}
-                      left={c.name}
-                      right={c.date}
-                      sub={c.issuer}
-                    />
-                  ))}
+                  {certifications.length > 0 && (
+                    <>
+                      <SectionHdr title="Certifications" />
+                      {certifications.map((c, i) => (
+                        <Entry
+                          key={i}
+                          left={c.name}
+                          right={c.date}
+                          subLeft={c.issuer}
+                        />
+                      ))}
+                    </>
+                  )}
+                  {achievementsList.length > 0 && (
+                    <>
+                      <SectionHdr title="Achievements" />
+                      <ul
+                        style={{
+                          margin: "3px 0 6px 0",
+                          paddingLeft: "18px",
+                          listStyleType: "disc",
+                        }}
+                      >
+                        {achievementsList.map((ach, ai) => (
+                          <li
+                            key={ai}
+                            style={{
+                              fontSize: `${fs - 1}pt`,
+                              lineHeight: 1.45,
+                              marginBottom: "2.5px",
+                              color: "#222",
+                            }}
+                          >
+                            <HL text={ach} kw={kw} />
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                 </div>
               ) : null;
 
             case "languages":
-              return (languagesKnown || []).filter((l) => l.language).length >
-                0 ? (
+              return (languagesKnown || []).filter((l) => l.language).length > 0 ? (
                 <div key={key}>
                   <SectionHdr title="Languages" />
-                  <div style={{ fontSize: `${fs - 0.5}pt` }}>
+                  <div style={{ fontSize: `${fs - 0.5}pt`, margin: "4px 0 6px 0", color: "#222" }}>
                     {(languagesKnown || [])
                       .filter((l) => l.language)
                       .map((l) => `${l.language} (${l.proficiency})`)
