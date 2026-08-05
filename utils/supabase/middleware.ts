@@ -63,7 +63,7 @@ export async function updateSession(request: NextRequest) {
       .from("user_profiles")
       .select("role")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     const role = profile?.role || "user";
     const isAdminPath = pathname.startsWith("/admin") || pathname === "/analytics" || pathname.startsWith("/analytics/");

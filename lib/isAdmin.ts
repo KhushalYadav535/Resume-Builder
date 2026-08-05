@@ -21,7 +21,7 @@ export async function isAdmin(): Promise<boolean> {
       .from("user_profiles")
       .select("role")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (dbError || !profile) {
       console.warn("isAdmin: Failed to fetch profile for user:", user.id, dbError?.message);

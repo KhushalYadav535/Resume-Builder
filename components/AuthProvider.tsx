@@ -73,11 +73,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from("user_profiles")
           .select("role")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
+
         if (!error && data) {
           setRole(data.role);
         } else {
+          // If no user_profiles record exists yet, auto-create one safely
           setRole("user");
+          await supabase.from("user_profiles").upsert(
+            { id: user.id, email: user.email, role: "user" },
+            { onConflict: "id" }
+          );
         }
       } catch (err) {
         setRole("user");
