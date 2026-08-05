@@ -224,13 +224,13 @@ export async function askAIJSON<T>(prompt: string, systemPrompt?: string, retrie
             return parsed as any;
           }
         }
-        
+
         lastParseError = parseError.message;
         throw new Error("AI returned invalid JSON: " + parseError.message);
       }
     } catch (err: any) {
       console.warn(`[askAIJSON] Attempt ${attempt + 1} failed:`, err.message || String(err));
-      
+
       // Only retry if it was a JSON parsing failure
       if (err.message && err.message.includes("invalid JSON")) {
         attempt++;

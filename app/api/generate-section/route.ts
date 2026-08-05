@@ -26,33 +26,68 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: billing.error }, { status: 403 });
     }
 
+    // Fetch candidate's base uploaded resume for personalization
+    const { data: userResumes } = await supabase
+      .from("resumes")
+      .select("raw_text, resume_data")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    const baseResumeContext = userResumes?.[0]?.raw_text || (userResumes?.[0]?.resume_data ? JSON.stringify(userResumes[0].resume_data) : "");
+
     const industryGuideline = industryPrompts[industryMode] || industryPrompts.IT;
 
+    const personalizationBlock = baseResumeContext
+      ? `CANDIDATE'S ACTUAL UPLOADED RESUME CONTEXT:\n---\n${baseResumeContext.slice(0, 3000)}\n---`
+      : "";
+
     const prompts: Record<string, string> = {
-      summary: `Write a compelling professional summary for a resume based on this info:
+      summary: `Write a compelling professional summary for a resume based on this specific context:
 ${context}
-Write 3-4 sentences. Be specific, confident, and highlight key value proposition. No generic fluff.
-Industry Guidelines: ${industryGuideline}
+
+${personalizationBlock}
+
+RULES:
+- Weave together candidate's REAL background, real technologies, and experience level.
+- Write 3-4 sentences. Be specific, confident, and highlight key value proposition. No generic fluff.
+- Industry Guidelines: ${industryGuideline}
 Return ONLY the summary text.`,
 
-      bullet: `Improve this resume bullet point to be more impactful:
+      bullet: `Improve this resume bullet point to be more impactful based on candidate's real context:
 "${context}"
-Make it: start with a strong action verb, include measurable impact, and be concise (under 20 words).
-Industry Guidelines: ${industryGuideline}
+
+${personalizationBlock}
+
+RULES:
+- Start with a strong action verb, include measurable impact where candidate provided real context, and keep under 25 words.
+- Industry Guidelines: ${industryGuideline}
 Return ONLY the improved bullet point.`,
 
       skills: `Based on this job role/experience: "${context}"
-Suggest 10 relevant technical skills and 5 soft skills for a resume.
+
+${personalizationBlock}
+
+Suggest 10 relevant technical skills and 5 soft skills matching candidate's profile.
 Industry Guidelines: ${industryGuideline}
 Return as plain text, comma separated: "Technical: skill1, skill2... | Soft: skill1, skill2..."`,
     };
 
-    const prompt = prompts[section] || `Improve this resume section content: ${context}\nIndustry Guidelines: ${industryGuideline}`;
+    const prompt = prompts[section] || `Improve this resume section content: ${context}\n\n${personalizationBlock}\nIndustry Guidelines: ${industryGuideline}`;
     
-    const systemPrompt = `You are an expert resume writer specializing in ${industryMode} industry recruitment norms. Be direct and impactful. Adhere to: ${industryGuideline}. CRITICAL RULE: DO NOT output any generic template placeholder text like "Company Name", "Professional Role", "[Date]", etc.`;
-    const result = await askAI(prompt, systemPrompt);
+    const systemPrompt = `You are an expert executive resume writer specializing in ${industryMode} industry recruitment norms. Be direct, authentic, and impactful.
+STRICT PERSONALIZATION RULES:
+1. Base all text strictly on candidate's REAL uploaded experience and background.
+2. DO NOT invent fake metric percentages, fake companies, or fake achievements not present in candidate's data.
+3. DO NOT output generic template text like "Company Name", "Professional Role", "[Date]", etc.
+4. Adhere to: ${industryGuideline}`;
 
-    return NextResponse.json({ result: result.trim() });
+    const rawResult = await askAI(prompt, systemPrompt);
+
+    const { humanizeText } = await import("@/lib/humanizer");
+    const humanizedResult = humanizeText(rawResult);
+
+    return NextResponse.json({ result: humanizedResult.trim() });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Failed to generate content" }, { status: 500 });
