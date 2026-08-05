@@ -18,6 +18,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing bullet text." }, { status: 400 });
     }
 
+    const { checkAndDeductCredits } = await import("@/lib/billing");
+    const { CREDIT_COSTS } = await import("@/lib/creditCosts");
+    const billing = await checkAndDeductCredits(user.id, 5, "Translate Achievement");
+    if (!billing.allowed) {
+      return NextResponse.json({ error: billing.error }, { status: 403 });
+    }
+
     const { getUserBaseResume } = await import("@/lib/userResumeContext");
     const { contextFormatted: userDbResume } = await getUserBaseResume(supabase, user.id);
 

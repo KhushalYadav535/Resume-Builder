@@ -4,6 +4,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { ToastProvider } from "@/components/ui/toast-1";
 import CreditBannerWrapper from "@/components/credits/CreditBannerWrapper";
 import ReferralTracker from "@/components/ReferralTracker";
+import InsufficientCreditsModal from "@/components/InsufficientCreditsModal";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import "./globals.css";
 
@@ -61,9 +62,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`}>
       <head>
@@ -98,6 +99,7 @@ export default function RootLayout({
             {children}
             <CreditBannerWrapper />
             <ReferralTracker />
+            <InsufficientCreditsModal />
           </ToastProvider>
         </AuthProvider>
       </body>

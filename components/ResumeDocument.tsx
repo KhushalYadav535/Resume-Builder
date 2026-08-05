@@ -220,20 +220,20 @@ export default function ResumeDocument({
     const SectionHdr = ({ title }: { title: string }) => (
       <div
         style={{
-          marginTop: "12px",
-          marginBottom: "4px",
-          borderBottom: "1.5px solid #222",
+          marginTop: "14px",
+          marginBottom: "6px",
+          borderBottom: "1.5px solid #000000",
           paddingBottom: "2px",
         }}
       >
         <span
           style={{
             fontFamily: font,
-            fontSize: `${fs - 0.5}pt`,
-            fontWeight: 700,
+            fontSize: `${fs + 0.5}pt`,
+            fontWeight: 800,
             textTransform: "uppercase",
-            letterSpacing: "1px",
-            color: "#111",
+            letterSpacing: "0.5px",
+            color: "#000000",
           }}
         >
           {title}
@@ -254,7 +254,7 @@ export default function ResumeDocument({
       subRight?: React.ReactNode;
       bullets?: string[];
     }) => (
-      <div style={{ marginBottom: "8px" }}>
+      <div style={{ marginBottom: "10px" }}>
         <div
           style={{
             display: "flex",
@@ -262,15 +262,16 @@ export default function ResumeDocument({
             alignItems: "baseline",
           }}
         >
-          <span style={{ fontWeight: 700, fontSize: `${fs}pt`, color: "#111" }}>{left}</span>
+          <span style={{ fontWeight: 700, fontSize: `${fs}pt`, color: "#000000" }}>{left}</span>
           {right && (
             <span
               style={{
                 fontSize: `${fs - 1}pt`,
-                color: "#444",
+                color: "#000000",
                 whiteSpace: "nowrap",
                 marginLeft: "8px",
                 fontWeight: 500,
+                textTransform: "uppercase",
               }}
             >
               {right}
@@ -284,9 +285,10 @@ export default function ResumeDocument({
               justifyContent: "space-between",
               alignItems: "baseline",
               fontSize: `${fs - 1}pt`,
-              color: "#555",
+              color: "#000000",
               marginTop: "1px",
-              marginBottom: "2px",
+              marginBottom: "3px",
+              fontWeight: 500,
             }}
           >
             {subLeft ? <span style={{ fontStyle: "italic" }}>{subLeft}</span> : <span />}
@@ -306,10 +308,11 @@ export default function ResumeDocument({
                 key={i}
                 style={{
                   fontSize: `${fs - 1}pt`,
-                  lineHeight: 1.45,
-                  marginBottom: "2.5px",
+                  lineHeight: 1.4,
+                  marginBottom: "3px",
                   textAlign: "justify",
-                  color: "#222",
+                  color: "#000000",
+                  fontWeight: 400,
                 }}
               >
                 {ch.length > 0 ? <DiffHL text={b} changes={ch} /> : <HL text={b} kw={kw} />}
@@ -333,25 +336,27 @@ export default function ResumeDocument({
           fontFamily: font,
           fontSize: `${fs}pt`,
           lineHeight: lh,
-          color: "#111",
-          background: "#fff",
+          color: "#000000",
+          background: "#ffffff",
           padding: "0.6in 0.75in",
           maxWidth: "8.5in",
           minHeight: "11in",
           margin: "0 auto",
           boxSizing: "border-box",
+          WebkitFontSmoothing: "antialiased",
+          MozOsxFontSmoothing: "grayscale",
+          textRendering: "optimizeLegibility",
         }}
       >
         {/* ── Header ── */}
-        <div style={{ textAlign: "center", marginBottom: "12px" }}>
+        <div style={{ textAlign: "center", marginBottom: "14px" }}>
           <div
             style={{
-              fontSize: `${fs + 9}pt`,
-              fontWeight: 700,
-              letterSpacing: "1px",
-              textTransform: "uppercase",
+              fontSize: `${fs + 11}pt`,
+              fontWeight: 800,
+              letterSpacing: "0.5px",
               marginBottom: "4px",
-              color: "#111",
+              color: "#000000",
             }}
           >
             {personalInfo.fullName}
@@ -359,11 +364,12 @@ export default function ResumeDocument({
           <div
             style={{
               fontSize: `${fs - 1}pt`,
-              color: "#444",
+              color: "#000000",
               lineHeight: 1.4,
+              fontWeight: 500,
             }}
           >
-            {contactParts.join("  |  ")}
+            {contactParts.join(" | ")}
           </div>
         </div>
 
@@ -380,7 +386,8 @@ export default function ResumeDocument({
                       lineHeight: "1.45",
                       margin: "4px 0 8px 0",
                       textAlign: "justify",
-                      color: "#222",
+                      color: "#0f172a",
+                      fontWeight: 450,
                     }}
                   >
                     {ch.length > 0 ? <DiffHL text={safeSummary} changes={ch} /> : <HL text={safeSummary} kw={kw} />}
@@ -451,7 +458,8 @@ export default function ResumeDocument({
                       fontSize: `${fs - 0.5}pt`,
                       lineHeight: "1.5",
                       margin: "4px 0 6px 0",
-                      color: "#222",
+                      color: "#0f172a",
+                      fontWeight: 450,
                     }}
                   >
                     {skills.technical.length > 0 && (

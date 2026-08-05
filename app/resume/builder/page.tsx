@@ -179,6 +179,11 @@ function BuilderContent() {
         }),
       });
       const data = await res.json();
+      if (res.status === 403 || (data.error && data.error.toLowerCase().includes("credit"))) {
+        const { triggerInsufficientCreditsModal } = await import("@/components/InsufficientCreditsModal");
+        triggerInsufficientCreditsModal(data.error || "Insufficient credits for AI rewrite.");
+        return;
+      }
       if (!res.ok || data.error) throw new Error(data.error || "Rewrite failed");
       setInlineRewriteSuggestions(data.suggestions || []);
     } catch (err: any) {
@@ -496,7 +501,15 @@ function BuilderContent() {
         body: JSON.stringify({ section: type, context }),
       });
       const data = await res.json();
+      if (res.status === 403 || (data.error && data.error.toLowerCase().includes("credit"))) {
+        const { triggerInsufficientCreditsModal } = await import("@/components/InsufficientCreditsModal");
+        triggerInsufficientCreditsModal(data.error || "Insufficient credits. Please top up or upgrade your plan to continue.");
+        return;
+      }
       if (data.result) callback(data.result);
+      else if (data.error) {
+        showToast(data.error, "error");
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -2398,7 +2411,7 @@ function BuilderContent() {
               }}>
                 <div className="resume-paper resume-print-area" style={{ 
                   background: "#ffffff", 
-                  color: "#333333", 
+                  color: "#000000", 
                   padding: "40px", 
                   width: "100%",
                   maxWidth: "210mm",
@@ -2408,7 +2421,7 @@ function BuilderContent() {
               borderRadius: "4px",
               transition: "transform 0.15s ease-out",
             }}>
-              <ResumeDocument data={resume} templateId={selectedTemplate} highlightKeywords={localATS?.matchedKeywords || []} />
+              <ResumeDocument data={resume} templateId={selectedTemplate} />
             </div>
           </div>
         </div>
@@ -2695,8 +2708,8 @@ function BuilderContent() {
       )}
       
       <div className="print-only">
-        <div className="resume-paper resume-print-area" id="resume-print-area" style={{ background: "#ffffff", color: "#333333", padding: "40px", width: "100%" }}>
-          <ResumeDocument data={resume} templateId={selectedTemplate} highlightKeywords={localATS?.matchedKeywords || []} />
+        <div className="resume-paper resume-print-area" id="resume-print-area" style={{ background: "#ffffff", color: "#000000", padding: "40px", width: "100%" }}>
+          <ResumeDocument data={resume} templateId={selectedTemplate} />
         </div>
       </div>
 
