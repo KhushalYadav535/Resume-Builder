@@ -27,6 +27,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing text to check." }, { status: 400 });
     }
 
+    const { checkAndDeductCredits } = await import("@/lib/billing");
+    const billing = await checkAndDeductCredits(user.id, 5, "Check Grammar");
+    if (!billing.allowed) {
+      return NextResponse.json({ error: billing.error }, { status: 403 });
+    }
+
     const systemPrompt = `You are a professional editor. Analyze the provided resume text for grammatical errors, spelling mistakes, passive voice, and weak wording.
 Respond ONLY with a JSON object of the following format:
 {

@@ -302,6 +302,8 @@ export default function ResumeDetailPage() {
       });
       if (res.status === 403) {
         const errData = await res.json();
+        const { triggerInsufficientCreditsModal } = await import("@/components/InsufficientCreditsModal");
+        triggerInsufficientCreditsModal(errData.error || `Insufficient credits. Finding improvements costs ${CREDIT_COSTS.AI_IMPROVEMENTS_GENERATE} credits.`);
         showToast(errData.error || `Insufficient credits. Finding improvements costs ${CREDIT_COSTS.AI_IMPROVEMENTS_GENERATE} credits.`, "error");
         return;
       }
@@ -329,6 +331,8 @@ export default function ResumeDetailPage() {
       });
       if (res.status === 403) {
         const errData = await res.json();
+        const { triggerInsufficientCreditsModal } = await import("@/components/InsufficientCreditsModal");
+        triggerInsufficientCreditsModal(errData.error || `Insufficient credits. Loading tips costs ${CREDIT_COSTS.NAUKRI_SEO_TIPS} credits.`);
         showToast(errData.error || `Insufficient credits. Loading tips costs ${CREDIT_COSTS.NAUKRI_SEO_TIPS} credits.`, "error");
         return;
       }
@@ -506,6 +510,8 @@ export default function ResumeDetailPage() {
       const res = await fetch("/api/naukri-tips/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ resumeId: resume.id, tipArea: tip.area, tipText: tip.tip }) });
       if (res.status === 403) {
         const errData = await res.json();
+        const { triggerInsufficientCreditsModal } = await import("@/components/InsufficientCreditsModal");
+        triggerInsufficientCreditsModal(errData.error || `Insufficient credits. Apply Fix costs ${CREDIT_COSTS.NAUKRI_APPLY_FIX} credits.`);
         showToast(errData.error || `Insufficient credits. Apply Fix costs ${CREDIT_COSTS.NAUKRI_APPLY_FIX} credits.`, "error");
         return;
       }
@@ -608,6 +614,8 @@ export default function ResumeDetailPage() {
       const data = await res.json();
       
       if (!res.ok) {
+        const { triggerInsufficientCreditsModal } = await import("@/components/InsufficientCreditsModal");
+        triggerInsufficientCreditsModal(data.error || "Insufficient credits for PDF download.");
         showToast(data.error || "Insufficient credits for PDF download", "error");
         return;
       }
@@ -1435,7 +1443,7 @@ export default function ResumeDetailPage() {
 
         {/* PRINT ONLY */}
         <div className="print-only">
-          <div className="resume-paper resume-print-area" style={{ background: "#ffffff", color: "#333333", padding: "40px", width: "100%" }}>
+          <div className="resume-paper resume-print-area" style={{ background: "#ffffff", color: "#000000", padding: "40px", width: "100%" }}>
             <ResumeDocument data={modifiedResumeData || (resume as any).structured_data || resume.resume_data || emptyResumeData} templateId={selectedTemplate} />
           </div>
         </div>
