@@ -118,6 +118,8 @@ RETURN ONLY VALID JSON ARRAY. NO PREAMBLE. NO MARKDOWN.`;
       throw new Error("Invalid AI response format");
     }
 
+    const { humanizeText } = await import("@/lib/humanizer");
+
     // 3. Store each suggestion in the database
     const suggestionsToInsert = aiResponse.map(s => ({
       resume_id: resumeId,
@@ -125,7 +127,7 @@ RETURN ONLY VALID JSON ARRAY. NO PREAMBLE. NO MARKDOWN.`;
       suggestion_type: s.type || 'missing_keyword',
       title: s.title || `Add ${s.keyword}`,
       description: s.description || 'Improve your resume by adding this missing keyword.',
-      suggested_text: s.suggestedText || s.keyword,
+      suggested_text: humanizeText(s.suggestedText || s.keyword),
       category: s.category || 'technical',
       priority: Math.min(5, Math.max(1, Math.floor(Number(s.priority) || 3))),
       is_accepted: false,
