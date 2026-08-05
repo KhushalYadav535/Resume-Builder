@@ -47,8 +47,58 @@ interface ResumeDocumentProps {
 }
 
 // ─── Keyword Highlight Helper ─────────────────────────────────────────────────
+function parseAndLinkText(text: string) {
+  if (!text) return null;
+  const linkRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9-]+\.(?:vercel\.app|github\.io|netlify\.app|herokuapp\.com|com|org|dev|io|net)[^\s]*)/i;
+  const splitRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9-]+\.(?:vercel\.app|github\.io|netlify\.app|herokuapp\.com|com|org|dev|io|net)[^\s]*)/gi;
+
+  if (!linkRegex.test(text)) return null;
+
+  const parts = text.split(splitRegex);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (!part) return null;
+        const cleanStr = part.trim().replace(/[.,;:]+$/, "");
+        if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i.test(cleanStr)) {
+          return (
+            <a
+              key={i}
+              href={`mailto:${cleanStr}`}
+              style={{ color: "#000000", textDecoration: "underline", wordBreak: "break-all", fontWeight: 500 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {cleanStr}
+            </a>
+          );
+        }
+        if (/(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.(?:vercel\.app|github\.io|netlify\.app|herokuapp\.com|com|org|dev|io|net)[^\s]*)/i.test(cleanStr)) {
+          const href = cleanStr.startsWith("http") ? cleanStr : `https://${cleanStr}`;
+          return (
+            <a
+              key={i}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#000000", textDecoration: "underline", wordBreak: "break-all", fontWeight: 500 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {cleanStr}
+            </a>
+          );
+        }
+        return <React.Fragment key={i}>{part}</React.Fragment>;
+      })}
+    </>
+  );
+}
+
 function HL({ text, kw }: { text: string; kw: string[] }) {
   if (!text) return <>{text}</>;
+
+  const autoLinkNode = parseAndLinkText(text);
+  if (autoLinkNode) return autoLinkNode;
+
   if (!kw || kw.length === 0) return <>{text}</>;
 
   const sorted = [...kw].sort((a, b) => b.length - a.length);
@@ -79,7 +129,12 @@ function HL({ text, kw }: { text: string; kw: string[] }) {
 
 // ─── Diff / Change Highlight Helper (green) ──────────────────────────────────
 function DiffHL({ text, changes }: { text: string; changes: string[] }) {
-  if (!text || !changes || changes.length === 0) return <>{text}</>;
+  if (!text) return <>{text}</>;
+
+  const autoLinkNode = parseAndLinkText(text);
+  if (autoLinkNode) return autoLinkNode;
+
+  if (!changes || changes.length === 0) return <>{text}</>;
 
   const sorted = [...changes]
     .filter(c => c && c.length > 0)
@@ -369,7 +424,59 @@ export default function ResumeDocument({
               fontWeight: 500,
             }}
           >
-            {contactParts.join(" | ")}
+            {[
+              personalInfo.phone && (
+                <a key="phone" href={`tel:${personalInfo.phone.replace(/[^+\d]/g, "")}`} style={{ color: "#000000", textDecoration: "none" }}>
+                  {personalInfo.phone}
+                </a>
+              ),
+              personalInfo.email && (
+                <a key="email" href={`mailto:${personalInfo.email}`} style={{ color: "#000000", textDecoration: "underline" }}>
+                  {personalInfo.email}
+                </a>
+              ),
+              personalInfo.location && <span key="loc">{personalInfo.location}</span>,
+              personalInfo.linkedin && (
+                <a
+                  key="li"
+                  href={personalInfo.linkedin.startsWith("http") ? personalInfo.linkedin : `https://${personalInfo.linkedin.includes("linkedin.com") ? personalInfo.linkedin : `linkedin.com/in/${cleanUrl(personalInfo.linkedin)}`}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#000000", textDecoration: "underline" }}
+                >
+                  {personalInfo.linkedin.includes("linkedin.com") ? cleanUrl(personalInfo.linkedin) : `linkedin.com/in/${cleanUrl(personalInfo.linkedin)}`}
+                </a>
+              ),
+              (personalInfo as any).github && (
+                <a
+                  key="gh"
+                  href={(personalInfo as any).github.startsWith("http") ? (personalInfo as any).github : `https://${cleanUrl((personalInfo as any).github).includes("github.com") ? cleanUrl((personalInfo as any).github) : `github.com/${cleanUrl((personalInfo as any).github)}`}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#000000", textDecoration: "underline" }}
+                >
+                  {cleanUrl((personalInfo as any).github).includes("github.com") ? cleanUrl((personalInfo as any).github) : `github.com/${cleanUrl((personalInfo as any).github)}`}
+                </a>
+              ),
+              personalInfo.website && (
+                <a
+                  key="web"
+                  href={personalInfo.website.startsWith("http") ? personalInfo.website : `https://${personalInfo.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#000000", textDecoration: "underline" }}
+                >
+                  {cleanUrl(personalInfo.website)}
+                </a>
+              ),
+            ]
+              .filter(Boolean)
+              .map((node, idx) => (
+                <React.Fragment key={idx}>
+                  {idx > 0 && <span style={{ color: "#000000", margin: "0 6px" }}>|</span>}
+                  {node}
+                </React.Fragment>
+              ))}
           </div>
         </div>
 
@@ -512,7 +619,31 @@ export default function ResumeDocument({
                       pName = pName.replace(/[\-\|:\s]+$/, "").replace(/^[\-\|:\s]+/, "").trim();
                     }
 
-                    const pSub = (p as any).subtitle || (p as any).role || (p.link ? cleanUrl(p.link) : "Project");
+                    const pLinkUrl = p.link ? (p.link.startsWith("http") ? p.link : `https://${p.link}`) : "";
+                    const pNameNode = pLinkUrl ? (
+                      <a
+                        href={pLinkUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#005cc5", textDecoration: "underline" }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {pName}
+                      </a>
+                    ) : pName;
+
+                    const pSubNode = (p as any).subtitle || (p as any).role || (pLinkUrl ? (
+                      <a
+                        href={pLinkUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#000000", textDecoration: "underline" }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {cleanUrl(p.link)}
+                      </a>
+                    ) : "Project");
+
                     const pTech = p.techStack && p.techStack.length > 0 ? p.techStack.join(", ").toUpperCase() : "";
                     const pBullets = p.description
                       ? p.description
@@ -525,9 +656,9 @@ export default function ResumeDocument({
                     return (
                       <Entry
                         key={i}
-                        left={pName}
-                        right={pDate || (p.link ? cleanUrl(p.link) : "")}
-                        subLeft={pSub}
+                        left={pNameNode}
+                        right={pDate || (pLinkUrl ? <a href={pLinkUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#000000", textDecoration: "underline" }}>{cleanUrl(p.link)}</a> : "")}
+                        subLeft={pSubNode}
                         subRight={pTech}
                         bullets={pBullets}
                       />
