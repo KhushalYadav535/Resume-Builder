@@ -80,7 +80,7 @@ export default function AdminKeywordsPage() {
 
   useEffect(() => {
     if (user) {
-      supabase.from("user_profiles").select("role").eq("id", user.id).single()
+      supabase.from("user_profiles").select("role").eq("id", user.id).maybeSingle()
         .then(({ data }) => setIsAdmin(data?.role === "admin"));
     }
   }, [user]);

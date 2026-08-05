@@ -24,7 +24,7 @@ export default async function AdminLayout({
     .from("user_profiles")
     .select("role")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (profileError || !profile || profile.role !== "admin") {
     console.warn(`Unauthorized access attempt to /admin by user ID: ${user.id}`);
