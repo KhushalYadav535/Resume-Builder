@@ -41,6 +41,15 @@ Respond ONLY with a JSON object of the following format:
 }`;
 
     const result = await askAIJSON<GrammarCheckResult>(text, systemPrompt);
+    const { humanizeText } = await import("@/lib/humanizer");
+
+    if (result && Array.isArray(result.suggestions)) {
+      result.suggestions = result.suggestions.map((s) => ({
+        ...s,
+        corrected: humanizeText(s.corrected),
+      }));
+    }
+
     return NextResponse.json(result);
   } catch (err: unknown) {
     console.error("Grammar check failed:", err);

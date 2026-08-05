@@ -18,15 +18,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing bullet text." }, { status: 400 });
     }
 
-    const systemPrompt = `You are an expert resume writer specialized in the Indian job market. 
+    const { getUserBaseResume } = await import("@/lib/userResumeContext");
+    const { contextFormatted: userDbResume } = await getUserBaseResume(supabase, user.id);
+
+    const systemPrompt = `You are an expert executive resume writer specialized in the Indian job market. 
 Your task is to rewrite the provided resume achievement bullet point to express financial impact, budget, scale, or metrics in Indian currency context. 
-Use Indian currency symbol ₹ (Rupee) and terms like Lakhs, Crores, or LPA (Lakhs Per Annum) where appropriate. 
-Keep the rewritten bullet point professional, action-oriented, concise, and impact-driven.
-Return ONLY the rewritten bullet point text. No explanation, no intro, no conversational text.`;
+STRICT PERSONALIZATION RULES:
+1. Base the rewrite strictly on the candidate's actual background and uploaded database resume.
+2. DO NOT invent fake metric numbers, fake percentages, or fake companies not present in candidate's original text or base resume.
+3. Use Indian currency symbol ₹ (Rupee) and terms like Lakhs, Crores, or LPA where appropriate. 
+4. Keep the rewritten bullet point professional, action-oriented, concise, and impact-driven.
+5. Return ONLY the rewritten bullet point text. No explanation, no intro, no conversational text.
 
-    const result = await askAI(bullet, systemPrompt);
+${userDbResume}`;
 
-    return NextResponse.json({ result: result.trim() });
+    const rawResult = await askAI(bullet, systemPrompt);
+    const { humanizeText } = await import("@/lib/humanizer");
+    const humanizedResult = humanizeText(rawResult);
+
+    return NextResponse.json({ result: humanizedResult.trim() });
   } catch (err: unknown) {
     console.error("Translate achievement failed:", err);
     return NextResponse.json({ error: "Failed to translate achievement." }, { status: 500 });

@@ -58,6 +58,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { getUserBaseResume } = await import("@/lib/userResumeContext");
+    const { contextFormatted: userDbResume } = await getUserBaseResume(supabase, user.id);
+
     const hasJD = !!targetJobDescription && targetJobDescription.trim().length > 0;
     const hasATS = atsMissingKeywords && atsMissingKeywords.length > 0;
 
@@ -65,10 +68,13 @@ export async function POST(req: NextRequest) {
 
 TASK: Rewrite the following resume text into exactly 3 variations based on strict optimization dimensions.
 
-RULES:
-- NO HALLUCINATIONS: You MUST NOT invent metrics, accuracy percentages, team sizes, or revenue numbers not present in original text.
-- NO TEMPLATE PLACEHOLDERS: Do NOT output placeholders like "Company Name", "Professional Role", etc.
-- AUTHENTIC HUMAN TONE: Write in clean, natural human phrasing. Avoid robotic AI cliché buzzwords.
+STRICT PERSONALIZATION & TRUTHFULNESS RULES:
+1. Base all rewrites strictly on the candidate's actual background and uploaded resume.
+2. NO HALLUCINATIONS: You MUST NOT invent metrics, accuracy percentages, team sizes, or revenue numbers not present in original text.
+3. NO TEMPLATE PLACEHOLDERS: Do NOT output placeholders like "Company Name", "Professional Role", etc.
+4. AUTHENTIC HUMAN TONE: Write in clean, natural human phrasing. Avoid robotic AI cliché buzzwords.
+
+${userDbResume}
 
 SECTION CONTEXT: ${context || "Resume section"}
 

@@ -64,13 +64,15 @@ RULES:
 - Industry Guidelines: ${industryGuideline}
 Return ONLY the improved bullet point.`,
 
-      skills: `Based on this job role/experience: "${context}"
+      skills: `Based on this job role/experience and profile: "${context}"
 
 ${personalizationBlock}
 
-Suggest 10 relevant technical skills and 5 soft skills matching candidate's profile.
-Industry Guidelines: ${industryGuideline}
-Return as plain text, comma separated: "Technical: skill1, skill2... | Soft: skill1, skill2..."`,
+CRITICAL RULES:
+1. DO NOT REPEAT any skills that the candidate already has listed in their resume context.
+2. Suggest 8 to 10 NEW, highly relevant technical skills and 4 to 5 soft skills that complement their career trajectory.
+3. Industry Guidelines: ${industryGuideline}
+4. Return as plain text, comma separated: "Technical: skill1, skill2... | Soft: skill1, skill2..."`,
     };
 
     const prompt = prompts[section] || `Improve this resume section content: ${context}\n\n${personalizationBlock}\nIndustry Guidelines: ${industryGuideline}`;

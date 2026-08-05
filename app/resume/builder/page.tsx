@@ -1481,17 +1481,40 @@ function BuilderContent() {
                 <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--text-primary)" }}>Skills</h2>
                   <button style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", border: "1px solid var(--accent)", color: "var(--accent)", fontWeight: 700, background: "transparent", borderRadius: "8px", transition: "all 0.2s", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.4rem" }} disabled={!!aiLoading} onClick={() => {
-                    const context = resume.workExperience[0]?.role || resume.summary || resume.projects[0]?.name;
-                    if (!context || context.trim() === "") {
+                    const roleContext = resume.workExperience[0]?.role || resume.summary || resume.projects[0]?.name;
+                    if (!roleContext || roleContext.trim() === "") {
                       showToast("Please add at least one Work Experience, Summary, or Project first so AI can generate relevant skills.", "error");
                       return;
                     }
+                    const existingSkills = [...resume.skills.technical, ...resume.skills.soft].join(", ");
+                    const context = `Target Role/Experience: ${roleContext}\nCandidate Existing Listed Skills (DO NOT SUGGEST THESE): ${existingSkills}`;
+
+                    const dedupSkills = (existing: string[], incoming: string[]) => {
+                      const seen = new Set(existing.map((s) => s.toLowerCase().trim()));
+                      const result = [...existing];
+                      for (const item of incoming) {
+                        const clean = item.trim();
+                        if (clean && !seen.has(clean.toLowerCase())) {
+                          seen.add(clean.toLowerCase());
+                          result.push(clean);
+                        }
+                      }
+                      return result;
+                    };
+
                     handleAIEngineCall("skills", context, (r) => {
                       const techMatch = r.match(/Technical:(.*?)(\||$)/i);
                       const softMatch = r.match(/Soft:(.*?)(\||$)/i);
                       const tech = techMatch ? techMatch[1].split(",").map((s) => s.trim()).filter(Boolean) : [];
                       const soft = softMatch ? softMatch[1].split(",").map((s) => s.trim()).filter(Boolean) : [];
-                      setResume((prev) => ({ ...prev, skills: { technical: [...prev.skills.technical, ...tech], soft: [...prev.skills.soft, ...soft] } }));
+
+                      setResume((prev) => ({
+                        ...prev,
+                        skills: {
+                          technical: dedupSkills(prev.skills.technical, tech),
+                          soft: dedupSkills(prev.skills.soft, soft),
+                        },
+                      }));
                     });
                   }}>
                     {aiLoading === "skills" ? "Generating..." : <>✦ AI Suggest Skills <span style={{fontSize: "0.65rem", opacity: 0.8, marginLeft: "4px"}}>⚡10</span></>}
@@ -1511,9 +1534,29 @@ function BuilderContent() {
                     <div style={{ display: "flex", gap: "0.8rem" }}>
                       <div style={{ flex: 1 }}>
                         <Input variant="floating" label="Add Technical Skill" placeholder="React, SQL, Python..." value={skillInput.tech} onChange={(e) => setSkillInput((s) => ({ ...s, tech: e.target.value }))}
-                          onKeyDown={(e) => { if (e.key === "Enter" && skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }} />
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && skillInput.tech.trim()) {
+                              const val = skillInput.tech.trim();
+                              setResume((r) => {
+                                const exists = r.skills.technical.some((s) => s.toLowerCase() === val.toLowerCase());
+                                if (exists) return r;
+                                return { ...r, skills: { ...r.skills, technical: [...r.skills.technical, val] } };
+                              });
+                              setSkillInput((s) => ({ ...s, tech: "" }));
+                            }
+                          }} />
                       </div>
-                      <button style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", fontWeight: 600, borderRadius: "8px", padding: "0 1.5rem", height: "52px", cursor: "pointer", transition: "all 0.2s" }} onClick={() => { if (skillInput.tech.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, technical: [...r.skills.technical, skillInput.tech.trim()] } })); setSkillInput((s) => ({ ...s, tech: "" })); } }}>Add</button>
+                      <button style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", fontWeight: 600, borderRadius: "8px", padding: "0 1.5rem", height: "52px", cursor: "pointer", transition: "all 0.2s" }} onClick={() => {
+                        if (skillInput.tech.trim()) {
+                          const val = skillInput.tech.trim();
+                          setResume((r) => {
+                            const exists = r.skills.technical.some((s) => s.toLowerCase() === val.toLowerCase());
+                            if (exists) return r;
+                            return { ...r, skills: { ...r.skills, technical: [...r.skills.technical, val] } };
+                          });
+                          setSkillInput((s) => ({ ...s, tech: "" }));
+                        }
+                      }}>Add</button>
                     </div>
                   </div>
 
@@ -1529,9 +1572,29 @@ function BuilderContent() {
                     <div style={{ display: "flex", gap: "0.8rem" }}>
                       <div style={{ flex: 1 }}>
                         <Input variant="floating" label="Add Soft Skill" placeholder="Leadership, Negotiation..." value={skillInput.soft} onChange={(e) => setSkillInput((s) => ({ ...s, soft: e.target.value }))}
-                          onKeyDown={(e) => { if (e.key === "Enter" && skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }} />
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && skillInput.soft.trim()) {
+                              const val = skillInput.soft.trim();
+                              setResume((r) => {
+                                const exists = r.skills.soft.some((s) => s.toLowerCase() === val.toLowerCase());
+                                if (exists) return r;
+                                return { ...r, skills: { ...r.skills, soft: [...r.skills.soft, val] } };
+                              });
+                              setSkillInput((s) => ({ ...s, soft: "" }));
+                            }
+                          }} />
                       </div>
-                      <button style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", fontWeight: 600, borderRadius: "8px", padding: "0 1.5rem", height: "52px", cursor: "pointer", transition: "all 0.2s" }} onClick={() => { if (skillInput.soft.trim()) { setResume((r) => ({ ...r, skills: { ...r.skills, soft: [...r.skills.soft, skillInput.soft.trim()] } })); setSkillInput((s) => ({ ...s, soft: "" })); } }}>Add</button>
+                      <button style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)", fontWeight: 600, borderRadius: "8px", padding: "0 1.5rem", height: "52px", cursor: "pointer", transition: "all 0.2s" }} onClick={() => {
+                        if (skillInput.soft.trim()) {
+                          const val = skillInput.soft.trim();
+                          setResume((r) => {
+                            const exists = r.skills.soft.some((s) => s.toLowerCase() === val.toLowerCase());
+                            if (exists) return r;
+                            return { ...r, skills: { ...r.skills, soft: [...r.skills.soft, val] } };
+                          });
+                          setSkillInput((s) => ({ ...s, soft: "" }));
+                        }
+                      }}>Add</button>
                     </div>
                   </div>
                 </div>
