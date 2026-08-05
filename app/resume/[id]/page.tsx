@@ -190,6 +190,18 @@ export default function ResumeDetailPage() {
   const [savingCurrent, setSavingCurrent] = useState(false);
   const [savedNewResumeId, setSavedNewResumeId] = useState<string | null>(null);
   const [highlightedChanges, setHighlightedChanges] = useState<string[]>([]);
+  const [optimizationMode, setOptimizationMode] = useState<"honest" | "aggressive">("honest");
+
+  const handleModeToggle = (newMode: "honest" | "aggressive") => {
+    if (newMode === "aggressive") {
+      const confirmSwitch = window.confirm(
+        "⚠️ AGGRESSIVE MODE WARNING:\n\nThis mode uses heavy AI optimization which may:\n• Over-polish language beyond original wording\n• Trigger AI detection screeners (GPTZero, Turnitin)\n\nAre you sure you want to switch to Aggressive Mode?"
+      );
+      if (confirmSwitch) setOptimizationMode("aggressive");
+    } else {
+      setOptimizationMode("honest");
+    }
+  };
 
   // ── Undo / Redo history stacks ──────────────────────────────────────────
   const [history, setHistory] = useState<any[]>([]); // past snapshots (max 20)

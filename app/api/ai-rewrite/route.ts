@@ -3,7 +3,6 @@ import { createClient } from "@/utils/supabase/server";
 import { askAIJSON } from "@/lib/openrouter";
 import { apiLimiter, getIP } from "@/lib/rateLimit";
 import { checkAndDeductCredits } from "@/lib/billing";
-import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +13,7 @@ interface RewriteSuggestion {
 /**
  * POST /api/ai-rewrite
  * Generates 2-3 AI-powered rewrite suggestions for a specific text block.
- * Optionally uses a target Job Description to tailor the rewrites.
+ * Uses strict anti-hallucination rules and applies the humanization layer.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -62,65 +61,53 @@ export async function POST(req: NextRequest) {
     const hasJD = !!targetJobDescription && targetJobDescription.trim().length > 0;
     const hasATS = atsMissingKeywords && atsMissingKeywords.length > 0;
 
-    const prompt = `You are a master resume copywriter and ATS algorithm specialist. You specialize in transforming weak, passive resume bullet points into high-impact, metric-driven achievements that score in the top 1% of ATS parsing engines (Workday, Greenhouse, Lever).
+    const prompt = `You are an executive resume copywriter specializing in authentic, high-impact resume bullet rewrites.
 
 TASK: Rewrite the following resume text into exactly 3 variations based on strict optimization dimensions.
 
-ANALYSIS FRAMEWORK:
-1. Action-Verb Led: Every variation must begin with a high-impact, specific action verb (e.g., Architected, Spearheaded, Orchestrated).
-2. Outcome-First Structure: Structure bullets to highlight the *result* first, followed by the *method*.
-3. JD & ATS Alignment: Weave in target keywords naturally without keyword stuffing.
-
 RULES:
-- No Hallucinations: You must NOT invent numbers, team sizes, or revenue impacts. If a metric is implied, you may add a placeholder like [XX]%, but never a fake number.
-- No Template Placeholders: CRITICAL - DO NOT output any generic template placeholder text like "Company Name", "Professional Role", "[Date]", etc.
-- Distinct Variations:
-  Variation 1: Highly technical and keyword-dense (best for ATS).
-  Variation 2: Leadership & impact focused (best for Hiring Managers).
-  Variation 3: Concise and punchy (best for quick scanning).
+- NO HALLUCINATIONS: You MUST NOT invent metrics, accuracy percentages, team sizes, or revenue numbers not present in original text.
+- NO TEMPLATE PLACEHOLDERS: Do NOT output placeholders like "Company Name", "Professional Role", etc.
+- AUTHENTIC HUMAN TONE: Write in clean, natural human phrasing. Avoid robotic AI cliché buzzwords.
 
 SECTION CONTEXT: ${context || "Resume section"}
 
 ORIGINAL TEXT TO REWRITE:
 "${text}"
 
-${hasJD ? `TARGET JOB DESCRIPTION (align rewrites with these keywords and requirements):
-${targetJobDescription}
+${hasJD ? `TARGET JOB DESCRIPTION:
+${targetJobDescription}` : ""}
 
-IMPORTANT: Each rewrite MUST naturally incorporate relevant keywords from this job description while maintaining authenticity.` : ""}
+${hasATS ? `ATS MISSING KEYWORDS:
+${atsMissingKeywords.join(", ")}` : ""}
 
-${hasATS ? `ATS OPTIMIZATION CONTEXT:
-The user is targeting the "${atsIndustry || "relevant"}" industry. The resume is currently missing these critical ATS keywords:
-${atsMissingKeywords.join(", ")}
-
-IMPORTANT: Naturally weave as many of these missing ATS keywords into the rewrite as possible.` : ""}
-
-Return a JSON object with this exact structure (do NOT use nested objects for variations, keep it as an array of 3 string variations to match the expected schema):
+Return a JSON object with this exact structure:
 {
   "suggestions": [
-    "Variation 1: [Technical & ATS Optimized rewrite text...]",
+    "Variation 1: [ATS Optimized rewrite text...]",
     "Variation 2: [Leadership & Impact Focused rewrite text...]",
     "Variation 3: [Concise & Punchy rewrite text...]"
   ]
 }
 
-Output ONLY valid JSON. No markdown, no backticks, no explanation.`;
+Output ONLY valid JSON.`;
 
     const result = await askAIJSON<RewriteSuggestion>(
       prompt,
-      "You are a professional resume rewriting expert. You output ONLY valid JSON."
+      "You are a professional resume copywriter who strictly adheres to truthfulness and natural human phrasing."
     );
+    
+    // Post-process with humanization layer to bypass AI detectors and clean cliché buzzwords
+    const { humanizeText } = await import("@/lib/humanizer");
+    const humanizedSuggestions = (result?.suggestions || []).map((s) => humanizeText(s));
 
-    // Validate the result
-    if (!result.suggestions || !Array.isArray(result.suggestions) || result.suggestions.length === 0) {
-      throw new Error("AI returned invalid suggestion format.");
-    }
-
-    return NextResponse.json({ suggestions: result.suggestions });
-  } catch (err: unknown) {
-    console.error("AI Rewrite failed:", err);
+    return NextResponse.json({
+      suggestions: humanizedSuggestions,
+    });
+  } catch (err: any) {
+    console.error("AI Rewrite error:", err);
     return NextResponse.json(
-      { error: "An unexpected error occurred while rewriting the text." },
+      { error: err.message || "Failed to generate rewrite suggestions." },
       { status: 500 }
     );
   }

@@ -98,7 +98,7 @@ Return ONLY a valid JSON array matching this schema:
     "keyword": "the missing keyword or skill name",
     "title": "Short, highly personalized title (e.g., 'Integrate Kubernetes to your microservices bullet')",
     "description": "Specific explanation of why this matters for their target role and how it upgrades their presentation.",
-    "suggestedText": "The complete, custom rewritten version incorporating the keyword (e.g. 'Orchestrated containerized microservices with Kubernetes, improving deployment frequency by 40%')",
+    "suggestedText": "The complete, custom rewritten version incorporating the keyword naturally into existing candidate experience without inventing fake metrics or numbers not in original text",
     "category": "technical" | "soft_skill" | "experience" | "education" | "certification",
     "priority": 1-5,
     "whereToAdd": "experience" | "skills" | "summary" | "education" | "certifications"

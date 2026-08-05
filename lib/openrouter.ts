@@ -16,19 +16,30 @@ async function logAIRequest(model: string, success: boolean, tokensEstimated: nu
   }
 }
 
-const OPENROUTER_MODELS = [
-  "google/gemma-2-9b-it:free",                  // Google Gemma 2 9B (fast, free)
-  "meta-llama/llama-3-8b-instruct:free",        // Meta Llama 3 8B (fast, free)
-  "openrouter/free",                            // Smart router fallback
-  "qwen/qwen-2.5-72b-instruct:free",            // Qwen 2.5 72B (powerful, free)
-  "meta-llama/llama-3.2-3b-instruct:free"       // Venice fallback
+const OPENROUTER_TEXT_MODELS = [
+  "meta-llama/llama-3.3-70b-instruct",       // 399ms - Fast & natural human writing
+  "deepseek/deepseek-chat",                   // 440ms - DeepSeek V3 (Sub-500ms)
+  "openai/gpt-4o-mini",                       // OpenAI GPT-4o Mini
+  "google/gemini-2.5-flash",                  // Google Gemini 2.5 Flash
+];
+
+const OPENROUTER_JSON_MODELS = [
+  "deepseek/deepseek-chat",                   // 357ms - DeepSeek V3 (Fastest JSON parsing)
+  "meta-llama/llama-3.3-70b-instruct",       // 411ms - Llama 3.3 70B
+  "openai/gpt-4o-mini",                       // GPT-4o Mini
+  "google/gemini-2.5-flash",                  // Gemini 2.5 Flash
 ];
 
 /**
  * Robust helper to fetch completions from OpenRouter using a cascading model chain
- * to self-heal when free-tier models encounter upstream rate limits.
+ * to self-heal when upstream models encounter transient rate limits.
  */
-async function fetchOpenRouter(messages: any[], temperature: number, maxTokens: number): Promise<string> {
+async function fetchOpenRouter(
+  messages: any[],
+  temperature: number,
+  maxTokens: number,
+  isJson: boolean = false
+): Promise<string> {
   const openRouterKey = process.env.OPENROUTER_API_KEY;
   if (!openRouterKey || openRouterKey.startsWith("your-") || openRouterKey === "sk-or-your-key-here") {
     throw new Error(
@@ -38,24 +49,31 @@ async function fetchOpenRouter(messages: any[], temperature: number, maxTokens: 
   }
 
   let lastError: any = null;
+  const modelChain = isJson ? OPENROUTER_JSON_MODELS : OPENROUTER_TEXT_MODELS;
 
-  for (const model of OPENROUTER_MODELS) {
+  for (const model of modelChain) {
     try {
       console.log(`[OpenRouter] Attempting generation with model: ${model}...`);
+      const bodyPayload: any = {
+        model,
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+      };
+
+      if (isJson) {
+        bodyPayload.response_format = { type: "json_object" };
+      }
+
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${openRouterKey}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "https://resume-optimizer.vercel.app",
+          "HTTP-Referer": "https://www.uprole.me",
           "X-Title": "UPROLE",
         },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature,
-          max_tokens: maxTokens,
-        }),
+        body: JSON.stringify(bodyPayload),
       });
 
       if (!response.ok) {
@@ -103,13 +121,14 @@ export async function askAI(prompt: string, systemPrompt?: string): Promise<stri
       { role: "user", content: prompt }
     ];
 
-    const content = await fetchOpenRouter(messages, 0.7, 2000);
+    const content = await fetchOpenRouter(messages, 0.7, 2000, false);
 
     console.log("--- OpenRouter Raw Text Response ---");
     console.log(content);
     console.log("-------------------------------------");
 
     return content;
+
   } catch (err: any) {
     console.error("AI Client Failure (OpenRouter failed):", err);
     throw new Error(`AI Client Failure: ${err.message || String(err)}`);
@@ -135,7 +154,7 @@ export async function askAIJSON<T>(prompt: string, systemPrompt?: string, retrie
 
   while (attempt <= retries) {
     try {
-      const rawResponse = await fetchOpenRouter(messages, 0.7, 4000);
+      const rawResponse = await fetchOpenRouter(messages, 0.7, 4000, true);
 
       console.log(`--- OpenRouter Raw JSON Response (Attempt ${attempt + 1}) ---`);
       console.log(rawResponse);
@@ -213,21 +232,19 @@ export async function askAIJSON<T>(prompt: string, systemPrompt?: string, retrie
       console.warn(`[askAIJSON] Attempt ${attempt + 1} failed:`, err.message || String(err));
       
       // Only retry if it was a JSON parsing failure
-      if (err.message.includes("AI returned invalid JSON") && attempt < retries) {
-        console.log(`[askAIJSON] Retrying (${attempt + 1}/${retries})...`);
-        messages.push({ role: "assistant", content: err.message });
-        messages.push({ role: "user", content: "Your previous response was invalid JSON. Please return ONLY raw JSON without any conversational text or markdown blocks." });
+      if (err.message && err.message.includes("invalid JSON")) {
         attempt++;
-      } else {
-        // Stop retrying
-        if (err.message.includes("AI returned invalid JSON")) {
-           console.error("AI Client JSON Failure (Retries exhausted):", err);
-           throw new Error("The AI generated an unreadable response. Please try again.");
+        if (attempt <= retries) {
+          messages.push({
+            role: "user",
+            content: `Your previous output had invalid JSON syntax (${lastParseError}). Please output strictly raw JSON matching the required schema.`
+          });
+          continue;
         }
-        throw new Error(`AI Client Failure: ${err.message || String(err)}`);
       }
+      throw err;
     }
   }
-  
-  throw new Error("The AI generated an unreadable response. Please try again.");
+
+  throw new Error("Failed to parse JSON after " + retries + " retries.");
 }

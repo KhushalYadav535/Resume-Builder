@@ -56,14 +56,13 @@ export async function POST(req: Request) {
       extractedText = result.response.text();
     } else if (file.type === "text/plain") {
       const text = buffer.toString("utf-8");
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const { askAI } = await import("@/lib/openrouter");
       const prompt = `Extract the core career achievement, praise, or learning from this text:
       "${text}"
       
       Format it as a concise, first-person statement suitable for a career journal. 
       Do not add extra conversational text.`;
-      const result = await model.generateContent(prompt);
-      extractedText = result.response.text();
+      extractedText = await askAI(prompt, "You are a career journal extraction specialist.");
     } else {
       return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
     }
