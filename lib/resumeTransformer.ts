@@ -1,4 +1,5 @@
 import { ResumeData, WorkExperience, Education, Project } from "@/types";
+import { humanizeText, hasExistingMetrics } from "./humanizer";
 
 const ACTION_VERBS = [
   "Achieved", "Accelerated", "Architected", "Automated", "Built",
@@ -45,7 +46,7 @@ export class ResumeTransformer {
     return phone.trim();
   }
 
-  // ── Transform Bullet Achievement ──
+  // ── Transform Bullet Achievement (Fact Preserving & Humanized) ──
   transformAchievement(bullet: string): string {
     if (!bullet) return "";
     let transformed = bullet.trim();
@@ -64,7 +65,6 @@ export class ResumeTransformer {
     );
 
     if (!isActionVerb && firstWord.length > 2) {
-      // Capitalize first letter if valid, or prefix with Implemented
       transformed = transformed.charAt(0).toUpperCase() + transformed.slice(1);
     } else if (!isActionVerb) {
       transformed = "Implemented " + transformed;
@@ -72,26 +72,25 @@ export class ResumeTransformer {
       transformed = transformed.charAt(0).toUpperCase() + transformed.slice(1);
     }
 
-    // Ensure period termination
-    if (!/[.!?]$/.test(transformed)) {
-      transformed += ".";
-    }
+    // Apply humanizer (de-cliché buzzwords and vary structure)
+    transformed = humanizeText(transformed);
 
     return transformed;
   }
 
-  // ── Enhance Achievement with Metrics ──
-  enhanceWithMetrics(bullet: string, suggestedMetrics?: string): string {
+  // ── Enhance Achievement with User Metrics ONLY (Zero Hallucination) ──
+  enhanceWithMetrics(bullet: string, userMetrics?: string): string {
     if (!bullet) return "";
     let transformed = this.transformAchievement(bullet);
 
-    // If already has metrics/numbers, return as is
-    if (/\d+|%/.test(transformed)) {
+    // If already has metrics/numbers, return as is (do NOT invent fake metrics)
+    if (hasExistingMetrics(transformed)) {
       return transformed;
     }
 
-    if (suggestedMetrics) {
-      const cleanMetrics = suggestedMetrics.trim();
+    // Only attach user-provided metrics if explicitly passed by candidate
+    if (userMetrics && userMetrics.trim().length > 0) {
+      const cleanMetrics = userMetrics.trim();
       return transformed.replace(/\.$/, ` (${cleanMetrics}).`);
     }
 
