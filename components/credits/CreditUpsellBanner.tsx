@@ -66,8 +66,8 @@ export default function CreditUpsellBanner({ creditBalance, tier }: CreditUpsell
         maxWidth: "380px",
         background: isCritical
           ? "linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 100%)"
-          : "linear-gradient(135deg, #0f0a2a 0%, #1a1040 100%)",
-        border: `1px solid ${isCritical ? "rgba(239,68,68,0.35)" : "rgba(108,99,255,0.35)"}`,
+          : "linear-gradient(135deg, #0B132B 0%, #101B3B 100%)",
+        border: `1px solid ${isCritical ? "rgba(239,68,68,0.35)" : "rgba(245,158,11,0.35)"}`,
         borderRadius: "14px",
         padding: "1.2rem 1.4rem",
         boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
@@ -101,7 +101,7 @@ export default function CreditUpsellBanner({ creditBalance, tier }: CreditUpsell
             width: "36px",
             height: "36px",
             borderRadius: "10px",
-            background: isCritical ? "rgba(239,68,68,0.15)" : "rgba(108,99,255,0.15)",
+            background: isCritical ? "rgba(239,68,68,0.15)" : "rgba(245,158,11,0.15)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -111,7 +111,7 @@ export default function CreditUpsellBanner({ creditBalance, tier }: CreditUpsell
           {isCritical ? (
             <Zap size={18} style={{ color: "#ef4444" }} />
           ) : (
-            <TrendingUp size={18} style={{ color: "#6c63ff" }} />
+            <TrendingUp size={18} style={{ color: "#F59E0B" }} />
           )}
         </div>
         <div>
@@ -141,9 +141,9 @@ export default function CreditUpsellBanner({ creditBalance, tier }: CreditUpsell
             textAlign: "center",
             padding: "0.55rem 0.8rem",
             borderRadius: "8px",
-            background: "linear-gradient(135deg, #6c63ff 0%, #3b82f6 100%)",
-            color: "#fff",
-            fontWeight: 700,
+            background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
+            color: "#101B3B",
+            fontWeight: 800,
             fontSize: "0.82rem",
             textDecoration: "none",
             transition: "opacity 0.15s",

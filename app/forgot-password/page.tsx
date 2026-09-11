@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
           left: "30%",
           width: "600px",
           height: "600px",
-          background: "radial-gradient(circle, rgba(108,99,255,0.1) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(245,158,11,0.1) 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
           width: "100%",
           maxWidth: "420px",
           padding: "2.5rem 2rem",
-          background: "rgba(19, 19, 30, 0.8)",
+          background: "var(--card)",
           backdropFilter: "blur(12px)",
           border: "1px solid var(--border)",
           borderRadius: "20px",
@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
               fontFamily: "Syne, sans-serif",
               fontSize: "1.8rem",
               fontWeight: 800,
-              background: "linear-gradient(135deg, #6c63ff, #ff6584)",
+              background: "linear-gradient(135deg, #101B3B 0%, #2563EB 50%, #F59E0B 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               marginBottom: "0.5rem",

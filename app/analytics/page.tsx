@@ -84,7 +84,7 @@ const colorMap: Record<string, {
     bottomBorder: 'from-emerald-500/50 to-transparent'
   },
   purple: {
-    bg: 'from-purple-500/10 to-pink-500/5 dark:from-purple-500/20 dark:to-pink-500/10',
+    bg: 'from-purple-500/10 to-indigo-500/5 dark:from-purple-500/20 dark:to-indigo-500/10',
     glow: 'from-purple-600/10 to-purple-600/5 dark:from-purple-600/20 dark:to-purple-600/10',
     text: 'text-purple-600 dark:text-purple-400',
     borderHover: 'group-hover:border-purple-500/30 dark:group-hover:border-purple-400/30',
@@ -459,12 +459,12 @@ export default function AnalyticsDashboardPage() {
                         <BarChart data={activityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                           <defs>
                             <linearGradient id="uploadGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9}/>
-                              <stop offset="100%" stopColor="#6366f1" stopOpacity={0.3}/>
+                              <stop offset="0%" stopColor="#2563EB" stopOpacity={0.9}/>
+                              <stop offset="100%" stopColor="#2563EB" stopOpacity={0.3}/>
                             </linearGradient>
                             <linearGradient id="analysisGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.9}/>
-                              <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                              <stop offset="0%" stopColor="#7C3AED" stopOpacity={0.9}/>
+                              <stop offset="100%" stopColor="#7C3AED" stopOpacity={0.3}/>
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.15)" vertical={false} />
@@ -522,12 +522,12 @@ export default function AnalyticsDashboardPage() {
                           <span className="font-semibold text-slate-800 dark:text-[#e8e9f5]">{keyword.name}</span>
                           <span className="text-slate-500 dark:text-gray-400">{keyword.frequency} times ({keyword.percentage}%)</span>
                         </div>
-                        <div className="h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
-                            style={{ width: `${keyword.percentage}%` }}
-                          />
-                        </div>
+                          <div className="w-full h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-uprole-blue to-uprole-teal rounded-full"
+                              style={{ width: `${keyword.percentage}%` }}
+                            />
+                          </div>
                       </div>
                     ))}
                   </div>

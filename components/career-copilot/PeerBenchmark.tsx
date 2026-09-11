@@ -36,11 +36,11 @@ export default function PeerBenchmark({ userAtsScore = 0 }: { userAtsScore?: num
   };
 
   return (
-    <div className="card" style={{ padding: "1.2rem", background: "linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(219, 39, 119, 0.05) 100%)", border: "1px solid rgba(236, 72, 153, 0.15)" }}>
+    <div className="card" style={{ padding: "1.2rem", background: "linear-gradient(135deg, rgba(37, 99, 235, 0.04) 0%, rgba(20, 184, 166, 0.04) 100%)", border: "1px solid rgba(37, 99, 235, 0.15)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
         <div>
           <h3 style={{ margin: "0 0 0.2rem", fontSize: "1rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <Users size={16} className="text-pink-500" />
+            <Users size={16} className="text-uprole-blue" />
             Peer Benchmark
           </h3>
           <p style={{ margin: "0 0 1rem", fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
@@ -64,15 +64,15 @@ export default function PeerBenchmark({ userAtsScore = 0 }: { userAtsScore?: num
       </div>
 
       {result && (
-        <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(236, 72, 153, 0.2)" }}>
+        <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(37, 99, 235, 0.15)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", textAlign: "center" }}>
             <div>
               <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>You</span>
-              <div style={{ fontSize: "1.5rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: userAtsScore >= result.averageAtsScore ? "#10b981" : "#ef4444" }}>
+              <div style={{ fontSize: "1.5rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: userAtsScore >= result.averageAtsScore ? "#14B8A6" : "#ef4444" }}>
                 {userAtsScore}
               </div>
             </div>
-            <div style={{ borderLeft: "1px solid rgba(236, 72, 153, 0.2)" }}>
+            <div style={{ borderLeft: "1px solid rgba(37, 99, 235, 0.15)" }}>
               <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Industry Avg</span>
               <div style={{ fontSize: "1.5rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: "var(--text)" }}>
                 {result.averageAtsScore}
@@ -84,7 +84,7 @@ export default function PeerBenchmark({ userAtsScore = 0 }: { userAtsScore?: num
             <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text)", display: "block", marginBottom: "0.4rem" }}>Baseline Core Skills Expected:</span>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
               {result.coreSkills.map((s, i) => (
-                <span key={i} className="tag tag-pink" style={{ fontSize: "0.7rem" }}>{s}</span>
+                <span key={i} className="tag tag-discover" style={{ fontSize: "0.7rem" }}>{s}</span>
               ))}
             </div>
           </div>

@@ -22,8 +22,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.uprole.me"),
-  title: "UPROLE — Build & Optimize Your Resume",
-  description: "Outsmart the ATS. Land the Interview. Stop guessing what recruiters want. Let our elite AI engine perfect, optimize, and score your resume in seconds.",
+  title: "UpRole — More than a resume. A brighter career ahead.",
+  description: "UpRole is the Career Advancement Platform. Understand your value. Build your potential. Turn it into real opportunities.",
   manifest: "/site.webmanifest",
   icons: {
     icon: [
@@ -38,8 +38,8 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "UPROLE — Build & Optimize Your Resume",
-    description: "Outsmart the ATS. Land the Interview. Stop guessing what recruiters want. Let our elite AI engine perfect, optimize, and score your resume in seconds.",
+    title: "UpRole — More than a resume. A brighter career ahead.",
+    description: "UpRole is the Career Advancement Platform. Understand your value. Build your potential. Turn it into real opportunities.",
     url: "https://www.uprole.me",
     siteName: "UpRole",
     images: [
@@ -54,8 +54,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "UPROLE — Build & Optimize Your Resume",
-    description: "Outsmart the ATS. Land the Interview. Stop guessing what recruiters want.",
+    title: "UpRole — More than a resume. A brighter career ahead.",
+    description: "Understand your value. Build your potential. Turn it into real opportunities.",
     images: ["/icon.png"],
   },
 };

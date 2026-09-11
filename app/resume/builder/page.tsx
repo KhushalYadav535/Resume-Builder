@@ -16,7 +16,19 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { AiChangesHistoryModal } from "@/components/AiChangesHistoryModal";
 import { useToast } from "@/components/ui/toast-1";
-import { Edit3, Printer, BookOpen, Sparkles, Share2, Eye, Briefcase, Maximize2, Minimize2, Check, Lightbulb, X, CheckCircle2, ChevronDown } from "lucide-react";
+import { 
+  Edit3, Printer, BookOpen, Sparkles, Share2, Eye, Briefcase, Maximize2, Minimize2, Check, 
+  Lightbulb, X, CheckCircle2, ChevronDown, User, Mail, Phone, MapPin, Globe, 
+  IndianRupee, TrendingUp, UserCheck, ArrowRight, ArrowLeft, ShieldCheck, History 
+} from "lucide-react";
+
+const LinkedInIcon = ({ size = 16, className = "text-blue-500" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect x="2" y="9" width="4" height="12" />
+    <circle cx="4" cy="4" r="2" />
+  </svg>
+);
 import { LineInput } from "@/components/resume-builder/LineInput";
 import { StrengthenButton } from "@/components/resume-builder/StrengthenButton";
 import { VoiceInputToggle } from "@/components/resume-builder/VoiceInputToggle";
@@ -818,9 +830,20 @@ function BuilderContent() {
             {saveStatus === "error" && <span style={{ fontSize: "0.75rem", color: "#ef4444", marginRight: "0.5rem" }}>✗ Autosave failed</span>}
 
 
+            {resumeId && (
+              <button 
+                type="button"
+                onClick={() => setShowAiHistory(true)} 
+                className="btn-secondary" 
+                style={{ fontSize: "0.82rem", padding: "0.45rem 0.9rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", height: "34px", border: "1px solid var(--border-accent)", cursor: "pointer" }}
+              >
+                <Sparkles size={14} className="text-amber-500" /> AI Edits
+              </button>
+            )}
+
             <button onClick={() => setIsFullscreen(prev => !prev)} 
               className="btn-primary" 
-              style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", height: "34px", background: "linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%)", border: "none" }}>
+              style={{ fontSize: "0.82rem", padding: "0.45rem 1rem", display: "inline-flex", alignItems: "center", gap: "0.4rem", height: "34px", background: "var(--accent-grad)", color: "#101B3B", fontWeight: 800, border: "none", cursor: "pointer" }}>
               {isFullscreen ? <><Minimize2 size={14} /> Exit Preview</> : <><Maximize2 size={14} /> See Preview</>}
             </button>
             
@@ -846,7 +869,10 @@ function BuilderContent() {
       </div>
 
       {/* CORE 3-COLUMN WORKSPACE */}
-      <div className={`builder-workspace transition-all duration-1000 ${showSuggestionsGlow ? 'brightness-110 shadow-[inset_0_0_50px_rgba(34,197,94,0.05)]' : ''}`}>
+      <div 
+        className={`builder-workspace transition-all duration-1000 ${showSuggestionsGlow ? 'brightness-110 shadow-[inset_0_0_50px_rgba(34,197,94,0.05)]' : ''}`}
+        style={{ position: "relative", zIndex: 10 }}
+      >
         
         {/* COLUMN 1: PROGRESS & NAVIGATION SIDEBAR (Sticky) */}
         {!isFullscreen && (
@@ -980,28 +1006,151 @@ function BuilderContent() {
             
             {/* STEP 1: Personal info */}
             {activeStep === "personal" && (
-              <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "2rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)" }}>
-                <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.4rem", fontWeight: 800, marginBottom: "1.5rem", color: "var(--text-primary)" }}>Personal Information</h2>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.2rem" }}>
-                  {([
-                    ["fullName", "Full Name *", "John Doe"],
-                    ["email", "Email Address *", "john@email.com"],
-                    ["phone", "Phone Number", "+91 98765 43210"],
-                    ["location", "Location (City, State)", "Pune, Maharashtra"],
-                    ["linkedin", "LinkedIn URL", "linkedin.com/in/johndoe"],
-                    ["website", "Website / Portfolio", "johndoe.com"],
-                    ["currentCTC", "Current CTC", "e.g. 10 LPA"],
-                    ["expectedCTC", "Expected CTC", "e.g. 15 LPA"]
-                  ] as [keyof typeof resume.personalInfo, string, string][]).map(([field, label, placeholder]) => (
-                    <div key={field}>
-                      <Input variant="floating"
-                        label={label}
-                        placeholder={placeholder}
-                        value={resume.personalInfo[field] || ""}
-                        onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, [field]: e.target.value } }))}
-                      />
+              <div 
+                style={{ 
+                  background: "var(--card)", 
+                  border: "1px solid var(--border)", 
+                  borderRadius: "20px", 
+                  padding: "2rem", 
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+                  position: "relative",
+                  overflow: "hidden",
+                  zIndex: 10
+                }}
+              >
+                {/* Top Brand Accent Line */}
+                <div 
+                  style={{ 
+                    position: "absolute", 
+                    top: 0, 
+                    left: 0, 
+                    right: 0, 
+                    height: "3px", 
+                    background: "var(--accent-grad)" 
+                  }} 
+                />
+
+                {/* Section Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-5 border-b border-[var(--border)]">
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/25 text-amber-500 flex items-center justify-center font-bold">
+                        <UserCheck size={18} />
+                      </div>
+                      <h2 className="text-xl sm:text-2xl font-extrabold font-['Syne',sans-serif] text-[var(--text-primary)] m-0">
+                        Personal Information
+                      </h2>
                     </div>
-                  ))}
+                    <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1.5 mb-0">
+                      Essential identity and contact credentials. These form the verified header of your ATS-compliant resume.
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 flex items-center gap-1.5 self-start sm:self-center">
+                    <Sparkles size={12} /> Header Tier 1
+                  </span>
+                </div>
+
+                {/* Part A: Primary Contact Details */}
+                <div className="mb-5">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] mb-3">
+                    Primary Contact & Location
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input
+                      variant="static"
+                      label="Full Name *"
+                      placeholder="e.g. Nilesh Butani"
+                      icon={<User size={16} className="text-amber-500" />}
+                      value={resume.personalInfo.fullName || ""}
+                      onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, fullName: e.target.value } }))}
+                    />
+                    <Input
+                      variant="static"
+                      label="Email Address *"
+                      placeholder="e.g. nilesh.butani@gmail.com"
+                      type="email"
+                      icon={<Mail size={16} className="text-amber-500" />}
+                      value={resume.personalInfo.email || ""}
+                      onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, email: e.target.value } }))}
+                    />
+                    <Input
+                      variant="static"
+                      label="Phone Number *"
+                      placeholder="+91 98765 43210"
+                      icon={<Phone size={16} className="text-amber-500" />}
+                      value={resume.personalInfo.phone || ""}
+                      onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, phone: e.target.value } }))}
+                    />
+                    <Input
+                      variant="static"
+                      label="Location (City, State) *"
+                      placeholder="e.g. Bengaluru, Karnataka"
+                      icon={<MapPin size={16} className="text-amber-500" />}
+                      value={resume.personalInfo.location || ""}
+                      onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, location: e.target.value } }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Part B: Online Presence & Proof of Work */}
+                <div className="mb-5 pt-4 border-t border-[var(--border)]">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] mb-3">
+                    Professional Profiles & Portfolio
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input
+                      variant="static"
+                      label="LinkedIn Profile URL"
+                      placeholder="linkedin.com/in/nilesh-butani"
+                      icon={<LinkedInIcon size={16} className="text-blue-500" />}
+                      value={resume.personalInfo.linkedin || ""}
+                      onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, linkedin: e.target.value } }))}
+                    />
+                    <Input
+                      variant="static"
+                      label="Website / Portfolio / GitHub"
+                      placeholder="nileshbutani.dev or github.com/nilesh"
+                      icon={<Globe size={16} className="text-teal-500" />}
+                      value={resume.personalInfo.website || ""}
+                      onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, website: e.target.value } }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Part C: India Compensation Calibration */}
+                <div className="pt-4 border-t border-[var(--border)]">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5">
+                      <IndianRupee size={13} className="text-emerald-500" /> Compensation Matching (Confidential)
+                    </span>
+                    <span className="text-[11px] text-[var(--text-muted)]">Optional • Used for recruiter benchmarking</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input
+                      variant="static"
+                      label="Current CTC"
+                      placeholder="e.g. 12 LPA or ₹12,00,000"
+                      icon={<IndianRupee size={15} className="text-[var(--text-muted)]" />}
+                      value={resume.personalInfo.currentCTC || ""}
+                      onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, currentCTC: e.target.value } }))}
+                    />
+                    <Input
+                      variant="static"
+                      label="Expected CTC"
+                      placeholder="e.g. 18 LPA or ₹18,00,000"
+                      icon={<TrendingUp size={15} className="text-emerald-500" />}
+                      value={resume.personalInfo.expectedCTC || ""}
+                      onChange={(e) => setResume((r) => ({ ...r, personalInfo: { ...r.personalInfo, expectedCTC: e.target.value } }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Pro Tip Banner */}
+                <div className="mt-6 p-3.5 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 flex items-start gap-2.5">
+                  <Lightbulb size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed m-0">
+                    <strong className="text-[var(--text-primary)]">ATS Optimization Tip:</strong> Ensure your phone number starts with a country code (e.g. <span className="font-mono text-amber-500 font-bold">+91</span>) and your city matches your target tech market to clear automated ATS location screening.
+                  </p>
                 </div>
               </div>
             )}
@@ -2002,7 +2151,7 @@ function BuilderContent() {
                           padding: "1rem",
                           border: selectedTemplate === tpl.id ? "2px solid var(--accent)" : "1px solid var(--border)",
                           borderRadius: "10px",
-                          background: selectedTemplate === tpl.id ? "rgba(108,99,255,0.06)" : "var(--card)",
+                          background: selectedTemplate === tpl.id ? "rgba(245,158,11,0.08)" : "var(--card)",
                           cursor: "pointer",
                           transition: "all 0.2s",
                         }}
@@ -2093,7 +2242,7 @@ function BuilderContent() {
                   <div className="card" style={{ display: "grid", gap: "1.5rem" }}>
                     <div className="col-span-full" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: "1.1rem" }}>Local ATS Scan Report</h3>
-                      <span className="tag tag-green" style={{ fontSize: "0.85rem", fontWeight: 800, background: localATS.overall >= 70 ? "rgba(67,233,123,0.15)" : "rgba(255,101,132,0.15)", color: localATS.overall >= 70 ? "#43e97b" : "#ff6584" }}>
+                      <span className="tag" style={{ fontSize: "0.85rem", fontWeight: 800, background: localATS.overall >= 70 ? "rgba(20,184,166,0.15)" : "rgba(239,68,68,0.15)", color: localATS.overall >= 70 ? "#14B8A6" : "#ef4444" }}>
                         Score: {localATS.overall}/100
                       </span>
                     </div>
@@ -2102,7 +2251,7 @@ function BuilderContent() {
                       {Object.entries(localATS.breakdown).map(([key, val]) => (
                         <div key={key} style={{ background: "var(--bg-3)", padding: "0.6rem 0.8rem", borderRadius: "8px", textAlign: "center" }}>
                           <div style={{ fontSize: "0.68rem", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "0.2rem" }}>{key}</div>
-                          <div style={{ fontWeight: 700, fontSize: "1.05rem", color: val >= 70 ? "#43e97b" : val >= 45 ? "#f6d365" : "#ff6584" }}>{val}%</div>
+                          <div style={{ fontWeight: 700, fontSize: "1.05rem", color: val >= 70 ? "#14B8A6" : val >= 45 ? "#F59E0B" : "#ef4444" }}>{val}%</div>
                         </div>
                       ))}
                     </div>
@@ -2358,28 +2507,67 @@ function BuilderContent() {
             )}
 
             {/* PREVIOUS / NEXT STEPS NAVIGATION BUTTONS */}
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem", borderTop: "1px solid var(--border)", paddingTop: "1rem", paddingBottom: "1rem" }}>
+            <div 
+              className="flex items-center justify-between mt-8 p-3.5 sm:p-4 rounded-2xl border"
+              style={{
+                background: "var(--card)",
+                borderColor: "var(--border)",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.04)"
+              }}
+            >
               <button
+                type="button"
                 className="btn-secondary"
                 disabled={activeStep === "personal"}
-                style={{ padding: "0.4rem 1rem", fontSize: "0.85rem", borderRadius: "8px", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }}
+                style={{
+                  padding: "0.55rem 1.25rem",
+                  fontSize: "0.85rem",
+                  borderRadius: "10px",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  opacity: activeStep === "personal" ? 0.4 : 1,
+                  cursor: activeStep === "personal" ? "not-allowed" : "pointer",
+                }}
                 onClick={() => {
                   const idx = steps.findIndex((s) => s.key === activeStep);
                   if (idx > 0) setActiveStep(steps[idx - 1].key);
                 }}
               >
-                ← Back
+                <ArrowLeft size={16} /> Back
               </button>
+
+              <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)]">
+                <span>Step {steps.findIndex((s) => s.key === activeStep) + 1} of {steps.length}</span>
+                <span>•</span>
+                <span className="font-bold text-[var(--text-primary)]">{steps.find((s) => s.key === activeStep)?.label}</span>
+              </div>
+
               <button
+                type="button"
                 className="btn-primary"
                 disabled={activeStep === "preview"}
-                style={{ padding: "0.4rem 1rem", fontSize: "0.85rem", borderRadius: "8px", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem" }}
+                style={{
+                  padding: "0.55rem 1.4rem",
+                  fontSize: "0.85rem",
+                  borderRadius: "10px",
+                  fontWeight: 800,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  background: "var(--accent-grad)",
+                  color: "#101B3B",
+                  boxShadow: "0 4px 16px rgba(245, 158, 11, 0.35)",
+                  cursor: activeStep === "preview" ? "not-allowed" : "pointer",
+                }}
                 onClick={() => {
                   const idx = steps.findIndex((s) => s.key === activeStep);
                   if (idx >= 0 && idx < steps.length - 1) setActiveStep(steps[idx + 1].key);
                 }}
               >
-                Next Step →
+                <span>Next Step</span>
+                <ArrowRight size={16} />
               </button>
             </div>
 
@@ -2563,23 +2751,23 @@ function BuilderContent() {
         style={{
           position: "fixed",
           bottom: "24px",
-          left: "24px",
-          background: "var(--accent)",
-          color: "#fff",
+          right: "72px",
+          background: "var(--accent-grad)",
+          color: "#101B3B",
           border: "none",
           borderRadius: "50px",
-          padding: "0.75rem 1.25rem",
-          fontWeight: 700,
-          fontSize: "0.9rem",
+          padding: "0.65rem 1.25rem",
+          fontWeight: 800,
+          fontSize: "0.85rem",
           cursor: "pointer",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.3), 0 0 15px rgba(67,233,123,0.3)",
+          boxShadow: "0 4px 20px rgba(245, 158, 11, 0.35)",
           display: "flex",
           alignItems: "center",
           gap: "0.5rem",
           zIndex: 1000
         }}
       >
-        <Sparkles size={14} className="text-amber-500" />
+        <Sparkles size={15} className="text-brand-navy" />
         View AI Edits
       </button>
 
@@ -2615,7 +2803,7 @@ function BuilderContent() {
               <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.2rem", display: "flex", alignItems: "center", gap: "0.8rem", color: "var(--text-primary)" }}>
                 ✦ AI Career Coach
               </h3>
-              <span style={{ fontSize: "0.7rem", background: "rgba(108,99,255,0.15)", color: "var(--accent)", padding: "2px 8px", borderRadius: "10px", fontWeight: 600 }}>India-First Expert</span>
+              <span style={{ fontSize: "0.7rem", background: "rgba(245,158,11,0.15)", color: "var(--accent)", padding: "2px 8px", borderRadius: "10px", fontWeight: 600 }}>India-First Expert</span>
             </div>
             <button 
               onClick={() => setShowCoach(false)} 

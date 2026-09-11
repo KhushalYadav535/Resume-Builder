@@ -27,7 +27,7 @@ import {
 import { CREDIT_COSTS } from "@/lib/creditCosts";
 
 const getScoreColor = (score: number) => {
-  if (score >= 70) return { color: "#10b981", bg: "rgba(16,185,129,0.12)", border: "rgba(16,185,129,0.3)" };
+  if (score >= 70) return { color: "#14B8A6", bg: "rgba(20,184,166,0.12)", border: "rgba(20,184,166,0.3)" };
   if (score >= 45) return { color: "#f59e0b", bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.3)" };
   return { color: "#ef4444", bg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.3)" };
 };

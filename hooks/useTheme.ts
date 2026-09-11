@@ -10,18 +10,26 @@ export function useTheme() {
     // 1. Check localStorage first
     const saved = localStorage.getItem('resume-optimizer-theme') as Theme | null;
     
+    const applyTheme = (t: Theme) => {
+      setTheme(t);
+      document.documentElement.setAttribute('data-theme', t);
+      if (t === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+
     if (saved) {
       // User has chosen a theme before
-      setTheme(saved);
-      document.documentElement.setAttribute('data-theme', saved);
+      applyTheme(saved);
     } else {
       // No saved preference — check system preference
       const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light';
       
-      setTheme(systemPreference);
-      document.documentElement.setAttribute('data-theme', systemPreference);
+      applyTheme(systemPreference);
       localStorage.setItem('resume-optimizer-theme', systemPreference);
     }
     
@@ -34,6 +42,11 @@ export function useTheme() {
     
     setTheme(next);
     document.documentElement.setAttribute('data-theme', next);
+    if (next === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     localStorage.setItem('resume-optimizer-theme', next);
 
     // Optional: emit custom event so other tabs can sync
@@ -43,15 +56,27 @@ export function useTheme() {
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'resume-optimizer-theme' && e.newValue) {
-        setTheme(e.newValue as Theme);
-        document.documentElement.setAttribute('data-theme', e.newValue);
+        const val = e.newValue as Theme;
+        setTheme(val);
+        document.documentElement.setAttribute('data-theme', val);
+        if (val === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
       }
     };
   
     const handleThemeChangeEvent = (e: Event) => {
       const customEvent = e as CustomEvent<{ theme: Theme }>;
-      setTheme(customEvent.detail.theme);
-      document.documentElement.setAttribute('data-theme', customEvent.detail.theme);
+      const val = customEvent.detail.theme;
+      setTheme(val);
+      document.documentElement.setAttribute('data-theme', val);
+      if (val === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {

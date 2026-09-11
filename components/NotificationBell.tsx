@@ -104,7 +104,7 @@ export default function NotificationBell() {
           padding: "0.5rem",
           borderRadius: "50%",
           color: isOpen ? "var(--accent)" : "var(--text-muted)",
-          background: isOpen ? "rgba(108,99,255,0.08)" : "none",
+          background: isOpen ? "rgba(245,158,11,0.12)" : "none",
           transition: "all 0.2s",
         }}
       >
@@ -115,18 +115,18 @@ export default function NotificationBell() {
               position: "absolute",
               top: "2px",
               right: "2px",
-              backgroundColor: "#ff6584",
-              color: "white",
+              backgroundColor: "#F59E0B",
+              color: "#101B3B",
               fontSize: "0.68rem",
-              fontWeight: 700,
+              fontWeight: 800,
               borderRadius: "50%",
               width: "16px",
               height: "16px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "0 0 10px rgba(255,101,132,0.6)",
-              border: "1.5px solid #000",
+              boxShadow: "0 0 10px rgba(245, 158, 11, 0.6)",
+              border: "1.5px solid var(--bg-card)",
             }}
           >
             {unreadCount}
@@ -199,7 +199,7 @@ export default function NotificationBell() {
                     padding: "0.8rem 1rem",
                     borderBottom: "1px solid rgba(255,255,255,0.04)",
                     cursor: "pointer",
-                    background: n.is_read ? "transparent" : "rgba(108,99,255,0.04)",
+                    background: n.is_read ? "transparent" : "rgba(245,158,11,0.06)",
                     borderLeft: n.is_read ? "3px solid transparent" : "3px solid var(--accent)",
                     transition: "all 0.15s",
                     display: "flex",

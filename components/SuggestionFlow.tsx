@@ -133,7 +133,7 @@ export function SuggestionFlow({
               <div className="space-y-3">
                 <button 
                   onClick={handleApply}
-                  className="w-full py-4 rounded-xl font-black text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-95 transition-all shadow-[0_0_25px_rgba(99,102,241,0.25)] active:scale-[0.99]"
+                  className="w-full py-4 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy shadow-lg shadow-amber-500/20 hover:shadow-xl active:scale-[0.99] transition-all"
                 >
                   ✓ Save & Apply Changes
                 </button>
@@ -211,7 +211,7 @@ export function SuggestionFlow({
                             }}
                             className={`px-4.5 py-3 rounded-xl font-bold text-xs border-2 transition-all active:scale-[0.98] ${
                               isAccepted
-                                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 border-indigo-500 text-white shadow-md'
+                                ? 'bg-gradient-to-r from-amber-500 to-amber-600 border-amber-500 text-brand-navy font-bold shadow-md shadow-amber-500/20'
                                 : 'bg-slate-200 hover:bg-slate-300 text-slate-950 border-2 border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-300 dark:border-gray-700'
                             }`}
                           >

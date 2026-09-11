@@ -108,7 +108,7 @@ export function SuggestionSummary({
                 </div>
                 <div className="w-full h-2 bg-slate-300 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-indigo-500 to-green-400 transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-uprole-blue to-uprole-teal transition-all duration-500"
                     style={{ width: `${estimatedNewScore}%` }}
                   ></div>
                 </div>
@@ -122,7 +122,7 @@ export function SuggestionSummary({
               <button 
                 onClick={handleApply}
                 disabled={isApplying || acceptedCount === 0}
-                className="w-full py-4 rounded-xl font-black text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-95 transition-all shadow-[0_0_25px_rgba(99,102,241,0.25)] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy shadow-lg shadow-amber-500/20 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {isApplying ? "Applying..." : "Apply Changes & Open Builder"}
               </button>

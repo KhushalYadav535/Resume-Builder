@@ -250,10 +250,10 @@ export default function JobTracker() {
     : 0;
 
   const columns: { title: string; key: JobApplication["status"]; color: string }[] = [
-    { title: "Applied", key: "Applied", color: "var(--accent)" },
-    { title: "Interviews", key: "Interview", color: "#f6d365" },
-    { title: "Offers", key: "Offer", color: "#43e97b" },
-    { title: "Rejected / Closed", key: "Rejected", color: "#ff6584" },
+    { title: "Applied", key: "Applied", color: "#2563EB" },
+    { title: "Interviews", key: "Interview", color: "#F59E0B" },
+    { title: "Offers", key: "Offer", color: "#14B8A6" },
+    { title: "Rejected / Closed", key: "Rejected", color: "#EF4444" },
     { title: "Withdrawn", key: "Withdrawn", color: "#888888" },
   ];
 
@@ -375,7 +375,7 @@ export default function JobTracker() {
                                   style={{ 
                                     fontSize: "0.68rem", 
                                     background: app.jd_match_score >= 70 ? "rgba(67,233,123,0.12)" : app.jd_match_score >= 45 ? "rgba(246,211,101,0.12)" : "rgba(255,101,132,0.12)", 
-                                    color: app.jd_match_score >= 70 ? "#43e97b" : app.jd_match_score >= 45 ? "#f6d365" : "#ff6584", 
+                                    color: app.jd_match_score >= 70 ? "#14B8A6" : app.jd_match_score >= 45 ? "#F59E0B" : "#EF4444", 
                                     padding: "2px 6px", 
                                     borderRadius: "4px",
                                     fontWeight: 700
@@ -655,7 +655,7 @@ export default function JobTracker() {
                     <span style={{ fontSize: "0.74rem", color: "var(--text-muted)", display: "block" }}>AI Job Description Match Score</span>
                     <strong style={{ 
                       fontSize: "0.95rem", 
-                      color: jdMatchScore >= 70 ? "#43e97b" : jdMatchScore >= 45 ? "#f6d365" : "#ff6584"
+                      color: jdMatchScore >= 70 ? "#14B8A6" : jdMatchScore >= 45 ? "#F59E0B" : "#EF4444"
                     }}>
                       {jdMatchScore}% Compatibility
                     </strong>

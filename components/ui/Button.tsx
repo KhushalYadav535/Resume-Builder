@@ -37,8 +37,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         case "primary":
           return {
             background: "var(--accent-grad)",
-            color: "white",
+            color: "#101B3B",
+            fontWeight: 800,
             border: "none",
+            boxShadow: "0 4px 16px rgba(245, 158, 11, 0.35)",
           };
         case "secondary":
           return {

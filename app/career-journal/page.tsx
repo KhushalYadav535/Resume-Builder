@@ -110,11 +110,11 @@ export default function CareerJournalPage() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "win": return <Award size={18} className="text-emerald-500" />;
-      case "skill": return <Zap size={18} className="text-amber-500" />;
-      case "promotion": return <TrendingUp size={18} className="text-purple-500" />;
-      case "gap": return <AlertTriangle size={18} className="text-orange-400" />;
-      default: return <BookOpen size={18} className="text-blue-500" />;
+      case "win": return <Award size={18} className="text-uprole-teal" />;
+      case "skill": return <Zap size={18} className="text-uprole-teal" />;
+      case "promotion": return <TrendingUp size={18} className="text-brand-amber" />;
+      case "gap": return <AlertTriangle size={18} className="text-amber-500" />;
+      default: return <BookOpen size={18} className="text-uprole-blue" />;
     }
   };
 
@@ -151,11 +151,11 @@ export default function CareerJournalPage() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
             <div>
               <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2rem", fontWeight: 800, margin: 0, display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                <BookOpen size={28} className="text-purple-500" />
-                Journal
+                <BookOpen size={28} className="text-uprole-teal" />
+                Career Journal
               </h1>
               <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", marginTop: "0.4rem" }}>
-                Log your wins, feedback, and skills. Build your narrative effortlessly.
+                Log career events, metrics, and evidence. Build your career value systematically.
               </p>
             </div>
             <button
@@ -190,9 +190,9 @@ export default function CareerJournalPage() {
                   style={{
                     padding: "0.3rem 0.7rem",
                     borderRadius: "999px",
-                    border: `1px solid ${filterType === t.value ? "var(--accent)" : "var(--border)"}`,
-                    background: filterType === t.value ? "rgba(108,99,255,0.1)" : "var(--bg-elevated)",
-                    color: filterType === t.value ? "var(--accent)" : "var(--text-muted)",
+                    border: `1px solid ${filterType === t.value ? "var(--uprole-teal)" : "var(--border)"}`,
+                    background: filterType === t.value ? "rgba(20,184,166,0.12)" : "var(--bg-elevated)",
+                    color: filterType === t.value ? "var(--uprole-teal)" : "var(--text-muted)",
                     fontSize: "0.75rem",
                     fontWeight: 600,
                     cursor: "pointer",

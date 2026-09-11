@@ -120,7 +120,7 @@ export default function QuickScanModal({ isOpen, onClose }: QuickScanModalProps)
               <button
                 onClick={handleScan}
                 disabled={loading}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy font-bold text-sm shadow-lg shadow-amber-500/20 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -201,19 +201,19 @@ export default function QuickScanModal({ isOpen, onClose }: QuickScanModalProps)
               </div>
 
               {/* Conversion CTA */}
-              <div className="p-5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white space-y-3 text-center">
-                <h3 className="text-base font-bold">
-                  Want UpRole AI to rewrite & optimize this resume automatically?
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-brand-navy to-[#060A14] border border-brand-amber/30 text-white space-y-3 text-center">
+                <h3 className="text-base font-bold font-['Syne',sans-serif]">
+                  Want UpRole to synthesize & optimize your career impact?
                 </h3>
                 <p className="text-xs text-white/80">
-                  Create a free account to unlock 1-click bullet tailoring, named ATS targeting, and Word/PDF export.
+                  Create a free account to unlock tailored resumes, LinkedIn hooks, STAR interview stories, and real-time ATS targeting.
                 </p>
                 <Link
                   href="/signup"
                   onClick={onClose}
-                  className="inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-white text-indigo-700 font-bold text-xs shadow-md hover:bg-slate-50 transition-all no-underline"
+                  className="inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy font-bold text-xs shadow-md shadow-amber-500/20 hover:shadow-lg transition-all no-underline"
                 >
-                  <span>Start Free Optimization</span>
+                  <span>Start Free Advancement</span>
                   <ArrowRight size={14} />
                 </Link>
               </div>

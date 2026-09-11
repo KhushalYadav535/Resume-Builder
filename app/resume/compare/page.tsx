@@ -55,9 +55,9 @@ export default function ResumeComparePage() {
   const resumeB = resumes.find(r => r.id === resumeIdB);
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return "#43e97b";
-    if (score >= 45) return "#f6d365";
-    return "#ff6584";
+    if (score >= 70) return "#14B8A6";
+    if (score >= 45) return "#F59E0B";
+    return "#EF4444";
   };
 
   const getCompletionStats = (data: any) => {
