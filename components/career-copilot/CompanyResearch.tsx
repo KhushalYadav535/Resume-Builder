@@ -38,7 +38,7 @@ export default function CompanyResearch() {
   return (
     <div className="card" style={{ padding: "1.5rem", display: "grid", gap: "1.2rem" }}>
       <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-        <Building2 size={18} className="text-indigo-500" />
+        <Building2 size={18} className="text-uprole-blue" />
         Company Research Brief
       </h3>
       <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
@@ -60,25 +60,25 @@ export default function CompanyResearch() {
       </div>
 
       {result && (
-        <div style={{ background: "rgba(99, 102, 241, 0.05)", border: "1px solid rgba(99, 102, 241, 0.2)", borderRadius: "10px", padding: "1.2rem", marginTop: "0.5rem", display: "grid", gap: "1.2rem" }}>
+        <div style={{ background: "rgba(37, 99, 235, 0.05)", border: "1px solid rgba(37, 99, 235, 0.2)", borderRadius: "10px", padding: "1.2rem", marginTop: "0.5rem", display: "grid", gap: "1.2rem" }}>
           
           <div>
             <h4 style={{ margin: "0 0 0.4rem", fontSize: "0.9rem", color: "var(--text)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <Info size={14} className="text-indigo-400" /> Culture & Values
+              <Info size={14} className="text-uprole-blue" /> Culture & Values
             </h4>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.6 }}>{result.culture}</p>
           </div>
           
           <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem" }}>
             <h4 style={{ margin: "0 0 0.4rem", fontSize: "0.9rem", color: "var(--text)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <Newspaper size={14} className="text-emerald-400" /> Recent News & Shifts
+              <Newspaper size={14} className="text-uprole-teal" /> Recent News & Shifts
             </h4>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.6 }}>{result.recentNews}</p>
           </div>
           
           <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem" }}>
             <h4 style={{ margin: "0 0 0.4rem", fontSize: "0.9rem", color: "var(--text)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <MessageSquareQuote size={14} className="text-amber-400" /> Interview Style
+              <MessageSquareQuote size={14} className="text-brand-amber" /> Interview Style
             </h4>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.6 }}>{result.interviewStyle}</p>
           </div>

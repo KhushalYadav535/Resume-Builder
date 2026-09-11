@@ -250,16 +250,16 @@ export default function CareerCopilotPage() {
           <div style={{ animation: "fadeInUp 0.3s ease" }}>
             {/* Progress Dashboard */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
-              <div className="card" style={{ padding: "1.2rem", background: "linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%)", border: "1px solid rgba(108, 99, 255, 0.15)" }}>
-                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 600 }}>Resume ATS Strength</span>
-                <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: "var(--accent)", marginTop: "0.5rem" }}>
+              <div className="card" style={{ padding: "1.2rem", background: "linear-gradient(135deg, rgba(37, 99, 235, 0.06) 0%, rgba(20, 184, 166, 0.06) 100%)", border: "1px solid rgba(37, 99, 235, 0.20)" }}>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 600 }}>Career Value &amp; ATS Strength</span>
+                <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: "var(--brand-amber)", marginTop: "0.5rem" }}>
                   {selectedResume.ats_score?.overall || 0}/100
                 </div>
               </div>
-              <div className="card" style={{ padding: "1.2rem", background: "linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)", border: "1px solid rgba(16, 185, 129, 0.15)" }}>
+              <div className="card" style={{ padding: "1.2rem", background: "linear-gradient(135deg, rgba(20, 184, 166, 0.06) 0%, rgba(245, 158, 11, 0.06) 100%)", border: "1px solid rgba(20, 184, 166, 0.20)" }}>
                 <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 600 }}>Interview Readiness</span>
-                <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: "#10b981", marginTop: "0.5rem" }}>
-                  {questions.length > 0 && careerStory ? "High" : careerStory ? "Medium" : "Pending"}
+                <div style={{ fontSize: "1.8rem", fontWeight: 800, fontFamily: "Syne, sans-serif", color: "var(--uprole-teal)", marginTop: "0.5rem" }}>
+                  {questions.length > 0 && careerStory ? "Advancement Ready" : careerStory ? "Developing" : "Needs Evidence"}
                 </div>
               </div>
               
@@ -281,15 +281,15 @@ export default function CareerCopilotPage() {
                   style={{
                     padding: "0.5rem 1rem",
                     borderRadius: "999px",
-                    fontWeight: 600,
+                    fontWeight: 700,
                     fontSize: "0.85rem",
                     cursor: "pointer",
                     transition: "all 0.2s",
                     flexShrink: 0,
                     whiteSpace: "nowrap",
-                    border: activeTab === tab.key ? "1px solid var(--accent)" : "1px solid var(--border)",
-                    background: activeTab === tab.key ? "var(--accent)" : "var(--bg-elevated)",
-                    color: activeTab === tab.key ? "#fff" : "var(--text)",
+                    border: activeTab === tab.key ? "1px solid var(--brand-amber)" : "1px solid var(--border)",
+                    background: activeTab === tab.key ? "var(--brand-amber)" : "var(--bg-elevated)",
+                    color: activeTab === tab.key ? "#101B3B" : "var(--text-primary)",
                   }}
                 >
                   {tab.label}
@@ -303,7 +303,7 @@ export default function CareerCopilotPage() {
                 {/* Narrative Studio */}
                 <div className="card" style={{ display: "grid", gap: "0.8rem", padding: "1.5rem" }}>
                   <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.1rem", fontWeight: 700, margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <MessageSquare size={18} className="text-purple-500" />
+                    <MessageSquare size={18} className="text-uprole-purple" />
                     Narrative Studio
                   </h3>
                   <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
@@ -324,9 +324,9 @@ export default function CareerCopilotPage() {
                         style={{
                           padding: "0.35rem 0.8rem",
                           borderRadius: "999px",
-                          border: `1px solid ${narrativeAudience === opt.value ? "var(--accent)" : "var(--border)"}`,
-                          background: narrativeAudience === opt.value ? "rgba(108,99,255,0.1)" : "var(--bg-elevated)",
-                          color: narrativeAudience === opt.value ? "var(--accent)" : "var(--text-muted)",
+                          border: `1px solid ${narrativeAudience === opt.value ? "var(--brand-amber)" : "var(--border)"}`,
+                          background: narrativeAudience === opt.value ? "rgba(245,158,11,0.12)" : "var(--bg-elevated)",
+                          color: narrativeAudience === opt.value ? "var(--brand-amber)" : "var(--text-muted)",
                           fontSize: "0.78rem",
                           fontWeight: 600,
                           cursor: "pointer",
@@ -341,13 +341,13 @@ export default function CareerCopilotPage() {
                   <ToneCalibrator value={toneValue} onChange={setToneValue} />
 
                   {showStoryModal && careerStory ? (
-                    <div style={{ background: "rgba(108, 99, 255, 0.04)", border: "1px solid rgba(108, 99, 255, 0.15)", borderRadius: "8px", padding: "1.2rem", marginTop: "0.5rem" }}>
+                    <div style={{ background: "rgba(124, 58, 237, 0.05)", border: "1px solid rgba(124, 58, 237, 0.20)", borderRadius: "8px", padding: "1.2rem", marginTop: "0.5rem" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
-                        <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--accent)" }}>Generated Script</span>
+                        <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--uprole-purple)" }}>Generated Script</span>
                         <div style={{ display: "flex", gap: "0.6rem" }}>
                           <button
                             onClick={() => { navigator.clipboard.writeText(careerStory); setNarrativeCopied(true); setTimeout(() => setNarrativeCopied(false), 2000); }}
-                            style={{ background: "none", border: "none", cursor: "pointer", color: narrativeCopied ? "#10b981" : "var(--text-muted)", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.3rem" }}
+                            style={{ background: "none", border: "none", cursor: "pointer", color: narrativeCopied ? "#14B8A6" : "var(--text-muted)", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.3rem" }}
                           >
                             {narrativeCopied ? "✓ Copied!" : "Copy"}
                           </button>
@@ -361,7 +361,7 @@ export default function CareerCopilotPage() {
                       onClick={fetchCareerStory}
                       disabled={careerStoryLoading}
                       className="btn-primary mt-2"
-                      style={{ padding: "0.6rem 1.2rem", fontSize: "0.85rem", background: "linear-gradient(135deg, #6c63ff 0%, #3b82f6 100%)", border: "none", width: "fit-content" }}
+                      style={{ padding: "0.6rem 1.2rem", fontSize: "0.85rem", width: "fit-content" }}
                     >
                       {careerStoryLoading ? "Generating Script..." : `✦ Generate ${["interview","recruiter","linkedin","networking"].includes(narrativeAudience) ? {interview:"Interview Intro",recruiter:"Recruiter DM",linkedin:"LinkedIn About",networking:"Networking Intro"}[narrativeAudience] : "Script"}`}
                     </button>
@@ -373,7 +373,7 @@ export default function CareerCopilotPage() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
                     <div>
                       <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "1.1rem", fontWeight: 700, margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <Target size={18} className="text-pink-500" />
+                        <Target size={18} className="text-brand-amber" />
                         AI-Predicted Interview Questions
                       </h3>
                       <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: "0.3rem 0 0" }}>Get personalized technical and behavioral questions you are highly likely to face.</p>
@@ -479,7 +479,7 @@ export default function CareerCopilotPage() {
                           </span>
                         </div>
                         {skillGapData.estimatedWeeksToClose && (
-                          <div style={{ textAlign: "center", background: "rgba(108,99,255,0.1)", border: "1px solid rgba(108,99,255,0.2)", borderRadius: "10px", padding: "0.6rem 1rem" }}>
+                          <div style={{ textAlign: "center", background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "10px", padding: "0.6rem 1rem" }}>
                             <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" }}>Est. to close</div>
                             <div style={{ fontSize: "1.4rem", fontWeight: 900, color: "var(--accent)", fontFamily: "Syne, sans-serif", lineHeight: 1.1 }}>~{skillGapData.estimatedWeeksToClose}w</div>
                           </div>
@@ -506,7 +506,7 @@ export default function CareerCopilotPage() {
 
                       {/* Recommended Courses */}
                       {skillGapData.recommendedCourses && skillGapData.recommendedCourses.length > 0 && (
-                        <div style={{ background: "rgba(108,99,255,0.04)", border: "1px solid rgba(108,99,255,0.15)", borderRadius: "10px", padding: "1.2rem" }}>
+                        <div style={{ background: "rgba(245,158,11,0.04)", border: "1px solid rgba(245,158,11,0.15)", borderRadius: "10px", padding: "1.2rem" }}>
                           <p className="section-label" style={{ marginBottom: "0.8rem", color: "var(--accent)" }}>Recommended Learning Topics</p>
                           <ul style={{ margin: "0 0 0 1.2rem", padding: 0, fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
                             {skillGapData.recommendedCourses.map((c, i) => (

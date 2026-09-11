@@ -48,16 +48,16 @@ export default function LandingFeatureTour() {
       title: "Resume Analysis",
       shortTitle: "Resume Analysis",
       icon: <Search size={16} />,
-      color: "#0ea5e9",
+      color: "#2563EB",
       description: "Instantly score your resume against 30+ ATS parameters. Identify formatting flaws, missing sections, and word-count optimization opportunities in one click.",
       renderGraphic: (isActive) => (
         <div style={{ 
           position: "relative", 
           width: "100%", 
           height: isActive ? "90px" : "60px", 
-          background: "rgba(14, 165, 233, 0.04)", 
+          background: "rgba(37, 99, 235, 0.04)", 
           borderRadius: "10px", 
-          border: "1px solid rgba(14, 165, 233, 0.18)", 
+          border: "1px solid rgba(37, 99, 235, 0.18)", 
           padding: "8px", 
           display: "flex", 
           flexDirection: "column", 
@@ -66,8 +66,8 @@ export default function LandingFeatureTour() {
           overflow: "hidden"
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ height: "4px", width: "30px", background: "rgba(14, 165, 233, 0.5)", borderRadius: "3px" }} />
-            <div style={{ height: "8px", width: "8px", borderRadius: "50%", border: "1.5px solid #0ea5e9" }} />
+            <div style={{ height: "4px", width: "30px", background: "rgba(37, 99, 235, 0.5)", borderRadius: "3px" }} />
+            <div style={{ height: "8px", width: "8px", borderRadius: "50%", border: "1.5px solid #2563EB" }} />
           </div>
           <div style={{ height: "3px", width: "100%", background: "var(--border-strong)", borderRadius: "3px", opacity: 0.3 }} />
           <div style={{ height: "3px", width: "85%", background: "var(--border-strong)", borderRadius: "3px", opacity: 0.3 }} />
@@ -82,14 +82,14 @@ export default function LandingFeatureTour() {
             width: "22px", 
             height: "22px", 
             borderRadius: "50%", 
-            background: "rgba(14, 165, 233, 0.2)", 
-            border: "1.5px solid #0ea5e9", 
+            background: "rgba(37, 99, 235, 0.2)", 
+            border: "1.5px solid #2563EB", 
             display: "flex", 
             alignItems: "center", 
             justifyContent: "center", 
-            boxShadow: "0 2px 6px rgba(14, 165, 233, 0.25)"
+            boxShadow: "0 2px 6px rgba(37, 99, 235, 0.25)"
           }}>
-            <Search size={10} style={{ color: "#0ea5e9" }} />
+            <Search size={10} style={{ color: "#2563EB" }} />
           </div>
         </div>
       )
@@ -100,7 +100,7 @@ export default function LandingFeatureTour() {
       title: "Resume Tailoring",
       shortTitle: "Resume Tailoring",
       icon: <Briefcase size={16} />,
-      color: "#3b82f6",
+      color: "#2563EB",
       description: "Tailor your resume to any job description in seconds. Uprole aligns your experience with the role, rewrites content to match key requirements, and prioritizes the most relevant information.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -123,10 +123,10 @@ export default function LandingFeatureTour() {
                 justifyContent: "space-between", 
                 alignItems: "center", 
                 padding: isActive ? "5px 10px" : "4px 6px", 
-                background: item.checked ? "rgba(59, 130, 246, 0.14)" : "var(--bg-3)", 
-                border: item.checked ? "1.5px solid rgba(59, 130, 246, 0.45)" : "1px solid var(--border)", 
+                background: item.checked ? "rgba(37, 99, 235, 0.14)" : "var(--bg-3)", 
+                border: item.checked ? "1.5px solid rgba(37, 99, 235, 0.45)" : "1px solid var(--border)", 
                 borderRadius: "6px",
-                color: item.checked ? "#3b82f6" : "var(--text-muted)",
+                color: item.checked ? "#2563EB" : "var(--text-muted)",
                 fontSize: isActive ? "0.75rem" : "0.58rem",
                 fontWeight: item.checked ? 700 : 500
               }}>
@@ -135,7 +135,7 @@ export default function LandingFeatureTour() {
                   width: isActive ? "13px" : "10px", 
                   height: isActive ? "13px" : "10px", 
                   borderRadius: "50%", 
-                  background: item.checked ? "#3b82f6" : "transparent",
+                  background: item.checked ? "#2563EB" : "transparent",
                   border: item.checked ? "none" : "1px solid var(--border-strong)",
                   display: "flex",
                   alignItems: "center",
@@ -157,7 +157,7 @@ export default function LandingFeatureTour() {
       title: "Resume Agent",
       shortTitle: "Resume Agent",
       icon: <MessageSquare size={16} />,
-      color: "#10b981",
+      color: "#14B8A6",
       description: "Unlock personalized coaching with our interactive AI chat assistant. Ask questions like 'How can I make my project bullet sound more senior?' and receive contextual, expert advice.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -191,18 +191,18 @@ export default function LandingFeatureTour() {
               width: "13px", 
               height: "13px", 
               borderRadius: "50%", 
-              background: "rgba(16, 185, 129, 0.15)", 
-              border: "1px solid #10b981", 
+              background: "rgba(20, 184, 166, 0.15)", 
+              border: "1px solid #14B8A6", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center", 
               flexShrink: 0 
             }}>
-              <Sparkles size={7} style={{ color: "#10b981" }} />
+              <Sparkles size={7} style={{ color: "#14B8A6" }} />
             </div>
             <div style={{ 
-              background: "rgba(16, 185, 129, 0.08)", 
-              border: "1px solid rgba(16, 185, 129, 0.2)", 
+              background: "rgba(20, 184, 166, 0.08)", 
+              border: "1px solid rgba(20, 184, 166, 0.2)", 
               color: "var(--text-muted)", 
               padding: isActive ? "4px 8px" : "2px 4px", 
               borderRadius: "2px 8px 8px 8px", 
@@ -220,7 +220,7 @@ export default function LandingFeatureTour() {
       title: "ATS-friendly Templates",
       shortTitle: "ATS Templates",
       icon: <Layout size={16} />,
-      color: "#8b5cf6",
+      color: "#7C3AED",
       description: "Ditch generic templates that confuse scanners. Choose from elegant layouts optimized with parsing-grade hierarchy, single-column margins, and modern professional typography.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -266,7 +266,7 @@ export default function LandingFeatureTour() {
       title: "Cover Letter Generator",
       shortTitle: "Cover Letter",
       icon: <FileText size={16} />,
-      color: "#f59e0b",
+      color: "#F59E0B",
       description: "Generate highly matching, contextual cover letters matching your resume style. Tailor the tone of voice and highlight the exact credentials sought in the target job role.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -280,17 +280,17 @@ export default function LandingFeatureTour() {
           overflow: "hidden"
         }}>
           <div style={{ width: isActive ? "38px" : "28px", height: isActive ? "50px" : "38px", background: "var(--bg-3)", border: "1px solid var(--border)", borderRadius: "3px", padding: "3px", display: "flex", flexDirection: "column", gap: "2px", opacity: 0.8 }}>
-            <div style={{ height: "2px", width: "70%", background: "#3b82f6", borderRadius: "1px" }} />
+            <div style={{ height: "2px", width: "70%", background: "#2563EB", borderRadius: "1px" }} />
             <div style={{ height: "2px", width: "90%", background: "var(--border)" }} />
             <div style={{ height: "2px", width: "80%", background: "var(--border)" }} />
           </div>
           
-          <div style={{ color: "#f59e0b", display: "flex", alignItems: "center" }}>
+          <div style={{ color: "#F59E0B", display: "flex", alignItems: "center" }}>
             <ArrowRight size={isActive ? 12 : 9} />
           </div>
 
           <div style={{ width: isActive ? "38px" : "28px", height: isActive ? "50px" : "38px", background: "rgba(245, 158, 11, 0.05)", border: "1px solid rgba(245, 158, 11, 0.3)", borderRadius: "3px", padding: "3px", display: "flex", flexDirection: "column", gap: "2px" }}>
-            <div style={{ height: "2px", width: "75%", background: "#f59e0b", borderRadius: "1px" }} />
+            <div style={{ height: "2px", width: "75%", background: "#F59E0B", borderRadius: "1px" }} />
             <div style={{ height: "2px", width: "90%", background: "rgba(245, 158, 11, 0.2)" }} />
             <div style={{ height: "2px", width: "85%", background: "rgba(245, 158, 11, 0.2)" }} />
           </div>
@@ -303,7 +303,7 @@ export default function LandingFeatureTour() {
       title: "Job Application Tracker",
       shortTitle: "Job Tracker",
       icon: <TrendingUp size={16} />,
-      color: "#ec4899",
+      color: "#2563EB",
       description: "Organize your job search pipeline in one place. Log applications, track interview dates, monitor salary packages, and see your overall platform offer/rejection analytics.",
       renderGraphic: (isActive) => (
         <div style={{ 
@@ -314,13 +314,13 @@ export default function LandingFeatureTour() {
           overflow: "hidden"
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: isActive ? "5px 8px" : "3px 5px", background: "var(--bg-3)", border: "1px solid var(--border)", borderRadius: "5px", fontSize: isActive ? "0.68rem" : "0.55rem" }}>
-            <span style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Google</span>
-            <span style={{ background: "rgba(59, 130, 246, 0.15)", color: "#3b82f6", padding: "1px 4px", borderRadius: "3px", fontSize: "0.52rem", fontWeight: 700, flexShrink: 0 }}>
+            <span style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Target Role</span>
+            <span style={{ background: "rgba(37, 99, 235, 0.15)", color: "#2563EB", padding: "1px 4px", borderRadius: "3px", fontSize: "0.52rem", fontWeight: 700, flexShrink: 0 }}>
               Interview
             </span>
           </div>
           {isActive && (
-            <button style={{ width: "100%", border: "none", background: "linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)", color: "#fff", padding: "5px 8px", borderRadius: "5px", fontSize: "0.68rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+            <button style={{ width: "100%", border: "none", background: "linear-gradient(135deg, #101B3B 0%, #1e3a8a 100%)", color: "#F59E0B", padding: "5px 8px", borderRadius: "5px", fontSize: "0.68rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
               <span>Track Application</span>
               <ChevronRight size={10} />
             </button>

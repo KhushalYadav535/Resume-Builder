@@ -200,7 +200,7 @@ export default function MockInterview({ resumeId, questions }: MockInterviewProp
                   onClick={() => setExpandedIdx(isExpanded ? null : idx)}
                   style={{
                     width: "100%",
-                    background: isExpanded ? "rgba(108,99,255,0.04)" : "rgba(255,255,255,0.01)",
+                    background: isExpanded ? "rgba(245,158,11,0.06)" : "rgba(255,255,255,0.01)",
                     border: "none",
                     padding: "1rem 1.2rem",
                     display: "flex",
@@ -228,10 +228,10 @@ export default function MockInterview({ resumeId, questions }: MockInterviewProp
                     {/* STAR breakdown */}
                     <div style={{ display: "grid", gap: "0.6rem" }}>
                       {[
-                        { key: "S", label: "Situation", text: qa.situation, color: "#6c63ff" },
-                        { key: "T", label: "Task", text: qa.task, color: "#3b82f6" },
-                        { key: "A", label: "Action", text: qa.action, color: "#10b981" },
-                        { key: "R", label: "Result", text: qa.result, color: "#f59e0b" },
+                        { key: "S", label: "Situation", text: qa.situation, color: "#7C3AED" },
+                        { key: "T", label: "Task", text: qa.task, color: "#2563EB" },
+                        { key: "A", label: "Action", text: qa.action, color: "#14B8A6" },
+                        { key: "R", label: "Result", text: qa.result, color: "#F59E0B" },
                       ].map((part) => (
                         <div
                           key={part.key}
@@ -272,7 +272,7 @@ export default function MockInterview({ resumeId, questions }: MockInterviewProp
                     </div>
 
                     {/* Full Answer */}
-                    <div style={{ background: "rgba(108,99,255,0.04)", border: "1px solid rgba(108,99,255,0.15)", borderRadius: "8px", padding: "1rem" }}>
+                    <div style={{ background: "rgba(245,158,11,0.04)", border: "1px solid rgba(245,158,11,0.15)", borderRadius: "8px", padding: "1rem" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
                         <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--accent)" }}>
                           Complete Answer (60-90 sec)

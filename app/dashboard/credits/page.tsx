@@ -33,18 +33,18 @@ interface ReferralStats {
 }
 
 const categoryConfig: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
-  journal_bonus: { icon: <BookOpen size={14} />, color: "#10b981", bg: "rgba(16,185,129,0.1)" },
-  purchase:      { icon: <ShoppingCart size={14} />, color: "#6c63ff", bg: "rgba(108,99,255,0.1)" },
-  welcome:       { icon: <Gift size={14} />, color: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
+  journal_bonus: { icon: <BookOpen size={14} />, color: "#14B8A6", bg: "rgba(20,184,166,0.12)" },
+  purchase:      { icon: <ShoppingCart size={14} />, color: "#F59E0B", bg: "rgba(245,158,11,0.12)" },
+  welcome:       { icon: <Gift size={14} />, color: "#F59E0B", bg: "rgba(245,158,11,0.12)" },
   usage:         { icon: <Zap size={14} />, color: "#ef4444", bg: "rgba(239,68,68,0.1)" },
-  referral_bonus:{ icon: <Users size={14} />, color: "#3b82f6", bg: "rgba(59,130,246,0.1)" },
+  referral_bonus:{ icon: <Users size={14} />, color: "#2563EB", bg: "rgba(37,99,235,0.12)" },
   default:       { icon: <Coins size={14} />, color: "#6b7280", bg: "rgba(107,114,128,0.1)" },
 };
 
 const tierLabels: Record<string, { label: string; color: string }> = {
   free:    { label: "Free",          color: "#6b7280" },
-  sprint:  { label: "Career Sprint", color: "#6c63ff" },
-  pro:     { label: "Career Pro",    color: "#f59e0b" },
+  sprint:  { label: "Career Sprint", color: "#F59E0B" },
+  pro:     { label: "Career Pro",    color: "#2563EB" },
 };
 
 export default function CreditsPage() {
@@ -142,7 +142,7 @@ export default function CreditsPage() {
           </div>
           <Link
             href="/pricing"
-            style={{ padding: "0.6rem 1.4rem", borderRadius: "10px", background: "linear-gradient(135deg, #6c63ff, #3b82f6)", color: "#fff", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0, boxShadow: "0 4px 15px rgba(108,99,255,0.3)" }}
+            style={{ padding: "0.6rem 1.4rem", borderRadius: "10px", background: "linear-gradient(135deg, #F59E0B, #D97706)", color: "#101B3B", fontWeight: 800, fontSize: "0.9rem", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0, boxShadow: "0 4px 15px rgba(245,158,11,0.3)" }}
           >
             <Coins size={16} /> Add Credits
           </Link>
@@ -156,7 +156,7 @@ export default function CreditsPage() {
           <>
             {/* Stats Row */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.2rem", marginBottom: "2rem" }}>
-              <div className="card" style={{ padding: "1.4rem", background: "linear-gradient(135deg, rgba(108,99,255,0.08) 0%, rgba(59,130,246,0.08) 100%)", border: "1px solid rgba(108,99,255,0.2)" }}>
+              <div className="card" style={{ padding: "1.4rem", background: "linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(37,99,235,0.08) 100%)", border: "1px solid rgba(245,158,11,0.25)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
                   <Coins size={18} style={{ color: "var(--accent)" }} />
                   <span style={{ fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-muted)" }}>Balance</span>
@@ -252,14 +252,14 @@ export default function CreditsPage() {
 
             {/* Sprint Upsell */}
             {profile?.tier === "free" && (
-              <div className="card" style={{ padding: "1.4rem 1.8rem", marginBottom: "2rem", background: "linear-gradient(135deg, rgba(108,99,255,0.06) 0%, rgba(59,130,246,0.06) 100%)", border: "1px solid rgba(108,99,255,0.2)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+              <div className="card" style={{ padding: "1.4rem 1.8rem", marginBottom: "2rem", background: "linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(37,99,235,0.08) 100%)", border: "1px solid rgba(245,158,11,0.25)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
                 <div>
                   <p style={{ margin: "0 0 0.3rem", fontWeight: 700, fontSize: "0.95rem" }}>Heading into an active job search?</p>
                   <p style={{ margin: 0, fontSize: "0.83rem", color: "var(--text-muted)" }}>
                     Career Sprint gives unlimited AI access for 30 days — no credit counting, no interruptions.
                   </p>
                 </div>
-                <Link href="/pricing" style={{ padding: "0.6rem 1.4rem", borderRadius: "10px", background: "linear-gradient(135deg, #6c63ff, #3b82f6)", color: "#fff", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.4rem", flexShrink: 0 }}>
+                <Link href="/pricing" style={{ padding: "0.6rem 1.4rem", borderRadius: "10px", background: "linear-gradient(135deg, #F59E0B, #D97706)", color: "#101B3B", fontWeight: 800, fontSize: "0.85rem", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.4rem", flexShrink: 0 }}>
                   View Plans <ArrowUpRight size={14} />
                 </Link>
               </div>

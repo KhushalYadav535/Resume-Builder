@@ -222,11 +222,11 @@ export default function DashboardCoverLetterPage() {
           )}
 
           <div className="flex justify-end">
-            <button
-              onClick={handleGenerate}
-              disabled={loading || resumes.length === 0}
-              className="py-3 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50"
-            >
+              <button
+                onClick={handleGenerate}
+                disabled={loading || resumes.length === 0}
+                className="py-3 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy font-bold text-sm shadow-md shadow-amber-500/20 hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50"
+              >
               {loading ? (
                 <>
                   <div className="spinner" style={{ width: 16, height: 16 }} />

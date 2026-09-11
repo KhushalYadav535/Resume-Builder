@@ -72,7 +72,7 @@ export function SuggestionCard({
                     <span><strong>Impact:</strong> {suggestion.reasoning}</span>
                   </li>
                   <li className="text-slate-950 dark:text-gray-300 flex items-start gap-2">
-                    <span className="text-indigo-600 dark:text-indigo-400 font-bold mt-0.5">•</span>
+                    <span className="text-uprole-blue dark:text-blue-400 font-bold mt-0.5">•</span>
                     <span><strong>ATS Valuation:</strong> Worth +{estimatedImpactPoints} points</span>
                   </li>
                 </ul>
@@ -84,7 +84,7 @@ export function SuggestionCard({
               <div className="flex flex-col sm:flex-row gap-3">
                 <button 
                   onClick={onAccept}
-                  className="flex-1 px-6 py-3.5 rounded-xl font-bold text-xs bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-95 transition-all shadow-md active:scale-[0.99]"
+                  className="flex-1 px-6 py-3.5 rounded-xl font-bold text-xs bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy shadow-md shadow-amber-500/20 active:scale-[0.99] transition-all"
                 >
                   ✓ Accept & Continue
                 </button>
@@ -100,7 +100,7 @@ export function SuggestionCard({
               <div className="space-y-1.5 pt-2 border-t-2 border-slate-300 dark:border-gray-800/50">
                 <div className="w-full h-2 bg-slate-300 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 progress-bar"
+                    className="h-full bg-gradient-to-r from-uprole-blue to-uprole-teal progress-bar"
                     style={{ width: `${(currentIndex / totalSuggestions) * 100}%` }}
                   ></div>
                 </div>

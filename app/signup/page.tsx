@@ -171,7 +171,7 @@ export default function SignupPage() {
               Create an account
             </h2>
             <p className="text-[var(--text-muted)] text-[15px]">
-              Sign up to start optimizing your resume
+              Start your journey to careers with clarity and progress with purpose
             </p>
           </div>
 
@@ -195,7 +195,7 @@ export default function SignupPage() {
                 onClick={() => handleSwitchTab("email")}
                 className={`flex-1 py-2 text-sm font-semibold rounded-[var(--radius-sm)] transition-all ${
                   loginMethod === "email"
-                    ? "bg-white dark:bg-[#2A2A38] shadow-sm text-[var(--text-primary)]"
+                    ? "bg-amber-500 text-brand-navy font-bold shadow-md"
                     : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 }`}
               >
@@ -206,7 +206,7 @@ export default function SignupPage() {
                 onClick={() => handleSwitchTab("mobile")}
                 className={`flex-1 py-2 text-sm font-semibold rounded-[var(--radius-sm)] transition-all ${
                   loginMethod === "mobile"
-                    ? "bg-white dark:bg-[#2A2A38] shadow-sm text-[var(--text-primary)]"
+                    ? "bg-amber-500 text-brand-navy font-bold shadow-md"
                     : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 }`}
               >
@@ -347,7 +347,7 @@ export default function SignupPage() {
             Already have an account?{" "}
             <Link
               href="/login"
-              className="text-[var(--accent)] font-semibold hover:text-[var(--accent-2)] transition-colors ml-1"
+              className="text-brand-amber font-semibold hover:underline transition-colors ml-1"
             >
               Log in
             </Link>

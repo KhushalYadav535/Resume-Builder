@@ -31,8 +31,8 @@ export default function TabNavigation({ activeTab }: TabNavigationProps) {
                 px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2
                 transition-all duration-300 whitespace-nowrap border border-solid cursor-pointer
                 ${isActive
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg border-indigo-600'
-                  : 'text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-white/[0.02] border-slate-200 dark:border-white/5 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5'
+                  ? 'bg-brand-navy text-brand-amber shadow-md border-brand-amber/50 font-bold dark:bg-brand-amber dark:text-brand-navy'
+                  : 'text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-white/[0.02] border-slate-200 dark:border-white/5 hover:text-brand-amber dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5'
                 }
               `}
             >

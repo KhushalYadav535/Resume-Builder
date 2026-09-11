@@ -153,7 +153,7 @@ export default function LoginPage() {
                 onClick={() => handleSwitchTab("email")}
                 className={`flex-1 py-2 text-sm font-semibold rounded-[var(--radius-sm)] transition-all ${
                   loginMethod === "email"
-                    ? "bg-white dark:bg-[#2A2A38] shadow-sm text-[var(--text-primary)]"
+                    ? "bg-amber-500 text-brand-navy font-bold shadow-md"
                     : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 }`}
               >
@@ -164,7 +164,7 @@ export default function LoginPage() {
                 onClick={() => handleSwitchTab("mobile")}
                 className={`flex-1 py-2 text-sm font-semibold rounded-[var(--radius-sm)] transition-all ${
                   loginMethod === "mobile"
-                    ? "bg-white dark:bg-[#2A2A38] shadow-sm text-[var(--text-primary)]"
+                    ? "bg-amber-500 text-brand-navy font-bold shadow-md"
                     : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 }`}
               >
@@ -196,7 +196,7 @@ export default function LoginPage() {
                   <div className="flex justify-end mt-2">
                     <Link
                       href="/forgot-password"
-                      className="text-[13px] font-semibold text-[var(--accent)] hover:text-[var(--accent-2)] transition-colors"
+                      className="text-[13px] font-semibold text-brand-amber hover:text-brand-amber-hover transition-colors"
                     >
                       Forgot password?
                     </Link>
@@ -291,7 +291,7 @@ export default function LoginPage() {
             Don't have an account?{" "}
             <Link
               href="/signup"
-              className="text-[var(--accent)] font-semibold hover:text-[var(--accent-2)] transition-colors ml-1"
+              className="text-brand-amber font-semibold hover:text-brand-amber-hover transition-colors ml-1"
             >
               Sign up
             </Link>

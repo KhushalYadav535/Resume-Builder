@@ -994,8 +994,8 @@ export default function ResumeDetailPage() {
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                     <Link href="/pricing" style={{
                       flex: 1, textAlign: "center", padding: "0.45rem 0.7rem", borderRadius: "8px",
-                      background: "linear-gradient(135deg, #6c63ff 0%, #3b82f6 100%)",
-                      color: "#fff", fontWeight: 700, fontSize: "0.78rem", textDecoration: "none",
+                      background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
+                      color: "#101B3B", fontWeight: 800, fontSize: "0.78rem", textDecoration: "none",
                     }}>
                       Career Sprint — ₹799
                     </Link>

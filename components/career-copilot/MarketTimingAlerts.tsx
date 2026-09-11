@@ -62,7 +62,7 @@ export default function MarketTimingAlerts() {
   return (
     <div className="card" style={{ padding: "1.5rem", display: "grid", gap: "1.2rem" }}>
       <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-        <LineChart size={18} className="text-orange-500" />
+        <LineChart size={18} className="text-brand-amber" />
         Market Timing Alerts
       </h3>
       <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
@@ -98,14 +98,14 @@ export default function MarketTimingAlerts() {
           
           <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem" }}>
             <h4 style={{ margin: "0 0 0.4rem", fontSize: "0.9rem", color: "var(--text)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <Activity size={14} className="text-orange-400" /> Hiring Velocity
+              <Activity size={14} className="text-brand-amber" /> Hiring Velocity
             </h4>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.6 }}>{result.hiringVelocity}</p>
           </div>
           
           <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem" }}>
             <h4 style={{ margin: "0 0 0.4rem", fontSize: "0.9rem", color: "var(--text)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <LineChart size={14} className="text-blue-400" /> Macro Insight
+              <LineChart size={14} className="text-uprole-blue" /> Macro Insight
             </h4>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.6 }}>{result.macroInsight}</p>
           </div>

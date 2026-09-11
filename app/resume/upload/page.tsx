@@ -210,9 +210,9 @@ export default function UploadPage() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return "#43e97b";
-    if (score >= 45) return "#f6d365";
-    return "#ff6584";
+    if (score >= 70) return "#14B8A6";
+    if (score >= 45) return "#F59E0B";
+    return "#EF4444";
   };
 
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
@@ -528,16 +528,16 @@ export default function UploadPage() {
                   )}
 
                   {/* Sign Up CTA Banner */}
-                  <div className="mt-6 p-5 bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-neutral-900 border border-indigo-500/30 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="mt-6 p-5 bg-gradient-to-br from-brand-navy to-[#060A14] border border-brand-amber/30 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div>
-                      <h4 className="text-base font-bold text-white">🚀 Save your resume & unlock AI rewrites</h4>
+                      <h4 className="text-base font-bold text-white font-['Syne',sans-serif]">Save your resume & synthesize your impact</h4>
                       <p className="text-xs text-neutral-300 mt-1">
-                        Sign up in 30 seconds to access 3-variation AI bullet rewrites, humanizer, and cover letter generator.
+                        Sign up in 30 seconds to access tailored bullet rewrites, ATS targeting, and Career Value advancement.
                       </p>
                     </div>
                     <Link
                       href="/signup?redirect=/resume/upload"
-                      className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all whitespace-nowrap"
+                      className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy font-bold text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all whitespace-nowrap no-underline"
                     >
                       Sign Up Free & Save →
                     </Link>
