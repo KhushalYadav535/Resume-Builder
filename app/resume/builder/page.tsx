@@ -19,7 +19,8 @@ import { useToast } from "@/components/ui/toast-1";
 import { 
   Edit3, Printer, BookOpen, Sparkles, Share2, Eye, Briefcase, Maximize2, Minimize2, Check, 
   Lightbulb, X, CheckCircle2, ChevronDown, User, Mail, Phone, MapPin, Globe, 
-  IndianRupee, TrendingUp, UserCheck, ArrowRight, ArrowLeft, ShieldCheck, History 
+  IndianRupee, TrendingUp, UserCheck, ArrowRight, ArrowLeft, ShieldCheck, History,
+  ZoomIn, ZoomOut, Palette, FileText
 } from "lucide-react";
 
 const LinkedInIcon = ({ size = 16, className = "text-blue-500" }: { size?: number; className?: string }) => (
@@ -246,6 +247,54 @@ function BuilderContent() {
       setCoachLoading(false);
     }
   };
+  // Authentic A4 Multi-page preview state
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [activeViewPage, setActiveViewPage] = useState<number>(1);
+  const [showPageGuides, setShowPageGuides] = useState<boolean>(true);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const paperRef = useRef<HTMLDivElement>(null);
+
+  // Measure content height and calculate page count (A4 = 1122.5px height at 96 DPI)
+  useEffect(() => {
+    const updatePages = () => {
+      if (paperRef.current) {
+        const h = paperRef.current.scrollHeight;
+        const A4_HEIGHT_PX = 1122.5;
+        const calculated = Math.max(1, Math.ceil((h - 20) / A4_HEIGHT_PX));
+        setTotalPages(calculated);
+      }
+    };
+    const timer = setTimeout(updatePages, 250);
+    window.addEventListener("resize", updatePages);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updatePages);
+    };
+  }, [resume, selectedTemplate, isFullscreen]);
+
+  const scrollToPage = (pageNum: number) => {
+    setActiveViewPage(pageNum);
+    if (previewContainerRef.current) {
+      const A4_HEIGHT_PX = 1122.5;
+      const targetTop = (pageNum - 1) * A4_HEIGHT_PX * zoomFactor;
+      previewContainerRef.current.scrollTo({
+        top: targetTop,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const handleFitToWidth = () => {
+    if (previewContainerRef.current) {
+      const availableWidth = previewContainerRef.current.clientWidth - 48;
+      const standardA4Px = 794;
+      const fit = Math.min(1.1, Math.max(0.4, Number((availableWidth / standardA4Px).toFixed(2))));
+      setZoomFactor(fit);
+    } else {
+      setZoomFactor(0.85);
+    }
+  };
+
   // Public Sharing States
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [isSharePublic, setIsSharePublic] = useState(true);
@@ -2577,43 +2626,364 @@ function BuilderContent() {
           rightPanel={null}
         />
         ) : (
-          <>
-            {/* COLUMN 3: STICKY LIVE DOCUMENT PREVIEW PANEL */}
-            <div className="no-print builder-preview-container" style={{ display: "flex", flexDirection: "column", height: "100%", gap: "1rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 0.5rem" }}>
-                 <h3 style={{ margin: 0, fontSize: "1rem", color: "var(--text-primary)", fontWeight: 700 }}>Live Preview</h3>
-                 <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>A4 Format</span>
+          /* FULLSCREEN EXPANDED PREVIEW */
+          <div
+            className="no-print builder-preview-container"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              height: "calc(100vh - 80px)",
+              background: "var(--bg-2)",
+              width: "100%",
+              overflow: "hidden",
+            }}
+          >
+            {/* Fullscreen Preview Toolbar */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "0.65rem 1.5rem",
+                borderBottom: "1px solid var(--border)",
+                background: "var(--card)",
+                flexWrap: "wrap",
+                gap: "0.6rem",
+                zIndex: 20,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "0.9rem", fontWeight: 800, color: "var(--text)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <FileText size={16} className="text-amber-500" />
+                  Fullscreen Live Preview
+                </span>
+
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                    padding: "0.15rem 0.6rem",
+                    borderRadius: "999px",
+                    background: totalPages > 1 ? "rgba(245, 158, 11, 0.12)" : "rgba(16, 185, 129, 0.12)",
+                    color: totalPages > 1 ? "var(--brand-amber)" : "#10B981",
+                    border: `1px solid ${totalPages > 1 ? "rgba(245, 158, 11, 0.3)" : "rgba(16, 185, 129, 0.3)"}`,
+                  }}
+                >
+                  📄 {totalPages} {totalPages === 1 ? "Page (Fits A4)" : "Pages"}
+                </span>
+
+                {totalPages > 1 && (
+                  <div style={{ display: "flex", gap: "0.2rem", background: "var(--bg-elevated)", padding: "0.15rem", borderRadius: "6px", border: "1px solid var(--border)" }}>
+                    {Array.from({ length: totalPages }).map((_, idx) => {
+                      const p = idx + 1;
+                      return (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => scrollToPage(p)}
+                          title={`Jump to Page ${p}`}
+                          style={{
+                            padding: "0.2rem 0.55rem",
+                            fontSize: "0.72rem",
+                            fontWeight: 700,
+                            borderRadius: "4px",
+                            border: "none",
+                            cursor: "pointer",
+                            background: activeViewPage === p ? "var(--accent)" : "transparent",
+                            color: activeViewPage === p ? "#101B3B" : "var(--text-muted)",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          Page {p}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setShowPageGuides((prev) => !prev)}
+                  title={showPageGuides ? "Hide A4 page cutoffs" : "Show A4 page cutoffs"}
+                  style={{
+                    background: showPageGuides ? "rgba(245, 158, 11, 0.1)" : "var(--bg-elevated)",
+                    border: showPageGuides ? "1px solid rgba(245, 158, 11, 0.3)" : "1px solid var(--border)",
+                    color: showPageGuides ? "var(--brand-amber)" : "var(--text-muted)",
+                    padding: "0.25rem 0.6rem",
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {showPageGuides ? "Cutoffs: ON" : "Cutoffs: OFF"}
+                </button>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                  <Palette size={14} className="text-purple-500" />
+                  <select
+                    value={selectedTemplate}
+                    onChange={(e) => setSelectedTemplate(e.target.value)}
+                    style={{
+                      fontSize: "0.78rem",
+                      fontWeight: 600,
+                      padding: "0.25rem 0.6rem",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border)",
+                      background: "var(--bg-elevated)",
+                      color: "var(--text-primary)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <option value="jakes-resume">Jake's Resume (SWE)</option>
+                    <option value="awesome-corporate">Awesome Corporate</option>
+                    <option value="altacv-modern">AltaCV Modern</option>
+                    <option value="deedy-cs">Deedy CS</option>
+                    <option value="curve-timeline">CurVe Timeline</option>
+                    <option value="hipster-sidebar">Hipster Sidebar</option>
+                    <option value="plasmati-academic">Plasmati Academic</option>
+                  </select>
+                </div>
               </div>
-              <div 
-                id="resume-preview-container"
-                style={{ 
-                flex: 1, 
-                overflowY: "auto", 
-                background: "var(--bg-3)", 
-                borderRadius: "12px", 
-                border: "1px solid var(--border)", 
-                display: "flex", 
-                justifyContent: "center", 
-                alignItems: "start",
-                padding: "2rem"
-              }}>
-                <div className="resume-paper resume-print-area" style={{ 
-                  background: "#ffffff", 
-                  color: "#000000", 
-                  padding: "40px", 
-                  width: "100%",
+
+              {/* Right Zoom & Fullscreen Exit */}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
+                <button
+                  type="button"
+                  onClick={() => setZoomFactor((prev) => Math.max(0.4, Number((prev - 0.05).toFixed(2))))}
+                  className="btn-secondary"
+                  title="Zoom Out"
+                  style={{ padding: "0.25rem 0.55rem", fontSize: "0.78rem", borderRadius: "6px" }}
+                >
+                  <ZoomOut size={13} />
+                </button>
+                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text)", minWidth: "2.6rem", textAlign: "center" }}>
+                  {Math.round(zoomFactor * 100)}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setZoomFactor((prev) => Math.min(1.25, Number((prev + 0.05).toFixed(2))))}
+                  className="btn-secondary"
+                  title="Zoom In"
+                  style={{ padding: "0.25rem 0.55rem", fontSize: "0.78rem", borderRadius: "6px" }}
+                >
+                  <ZoomIn size={13} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleFitToWidth}
+                  title="Fit to Width"
+                  style={{
+                    background: "var(--bg-elevated)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    color: "var(--text-muted)",
+                    padding: "0.25rem 0.6rem",
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                  }}
+                >
+                  Fit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setZoomFactor(1)}
+                  title="Reset to 100%"
+                  style={{
+                    background: zoomFactor === 1 ? "rgba(245, 158, 11, 0.12)" : "var(--bg-elevated)",
+                    border: zoomFactor === 1 ? "1px solid rgba(245, 158, 11, 0.3)" : "1px solid var(--border)",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    color: zoomFactor === 1 ? "var(--brand-amber)" : "var(--text-muted)",
+                    padding: "0.25rem 0.6rem",
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                  }}
+                >
+                  100%
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsFullscreen(false)}
+                  title="Exit Fullscreen"
+                  className="btn-primary"
+                  style={{
+                    padding: "0.3rem 0.75rem",
+                    fontSize: "0.78rem",
+                    borderRadius: "6px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.35rem",
+                    background: "var(--accent-grad)",
+                    color: "#101B3B",
+                    fontWeight: 800,
+                    border: "none",
+                  }}
+                >
+                  <Minimize2 size={13} />
+                  <span>Exit Preview</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Fullscreen Canvas Area */}
+            <div
+              ref={previewContainerRef}
+              id="resume-preview-container"
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                overflowX: "auto",
+                padding: "2rem 1rem",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "flex-start",
+                background: "radial-gradient(circle, rgba(148, 163, 184, 0.14) 1px, transparent 1px)",
+                backgroundSize: "20px 20px",
+                position: "relative",
+              }}
+            >
+              <div
+                ref={paperRef}
+                className="resume-paper resume-print-area"
+                style={{
+                  position: "relative",
+                  width: "210mm",
+                  minWidth: "210mm",
                   maxWidth: "210mm",
                   minHeight: "297mm",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                  WebkitFontSmoothing: "subpixel-antialiased",
-              borderRadius: "4px",
-              transition: "transform 0.15s ease-out",
-            }}>
-              <ResumeDocument data={resume} templateId={selectedTemplate} />
+                  backgroundColor: "#ffffff",
+                  color: "#000000",
+                  boxShadow: "0 10px 40px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.08)",
+                  borderRadius: "4px",
+                  boxSizing: "border-box",
+                  transform: zoomFactor !== 1 ? `scale(${zoomFactor})` : undefined,
+                  transformOrigin: "top center",
+                  transition: "transform 0.15s ease-out",
+                  marginBottom: zoomFactor > 1 ? `${(zoomFactor - 1) * 1123 + 32}px` : "2rem",
+                  flexShrink: 0,
+                }}
+              >
+                {/* Dynamic A4 Cutoff Guides */}
+                {showPageGuides && totalPages > 1 && Array.from({ length: totalPages - 1 }).map((_, idx) => {
+                  const pageNum = idx + 1;
+                  return (
+                    <div
+                      key={pageNum}
+                      className="no-print"
+                      style={{
+                        position: "absolute",
+                        top: `${pageNum * 297}mm`,
+                        left: "-18px",
+                        right: "-18px",
+                        zIndex: 25,
+                        pointerEvents: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div
+                        style={{
+                          background: "#0f172a",
+                          color: "#ffffff",
+                          fontSize: "0.62rem",
+                          fontWeight: 800,
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        PAGE {pageNum} END
+                      </div>
+
+                      <div
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          margin: "0 8px",
+                          position: "relative",
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: 0,
+                            right: 0,
+                            borderTop: "2px dashed #f59e0b",
+                            opacity: 0.85,
+                          }}
+                        />
+                        <div
+                          style={{
+                            margin: "0 auto",
+                            background: "#1e293b",
+                            color: "#f8fafc",
+                            border: "1px solid #f59e0b",
+                            borderRadius: "12px",
+                            padding: "2px 10px",
+                            fontSize: "0.68rem",
+                            fontWeight: 700,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.35rem",
+                            zIndex: 1,
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                            letterSpacing: "0.3px",
+                          }}
+                        >
+                          <span>✂️ A4 Print Cutoff • End of Page {pageNum}</span>
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          background: "#0f172a",
+                          color: "#ffffff",
+                          fontSize: "0.62rem",
+                          fontWeight: 800,
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        PAGE {pageNum + 1} START
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Corner Page Number Tag on Page 1 */}
+                {showPageGuides && totalPages > 1 && (
+                  <div
+                    className="no-print"
+                    style={{
+                      position: "absolute",
+                      bottom: "10px",
+                      right: "12px",
+                      fontSize: "0.62rem",
+                      fontWeight: 700,
+                      color: "#64748b",
+                      background: "rgba(241, 245, 249, 0.9)",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      border: "1px solid #cbd5e1",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    PAGE 1 OF {totalPages}
+                  </div>
+                )}
+
+                <ResumeDocument data={resume} templateId={selectedTemplate} />
+              </div>
             </div>
           </div>
-        </div>
-        </>
         )}
       </div>
 

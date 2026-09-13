@@ -20,6 +20,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import UpRoleLogo from "@/components/UpRoleLogo";
 
 /** Hand-drawn curved orange brush stroke matching the reference design */
 function OrangeBrushStroke({ className = "w-16 h-2.5" }: { className?: string }) {
@@ -65,15 +66,8 @@ export default function Home() {
       <header className="sticky top-0 z-50 bg-[#FAF9F6]/95 backdrop-blur-md border-b border-gray-200/70 transition-all">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 h-20 flex items-center justify-between">
           
-          {/* Brand Logo */}
-          <Link href="/" className="flex flex-col no-underline group">
-            <span className="font-serif font-bold text-2xl tracking-tight text-[#111827]">
-              Up<span className="text-[#EB5A28]">Role</span>
-            </span>
-            <span className="text-[9px] font-extrabold uppercase tracking-[2.2px] text-[#6B7280] -mt-1">
-              Higher Careers Ahead
-            </span>
-          </Link>
+          {/* Canonical Brand Logo */}
+          <UpRoleLogo href="/" size="md" variant="light" />
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-8 text-[14.5px] font-medium text-[#4B5563]">
@@ -785,12 +779,8 @@ export default function Home() {
           ════════════════════════════════════════════════════════════════ */}
       <footer id="footer" className="bg-white border-t border-gray-200 py-12 px-6 sm:px-8 text-[#4B5563]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-6 text-xs">
-          <div className="flex items-center gap-3">
-            <span className="font-serif font-bold text-xl text-[#111827]">
-              Up<span className="text-[#EB5A28]">Role</span>
-            </span>
-            <span className="text-gray-300">|</span>
-            <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Higher Careers Ahead</span>
+          <div>
+            <UpRoleLogo href="/" size="sm" variant="light" />
           </div>
 
           <div className="flex flex-wrap items-center gap-6 font-medium text-[#4B5563]">

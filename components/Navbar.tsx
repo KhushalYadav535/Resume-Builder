@@ -22,6 +22,7 @@ import {
   Megaphone,
   Settings,
 } from "lucide-react";
+import UpRoleLogo from "@/components/UpRoleLogo";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createClient } from "@/utils/supabase/client";
@@ -138,31 +139,12 @@ export default function Navbar() {
             <Menu size={24} />
           </button>
 
-          {/* Logo: UpRole Brand Mark (The Career Path: Deep Navy + Warm Amber) */}
-          <Link href={user ? (role === "admin" ? "/admin" : "/dashboard") : "/"} className="flex items-center gap-2.5 no-underline group">
-            <svg className="w-6 h-7 transition-transform duration-200 group-hover:scale-105" viewBox="0 0 24 28" fill="none">
-              <rect x="2" y="7" width="6" height="17" rx="3" transform="rotate(-12 2 7)" fill="url(#uproleCareerPath1)" />
-              <rect x="12" y="2" width="6" height="22" rx="3" transform="rotate(-12 12 2)" fill="url(#uproleCareerPath2)" />
-              <defs>
-                <linearGradient id="uproleCareerPath1" x1="2" y1="7" x2="8" y2="24" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#101B3B" />
-                  <stop offset="1" stopColor="#2563EB" />
-                </linearGradient>
-                <linearGradient id="uproleCareerPath2" x1="12" y1="2" x2="18" y2="24" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#F59E0B" />
-                  <stop offset="1" stopColor="#D97706" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <span
-              className={cn(
-                "text-[22px] font-bold tracking-tight font-['Syne',sans-serif] transition-colors",
-                pathname === "/" ? "text-white" : "text-brand-navy dark:text-white"
-              )}
-            >
-              UpRole
-            </span>
-          </Link>
+          {/* Logo: Canonical UpRole Brand Mark (The Career Path: Deep Navy + Warm Amber) */}
+          <UpRoleLogo
+            href={user ? (role === "admin" ? "/admin" : "/dashboard") : "/"}
+            size="md"
+            variant={pathname === "/" ? "dark" : "auto"}
+          />
         </div>
 
         {/* Desktop Links (Centered, Scrollbar Hidden) */}
@@ -182,22 +164,14 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "relative px-3.5 py-1.5 text-[13.5px] font-semibold rounded-full transition-all duration-300 ease-out no-underline flex items-center gap-1.5 whitespace-nowrap shrink-0 group hover:scale-[1.03] active:scale-[0.98] hover:-translate-y-[1px]",
+                    "relative px-4 py-1.5 text-[13.5px] rounded-full transition-all duration-200 ease-out no-underline flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.97]",
                     isActive
-                      ? "bg-brand-navy text-white dark:bg-brand-amber dark:text-brand-navy font-bold shadow-md shadow-amber-500/10 border-transparent px-4"
-                      : "text-slate-600 dark:text-slate-300 bg-slate-100/70 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 hover:text-brand-navy dark:hover:text-brand-amber hover:bg-slate-200/80 dark:hover:bg-white/10 hover:shadow-xs"
+                      ? "bg-amber-500 text-brand-navy font-bold shadow-sm shadow-amber-500/25 border border-amber-500"
+                      : "font-semibold text-slate-600 dark:text-slate-300 bg-slate-100/75 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 hover:text-brand-navy dark:hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/30"
                   )}
                 >
-                  {Icon && <Icon size={14} className="shrink-0 transition-transform duration-300 group-hover:scale-110" />}
+                  {Icon && <Icon size={14} className="shrink-0" />}
                   <span>{link.label}</span>
-                  <span
-                    className={cn(
-                      "absolute bottom-0.5 left-1/2 -translate-x-1/2 h-[2px] rounded-full transition-all duration-300 ease-out pointer-events-none",
-                      isActive
-                        ? "w-[40%] bg-brand-amber dark:bg-brand-navy"
-                        : "w-0 bg-[#2563EB] dark:bg-[#F59E0B] group-hover:w-[60%]"
-                    )}
-                  />
                 </Link>
               );
             })}
@@ -343,10 +317,8 @@ export default function Navbar() {
           transform: mobileMenuOpen ? "translateX(0)" : "translateX(-100%)",
         }}
       >
-        <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
-          <div className="bg-transparent dark:bg-white/95 dark:py-1 dark:px-2 dark:rounded-[6px] flex items-center">
-            <Image src="/UpRole logo.png" alt="UPROLE" width={110} height={28} style={{ objectFit: 'contain', height: 'auto' }} />
-          </div>
+        <div className="flex items-center justify-between p-5 border-b border-[var(--border)]">
+          <UpRoleLogo href="/" size="sm" />
           <button
             onClick={() => setMobileMenuOpen(false)}
             className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1"
