@@ -23,19 +23,19 @@ const TEMPLATE_ACCENT: Record<string, string> = {
 
 // ─── Safe font map (ATS + browser safe) ──────────────────────────────────────
 const FONT_MAP: Record<string, string> = {
-  "Roboto":             "'Roboto', sans-serif",
-  "Plus Jakarta Sans":  "'Plus Jakarta Sans', sans-serif",
-  "Inter":              "'Inter', sans-serif",
-  "DM Sans":            "'DM Sans', sans-serif",
+  "Inter":              "'Inter', var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  "Plus Jakarta Sans":  "var(--font-plus-jakarta), 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif",
+  "Roboto":             "'Roboto', 'Inter', -apple-system, sans-serif",
+  "DM Sans":            "'DM Sans', 'Inter', sans-serif",
   "Space Grotesk":      "'Space Grotesk', sans-serif",
-  "Outfit":             "'Outfit', sans-serif",
-  "Georgia":            "Georgia, serif",
-  "Garamond":           "Garamond, serif",
-  "Playfair Display":   "'Playfair Display', serif",
-  "Arial":              "Arial, sans-serif",
-  "Calibri":            "Calibri, sans-serif",
-  "Helvetica":          "Helvetica, sans-serif",
-  "Times New Roman":    "'Times New Roman', serif",
+  "Outfit":             "'Outfit', 'Inter', sans-serif",
+  "Georgia":            "Georgia, 'Times New Roman', serif",
+  "Garamond":           "Garamond, Georgia, serif",
+  "Playfair Display":   "'Playfair Display', Georgia, serif",
+  "Arial":              "'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif",
+  "Calibri":            "Calibri, 'Inter', -apple-system, sans-serif",
+  "Helvetica":          "'Inter', Helvetica, -apple-system, sans-serif",
+  "Times New Roman":    "'Times New Roman', Georgia, serif",
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -65,7 +65,7 @@ function parseAndLinkText(text: string) {
             <a
               key={i}
               href={`mailto:${cleanStr}`}
-              style={{ color: "#000000", textDecoration: "underline", wordBreak: "break-all", fontWeight: 500 }}
+              style={{ color: "#2563eb", textDecoration: "none", wordBreak: "break-all", fontWeight: 500 }}
               onClick={(e) => e.stopPropagation()}
             >
               {cleanStr}
@@ -80,7 +80,7 @@ function parseAndLinkText(text: string) {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "#000000", textDecoration: "underline", wordBreak: "break-all", fontWeight: 500 }}
+              style={{ color: "#2563eb", textDecoration: "none", wordBreak: "break-all", fontWeight: 500 }}
               onClick={(e) => e.stopPropagation()}
             >
               {cleanStr}
@@ -221,7 +221,7 @@ export default function ResumeDocument({
   // Convenience: renders text with green diff highlight if changes exist, else plain
   const Chg = ({ text }: { text: string }) =>
     ch.length > 0 ? <DiffHL text={text} changes={ch} /> : <>{text}</>;
-  const font = FONT_MAP[fontFamily] || "Arial, sans-serif";
+  const font = FONT_MAP[fontFamily] || FONT_MAP["Inter"];
   const fs = fontSize;           // base font size in pt
   const lh = spacing;            // line-height
   const accent = TEMPLATE_ACCENT[templateId] || "#111";
@@ -241,6 +241,64 @@ export default function ResumeDocument({
     s = s.replace(/^[|•,\-–—:\s]+/, "").trim();
     s = s.replace(/^(?:summary|professional summary|executive summary)[:\s\-–—]*/i, "").trim();
     return s;
+  };
+
+  const renderSummaryContent = (rawText: string, textStyle?: React.CSSProperties, listStyle?: React.CSSProperties) => {
+    const cleaned = cleanSummary(rawText);
+    if (!cleaned) return null;
+
+    // Check if summary contains multiple bullet points (separated by • or - or newlines starting with bullets)
+    const bulletParts = cleaned
+      .split(/(?:\r?\n\s*[•\-\*]|\s+[•\-\*]\s+|^[•\-\*]\s*)/)
+      .map((b) => b.trim())
+      .filter((b) => b.length > 0);
+
+    if (bulletParts.length > 1) {
+      return (
+        <ul
+          style={{
+            margin: "4px 0 8px 0",
+            paddingLeft: "18px",
+            listStyleType: "disc",
+            ...listStyle,
+          }}
+        >
+          {bulletParts.map((b, i) => (
+            <li
+              key={i}
+              style={{
+                fontSize: `${fs - 0.5}pt`,
+                lineHeight: 1.45,
+                marginBottom: "3px",
+                textAlign: "left",
+                color: "#1e293b",
+                ...textStyle,
+              }}
+            >
+              {ch.length > 0 ? <DiffHL text={b} changes={ch} /> : <HL text={b} kw={kw} />}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    // Single paragraph: clean leading bullet if any
+    const single = cleaned.replace(/^[•\-\*\s]+/, "").trim();
+    return (
+      <p
+        style={{
+          fontSize: `${fs - 0.5}pt`,
+          lineHeight: "1.5",
+          margin: "4px 0 8px 0",
+          textAlign: "left",
+          color: "#1e293b",
+          fontWeight: 400,
+          ...textStyle,
+        }}
+      >
+        {ch.length > 0 ? <DiffHL text={single} changes={ch} /> : <HL text={single} kw={kw} />}
+      </p>
+    );
   };
 
   const cleanUrl = (url: string) => {
@@ -275,10 +333,10 @@ export default function ResumeDocument({
     const SectionHdr = ({ title }: { title: string }) => (
       <div
         style={{
-          marginTop: "14px",
+          marginTop: "16px",
           marginBottom: "6px",
-          borderBottom: "1.5px solid #000000",
-          paddingBottom: "2px",
+          borderBottom: "1.5px solid #1e293b",
+          paddingBottom: "3px",
         }}
       >
         <span
@@ -287,8 +345,8 @@ export default function ResumeDocument({
             fontSize: `${fs + 0.5}pt`,
             fontWeight: 800,
             textTransform: "uppercase",
-            letterSpacing: "0.5px",
-            color: "#000000",
+            letterSpacing: "0.8px",
+            color: "#0f172a",
           }}
         >
           {title}
@@ -309,7 +367,7 @@ export default function ResumeDocument({
       subRight?: React.ReactNode;
       bullets?: string[];
     }) => (
-      <div style={{ marginBottom: "10px" }}>
+      <div style={{ marginBottom: "12px" }}>
         <div
           style={{
             display: "flex",
@@ -317,15 +375,15 @@ export default function ResumeDocument({
             alignItems: "baseline",
           }}
         >
-          <span style={{ fontWeight: 700, fontSize: `${fs}pt`, color: "#000000" }}>{left}</span>
+          <span style={{ fontWeight: 700, fontSize: `${fs}pt`, color: "#0f172a" }}>{left}</span>
           {right && (
             <span
               style={{
                 fontSize: `${fs - 1}pt`,
-                color: "#000000",
+                color: "#475569",
                 whiteSpace: "nowrap",
                 marginLeft: "8px",
-                fontWeight: 500,
+                fontWeight: 600,
                 textTransform: "uppercase",
               }}
             >
@@ -339,15 +397,15 @@ export default function ResumeDocument({
               display: "flex",
               justifyContent: "space-between",
               alignItems: "baseline",
-              fontSize: `${fs - 1}pt`,
-              color: "#000000",
+              fontSize: `${fs - 0.5}pt`,
+              color: "#334155",
               marginTop: "1px",
-              marginBottom: "3px",
+              marginBottom: "4px",
               fontWeight: 500,
             }}
           >
             {subLeft ? <span style={{ fontStyle: "italic" }}>{subLeft}</span> : <span />}
-            {subRight ? <span style={{ fontStyle: "italic", whiteSpace: "nowrap", marginLeft: "8px" }}>{subRight}</span> : null}
+            {subRight ? <span style={{ fontStyle: "italic", whiteSpace: "nowrap", marginLeft: "8px", color: "#64748b" }}>{subRight}</span> : null}
           </div>
         )}
         {bullets && bullets.length > 0 && (
@@ -362,11 +420,11 @@ export default function ResumeDocument({
               <li
                 key={i}
                 style={{
-                  fontSize: `${fs - 1}pt`,
-                  lineHeight: 1.4,
-                  marginBottom: "3px",
-                  textAlign: "justify",
-                  color: "#000000",
+                  fontSize: `${fs - 0.5}pt`,
+                  lineHeight: 1.5,
+                  marginBottom: "4px",
+                  textAlign: "left",
+                  color: "#1e293b",
                   fontWeight: 400,
                 }}
               >
@@ -391,7 +449,7 @@ export default function ResumeDocument({
           fontFamily: font,
           fontSize: `${fs}pt`,
           lineHeight: lh,
-          color: "#000000",
+          color: "#1e293b",
           background: "#ffffff",
           padding: "0.6in 0.75in",
           maxWidth: "8.5in",
@@ -404,14 +462,14 @@ export default function ResumeDocument({
         }}
       >
         {/* ── Header ── */}
-        <div style={{ textAlign: "center", marginBottom: "14px" }}>
+        <div style={{ textAlign: "center", marginBottom: "16px" }}>
           <div
             style={{
-              fontSize: `${fs + 11}pt`,
+              fontSize: `${fs + 10}pt`,
               fontWeight: 800,
-              letterSpacing: "0.5px",
-              marginBottom: "4px",
-              color: "#000000",
+              letterSpacing: "-0.5px",
+              marginBottom: "5px",
+              color: "#0f172a",
             }}
           >
             {personalInfo.fullName}
@@ -419,30 +477,30 @@ export default function ResumeDocument({
           <div
             style={{
               fontSize: `${fs - 1}pt`,
-              color: "#000000",
-              lineHeight: 1.4,
+              color: "#475569",
+              lineHeight: 1.45,
               fontWeight: 500,
             }}
           >
             {[
               personalInfo.phone && (
-                <a key="phone" href={`tel:${personalInfo.phone.replace(/[^+\d]/g, "")}`} style={{ color: "#000000", textDecoration: "none" }}>
+                <a key="phone" href={`tel:${personalInfo.phone.replace(/[^+\d]/g, "")}`} style={{ color: "#334155", textDecoration: "none" }}>
                   {personalInfo.phone}
                 </a>
               ),
               personalInfo.email && (
-                <a key="email" href={`mailto:${personalInfo.email}`} style={{ color: "#000000", textDecoration: "underline" }}>
+                <a key="email" href={`mailto:${personalInfo.email}`} style={{ color: "#2563eb", textDecoration: "none" }}>
                   {personalInfo.email}
                 </a>
               ),
-              personalInfo.location && <span key="loc">{personalInfo.location}</span>,
+              personalInfo.location && <span key="loc" style={{ color: "#475569" }}>{personalInfo.location}</span>,
               personalInfo.linkedin && (
                 <a
                   key="li"
                   href={personalInfo.linkedin.startsWith("http") ? personalInfo.linkedin : `https://${personalInfo.linkedin.includes("linkedin.com") ? personalInfo.linkedin : `linkedin.com/in/${cleanUrl(personalInfo.linkedin)}`}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "#000000", textDecoration: "underline" }}
+                  style={{ color: "#2563eb", textDecoration: "none", fontWeight: 500 }}
                 >
                   {personalInfo.linkedin.includes("linkedin.com") ? cleanUrl(personalInfo.linkedin) : `linkedin.com/in/${cleanUrl(personalInfo.linkedin)}`}
                 </a>
@@ -453,7 +511,7 @@ export default function ResumeDocument({
                   href={(personalInfo as any).github.startsWith("http") ? (personalInfo as any).github : `https://${cleanUrl((personalInfo as any).github).includes("github.com") ? cleanUrl((personalInfo as any).github) : `github.com/${cleanUrl((personalInfo as any).github)}`}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "#000000", textDecoration: "underline" }}
+                  style={{ color: "#2563eb", textDecoration: "none", fontWeight: 500 }}
                 >
                   {cleanUrl((personalInfo as any).github).includes("github.com") ? cleanUrl((personalInfo as any).github) : `github.com/${cleanUrl((personalInfo as any).github)}`}
                 </a>
@@ -461,10 +519,10 @@ export default function ResumeDocument({
               personalInfo.website && (
                 <a
                   key="web"
-                  href={personalInfo.website.startsWith("http") ? personalInfo.website : `https://${personalInfo.website}`}
+                  href={personalInfo.website.startsWith("http") ? personalInfo.website : `https://${cleanUrl(personalInfo.website)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "#000000", textDecoration: "underline" }}
+                  style={{ color: "#2563eb", textDecoration: "none", fontWeight: 500 }}
                 >
                   {cleanUrl(personalInfo.website)}
                 </a>
@@ -473,7 +531,7 @@ export default function ResumeDocument({
               .filter(Boolean)
               .map((node, idx) => (
                 <React.Fragment key={idx}>
-                  {idx > 0 && <span style={{ color: "#000000", margin: "0 6px" }}>|</span>}
+                  {idx > 0 && <span style={{ color: "#94a3b8", margin: "0 8px" }}>•</span>}
                   {node}
                 </React.Fragment>
               ))}
@@ -487,18 +545,7 @@ export default function ResumeDocument({
               return safeSummary ? (
                 <div key={key}>
                   <SectionHdr title="Summary" />
-                  <p
-                    style={{
-                      fontSize: `${fs - 0.5}pt`,
-                      lineHeight: "1.45",
-                      margin: "4px 0 8px 0",
-                      textAlign: "justify",
-                      color: "#0f172a",
-                      fontWeight: 450,
-                    }}
-                  >
-                    {ch.length > 0 ? <DiffHL text={safeSummary} changes={ch} /> : <HL text={safeSummary} kw={kw} />}
-                  </p>
+                  {renderSummaryContent(safeSummary)}
                 </div>
               ) : null;
 
@@ -850,16 +897,7 @@ export default function ResumeDocument({
             {summary && (
               <div>
                 <SectionHdr title="Profile" />
-                <p
-                  style={{
-                    fontSize: `${fs - 0.5}pt`,
-                    margin: 0,
-                    textAlign: "justify",
-                    lineHeight: lh,
-                  }}
-                >
-                  <HL text={summary} kw={kw} />
-                </p>
+                {renderSummaryContent(summary)}
               </div>
             )}
 
@@ -1246,16 +1284,7 @@ export default function ResumeDocument({
           <>
             <SectionHdr title="Professional Summary" />
             <TimelineEntry date="">
-              <p
-                style={{
-                  margin: 0,
-                  textAlign: "justify",
-                  fontSize: `${fs - 0.5}pt`,
-                  lineHeight: lh,
-                }}
-              >
-                <HL text={summary} kw={kw} />
-              </p>
+              {renderSummaryContent(summary)}
             </TimelineEntry>
           </>
         )}
@@ -2095,9 +2124,7 @@ export default function ResumeDocument({
         {summary && (
           <div>
             <Hdr title="Summary" />
-            <p style={{ margin: 0, fontSize: `${fs - 0.5}pt`, textAlign: "justify" }}>
-              <HL text={summary} kw={kw} />
-            </p>
+            {renderSummaryContent(summary)}
           </div>
         )}
 

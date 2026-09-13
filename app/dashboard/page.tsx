@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import ParticleBackground from "@/components/ui/ParticleBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { Resume } from "@/types";
 import { createClient } from "@/utils/supabase/client";
@@ -284,9 +283,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] pb-24 relative overflow-hidden">
-      {/* Background Particle Canvas */}
-      <ParticleBackground count={35} connectionDist={100} />
-
       {/* Subtle Ambient Glow Blobs */}
       <div 
         style={{
