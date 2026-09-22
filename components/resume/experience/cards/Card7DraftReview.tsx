@@ -160,10 +160,10 @@ export const Card7DraftReview = () => {
            const acceptedBullets = bullets.filter(b => b.status === 'accepted' || b.status === 'edited').map(b => b.text);
            if (onComplete) {
              onComplete(acceptedBullets);
-           } else {
-             alert("Role saved to resume!");
-             window.location.href = '/resume-builder';
-           }
+            } else {
+              alert("Role saved to resume!");
+              window.location.href = '/resume/builder';
+            }
         }}
         className="w-full max-w-xs mx-auto bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy py-4 rounded-full font-bold disabled:opacity-50 transition-all shadow-md shadow-amber-500/20"
       >

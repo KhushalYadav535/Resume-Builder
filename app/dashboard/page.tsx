@@ -16,6 +16,15 @@ import {
   Check, ArrowUpRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ImpactNudgeCard from "@/components/value/ImpactNudgeCard";
+import GuidedImpactModal from "@/components/value/GuidedImpactModal";
+import { CareerGap } from "@/app/api/value/detect-gaps/route";
+import EvidenceNudgeCard from "@/components/value/EvidenceNudgeCard";
+import EvidenceCaptureModal from "@/components/value/EvidenceCaptureModal";
+import { EvidenceGap } from "@/app/api/value/detect-evidence-gaps/route";
+import DerivationNudgeCard from "@/components/value/DerivationNudgeCard";
+import CapabilityReviewModal from "@/components/value/CapabilityReviewModal";
+import { CapabilityHypothesis } from "@/app/api/value/derive-profile/route";
 
 export default function Dashboard() {
   const { user, role, loading: authLoading } = useAuth();
@@ -23,6 +32,36 @@ export default function Dashboard() {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const { showToast } = useToast();
   const [fetchingResumes, setFetchingResumes] = useState(true);
+
+  // Stage 2: Guided Impact Discovery state
+  const [gaps, setGaps] = useState<CareerGap[]>([]);
+  const [activeGap, setActiveGap] = useState<CareerGap | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Stage 3: Evidence & Progression Capture state
+  const [evidenceGaps, setEvidenceGaps] = useState<EvidenceGap[]>([]);
+  const [activeEvidenceGap, setActiveEvidenceGap] = useState<EvidenceGap | null>(null);
+  const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false);
+
+  // Stage 4: Career Value Derivation state
+  const [unreviewedCaps, setUnreviewedCaps] = useState<CapabilityHypothesis[]>([]);
+  const [activeCap, setActiveCap] = useState<CapabilityHypothesis | null>(null);
+  const [isCapModalOpen, setIsCapModalOpen] = useState(false);
+
+  // Dashboard Nudge Dismissal State
+  const [dashboardImpactDismissed, setDashboardImpactDismissed] = useState(false);
+  const [dashboardCapsDismissed, setDashboardCapsDismissed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (sessionStorage.getItem("dashboard_impact_dismissed") === "true") {
+        setDashboardImpactDismissed(true);
+      }
+      if (sessionStorage.getItem("dashboard_caps_dismissed") === "true") {
+        setDashboardCapsDismissed(true);
+      }
+    }
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "ats">("newest");
@@ -129,6 +168,66 @@ export default function Dashboard() {
   useEffect(() => {
     fetchResumesList();
   }, [authLoading, user]);
+
+  useEffect(() => {
+    if (resumes.length === 0) return;
+    const base = resumes.find((r) => r.is_base_resume) || resumes[0];
+    fetch("/api/value/detect-gaps", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resumeId: base.id }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.gaps && Array.isArray(data.gaps)) {
+          let resolved: string[] = [];
+          try {
+            resolved = JSON.parse(sessionStorage.getItem("resolved_gaps") || "[]");
+          } catch (e) {}
+          const filtered = data.gaps.filter(
+            (g: CareerGap) =>
+              !resolved.includes(g.id) &&
+              !resolved.includes(g.originalText) &&
+              !resolved.some((r) => g.originalText.includes(r))
+          );
+          setGaps(filtered);
+        }
+      })
+      .catch((err) => console.error("Error detecting gaps:", err));
+
+    fetch("/api/value/detect-evidence-gaps", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resumeId: base.id }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.gaps && Array.isArray(data.gaps)) {
+          setEvidenceGaps(data.gaps);
+        }
+      })
+      .catch((err) => console.error("Error detecting evidence gaps:", err));
+
+    fetch("/api/value/derive-profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resumeId: base.id }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.profile?.capabilities) {
+          let dismissed: string[] = [];
+          try {
+            dismissed = JSON.parse(sessionStorage.getItem("dismissed_caps") || "[]");
+          } catch (e) {}
+          const unreviewed = data.profile.capabilities.filter(
+            (c: CapabilityHypothesis) => c.status === "unconfirmed" && !dismissed.includes(c.id)
+          );
+          setUnreviewedCaps(unreviewed);
+        }
+      })
+      .catch((err) => console.error("Error deriving profile:", err));
+  }, [resumes]);
 
   const executeSetBase = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -352,6 +451,149 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
+
+        {/* Stage 2: System-Generated Impact Nudge (Screen S1) */}
+        {!dashboardImpactDismissed && gaps.length > 0 && (
+          <div className="mb-8">
+            <ImpactNudgeCard
+              gap={gaps[0]}
+              onAnswerNow={() => {
+                setActiveGap(gaps[0]);
+                setIsModalOpen(true);
+              }}
+              onDismiss={() => {
+                setDashboardImpactDismissed(true);
+                try {
+                  sessionStorage.setItem("dashboard_impact_dismissed", "true");
+                  if (gaps[0]) {
+                    const resolved = JSON.parse(sessionStorage.getItem("resolved_gaps") || "[]");
+                    resolved.push(gaps[0].id, gaps[0].originalText);
+                    sessionStorage.setItem("resolved_gaps", JSON.stringify(resolved));
+                  }
+                } catch (e) {}
+                setGaps((prev) => prev.slice(1));
+              }}
+            />
+          </div>
+        )}
+
+        {/* Guided Impact Discovery Modal (Screens S2, S3, S4) */}
+        {isModalOpen && activeGap && (
+          <GuidedImpactModal
+            gap={activeGap}
+            resumeId={resumes.find((r) => r.is_base_resume)?.id || resumes[0]?.id || ""}
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setActiveGap(null);
+            }}
+            onSuccess={(updatedBullet) => {
+              const currentGapId = activeGap?.id;
+              const currentGapText = activeGap?.originalText;
+              setGaps((prev) =>
+                prev.filter(
+                  (g) =>
+                    g.id !== currentGapId &&
+                    g.originalText !== currentGapText &&
+                    (!updatedBullet || g.originalText !== updatedBullet)
+                )
+              );
+              setDashboardImpactDismissed(true);
+              try {
+                sessionStorage.setItem("dashboard_impact_dismissed", "true");
+                const resolved = JSON.parse(sessionStorage.getItem("resolved_gaps") || "[]");
+                if (currentGapId) resolved.push(currentGapId);
+                if (currentGapText) resolved.push(currentGapText);
+                if (updatedBullet) resolved.push(updatedBullet);
+                sessionStorage.setItem("resolved_gaps", JSON.stringify(resolved));
+              } catch (e) {}
+
+              fetchResumesList();
+            }}
+          />
+        )}
+
+        {/* Stage 3: System-Generated Evidence Nudge (Screen S1) */}
+        {!dashboardImpactDismissed && gaps.length === 0 && evidenceGaps.length > 0 && (
+          <div className="mb-8">
+            <EvidenceNudgeCard
+              gap={evidenceGaps[0]}
+              onAnswerNow={() => {
+                setActiveEvidenceGap(evidenceGaps[0]);
+                setIsEvidenceModalOpen(true);
+              }}
+              onDismiss={() => {
+                setEvidenceGaps((prev) => prev.slice(1));
+              }}
+            />
+          </div>
+        )}
+
+        {/* Stage 3: Evidence Capture Modal (Screens S2, S3, S4, S5) */}
+        {isEvidenceModalOpen && activeEvidenceGap && (
+          <EvidenceCaptureModal
+            gap={activeEvidenceGap}
+            resumeId={resumes.find((r) => r.is_base_resume)?.id || resumes[0]?.id || ""}
+            isOpen={isEvidenceModalOpen}
+            onClose={() => setIsEvidenceModalOpen(false)}
+            onSuccess={() => {
+              setEvidenceGaps((prev) =>
+                prev.filter((g) => g.id !== activeEvidenceGap.id)
+              );
+              fetchResumesList();
+            }}
+          />
+        )}
+
+        {/* Stage 4: System-Generated Derivation Nudge (Screen S1) */}
+        {!dashboardCapsDismissed && unreviewedCaps.length > 0 && (
+          <div className="mb-8">
+            <DerivationNudgeCard
+              unreviewedCapabilities={unreviewedCaps}
+              onReviewNow={(cap) => {
+                setActiveCap(cap);
+                setIsCapModalOpen(true);
+              }}
+              onDismiss={() => {
+                setDashboardCapsDismissed(true);
+                try {
+                  sessionStorage.setItem("dashboard_caps_dismissed", "true");
+                  if (unreviewedCaps[0]) {
+                    const dismissedList = JSON.parse(sessionStorage.getItem("dismissed_caps") || "[]");
+                    dismissedList.push(unreviewedCaps[0].id);
+                    sessionStorage.setItem("dismissed_caps", JSON.stringify(dismissedList));
+                  }
+                } catch (e) {}
+                setUnreviewedCaps((prev) => prev.slice(1));
+              }}
+            />
+          </div>
+        )}
+
+        {/* Stage 4: Capability Review Modal (Screen S2) */}
+        {isCapModalOpen && activeCap && (
+          <CapabilityReviewModal
+            capability={activeCap}
+            isOpen={isCapModalOpen}
+            onClose={() => {
+              setIsCapModalOpen(false);
+              setActiveCap(null);
+            }}
+            onReviewed={(action, updatedCap) => {
+              const capId = activeCap?.id;
+              setUnreviewedCaps((prev) =>
+                prev.filter((c) => c.id !== capId)
+              );
+              setDashboardCapsDismissed(true);
+              try {
+                sessionStorage.setItem("dashboard_caps_dismissed", "true");
+                const dismissedList = JSON.parse(sessionStorage.getItem("dismissed_caps") || "[]");
+                if (capId) dismissedList.push(capId);
+                sessionStorage.setItem("dismissed_caps", JSON.stringify(dismissedList));
+              } catch (e) {}
+            }}
+          />
+        )}
 
         {/* 4 Stat Cards Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

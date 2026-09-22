@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import ParticleBackground from "@/components/ui/ParticleBackground";
 import { createClient } from "@/utils/supabase/client";
 import { 
   Users, FileText, Brain, Clock, ShieldCheck, Sparkles, TrendingUp, User, Zap, Award, HardDrive
@@ -286,11 +285,8 @@ export default function AnalyticsDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text)] relative overflow-hidden transition-colors duration-300">
-      {/* Background radial elements */}
       <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/[0.03] rounded-full blur-3xl -z-10" />
       <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/5 dark:bg-purple-500/[0.03] rounded-full blur-3xl -z-10" />
-      
-      <ParticleBackground count={40} connectionDist={100} />
       
       <div className="relative z-10">
         <Navbar />

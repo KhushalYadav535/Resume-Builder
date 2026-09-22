@@ -3,7 +3,6 @@ import { useState, Suspense, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import ParticleBackground from "@/components/ui/ParticleBackground";
 import ConcentricLoader, { ClassicLoader } from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
 import { ResumeData, WorkExperience, Education, Project, Certification, ATSScore, LanguagesKnown, JDMatch } from "@/types";
@@ -828,7 +827,6 @@ function BuilderContent() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", position: "relative" }}>
-      <ParticleBackground count={50} connectionDist={110} />
       <Navbar />
       
       {/* ── EDITOR HEADER ── */}

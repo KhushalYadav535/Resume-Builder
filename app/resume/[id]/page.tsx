@@ -6,7 +6,6 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { Resume } from "@/types";
 import ResumeDocument from "@/components/ResumeDocument";
-import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ATSRing } from "@/components/ui/ATSRing";
 import { SuggestionFlow } from "@/components/SuggestionFlow";
 import {
@@ -687,7 +686,6 @@ export default function ResumeDetailPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", position: "relative", overflow: "hidden" }}>
-      <ParticleBackground count={50} connectionDist={110} />
       <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <Navbar />
 

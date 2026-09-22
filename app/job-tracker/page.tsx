@@ -1,15 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import ParticleBackground from "@/components/ui/ParticleBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/toast-1";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
-import { Trash2 } from "lucide-react";
+import {
+  Building2,
+  Briefcase,
+  Calendar,
+  DollarSign,
+  ExternalLink,
+  FileText,
+  CheckCircle2,
+  Clock,
+  ArrowRight,
+  Trash2,
+  Edit3,
+  Target,
+  Sparkles,
+  Filter,
+  Layers,
+  TrendingUp,
+  Award,
+  X,
+  Plus,
+  Search,
+  ChevronRight,
+  AlertCircle,
+  HelpCircle,
+} from "lucide-react";
 
 export interface JobApplication {
   id: string;
@@ -38,10 +59,13 @@ export default function JobTracker() {
   const [resumes, setResumes] = useState<{ id: string; file_name: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal states
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedApp, setSelectedApp] = useState<JobApplication | null>(null);
+  // Filter & Search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPlatform, setSelectedPlatform] = useState("All");
+
+  // Modal / Drawer states
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [editingApp, setEditingApp] = useState<JobApplication | null>(null);
 
   // Form states
   const [company, setCompany] = useState("");
@@ -55,6 +79,7 @@ export default function JobTracker() {
   const [jdText, setJdText] = useState("");
   const [jdUrl, setJdUrl] = useState("");
   const [jdMatchScore, setJdMatchScore] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -98,111 +123,26 @@ export default function JobTracker() {
     }
   }, [user]);
 
-  const handleAddSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!company.trim() || !roleName.trim()) return;
-
-    try {
-      const res = await fetch("/api/job-applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          company,
-          role: roleName,
-          salary,
-          platform,
-          date,
-          status,
-          notes,
-          resume_id: resumeId || null,
-          jd_text: jdText || null,
-          jd_url: jdUrl || null,
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to add job application");
-      
-      const newApp = await res.json();
-      setApplications((prev) => [newApp, ...prev]);
-      
-      // Reset form
-      setCompany("");
-      setRoleName("");
-      setSalary("");
-      setPlatform("LinkedIn");
-      setStatus("Applied");
-      setDate(new Date().toISOString().split("T")[0]);
-      setNotes("");
-      setResumeId("");
-      setJdText("");
-      setJdUrl("");
-      setJdMatchScore(null);
-      setShowAddModal(false);
-    } catch (err) {
-      console.error(err);
-      showToast("Error adding application. Make sure the database migration has been run.", "error");
-    }
+  // Open modal for Adding
+  const openAddModal = (defaultStatus: JobApplication["status"] = "Applied") => {
+    setEditingApp(null);
+    setCompany("");
+    setRoleName("");
+    setSalary("");
+    setPlatform("LinkedIn");
+    setStatus(defaultStatus);
+    setDate(new Date().toISOString().split("T")[0]);
+    setNotes("");
+    setResumeId(resumes.length > 0 ? resumes[0].id : "");
+    setJdText("");
+    setJdUrl("");
+    setJdMatchScore(null);
+    setShowDrawer(true);
   };
 
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedApp || !company.trim() || !roleName.trim()) return;
-
-    try {
-      const res = await fetch("/api/job-applications", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: selectedApp.id,
-          company,
-          role: roleName,
-          salary,
-          platform,
-          date,
-          status,
-          notes,
-          resume_id: resumeId || null,
-          jd_text: jdText || null,
-          jd_url: jdUrl || null,
-          jd_match_score: jdMatchScore, // Retain or recalculate on backend if cleared
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to update application");
-      
-      const updated = await res.json();
-      setApplications((prev) => prev.map((app) => (app.id === updated.id ? updated : app)));
-      setShowEditModal(false);
-      setSelectedApp(null);
-    } catch (err) {
-      console.error(err);
-      showToast("Error updating application.", "error");
-    }
-  };
-
-  const handleDeleteTrigger = (id: string) => {
-    setDeleteConfirmId(id);
-  };
-
-  const executeDelete = async (id: string) => {
-    try {
-      const res = await fetch(`/api/job-applications?id=${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("Failed to delete application");
-      setApplications((prev) => prev.filter((app) => app.id !== id));
-      setShowEditModal(false);
-      setSelectedApp(null);
-      showToast("Application deleted successfully.", "success");
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to delete application.", "error");
-    }
-  };
-
-  const openEdit = (app: JobApplication) => {
-    setSelectedApp(app);
+  // Open modal for Editing
+  const openEditModal = (app: JobApplication) => {
+    setEditingApp(app);
     setCompany(app.company);
     setRoleName(app.role);
     setSalary(app.salary || "");
@@ -213,8 +153,74 @@ export default function JobTracker() {
     setResumeId(app.resume_id || "");
     setJdText(app.jd_text || "");
     setJdUrl(app.jd_url || "");
-    setJdMatchScore(app.jd_match_score || null);
-    setShowEditModal(true);
+    setJdMatchScore(app.jd_match_score ?? null);
+    setShowDrawer(true);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!company.trim() || !roleName.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      if (editingApp) {
+        // Update existing application
+        const res = await fetch("/api/job-applications", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: editingApp.id,
+            company,
+            role: roleName,
+            salary,
+            platform,
+            date,
+            status,
+            notes,
+            resume_id: resumeId || null,
+            jd_text: jdText || null,
+            jd_url: jdUrl || null,
+            jd_match_score: jdMatchScore,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to update application");
+        const updated = await res.json();
+        setApplications((prev) => prev.map((app) => (app.id === updated.id ? updated : app)));
+        showToast("Opportunity updated successfully.", "success");
+      } else {
+        // Add new application
+        const res = await fetch("/api/job-applications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            company,
+            role: roleName,
+            salary,
+            platform,
+            date,
+            status,
+            notes,
+            resume_id: resumeId || null,
+            jd_text: jdText || null,
+            jd_url: jdUrl || null,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to add job application");
+        const newApp = await res.json();
+        setApplications((prev) => [newApp, ...prev]);
+        showToast("Target opportunity added to your pipeline.", "success");
+      }
+
+      setShowDrawer(false);
+      setEditingApp(null);
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving application. Please try again.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const updateStatusQuick = async (app: JobApplication, newStatus: JobApplication["status"]) => {
@@ -231,8 +237,27 @@ export default function JobTracker() {
       if (!res.ok) throw new Error("Failed to update status");
       const updated = await res.json();
       setApplications((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+      showToast(`Moved to ${newStatus}.`, "success");
     } catch (err) {
       console.error(err);
+      showToast("Failed to change status.", "error");
+    }
+  };
+
+  const executeDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/job-applications?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete application");
+      setApplications((prev) => prev.filter((app) => app.id !== id));
+      setShowDrawer(false);
+      setEditingApp(null);
+      showToast("Opportunity removed from pipeline.", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to delete application.", "error");
     }
   };
 
@@ -240,21 +265,82 @@ export default function JobTracker() {
   const totalApps = applications.length;
   const interviews = applications.filter((a) => a.status === "Interview").length;
   const offers = applications.filter((a) => a.status === "Offer").length;
-  const rejections = applications.filter((a) => a.status === "Rejected").length;
   const activeApps = applications.filter((a) => a.status === "Applied" || a.status === "Interview").length;
-  
-  // Calculate Response Rate: (Interviews + Offers) / Total Apps (excluding withdrawn)
-  const nonWithdrawn = applications.filter(a => a.status !== "Withdrawn").length;
-  const responseRate = nonWithdrawn > 0 
-    ? Math.round(((interviews + offers) / nonWithdrawn) * 100) 
-    : 0;
 
-  const columns: { title: string; key: JobApplication["status"]; color: string }[] = [
-    { title: "Applied", key: "Applied", color: "#2563EB" },
-    { title: "Interviews", key: "Interview", color: "#F59E0B" },
-    { title: "Offers", key: "Offer", color: "#14B8A6" },
-    { title: "Rejected / Closed", key: "Rejected", color: "#EF4444" },
-    { title: "Withdrawn", key: "Withdrawn", color: "#888888" },
+  const nonWithdrawn = applications.filter((a) => a.status !== "Withdrawn").length;
+  const responseRate =
+    nonWithdrawn > 0 ? Math.round(((interviews + offers) / nonWithdrawn) * 100) : 0;
+
+  // Filtered applications
+  const filteredApps = useMemo(() => {
+    return applications.filter((app) => {
+      const matchesSearch =
+        searchQuery.trim() === "" ||
+        app.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        app.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (app.notes && app.notes.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchesPlatform =
+        selectedPlatform === "All" || app.platform === selectedPlatform;
+
+      return matchesSearch && matchesPlatform;
+    });
+  }, [applications, searchQuery, selectedPlatform]);
+
+  const columns: {
+    title: string;
+    stageLabel: string;
+    key: JobApplication["status"];
+    color: string;
+    badgeBg: string;
+    badgeBorder: string;
+    emptyHint: string;
+  }[] = [
+    {
+      title: "Applied",
+      stageLabel: "DISCOVER & REACH",
+      key: "Applied",
+      color: "#2563EB",
+      badgeBg: "rgba(37, 99, 235, 0.12)",
+      badgeBorder: "rgba(37, 99, 235, 0.25)",
+      emptyHint: "No active submissions. Tailor a resume and log target roles.",
+    },
+    {
+      title: "Evaluating & Interviews",
+      stageLabel: "PURSUE · VELOCITY",
+      key: "Interview",
+      color: "#F59E0B",
+      badgeBg: "rgba(245, 158, 11, 0.12)",
+      badgeBorder: "rgba(245, 158, 11, 0.25)",
+      emptyHint: "No interviews active. Advance applications with follow-ups.",
+    },
+    {
+      title: "Offers Secured",
+      stageLabel: "ACHIEVE · OUTCOME",
+      key: "Offer",
+      color: "#14B8A6",
+      badgeBg: "rgba(20, 184, 166, 0.12)",
+      badgeBorder: "rgba(20, 184, 166, 0.25)",
+      emptyHint: "Offers will appear here. Calibrate compensation leverage in Copilot.",
+    },
+    {
+      title: "Archived / Closed",
+      stageLabel: "EVIDENCE & REVIEW",
+      key: "Rejected",
+      color: "#64748B",
+      badgeBg: "rgba(100, 116, 139, 0.12)",
+      badgeBorder: "rgba(100, 116, 139, 0.25)",
+      emptyHint: "No archived pursuits.",
+    },
+    {
+      title: "Withdrawn",
+      stageLabel: "PRIORITY SHIFT",
+      key: "Withdrawn",
+      color: "#94A3B8",
+      badgeBg: "rgba(148, 163, 184, 0.12)",
+      badgeBorder: "rgba(148, 163, 184, 0.25)",
+      emptyHint: "No withdrawn opportunities.",
+    },
   ];
 
   if (authLoading || !user) {
@@ -266,476 +352,650 @@ export default function JobTracker() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] relative overflow-hidden">
-      <ParticleBackground count={50} connectionDist={110} />
-      <div style={{ position: 'relative', zIndex: 10 }}>
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] relative overflow-hidden flex flex-col font-sans selection:bg-[#F59E0B] selection:text-[#101B3B]">
+      <div className="relative z-10 flex flex-col min-h-screen">
         <Navbar />
 
-        <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
-        {/* HEADER AREA */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", borderBottom: "1px solid var(--border)", paddingBottom: "1.5rem" }}>
-          <div>
-            <span style={{ fontSize: "0.8rem", color: "var(--accent)", fontWeight: 700, textTransform: "uppercase" }}>Visual Pipeline</span>
-            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "2.2rem", fontWeight: 800 }}>Job Application Tracker</h1>
-          </div>
-          <button 
-            onClick={() => {
-              // Clear state and open add modal
-              setCompany("");
-              setRoleName("");
-              setSalary("");
-              setPlatform("LinkedIn");
-              setStatus("Applied");
-              setDate(new Date().toISOString().split("T")[0]);
-              setNotes("");
-              setShowAddModal(true);
-            }} 
-            className="btn-primary"
-            style={{ padding: "0.7rem 1.5rem", borderRadius: "10px" }}
-          >
-            + Add New Application
-          </button>
-        </div>
-
-        {/* METRICS STATS BAR */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.2rem", marginBottom: "2.5rem" }}>
-          {[
-            { label: "Total Applications", val: totalApps, sub: "All time tracking", color: "#fff" },
-            { label: "Active Pipeline", val: activeApps, sub: "Applied + Interview stage", color: "var(--accent)" },
-            { label: "Interviews Scheduled", val: interviews, sub: "Keep practicing DSA!", color: "#f6d365" },
-            { label: "Response Rate", val: `${responseRate}%`, sub: "Interviews / Applied ratio", color: "#43e97b" },
-            { label: "Offers Secured", val: offers, sub: "Congratulations! 🥳", color: "#43e97b" }
-          ].map((stat, i) => (
-            <div key={i} className="card" style={{ padding: "1.2rem", border: "1px solid var(--border)", background: "var(--card)" }}>
-              <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "0.3rem", fontWeight: 600 }}>{stat.label}</div>
-              <div style={{ fontSize: "2rem", fontWeight: 800, color: stat.color }}>{stat.val}</div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>{stat.sub}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* KANBAN BOARD WRAPPER */}
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "5rem" }}>
-            <div className="spinner" style={{ width: 32, height: 32, margin: "0 auto" }}></div>
-            <p style={{ marginTop: "1rem", color: "var(--text-muted)" }}>Loading your application pipeline...</p>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(270px, 1fr))", gap: "1.5rem" }}>
-            {columns.map((col) => {
-              const colApps = applications.filter((app) => app.status === col.key);
-              return (
-                <div 
-                  key={col.key} 
-                  style={{ 
-                    background: "rgba(10,10,15,0.4)", 
-                    borderRadius: "12px", 
-                    border: "1px solid var(--border)", 
-                    padding: "1rem", 
-                    minHeight: "500px",
-                    display: "flex",
-                    flexDirection: "column"
-                  }}
-                >
-                  {/* Column Header */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", borderBottom: "2px solid " + col.color, paddingBottom: "0.6rem" }}>
-                    <h3 style={{ fontSize: "1rem", fontWeight: 800, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: col.color }}></span>
-                      {col.title}
-                    </h3>
-                    <span style={{ fontSize: "0.78rem", background: "var(--bg-3)", color: "var(--text-muted)", padding: "2px 8px", borderRadius: "12px", fontWeight: 700 }}>
-                      {colApps.length}
-                    </span>
-                  </div>
-
-                  {/* Column Cards */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", flex: 1, overflowY: "auto" }}>
-                    {colApps.length === 0 ? (
-                      <div style={{ textAlign: "center", padding: "2.5rem 1rem", border: "1px dashed var(--border)", borderRadius: "8px", color: "var(--text-muted)", fontSize: "0.75rem" }}>
-                        No jobs in this stage.
-                      </div>
-                    ) : (
-                      colApps.map((app) => (
-                        <Card 
-                          key={app.id} 
-                          onClick={() => openEdit(app)}
-                          className="p-4 cursor-pointer transition-all duration-150 hover:-translate-y-0.5"
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.borderColor = col.color;
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.borderColor = "var(--border)";
-                          }}
-                        >
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "0.3rem" }}>
-                            <h4 style={{ fontWeight: 800, fontSize: "0.95rem", margin: 0, color: "var(--text)" }}>{app.company}</h4>
-                            <div style={{ display: "flex", gap: "0.3rem", alignItems: "center" }}>
-                              {app.jd_match_score !== undefined && app.jd_match_score !== null && (
-                                <span 
-                                  style={{ 
-                                    fontSize: "0.68rem", 
-                                    background: app.jd_match_score >= 70 ? "rgba(67,233,123,0.12)" : app.jd_match_score >= 45 ? "rgba(246,211,101,0.12)" : "rgba(255,101,132,0.12)", 
-                                    color: app.jd_match_score >= 70 ? "#14B8A6" : app.jd_match_score >= 45 ? "#F59E0B" : "#EF4444", 
-                                    padding: "2px 6px", 
-                                    borderRadius: "4px",
-                                    fontWeight: 700
-                                  }}
-                                >
-                                  🎯 {app.jd_match_score}%
-                                </span>
-                              )}
-                              <span style={{ fontSize: "0.68rem", background: "var(--bg-2)", color: "var(--text-muted)", padding: "2px 6px", borderRadius: "4px" }}>
-                                {app.platform}
-                              </span>
-                            </div>
-                          </div>
-                          <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", margin: "0 0 0.6rem" }}>{app.role}</p>
-
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border-2)", paddingTop: "0.6rem", marginTop: "0.4rem" }}>
-                            <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>
-                              {app.salary ? `₹ ${app.salary}` : "LPA Not set"}
-                            </span>
-                            <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
-                              {app.date}
-                            </span>
-                          </div>
-
-                          {/* Quick Status Changers */}
-                          <div 
-                            style={{ display: "flex", gap: "0.3rem", marginTop: "0.6rem", borderTop: "1px solid var(--border-2)", paddingTop: "0.5rem" }}
-                            onClick={(e) => e.stopPropagation()} // Stop modal from triggering
-                          >
-                            {columns.filter(c => c.key !== col.key).map((c) => (
-                              <button
-                                key={c.key}
-                                onClick={() => updateStatusQuick(app, c.key)}
-                                style={{
-                                  fontSize: "0.65rem",
-                                  padding: "2px 6px",
-                                  background: "var(--bg-3)",
-                                  border: "1px solid var(--border)",
-                                  borderRadius: "4px",
-                                  color: "var(--text-muted)",
-                                  cursor: "pointer",
-                                }}
-                                onMouseOver={(e) => e.currentTarget.style.borderColor = c.color}
-                                onMouseOut={(e) => e.currentTarget.style.borderColor = "var(--border)"}
-                              >
-                                  → {c.key}
-                                </button>
-                              ))}
-                            </div>
-                        </Card>
-                      ))
-                    )}
-                  </div>
+        <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+          {/* EXECUTIVE HEADER */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[var(--border)] mb-8">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider">
+                <Sparkles size={12} className="text-amber-500" />
+                <span>PURSUE · OPPORTUNITY PIPELINE & PURSUIT TRACKER</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#101B3B] to-[#2563EB] flex items-center justify-center text-white shadow-md border border-white/10 shrink-0">
+                  <Target size={20} className="text-amber-400" />
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
+                    Opportunity Pipeline
+                  </h1>
+                </div>
+              </div>
+              <p className="text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
+                Deploy your Career Value into high-leverage market opportunities. Track interview velocity, calibrate JD alignment, and secure compensation leverage.
+              </p>
+            </div>
 
-        {/* ADD APPLICATION MODAL */}
-        {showAddModal && (
+            <div className="flex items-center gap-3 self-start md:self-center shrink-0">
+              <button
+                onClick={() => openAddModal("Applied")}
+                className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <Plus size={16} />
+                <span>+ Add Target Opportunity</span>
+              </button>
+            </div>
+          </div>
+
+          {/* EXECUTIVE VELOCITY & MOMENTUM BAR */}
+          <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-4 md:p-5 shadow-sm backdrop-blur-xl mb-8 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2563EB] via-[#F59E0B] to-[#14B8A6]" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
+              
+              {/* Stat 1: Total Opportunities */}
+              <div className="pt-2 sm:pt-0 sm:px-3 first:px-0">
+                <div className="flex items-center gap-2 mb-1.5 text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  <div className="w-5 h-5 rounded-md bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                    <Layers size={11} />
+                  </div>
+                  <span>Target Roles</span>
+                </div>
+                <div className="text-2xl md:text-3xl font-black text-[var(--text-primary)]">
+                  {totalApps}
+                </div>
+                <div className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                  Total pipeline volume
+                </div>
+              </div>
+
+              {/* Stat 2: Active Pipeline */}
+              <div className="pt-2 sm:pt-0 sm:px-3">
+                <div className="flex items-center gap-2 mb-1.5 text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  <div className="w-5 h-5 rounded-md bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                    <Briefcase size={11} />
+                  </div>
+                  <span>Active Pipeline</span>
+                </div>
+                <div className="text-2xl md:text-3xl font-black text-amber-500">
+                  {activeApps}
+                </div>
+                <div className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                  Applied + Interview loops
+                </div>
+              </div>
+
+              {/* Stat 3: Interview Velocity */}
+              <div className="pt-2 sm:pt-0 sm:px-3">
+                <div className="flex items-center gap-2 mb-1.5 text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  <div className="w-5 h-5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <TrendingUp size={11} />
+                  </div>
+                  <span>Interview Velocity</span>
+                </div>
+                <div className="text-2xl md:text-3xl font-black text-amber-600 dark:text-amber-400">
+                  {interviews}
+                </div>
+                <div className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                  Active interview cycles
+                </div>
+              </div>
+
+              {/* Stat 4: Pipeline Conversion */}
+              <div className="pt-2 sm:pt-0 sm:px-3">
+                <div className="flex items-center gap-2 mb-1.5 text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  <div className="w-5 h-5 rounded-md bg-teal-500/10 text-teal-500 flex items-center justify-center">
+                    <CheckCircle2 size={11} />
+                  </div>
+                  <span>Conversion Rate</span>
+                </div>
+                <div className="text-2xl md:text-3xl font-black text-teal-500">
+                  {responseRate}%
+                </div>
+                <div className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                  Advancement beyond apply
+                </div>
+              </div>
+
+              {/* Stat 5: Offers Secured */}
+              <div className="pt-2 sm:pt-0 sm:px-3">
+                <div className="flex items-center gap-2 mb-1.5 text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  <div className="w-5 h-5 rounded-md bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                    <Award size={11} />
+                  </div>
+                  <span>Offers Secured</span>
+                </div>
+                <div className="text-2xl md:text-3xl font-black text-teal-600 dark:text-teal-400">
+                  {offers}
+                </div>
+                <div className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                  Career outcomes & leverage
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* SEARCH & PLATFORM FILTERS */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-6">
+            <div className="relative flex-1 max-w-md">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search company, role title, or notes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/50 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <span className="text-xs font-semibold text-[var(--text-muted)] flex items-center gap-1 mr-1 shrink-0">
+                <Filter size={12} /> Platform:
+              </span>
+              {["All", "LinkedIn", "Naukri", "Direct Career Portal", "Instahyre", "Indeed"].map((plat) => {
+                const label = plat === "Direct Career Portal" ? "Direct / Referral" : plat;
+                const active = selectedPlatform === plat;
+                return (
+                  <button
+                    key={plat}
+                    onClick={() => setSelectedPlatform(plat)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold shrink-0 transition-all cursor-pointer ${
+                      active
+                        ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                        : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-[var(--border)]"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* KANBAN BOARD */}
+          {loading ? (
+            <div className="text-center py-20 bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)]">
+              <div className="spinner mx-auto" style={{ width: 32, height: 32 }} />
+              <p className="mt-3 text-sm text-[var(--text-muted)] font-medium">Calibrating your opportunity pipeline...</p>
+            </div>
+          ) : applications.length === 0 ? (
+            /* ZERO STATE */
+            <div className="text-center py-16 px-4 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl backdrop-blur-xl">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#101B3B] to-[#2563EB] text-white flex items-center justify-center mx-auto mb-4 shadow-lg border border-white/10">
+                <Target size={30} className="text-amber-400" />
+              </div>
+              <h3 className="text-xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif]">
+                Your Opportunity Pipeline is Empty
+              </h3>
+              <p className="text-sm text-[var(--text-muted)] max-w-md mx-auto mt-2 leading-relaxed">
+                Turn your career strategy into real-world momentum. Track target opportunities, calibrate JD alignment scores, and accelerate interview velocity.
+              </p>
+              <button
+                onClick={() => openAddModal("Applied")}
+                className="btn-primary mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-amber-500/25"
+              >
+                <Plus size={16} />
+                <span>+ Log Your First Target Opportunity</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 items-start">
+              {columns.map((col) => {
+                const colApps = filteredApps.filter((app) => app.status === col.key);
+                return (
+                  <div
+                    key={col.key}
+                    className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] flex flex-col min-h-[580px] shadow-sm backdrop-blur-xl overflow-hidden"
+                  >
+                    {/* Column Header */}
+                    <div className="p-3.5 border-b border-[var(--border)] flex items-center justify-between relative">
+                      <div
+                        className="absolute top-0 left-0 right-0 h-[3px]"
+                        style={{ backgroundColor: col.color }}
+                      />
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: col.color }}
+                        />
+                        <div>
+                          <h2 className="text-xs font-extrabold text-[var(--text-primary)] tracking-tight">
+                            {col.title}
+                          </h2>
+                          <div className="text-[10px] text-[var(--text-muted)] font-semibold uppercase tracking-wider">
+                            {col.stageLabel}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[var(--bg-page)] text-[var(--text-secondary)] border border-[var(--border)]">
+                          {colApps.length}
+                        </span>
+                        <button
+                          onClick={() => openAddModal(col.key)}
+                          className="p-1 rounded-md text-[var(--text-muted)] hover:text-amber-500 hover:bg-amber-500/10 transition-colors"
+                          title={`Add to ${col.title}`}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Column Body Cards */}
+                    <div className="p-3 flex flex-col gap-3 flex-1 overflow-y-auto max-h-[calc(100vh-280px)]">
+                      {colApps.length === 0 ? (
+                        <div className="text-center py-10 px-3 border border-dashed border-[var(--border)] rounded-xl text-xs text-[var(--text-muted)] flex flex-col items-center justify-center gap-1.5 my-auto">
+                          <AlertCircle size={18} className="opacity-40 mb-1" />
+                          <p className="leading-snug">{col.emptyHint}</p>
+                          <button
+                            onClick={() => openAddModal(col.key)}
+                            className="mt-2 text-[11px] font-bold text-amber-500 hover:underline flex items-center gap-1"
+                          >
+                            <Plus size={12} /> Add {col.title}
+                          </button>
+                        </div>
+                      ) : (
+                        colApps.map((app) => {
+                          const linkedResumeName = resumes.find((r) => r.id === app.resume_id)?.file_name;
+                          return (
+                            <div
+                              key={app.id}
+                              onClick={() => openEditModal(app)}
+                              className="group relative p-3.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] hover:border-amber-500/40 hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col gap-2.5"
+                            >
+                              {/* Top Bar: Avatar, Company, Platform */}
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <div className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border)] flex items-center justify-center text-xs font-black text-[var(--text-primary)] shrink-0 shadow-xs">
+                                    {app.company.substring(0, 1).toUpperCase()}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <h3 className="font-extrabold text-sm text-[var(--text-primary)] truncate group-hover:text-amber-500 transition-colors leading-tight">
+                                      {app.company}
+                                    </h3>
+                                    <span className="text-[10px] font-semibold text-[var(--text-muted)] px-1.5 py-0.2 rounded bg-[var(--bg-elevated)] border border-[var(--border)] inline-block mt-0.5">
+                                      {app.platform}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="shrink-0">
+                                  {app.jd_match_score !== undefined && app.jd_match_score !== null && (
+                                    <span
+                                      className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 border ${
+                                        app.jd_match_score >= 70
+                                          ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/30"
+                                          : app.jd_match_score >= 45
+                                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                                          : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                                      }`}
+                                    >
+                                      🎯 {app.jd_match_score}% Match
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Role Title */}
+                              <div className="text-xs font-semibold text-[var(--text-secondary)] line-clamp-1">
+                                {app.role}
+                              </div>
+
+                              {/* Linked Resume or JD url pill */}
+                              {linkedResumeName && (
+                                <div className="text-[10px] text-[var(--text-muted)] flex items-center gap-1 bg-[var(--bg-elevated)] px-2 py-0.5 rounded border border-[var(--border)] truncate">
+                                  <FileText size={10} className="text-blue-400 shrink-0" />
+                                  <span className="truncate">{linkedResumeName}</span>
+                                </div>
+                              )}
+
+                              {/* Compensation & Date */}
+                              <div className="flex items-center justify-between text-[11px] pt-2 border-t border-[var(--border)]">
+                                <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                  {app.salary ? `₹ ${app.salary}` : "LPA uncalibrated"}
+                                </span>
+                                <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-1">
+                                  <Clock size={10} />
+                                  {app.date}
+                                </span>
+                              </div>
+
+                              {/* Quick Move Action Pills */}
+                              <div
+                                className="pt-2 border-t border-[var(--border)] flex items-center gap-1 flex-wrap"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {columns
+                                  .filter((c) => c.key !== col.key)
+                                  .slice(0, 3)
+                                  .map((c) => (
+                                    <button
+                                      key={c.key}
+                                      onClick={() => updateStatusQuick(app, c.key)}
+                                      className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[var(--bg-elevated)] hover:bg-amber-500/10 hover:text-amber-500 border border-[var(--border)] text-[var(--text-muted)] transition-colors"
+                                      title={`Move to ${c.title}`}
+                                    >
+                                      → {c.title.split(" ")[0]}
+                                    </button>
+                                  ))}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </main>
+
+        {/* EXECUTIVE OPPORTUNITY DRAWER / MODAL */}
+        {showDrawer && (
           <>
             {/* Backdrop */}
             <div
-              onClick={() => setShowAddModal(false)}
-              style={{
-                position: "fixed",
-                inset: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                zIndex: 40,
+              onClick={() => {
+                setShowDrawer(false);
+                setEditingApp(null);
               }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity"
             />
-            {/* Drawer Container */}
-            <div
-              style={{
-                position: "fixed",
-                top: 0,
-                right: 0,
-                height: "100%",
-                width: "100%",
-                maxWidth: "448px",
-                backgroundColor: "var(--card)",
-                borderLeft: "1px solid var(--border)",
-                zIndex: 50,
-                display: "flex",
-                flexDirection: "column",
-                boxShadow: "-4px 0 24px rgba(0, 0, 0, 0.5)",
-              }}
-            >
-              {/* Header */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "1rem",
-                  borderBottom: "1px solid var(--border)",
-                }}
-              >
-                <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.3rem", margin: 0 }}>
-                  Add New Job Application
-                </h3>
+
+            {/* Slide-over Container */}
+            <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-[var(--bg-elevated)] border-l border-[var(--border)] shadow-2xl z-50 flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-200">
+              
+              {/* Drawer Header */}
+              <div className="p-5 border-b border-[var(--border)] flex items-center justify-between bg-[var(--bg-page)]/50">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-500 uppercase tracking-wider">
+                    <Sparkles size={11} />
+                    <span>{editingApp ? "PURSUIT SPECIFICATION" : "NEW TARGET PURSUIT"}</span>
+                  </div>
+                  <h3 className="text-lg font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif]">
+                    {editingApp ? "Edit Target Opportunity" : "Log Target Opportunity"}
+                  </h3>
+                </div>
                 <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "var(--text-muted)",
-                    cursor: "pointer",
-                    fontSize: "1.5rem",
-                    lineHeight: 1,
+                  onClick={() => {
+                    setShowDrawer(false);
+                    setEditingApp(null);
                   }}
+                  className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
                 >
-                  ✕
+                  <X size={18} />
                 </button>
               </div>
 
-              {/* Form wrapping body and footer */}
-              <form
-                onSubmit={handleAddSubmit}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  flex: 1,
-                  height: "calc(100% - 60px)",
-                  overflow: "hidden",
-                }}
-              >
-                {/* Scrollable Form Body */}
-                <div
-                  style={{
-                    flex: 1,
-                    overflowY: "auto",
-                    padding: "1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "1rem",
-                  }}
-                >
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Company Name *</label>
-                    <input required className="input" style={{ width: "100%" }} placeholder="e.g. Google India, Razorpay, TCS" value={company} onChange={(e) => setCompany(e.target.value)} />
+              {/* Form Body */}
+              <form onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto p-5 space-y-5">
+                
+                {/* Section 1: Overview */}
+                <div className="space-y-3">
+                  <div className="text-xs font-extrabold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1.5">
+                    <Building2 size={13} className="text-amber-500" />
+                    <span>Opportunity Core</span>
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Job Role *</label>
-                    <input required className="input" style={{ width: "100%" }} placeholder="e.g. Software Engineer, Product Analyst" value={roleName} onChange={(e) => setRoleName(e.target.value)} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                        Company Name *
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        placeholder="e.g. Microsoft India, CRED"
+                        value={company}
+                        onChange={(e) => setCompany(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                        Role Title *
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        placeholder="e.g. Lead Product Engineer"
+                        value={roleName}
+                        onChange={(e) => setRoleName(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                      />
+                    </div>
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Link Resume</label>
-                    <select className="input" style={{ height: "42px", background: "var(--bg-2)", color: "var(--text)", width: "100%" }} value={resumeId} onChange={(e) => setResumeId(e.target.value)}>
-                      <option value="">-- Select Resume (Optional) --</option>
-                      {resumes.map(r => (
-                        <option key={r.id} value={r.id}>{r.file_name}</option>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                        Source Platform
+                      </label>
+                      <select
+                        value={platform}
+                        onChange={(e) => setPlatform(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                      >
+                        <option value="LinkedIn">LinkedIn</option>
+                        <option value="Naukri">Naukri</option>
+                        <option value="Direct Career Portal">Direct / Referral</option>
+                        <option value="Instahyre">Instahyre</option>
+                        <option value="Indeed">Indeed India</option>
+                        <option value="Other">Other Executive Network</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                        Applied Date
+                      </label>
+                      <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 2: Strategic Fit & AI Match */}
+                <div className="space-y-3 pt-3 border-t border-[var(--border)]">
+                  <div className="text-xs font-extrabold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1.5">
+                    <Target size={13} className="text-blue-500" />
+                    <span>Strategic Fit & Alignment</span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                      Link Tailored Resume
+                    </label>
+                    <select
+                      value={resumeId}
+                      onChange={(e) => setResumeId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                    >
+                      <option value="">-- Select Baseline / Tailored Resume --</option>
+                      {resumes.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.file_name}
+                        </option>
                       ))}
                     </select>
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Job Description URL (Optional)</label>
-                    <input className="input" style={{ width: "100%" }} placeholder="e.g. careers.google.com/jobs/..." value={jdUrl} onChange={(e) => setJdUrl(e.target.value)} />
+                  {jdMatchScore !== null && (
+                    <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-teal-500 text-white flex items-center justify-center font-bold text-xs">
+                          🎯
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-teal-600 dark:text-teal-400">
+                            AI Job Description Alignment
+                          </div>
+                          <div className="text-[11px] text-[var(--text-muted)]">
+                            Workday & Greenhouse ATS calibrated
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-base font-black text-teal-600 dark:text-teal-400">
+                        {jdMatchScore}%
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                      Job Description URL (Optional)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://careers.google.com/jobs/..."
+                      value={jdUrl}
+                      onChange={(e) => setJdUrl(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                    />
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Job Description (Optional, triggers automatic AI JD match score)</label>
-                    <textarea className="input" style={{ width: "100%" }} rows={3} placeholder="Paste job requirements/description to calculate match score..." value={jdText} onChange={(e) => setJdText(e.target.value)} />
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Salary Bracket (e.g. ₹ LPA)</label>
-                    <input className="input" style={{ width: "100%" }} placeholder="e.g. 12-15 LPA" value={salary} onChange={(e) => setSalary(e.target.value)} />
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Source Platform</label>
-                    <select className="input" style={{ height: "42px", background: "var(--bg-2)", width: "100%" }} value={platform} onChange={(e) => setPlatform(e.target.value)}>
-                      <option value="LinkedIn">LinkedIn</option>
-                      <option value="Naukri">Naukri</option>
-                      <option value="Indeed">Indeed India</option>
-                      <option value="Instahyre">Instahyre</option>
-                      <option value="Direct Career Portal">Direct / Referral</option>
-                    </select>
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Applied Date</label>
-                    <input type="date" className="input" style={{ width: "100%" }} value={date} onChange={(e) => setDate(e.target.value)} />
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Current Status</label>
-                    <select className="input" style={{ height: "42px", background: "var(--bg-2)", width: "100%" }} value={status} onChange={(e) => setStatus(e.target.value as any)}>
-                      <option value="Applied">Applied</option>
-                      <option value="Interview">Interview</option>
-                      <option value="Offer">Offer secured</option>
-                      <option value="Rejected">Rejected</option>
-                      <option value="Withdrawn">Withdrawn</option>
-                    </select>
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block" }}>Application Notes</label>
-                    <textarea className="input" style={{ width: "100%" }} rows={3} placeholder="Add follow-up notes, recruiters, references..." value={notes} onChange={(e) => setNotes(e.target.value)} />
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                      Job Description & Requirements
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="Paste JD requirements here to trigger AI match analysis..."
+                      value={jdText}
+                      onChange={(e) => setJdText(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50 leading-relaxed"
+                    />
                   </div>
                 </div>
 
-                {/* Fixed Footer */}
-                <div
-                  style={{
-                    padding: "1rem",
-                    borderTop: "1px solid var(--border)",
-                    backgroundColor: "var(--card)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <button type="submit" className="btn-primary" style={{ width: "100%", justifyContent: "center" }}>
-                    Add Application
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddModal(false)}
-                    className="btn-secondary"
-                    style={{ width: "100%", justifyContent: "center" }}
-                  >
-                    Cancel
-                  </button>
+                {/* Section 3: Compensation & Stage */}
+                <div className="space-y-3 pt-3 border-t border-[var(--border)]">
+                  <div className="text-xs font-extrabold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1.5">
+                    <DollarSign size={13} className="text-amber-500" />
+                    <span>Compensation & Status</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                        Target Salary Bracket
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 28-35 LPA"
+                        value={salary}
+                        onChange={(e) => setSalary(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                        Current Stage
+                      </label>
+                      <select
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value as any)}
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                      >
+                        <option value="Applied">Applied (Submissions)</option>
+                        <option value="Interview">Evaluating & Interviews</option>
+                        <option value="Offer">Offer Secured</option>
+                        <option value="Rejected">Archived / Closed</option>
+                        <option value="Withdrawn">Withdrawn / Paused</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Section 4: Notes */}
+                <div className="space-y-2 pt-3 border-t border-[var(--border)]">
+                  <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                    Strategic Pursuit Notes & Follow-ups
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="Recruiter contact, interview panel discussion points, next round dates..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50 leading-relaxed"
+                  />
+                </div>
+
+                {/* Submit button inside form */}
+                <div className="pt-4 border-t border-[var(--border)] flex items-center justify-between gap-3">
+                  {editingApp ? (
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirmId(editingApp.id)}
+                      className="px-3 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center gap-1.5"
+                    >
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowDrawer(false);
+                        setEditingApp(null);
+                      }}
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-page)] transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="btn-primary px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 cursor-pointer"
+                    >
+                      {isSubmitting ? "Saving..." : editingApp ? "Save Changes" : "+ Add Opportunity"}
+                    </button>
+                  </div>
+                </div>
+
               </form>
             </div>
           </>
         )}
 
-        {/* EDIT APPLICATION MODAL */}
-        {showEditModal && selectedApp && (
-          <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-            <form onSubmit={handleEditSubmit} className="card" style={{ width: "100%", maxWidth: "500px", padding: "2rem", display: "grid", gap: "1rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "1.3rem", margin: 0 }}>Edit Job Details</h3>
-                <button 
-                  type="button" 
-                  onClick={() => handleDeleteTrigger(selectedApp.id)} 
-                  style={{ background: "none", border: "none", color: "#ff6584", cursor: "pointer", fontSize: "0.85rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
-                >
-                  <Trash2 size={13} />
-                  Delete
-                </button>
-              </div>
-
-              <div>
-                <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Company Name *</label>
-                <input required className="input" value={company} onChange={(e) => setCompany(e.target.value)} />
-              </div>
-
-              <div>
-                <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Job Role *</label>
-                <input required className="input" value={roleName} onChange={(e) => setRoleName(e.target.value)} />
-              </div>
-
-              <div>
-                <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Link Resume</label>
-                <select className="input" style={{ height: "42px", background: "var(--bg-2)", color: "var(--text)" }} value={resumeId} onChange={(e) => setResumeId(e.target.value)}>
-                  <option value="">-- Select Resume (Optional) --</option>
-                  {resumes.map(r => (
-                    <option key={r.id} value={r.id}>{r.file_name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {jdMatchScore !== null && (
-                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", background: "rgba(0,0,0,0.15)", padding: "0.6rem 1rem", borderRadius: "8px" }}>
-                  <span style={{ fontSize: "1.2rem" }}>🎯</span>
-                  <div>
-                    <span style={{ fontSize: "0.74rem", color: "var(--text-muted)", display: "block" }}>AI Job Description Match Score</span>
-                    <strong style={{ 
-                      fontSize: "0.95rem", 
-                      color: jdMatchScore >= 70 ? "#14B8A6" : jdMatchScore >= 45 ? "#F59E0B" : "#EF4444"
-                    }}>
-                      {jdMatchScore}% Compatibility
-                    </strong>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Job Description URL (Optional)</label>
-                <input className="input" placeholder="e.g. careers.google.com/jobs/..." value={jdUrl} onChange={(e) => setJdUrl(e.target.value)} />
-              </div>
-
-              <div>
-                <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Job Description (Optional, triggers automatic AI JD match score)</label>
-                <textarea className="input" rows={3} placeholder="Paste job requirements/description to calculate match score..." value={jdText} onChange={(e) => setJdText(e.target.value)} />
-              </div>
-
-              <div className="responsive-grid-2" style={{ gap: "1rem" }}>
-                <div>
-                  <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Salary Bracket</label>
-                  <input className="input" value={salary} onChange={(e) => setSalary(e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Platform</label>
-                  <select className="input" style={{ height: "42px", background: "var(--bg-2)" }} value={platform} onChange={(e) => setPlatform(e.target.value)}>
-                    <option value="LinkedIn">LinkedIn</option>
-                    <option value="Naukri">Naukri</option>
-                    <option value="Indeed">Indeed India</option>
-                    <option value="Instahyre">Instahyre</option>
-                    <option value="Direct Career Portal">Direct / Referral</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="responsive-grid-2" style={{ gap: "1rem" }}>
-                <div>
-                  <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Applied Date</label>
-                  <input type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Current Status</label>
-                  <select className="input" style={{ height: "42px", background: "var(--bg-2)" }} value={status} onChange={(e) => setStatus(e.target.value as any)}>
-                    <option value="Applied">Applied</option>
-                    <option value="Interview">Interview</option>
-                    <option value="Offer">Offer secured</option>
-                    <option value="Rejected">Rejected</option>
-                    <option value="Withdrawn">Withdrawn</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>Application Notes</label>
-                <textarea className="input" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.8rem", marginTop: "0.5rem" }}>
-                <button type="button" onClick={() => { setShowEditModal(false); setSelectedApp(null); }} className="btn-secondary">Cancel</button>
-                <button type="submit" className="btn-primary">Save Changes</button>
-              </div>
-            </form>
-          </div>
-        )}
+        {/* DELETE CONFIRMATION MODAL */}
+        <ConfirmationModal
+          isOpen={deleteConfirmId !== null}
+          title="Delete Target Opportunity?"
+          message="Are you sure you want to remove this opportunity from your pursuit pipeline? All progress history and linked notes will be permanently removed."
+          confirmLabel="Delete Opportunity"
+          cancelLabel="Cancel"
+          isDanger={true}
+          onConfirm={() => {
+            if (deleteConfirmId) {
+              executeDelete(deleteConfirmId);
+              setDeleteConfirmId(null);
+            }
+          }}
+          onCancel={() => setDeleteConfirmId(null)}
+        />
       </div>
-      </div>
-      <ConfirmationModal
-        isOpen={deleteConfirmId !== null}
-        title="Delete Job Application?"
-        message="Are you sure you want to delete this job application from your tracker? This action cannot be undone."
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        isDanger={true}
-        onConfirm={() => {
-          if (deleteConfirmId) {
-            executeDelete(deleteConfirmId);
-            setDeleteConfirmId(null);
-          }
-        }}
-        onCancel={() => setDeleteConfirmId(null)}
-      />
     </div>
   );
 }

@@ -1,39 +1,90 @@
 "use client";
+
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
-
-const KeywordsSkeleton = () => (
-  <div className="grid gap-6 animate-pulse" style={{ gridTemplateColumns: "260px 1fr" }}>
-    <div className="h-[450px] rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
-    <div className="space-y-6">
-      <div className="h-20 rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
-      <div className="h-[350px] rounded-2xl bg-slate-200/50 dark:bg-white/[0.03] border border-slate-200/40 dark:border-white/5" />
-    </div>
-  </div>
-);
 import { createClient } from "@/utils/supabase/client";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { useToast } from "@/components/ui/toast-1";
 import {
-  ShieldCheck, BarChart2, Users, Bot, Brain,
-  Plus, Trash2, Edit3, Check, X, ChevronDown, ChevronRight,
-  Search, Layers, RefreshCw, Tag, Save, PlusCircle, FolderPlus, CreditCard, Megaphone
+  ShieldCheck,
+  Brain,
+  Plus,
+  Trash2,
+  Edit3,
+  Check,
+  X,
+  Search,
+  Layers,
+  RefreshCw,
+  Save,
+  PlusCircle,
+  FolderPlus,
+  Sparkles,
+  Key,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  ArrowRight,
+  TrendingUp,
+  Cpu,
+  Sliders,
+  Tag
 } from "lucide-react";
 
-const WEIGHT_COLORS: Record<number, string> = {
-  10: "#43e97b", 9: "#43e97b", 8: "#6defa9",
-  7: "#f6d365", 6: "#f6d365", 5: "#f6d365",
-  4: "#ff8fa3", 3: "#ff6584", 2: "#ff6584", 1: "#ff6584",
+interface Keyword {
+  keyword: string;
+  weight: number;
+  aliases: string[];
+  is_active?: boolean;
+  expires_on?: string;
+}
+
+interface CategoryData {
+  base: Keyword[];
+  dynamic: Keyword[];
+  displayName: string;
+}
+
+const getWeightStyle = (weight: number) => {
+  if (weight >= 8) {
+    return {
+      text: "text-teal-600 dark:text-teal-400",
+      bg: "bg-teal-500/10",
+      border: "border-teal-500/25",
+      label: "Critical",
+    };
+  }
+  if (weight >= 5) {
+    return {
+      text: "text-amber-600 dark:text-amber-400",
+      bg: "bg-amber-500/10",
+      border: "border-amber-500/25",
+      label: "Core",
+    };
+  }
+  return {
+    text: "text-slate-500 dark:text-slate-400",
+    bg: "bg-slate-500/10",
+    border: "border-slate-500/25",
+    label: "Auxiliary",
+  };
 };
 
-interface Keyword { keyword: string; weight: number; aliases: string[]; is_active?: boolean; expires_on?: string; }
-interface CategoryData { base: Keyword[]; dynamic: Keyword[]; displayName: string; }
+const KeywordsSkeleton = () => (
+  <div className="grid gap-6 animate-pulse" style={{ gridTemplateColumns: "260px 1fr" }}>
+    <div className="h-[450px] rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)]" />
+    <div className="space-y-6">
+      <div className="h-20 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)]" />
+      <div className="h-[350px] rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)]" />
+    </div>
+  </div>
+);
 
 export default function AdminKeywordsPage() {
   const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [mainTab, setMainTab] = useState<"scanner" | "manage" | "create">("manage");
+  const [mainTab, setMainTab] = useState<"manage" | "create" | "scanner">("manage");
   const [manageSubTab, setManageSubTab] = useState<"base" | "dynamic">("base");
 
   // ─── Scanner Tab ───────────────────────────────────────────────────────────
@@ -50,6 +101,7 @@ export default function AdminKeywordsPage() {
   const [catLoading, setCatLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [kwSearch, setKwSearch] = useState("");
+  const [catSearch, setCatSearch] = useState("");
 
   // Add keyword inline
   const [addingKw, setAddingKw] = useState(false);
@@ -80,7 +132,11 @@ export default function AdminKeywordsPage() {
 
   useEffect(() => {
     if (user) {
-      supabase.from("user_profiles").select("role").eq("id", user.id).maybeSingle()
+      supabase
+        .from("user_profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle()
         .then(({ data }) => setIsAdmin(data?.role === "admin"));
     }
   }, [user]);
@@ -97,14 +153,16 @@ export default function AdminKeywordsPage() {
           setSelectedCategory(Object.keys(data)[0]);
         }
       }
-    } catch (e) { showToast("Failed to load categories", "error"); }
+    } catch (e) {
+      showToast("Failed to load keyword categories.", "error");
+    }
     setCatLoading(false);
   }, [selectedCategory]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchCategories();
-      if (scannerSubTab === "pending") fetchPending();
+      fetchPending();
     }
   }, [isAdmin]);
 
@@ -114,7 +172,11 @@ export default function AdminKeywordsPage() {
 
   const fetchPending = async () => {
     setPendingLoading(true);
-    const { data } = await supabase.from("pending_keywords").select("*").eq("status", "pending").order("created_at", { ascending: false });
+    const { data } = await supabase
+      .from("pending_keywords")
+      .select("*")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
     setPendingKeywords(data || []);
     setPendingLoading(false);
   };
@@ -126,28 +188,37 @@ export default function AdminKeywordsPage() {
       const res = await fetch("/api/admin/keyword-suggestions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ industry: scanIndustry })
+        body: JSON.stringify({ industry: scanIndustry }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setScanResults(data.suggestions || []);
-        showToast("Found " + (data.suggestions?.length || 0) + " suggestions!", "success");
-      } else showToast("Scan failed: " + data.error, "error");
-    } catch { showToast("Error running scan", "error"); }
+        showToast(`Discovered ${data.suggestions?.length || 0} candidate keywords!`, "success");
+      } else {
+        showToast("Scan failed: " + data.error, "error");
+      }
+    } catch {
+      showToast("Error running AI keyword discovery.", "error");
+    }
     setScanLoading(false);
   };
 
   const handleAction = async (id: string, action: "approve" | "reject", source: "scan" | "pending") => {
     const res = await fetch("/api/admin/keyword-approve", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ keywordId: id, action })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ keywordId: id, action }),
     });
     if (res.ok) {
-      if (source === "scan") setScanResults(prev => prev.filter(k => k.id !== id));
-      else setPendingKeywords(prev => prev.filter(k => k.id !== id));
-      if (action === "approve") { fetchCategories(); }
-      showToast(`${action === "approve" ? "Approved ✓" : "Rejected"}`, "success");
-    } else showToast("Action failed", "error");
+      if (source === "scan") setScanResults((prev) => prev.filter((k) => k.id !== id));
+      else setPendingKeywords((prev) => prev.filter((k) => k.id !== id));
+      if (action === "approve") {
+        fetchCategories();
+      }
+      showToast(`${action === "approve" ? "Approved & indexed ✓" : "Rejected"}`, "success");
+    } else {
+      showToast("Action failed", "error");
+    }
   };
 
   const executeApproveAllPending = async () => {
@@ -155,13 +226,15 @@ export default function AdminKeywordsPage() {
     let ok = 0;
     for (const kw of pendingKeywords) {
       const res = await fetch("/api/admin/keyword-approve", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keywordId: kw.id, action: "approve" })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keywordId: kw.id, action: "approve" }),
       });
       if (res.ok) ok++;
     }
-    showToast(`Approved ${ok}/${pendingKeywords.length}`, "success");
-    fetchPending(); fetchCategories();
+    showToast(`Approved & indexed ${ok}/${pendingKeywords.length} keywords.`, "success");
+    fetchPending();
+    fetchCategories();
   };
 
   // ─── Keyword CRUD ──────────────────────────────────────────────────────────
@@ -169,15 +242,26 @@ export default function AdminKeywordsPage() {
     if (!newKwKeyword.trim() || !selectedCategory) return;
     setNewKwSaving(true);
     const res = await fetch("/api/admin/keyword-base-add", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ industry: selectedCategory, keyword: newKwKeyword.trim(), weight: newKwWeight, aliases: newKwAliases })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        industry: selectedCategory,
+        keyword: newKwKeyword.trim(),
+        weight: newKwWeight,
+        aliases: newKwAliases,
+      }),
     });
     const data = await res.json();
     if (res.ok) {
-      showToast(`✅ '${newKwKeyword}' added!`, "success");
-      setNewKwKeyword(""); setNewKwAliases(""); setNewKwWeight(7); setAddingKw(false);
+      showToast(`'${newKwKeyword}' added to index!`, "success");
+      setNewKwKeyword("");
+      setNewKwAliases("");
+      setNewKwWeight(7);
+      setAddingKw(false);
       fetchCategories();
-    } else showToast(data.error || "Failed to add keyword", "error");
+    } else {
+      showToast(data.error || "Failed to add keyword", "error");
+    }
     setNewKwSaving(false);
   };
 
@@ -192,286 +276,484 @@ export default function AdminKeywordsPage() {
     if (!editingKw || !selectedCategory) return;
     setEditKwSaving(true);
     const res = await fetch("/api/admin/keyword-base-edit", {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         industry: selectedCategory,
         originalKeyword: editingKw.keyword,
-        updated: { keyword: editKwKeyword, weight: editKwWeight, aliases: editKwAliases }
-      })
+        updated: { keyword: editKwKeyword, weight: editKwWeight, aliases: editKwAliases },
+      }),
     });
     const data = await res.json();
     if (res.ok) {
-      showToast("✅ Keyword updated!", "success");
-      setEditingKw(null); fetchCategories();
-    } else showToast(data.error || "Edit failed", "error");
+      showToast("Keyword updated successfully!", "success");
+      setEditingKw(null);
+      fetchCategories();
+    } else {
+      showToast(data.error || "Edit failed", "error");
+    }
     setEditKwSaving(false);
   };
 
   const handleDeleteKeyword = async () => {
     if (!deleteConfirm || !selectedCategory) return;
     const res = await fetch("/api/admin/keyword-delete", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ industry: selectedCategory, keyword: deleteConfirm.keyword, layer: deleteConfirm.layer })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        industry: selectedCategory,
+        keyword: deleteConfirm.keyword,
+        layer: deleteConfirm.layer,
+      }),
     });
     const data = await res.json();
     if (res.ok) {
-      showToast(`🗑️ '${deleteConfirm.keyword}' deleted`, "success");
-      setDeleteConfirm(null); fetchCategories();
-    } else showToast(data.error || "Delete failed", "error");
+      showToast(`'${deleteConfirm.keyword}' removed from index.`, "success");
+      setDeleteConfirm(null);
+      fetchCategories();
+    } else {
+      showToast(data.error || "Delete failed", "error");
+    }
   };
 
   // ─── Create Category ───────────────────────────────────────────────────────
   const handleCreateCategory = async () => {
     if (!newCatSlug.trim() || !newCatDisplay.trim()) {
-      showToast("Please fill in category slug and display name", "error"); return;
+      showToast("Please fill in category slug and display name", "error");
+      return;
     }
     setCreateCatLoading(true);
 
-    // Parse keywords from textarea: "keyword,weight,alias1,alias2" per line
-    const keywords = newCatKeywordsRaw.split("\n")
-      .map(line => line.trim()).filter(Boolean)
-      .map(line => {
+    const keywords = newCatKeywordsRaw
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
         const parts = line.split(",");
         return {
           keyword: parts[0]?.trim() || "",
           weight: parseInt(parts[1]?.trim()) || 7,
-          aliases: parts.slice(2).map(a => a.trim()).filter(Boolean),
+          aliases: parts.slice(2).map((a) => a.trim()).filter(Boolean),
         };
-      }).filter(k => k.keyword);
+      })
+      .filter((k) => k.keyword);
 
     const res = await fetch("/api/admin/category-create", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newCatSlug, displayName: newCatDisplay, keywords })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newCatSlug, displayName: newCatDisplay, keywords }),
     });
     const data = await res.json();
     if (res.ok) {
-      showToast(`🎉 Category '${data.category.displayName}' created with ${data.category.keywordCount} keywords!`, "success");
-      setNewCatSlug(""); setNewCatDisplay(""); setNewCatKeywordsRaw("Keyword Name,8,Alias1,Alias2");
+      showToast(`Category '${data.category.displayName}' created with ${data.category.keywordCount} keywords!`, "success");
+      setNewCatSlug("");
+      setNewCatDisplay("");
+      setNewCatKeywordsRaw("Keyword Name,8,Alias1,Alias2");
       setSelectedCategory(data.category.slug);
       setMainTab("manage");
       fetchCategories();
-    } else showToast(data.error || "Failed to create category", "error");
+    } else {
+      showToast(data.error || "Failed to create category", "error");
+    }
     setCreateCatLoading(false);
   };
 
-  // ─── Derived ───────────────────────────────────────────────────────────────
+  // ─── Derived Metrics ───────────────────────────────────────────────────────
   const catData = selectedCategory ? allCategories[selectedCategory] : null;
   const allCatKeys = Object.keys(allCategories).sort();
+  
+  const totalKeywordsAcrossAll = Object.values(allCategories).reduce(
+    (acc, cat) => acc + (cat.base?.length || 0) + (cat.dynamic?.length || 0),
+    0
+  );
+
+  const filteredCategories = allCatKeys.filter((key) => {
+    const d = allCategories[key];
+    return (
+      catSearch.trim() === "" ||
+      d.displayName.toLowerCase().includes(catSearch.toLowerCase()) ||
+      key.toLowerCase().includes(catSearch.toLowerCase())
+    );
+  });
+
   const filteredKeywords = catData
-    ? (manageSubTab === "base" ? catData.base : catData.dynamic).filter(k =>
-        !kwSearch || k.keyword.toLowerCase().includes(kwSearch.toLowerCase()) ||
-        k.aliases?.some(a => a.toLowerCase().includes(kwSearch.toLowerCase()))
+    ? (manageSubTab === "base" ? catData.base : catData.dynamic).filter(
+        (k) =>
+          !kwSearch ||
+          k.keyword.toLowerCase().includes(kwSearch.toLowerCase()) ||
+          k.aliases?.some((a) => a.toLowerCase().includes(kwSearch.toLowerCase()))
       )
     : [];
 
-  if (authLoading || isAdmin === null) return (
-    <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
-      <div className="spinner w-8 h-8" />
-    </div>
-  );
+  if (authLoading || isAdmin === null) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
+        <div className="spinner w-8 h-8" />
+      </div>
+    );
+  }
 
-  if (isAdmin === false) return (
-    <div className="py-24 text-center">
-      <h3 className="text-xl font-extrabold font-['Syne',sans-serif] text-rose-500">🔒 Forbidden: Admins only</h3>
-    </div>
-  );
+  if (isAdmin === false) {
+    return (
+      <div className="py-24 text-center">
+        <h3 className="text-xl font-extrabold font-['Syne',sans-serif] text-rose-500">
+          🔒 Forbidden: Administrators only
+        </h3>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-          
-          <div className="space-y-2">
-            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
-              Admin Panel
-            </span>
-            <h1 className="text-3xl md:text-4xl font-extrabold font-['Syne',sans-serif] tracking-tight flex items-center gap-2 mt-2">
-              ATS Keyword Management
+    <div className="space-y-8 font-sans">
+      
+      {/* ── EXECUTIVE HEADER ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[var(--border)]">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider">
+            <Sparkles size={12} className="text-amber-500" />
+            <span>UPROLE PLATFORM COMMAND · ATS PARSER & KEYWORDS ENGINE</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#101B3B] to-[#2563EB] flex items-center justify-center text-white shadow-md border border-white/10 shrink-0">
+              <Key size={22} className="text-amber-400" />
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
+              ATS Keyword Weights & Parser Rules
             </h1>
-            <p className="text-sm text-slate-600 dark:text-[#9ea3c8] max-w-2xl leading-relaxed">
-              Manage ATS categories, add/edit/delete keywords, create new industries, and run AI scans.
-            </p>
           </div>
 
-          {/* Main Tabs */}
-          <div className="flex gap-2 border-b border-slate-200 dark:border-white/10 pb-3 no-scrollbar mb-6 overflow-x-auto">
-            {[
-              { key: "manage", icon: <Layers size={15} />, label: "Manage Keywords" },
-              { key: "create", icon: <FolderPlus size={15} />, label: "Add New Category" },
-              { key: "scanner", icon: <Brain size={15} />, label: "AI Scanner" },
-            ].map(t => {
-              const isSelected = mainTab === t.key;
-              return (
-                <button 
-                  key={t.key} 
-                  onClick={() => setMainTab(t.key as any)} 
-                  className={`
-                    px-4 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2
-                    transition-all duration-200 border cursor-pointer whitespace-nowrap
-                    ${isSelected
-                      ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/15"
-                      : "text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-white/[0.02] border-slate-200 dark:border-white/5 hover:text-indigo-600 dark:hover:text-white"
-                    }
-                  `}
-                >
-                  {t.icon}
-                  {t.label}
-                </button>
-              );
-            })}
+          <p className="text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
+            Calibrate industry keyword banks, manage base & dynamic skill weights, inspect parser aliases, and discover market trends using AI.
+          </p>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-3 self-start md:self-center shrink-0">
+          <button
+            onClick={() => {
+              fetchCategories();
+              fetchPending();
+            }}
+            disabled={catLoading}
+            className="px-3.5 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] text-xs font-bold text-[var(--text-primary)] hover:border-amber-500/40 hover:bg-amber-500/10 transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+          >
+            <RefreshCw
+              size={13}
+              className={catLoading ? "animate-spin text-amber-500" : "text-[var(--text-muted)]"}
+            />
+            <span>Refresh Index</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── METRICS OVERVIEW BAR ── */}
+      <section className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-4 md:p-5 shadow-sm backdrop-blur-xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2563EB] via-[#F59E0B] to-[#14B8A6]" />
+        
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
+          {/* Stat 1: Total Industries */}
+          <div className="pt-2 sm:pt-0 sm:px-3 first:px-0">
+            <div className="flex items-center gap-2 mb-1 text-xs font-extrabold text-[var(--text-muted)] uppercase tracking-wider">
+              <div className="w-5 h-5 rounded-md bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                <Layers size={12} />
+              </div>
+              <span>Industries</span>
+            </div>
+            <div className="text-2xl md:text-3xl font-black text-[var(--text-primary)] font-['Syne',sans-serif]">
+              {allCatKeys.length}
+            </div>
+            <div className="text-[11px] text-[var(--text-muted)] mt-0.5">
+              Active taxonomy categories
+            </div>
           </div>
 
-        {/* ═══════════════════ TAB: MANAGE KEYWORDS ═══════════════════════════ */}
-        {mainTab === "manage" && (
-          catLoading && Object.keys(allCategories).length === 0 ? (
-            <KeywordsSkeleton />
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: "1.5rem", alignItems: "start" }}>
+          {/* Stat 2: Total Indexed Keywords */}
+          <div className="pt-2 sm:pt-0 sm:px-3">
+            <div className="flex items-center gap-2 mb-1 text-xs font-extrabold text-[var(--text-muted)] uppercase tracking-wider">
+              <div className="w-5 h-5 rounded-md bg-teal-500/10 text-teal-500 flex items-center justify-center">
+                <Key size={12} />
+              </div>
+              <span>Total Keywords</span>
+            </div>
+            <div className="text-2xl md:text-3xl font-black text-teal-500 font-['Syne',sans-serif]">
+              {totalKeywordsAcrossAll.toLocaleString()}
+            </div>
+            <div className="text-[11px] text-[var(--text-muted)] mt-0.5">
+              Base + dynamic indexed skills
+            </div>
+          </div>
+
+          {/* Stat 3: Pending Queue */}
+          <div className="pt-2 sm:pt-0 sm:px-3">
+            <div className="flex items-center gap-2 mb-1 text-xs font-extrabold text-[var(--text-muted)] uppercase tracking-wider">
+              <div className="w-5 h-5 rounded-md bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                <Clock size={12} />
+              </div>
+              <span>Pending Queue</span>
+            </div>
+            <div className="text-2xl md:text-3xl font-black text-amber-500 font-['Syne',sans-serif]">
+              {pendingKeywords.length}
+            </div>
+            <div className="text-[11px] text-[var(--text-muted)] mt-0.5">
+              Awaiting admin approval
+            </div>
+          </div>
+
+          {/* Stat 4: Parser Engine */}
+          <div className="pt-2 sm:pt-0 sm:px-3">
+            <div className="flex items-center gap-2 mb-1 text-xs font-extrabold text-[var(--text-muted)] uppercase tracking-wider">
+              <div className="w-5 h-5 rounded-md bg-purple-500/10 text-purple-500 flex items-center justify-center">
+                <Brain size={12} />
+              </div>
+              <span>AI Engine</span>
+            </div>
+            <div className="text-lg md:text-xl font-black text-[var(--text-primary)] mt-1 font-['Syne',sans-serif]">
+              v2.4 Active
+            </div>
+            <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-bold">
+              ✓ Calibrated for Indian tech
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── MAIN TABS NAVIGATION ── */}
+      <div className="flex gap-2 border-b border-[var(--border)] pb-3 overflow-x-auto [scrollbar-width:none]">
+        {[
+          { key: "manage", icon: <Layers size={14} />, label: "Manage Keyword Index" },
+          { key: "create", icon: <FolderPlus size={14} />, label: "Add Industry Category" },
+          { key: "scanner", icon: <Brain size={14} />, label: `AI Trend Scanner ${pendingKeywords.length > 0 ? `(${pendingKeywords.length})` : ""}` },
+        ].map((t) => {
+          const isSelected = mainTab === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setMainTab(t.key as any)}
+              className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+                isSelected
+                  ? "bg-amber-500 text-brand-navy font-black shadow-sm shadow-amber-500/25 border border-amber-500"
+                  : "text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border)] hover:border-amber-500/30 hover:text-[var(--text-primary)]"
+              }`}
+            >
+              {t.icon}
+              <span>{t.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ═══════════════════ TAB 1: MANAGE KEYWORDS ═══════════════════════════ */}
+      {mainTab === "manage" && (
+        catLoading && Object.keys(allCategories).length === 0 ? (
+          <KeywordsSkeleton />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
             
-            {/* Left: Category Sidebar */}
-            <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/5 shadow-sm space-y-4 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider">
+            {/* Left: Category Sidebar (1 Col) */}
+            <div className="lg:col-span-1 p-4 md:p-5 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)] shadow-sm space-y-4 backdrop-blur-xl">
+              <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
+                <span className="text-[11px] font-extrabold text-[var(--text-muted)] uppercase tracking-wider">
                   Categories ({allCatKeys.length})
                 </span>
-                <button onClick={fetchCategories} disabled={catLoading} className="bg-transparent border-none cursor-pointer text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-white p-1">
-                  <RefreshCw size={13} className={catLoading ? "animate-spin" : ""} />
-                </button>
+                <span className="text-[10px] text-amber-500 font-bold">Live Taxonomy</span>
               </div>
-              <div className="flex flex-col gap-1.5 max-h-[70vh] overflow-y-auto pr-1">
-                {allCatKeys.map(key => {
+
+              {/* Category Search */}
+              <div className="relative">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Filter industries..."
+                  value={catSearch}
+                  onChange={(e) => setCatSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/50 transition-all"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1 max-h-[60vh] overflow-y-auto pr-1 [scrollbar-width:none]">
+                {filteredCategories.map((key) => {
                   const d = allCategories[key];
                   const isActive = selectedCategory === key;
+                  const total = (d.base?.length || 0) + (d.dynamic?.length || 0);
+
                   return (
-                    <button 
-                      key={key} 
-                      onClick={() => { setSelectedCategory(key); setKwSearch(""); setAddingKw(false); setEditingKw(null); }}
-                      className={`
-                        w-full flex items-center justify-between p-3 rounded-xl border text-xs md:text-sm font-semibold transition cursor-pointer
-                        ${isActive 
-                          ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' 
-                          : 'bg-transparent border-transparent text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5'
-                        }
-                      `}
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setSelectedCategory(key);
+                        setKwSearch("");
+                        setAddingKw(false);
+                        setEditingKw(null);
+                      }}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer text-left ${
+                        isActive
+                          ? "bg-amber-500/15 border-amber-500/30 text-amber-600 dark:text-amber-400 font-extrabold shadow-2xs"
+                          : "bg-transparent border-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-page)] hover:text-[var(--text-primary)]"
+                      }`}
                     >
-                      <span>{d.displayName}</span>
-                      <span className="text-[10px] bg-slate-200/60 dark:bg-white/5 px-2 py-0.5 rounded text-slate-500 dark:text-gray-400 font-bold">
-                        {(d.base?.length || 0) + (d.dynamic?.length || 0)}
+                      <span className="truncate mr-2">{d.displayName}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-[var(--bg-page)] text-[var(--text-muted)] font-mono shrink-0 border border-[var(--border)]">
+                        {total}
                       </span>
                     </button>
                   );
                 })}
-                <button 
-                  onClick={() => setMainTab("create")} 
-                  className="w-full flex items-center justify-center gap-1.5 p-3 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-500/5 hover:bg-emerald-100/50 dark:hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold cursor-pointer transition mt-2"
+
+                <button
+                  onClick={() => setMainTab("create")}
+                  className="w-full flex items-center justify-center gap-1.5 p-2.5 rounded-xl border border-dashed border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold cursor-pointer transition-all mt-2"
                 >
-                  <Plus size={13} /> Add New Category
+                  <Plus size={13} /> Add Category
                 </button>
               </div>
             </div>
 
-            {/* Right: Keyword Editor */}
-            <div className="grid gap-6">
+            {/* Right: Keyword Editor Table (3 Cols) */}
+            <div className="lg:col-span-3 space-y-5">
               {!catData ? (
-                <div className="p-12 text-center rounded-2xl bg-white/80 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-gray-400 shadow-sm">
-                  {catLoading ? <div className="spinner mx-auto" /> : "Select a category to manage keywords."}
+                <div className="p-12 text-center rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-muted)] shadow-sm">
+                  {catLoading ? <div className="spinner mx-auto" /> : "Select a category from the sidebar to inspect keywords."}
                 </div>
               ) : (
                 <>
-                  {/* Category Header */}
-                  <div className="p-6 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm flex flex-wrap justify-between items-center gap-4 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-                    <div>
-                      <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0">
-                        {catData.displayName}
-                      </h2>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">{catData.base.length} base</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{catData.dynamic.length} dynamic</span>
+                  {/* Category Header Card */}
+                  <div className="p-5 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)] shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 backdrop-blur-xl">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-black text-[var(--text-primary)] font-['Syne',sans-serif]">
+                          {catData.displayName}
+                        </h2>
+                        <span className="text-[10px] font-mono text-[var(--text-muted)] bg-[var(--bg-page)] px-2 py-0.5 rounded border border-[var(--border)]">
+                          {selectedCategory}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                          {catData.base.length} Base Rules
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                          {catData.dynamic.length} Dynamic
+                        </span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <div className="relative">
-                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <div className="relative flex-1 sm:w-56">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none" />
                         <input
-                          className="pl-8 pr-4 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] focus:border-indigo-500 outline-none transition w-44"
+                          type="text"
                           placeholder="Search keywords..."
-                          value={kwSearch} 
-                          onChange={e => setKwSearch(e.target.value)}
+                          value={kwSearch}
+                          onChange={(e) => setKwSearch(e.target.value)}
+                          className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/50 transition-all"
                         />
                       </div>
-                      <button 
-                        onClick={() => { setAddingKw(true); setEditingKw(null); }} 
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl border-none cursor-pointer transition flex items-center gap-1.5"
+
+                      <button
+                        onClick={() => {
+                          setAddingKw(true);
+                          setEditingKw(null);
+                        }}
+                        className="btn-primary inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-sm shadow-amber-500/20 cursor-pointer shrink-0"
                       >
-                        <Plus size={13} /> Add Keyword
+                        <Plus size={14} />
+                        <span>Add Keyword</span>
                       </button>
                     </div>
                   </div>
 
-                  {/* Sub-tab: base / dynamic */}
-                  <div className="flex gap-2 border-b border-slate-200 dark:border-white/10 pb-2 overflow-x-auto no-scrollbar">
-                    {(["base", "dynamic"] as const).map(tab => {
+                  {/* Sub-tab: Base / Dynamic */}
+                  <div className="flex gap-2 border-b border-[var(--border)] pb-2">
+                    {(["base", "dynamic"] as const).map((tab) => {
                       const isSubActive = manageSubTab === tab;
                       return (
-                        <button 
-                          key={tab} 
-                          onClick={() => setManageSubTab(tab)} 
-                          className={`
-                            px-4 py-2 rounded-xl font-bold text-xs transition border cursor-pointer whitespace-nowrap
-                            ${isSubActive
-                              ? "bg-indigo-600/10 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold"
-                              : "bg-transparent border-transparent text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5"
-                            }
-                          `}
+                        <button
+                          key={tab}
+                          onClick={() => setManageSubTab(tab)}
+                          className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition border cursor-pointer ${
+                            isSubActive
+                              ? "bg-amber-500/15 border-amber-500/30 text-amber-600 dark:text-amber-400 font-extrabold"
+                              : "bg-transparent border-transparent text-[var(--text-muted)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+                          }`}
                         >
-                          {tab === "base" ? `📘 Base (${catData.base.length})` : `⚡ Dynamic (${catData.dynamic.length})`}
+                          {tab === "base" ? `📘 Core Base (${catData.base.length})` : `⚡ Dynamic LLM (${catData.dynamic.length})`}
                         </button>
                       );
                     })}
                   </div>
 
-                  {/* Add Keyword Form */}
+                  {/* Inline Add Keyword Form */}
                   {addingKw && (
-                    <div className="p-6 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/5 border border-indigo-200/50 dark:border-indigo-500/10 shadow-sm space-y-4">
-                      <h4 className="m-0 text-sm font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
-                        <PlusCircle size={15} className="text-indigo-600 dark:text-indigo-400" /> Add New Keyword to {catData.displayName}
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input 
-                          className="px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-full"
-                          placeholder="Keyword name *" 
-                          value={newKwKeyword} 
-                          onChange={e => setNewKwKeyword(e.target.value)}
-                          onKeyDown={e => e.key === "Enter" && handleAddKeyword()} 
-                          autoFocus 
-                        />
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-slate-500 dark:text-gray-400 whitespace-nowrap">Weight (1-10):</span>
-                          <input 
-                            type="number" 
-                            min={1} 
-                            max={10} 
-                            className="px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-20"
+                    <div className="p-5 rounded-2xl bg-[var(--bg-elevated)] border border-amber-500/30 shadow-md space-y-4 animate-in fade-in duration-200">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
+                          <PlusCircle size={14} /> Add Keyword to {catData.displayName}
+                        </h4>
+                        <button
+                          onClick={() => setAddingKw(false)}
+                          className="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs"
+                        >
+                          <X size={15} />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2 space-y-1">
+                          <label className="text-[11px] font-semibold text-[var(--text-secondary)]">
+                            Keyword Name *
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Distributed Systems, Kubernetes"
+                            value={newKwKeyword}
+                            onChange={(e) => setNewKwKeyword(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleAddKeyword()}
+                            autoFocus
+                            className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-[var(--text-secondary)]">
+                            Weight (1-10)
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={10}
                             value={newKwWeight}
-                            onChange={e => setNewKwWeight(parseInt(e.target.value) || 7)} 
+                            onChange={(e) => setNewKwWeight(parseInt(e.target.value) || 7)}
+                            className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs text-[var(--text-primary)] font-bold focus:outline-none focus:border-amber-500/50"
                           />
                         </div>
                       </div>
-                      <input 
-                        className="px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-full"
-                        placeholder="Aliases (comma-separated): e.g. JS, Node.js, NodeJS"
-                        value={newKwAliases} 
-                        onChange={e => setNewKwAliases(e.target.value)} 
-                      />
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={handleAddKeyword} 
-                          disabled={newKwSaving || !newKwKeyword.trim()} 
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl border-none cursor-pointer transition flex items-center gap-1.5 disabled:opacity-50"
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-[var(--text-secondary)]">
+                          Aliases (Comma-separated ATS variations)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. K8s, Container Orchestration, Microservices"
+                          value={newKwAliases}
+                          onChange={(e) => setNewKwAliases(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                        />
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={handleAddKeyword}
+                          disabled={newKwSaving || !newKwKeyword.trim()}
+                          className="btn-primary px-4 py-2 rounded-xl text-xs font-bold cursor-pointer disabled:opacity-50"
                         >
-                          {newKwSaving ? <><div className="spinner w-3 h-3" /> Saving...</> : <><Check size={13} /> Add Keyword</>}
+                          {newKwSaving ? "Saving..." : "+ Save to Parser Index"}
                         </button>
-                        <button 
-                          onClick={() => setAddingKw(false)} 
-                          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white font-bold text-xs rounded-xl cursor-pointer transition"
+                        <button
+                          onClick={() => setAddingKw(false)}
+                          className="px-3.5 py-2 rounded-xl text-xs font-bold text-[var(--text-muted)] hover:bg-[var(--bg-page)] transition-colors cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -480,62 +762,80 @@ export default function AdminKeywordsPage() {
                   )}
 
                   {/* Keywords Table */}
-                  <div className="rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl overflow-hidden hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
+                  <div className="rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)] shadow-sm backdrop-blur-xl overflow-hidden">
                     {filteredKeywords.length === 0 ? (
-                      <div className="p-12 text-center text-slate-500 dark:text-gray-400 text-xs md:text-sm">
-                        {kwSearch ? `No keywords matching "${kwSearch}"` : `No ${manageSubTab} keywords yet.`}
+                      <div className="p-12 text-center text-xs text-[var(--text-muted)] space-y-2">
+                        <p>{kwSearch ? `No keywords matching "${kwSearch}"` : `No ${manageSubTab} keywords populated yet.`}</p>
+                        {kwSearch && (
+                          <button
+                            onClick={() => setKwSearch("")}
+                            className="text-xs font-bold text-amber-500 hover:underline"
+                          >
+                            Clear Search
+                          </button>
+                        )}
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
-                        <table className="w-full border-collapse text-left text-xs md:text-sm">
+                        <table className="w-full border-collapse text-left text-xs">
                           <thead>
-                            <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.01]">
-                              {["Keyword", "Weight", "Aliases", "Actions"].map(h => (
-                                <th key={h} className="px-6 py-4 font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider text-[10px]">{h}</th>
-                              ))}
+                            <tr className="border-b border-[var(--border)] bg-[var(--bg-page)]/60 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-muted)]">
+                              <th className="px-5 py-3">Keyword Identity</th>
+                              <th className="px-5 py-3">ATS Weight</th>
+                              <th className="px-5 py-3">Aliases & Match Variants</th>
+                              <th className="px-5 py-3 text-right">Actions</th>
                             </tr>
                           </thead>
-                          <tbody>
+                          <tbody className="divide-y divide-[var(--border)]">
                             {filteredKeywords.map((kw, i) => {
                               const isEditing = editingKw?.keyword === kw.keyword && editingKw?.layer === manageSubTab;
                               const isExpired = kw.expires_on && new Date(kw.expires_on) < new Date();
                               const isActive = kw.is_active !== false && !isExpired;
+                              const weightStyle = getWeightStyle(kw.weight);
+
                               return (
-                                <tr key={kw.keyword + i} className={`border-b border-slate-100 dark:border-white/[0.02] hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition duration-200 ${isEditing ? "bg-indigo-500/[0.04] dark:bg-indigo-500/[0.02]" : ""}`}>
+                                <tr
+                                  key={kw.keyword + i}
+                                  className={`hover:bg-[var(--bg-page)]/40 transition-colors ${
+                                    isEditing ? "bg-amber-500/5" : ""
+                                  }`}
+                                >
                                   {isEditing ? (
-                                    <td colSpan={4} className="px-6 py-4">
+                                    <td colSpan={4} className="p-4">
                                       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-center">
-                                        <input 
-                                          className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition" 
-                                          value={editKwKeyword} 
-                                          onChange={e => setEditKwKeyword(e.target.value)} 
-                                          autoFocus 
+                                        <input
+                                          type="text"
+                                          value={editKwKeyword}
+                                          onChange={(e) => setEditKwKeyword(e.target.value)}
+                                          autoFocus
+                                          className="px-3 py-1.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
                                         />
-                                        <input 
-                                          type="number" 
-                                          min={1} 
-                                          max={10} 
-                                          className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-20" 
-                                          value={editKwWeight} 
-                                          onChange={e => setEditKwWeight(parseInt(e.target.value))} 
+                                        <input
+                                          type="number"
+                                          min={1}
+                                          max={10}
+                                          value={editKwWeight}
+                                          onChange={(e) => setEditKwWeight(parseInt(e.target.value) || 7)}
+                                          className="px-3 py-1.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs text-[var(--text-primary)] font-bold focus:outline-none focus:border-amber-500/50 w-24"
                                         />
-                                        <input 
-                                          className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition" 
-                                          value={editKwAliases} 
-                                          onChange={e => setEditKwAliases(e.target.value)} 
-                                          placeholder="Aliases (comma-sep)" 
+                                        <input
+                                          type="text"
+                                          placeholder="Aliases (comma-sep)"
+                                          value={editKwAliases}
+                                          onChange={(e) => setEditKwAliases(e.target.value)}
+                                          className="px-3 py-1.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
                                         />
-                                        <div className="flex gap-2">
-                                          <button 
-                                            onClick={handleEditKeyword} 
-                                            disabled={editKwSaving} 
-                                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg border-none cursor-pointer transition flex items-center justify-center"
+                                        <div className="flex gap-1.5 justify-end">
+                                          <button
+                                            onClick={handleEditKeyword}
+                                            disabled={editKwSaving}
+                                            className="btn-primary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"
                                           >
-                                            {editKwSaving ? "..." : <Save size={13} />}
+                                            <Save size={13} /> Save
                                           </button>
-                                          <button 
-                                            onClick={() => setEditingKw(null)} 
-                                            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white font-bold text-xs rounded-lg cursor-pointer transition flex items-center justify-center"
+                                          <button
+                                            onClick={() => setEditingKw(null)}
+                                            className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-[var(--text-muted)] hover:bg-[var(--bg-page)] cursor-pointer"
                                           >
                                             <X size={13} />
                                           </button>
@@ -544,50 +844,73 @@ export default function AdminKeywordsPage() {
                                     </td>
                                   ) : (
                                     <>
-                                      <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">
-                                        <span>{kw.keyword}</span>
-                                        {manageSubTab === "dynamic" && (
-                                          <span className={`ml-2 px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                            isActive 
-                                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10" 
-                                              : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/10"
-                                          }`}>
-                                            {isActive ? "Active" : "Expired"}
-                                          </span>
-                                        )}
-                                      </td>
-                                      <td className="px-6 py-4 font-extrabold text-xs md:text-sm" style={{ color: WEIGHT_COLORS[kw.weight] }}>
-                                        {kw.weight}
-                                        <span className="text-[10px] text-slate-400 dark:text-gray-500 font-normal">/10</span>
-                                      </td>
-                                      <td className="px-6 py-4">
-                                        <div className="flex flex-wrap gap-1.5">
-                                          {(kw.aliases || []).length > 0
-                                            ? kw.aliases.slice(0, 4).map((a, ai) => (
-                                              <span key={ai} className="px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-300 font-medium border border-slate-200/40 dark:border-white/5">{a}</span>
-                                            ))
-                                            : <span className="text-slate-400">—</span>
-                                          }
-                                          {(kw.aliases || []).length > 4 && (
-                                            <span className="text-[10px] text-slate-400 dark:text-gray-500">+{kw.aliases.length - 4} more</span>
+                                      {/* Keyword Name */}
+                                      <td className="px-5 py-3.5 font-bold text-[var(--text-primary)]">
+                                        <div className="flex items-center gap-2">
+                                          <span>{kw.keyword}</span>
+                                          {manageSubTab === "dynamic" && (
+                                            <span
+                                              className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                                                isActive
+                                                  ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20"
+                                                  : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+                                              }`}
+                                            >
+                                              {isActive ? "Active" : "Expired"}
+                                            </span>
                                           )}
                                         </div>
                                       </td>
-                                      <td className="px-6 py-4">
-                                        <div className="flex gap-2">
+
+                                      {/* Weight Badge */}
+                                      <td className="px-5 py-3.5">
+                                        <span
+                                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-black border ${weightStyle.bg} ${weightStyle.text} ${weightStyle.border}`}
+                                        >
+                                          <span>{kw.weight}</span>
+                                          <span className="text-[9px] opacity-70">/10 · {weightStyle.label}</span>
+                                        </span>
+                                      </td>
+
+                                      {/* Aliases */}
+                                      <td className="px-5 py-3.5">
+                                        <div className="flex flex-wrap gap-1">
+                                          {(kw.aliases || []).length > 0 ? (
+                                            kw.aliases.slice(0, 4).map((a, ai) => (
+                                              <span
+                                                key={ai}
+                                                className="px-2 py-0.5 rounded text-[10px] bg-[var(--bg-page)] text-[var(--text-secondary)] font-medium border border-[var(--border)]"
+                                              >
+                                                {a}
+                                              </span>
+                                            ))
+                                          ) : (
+                                            <span className="text-[var(--text-muted)] text-[11px]">—</span>
+                                          )}
+                                          {(kw.aliases || []).length > 4 && (
+                                            <span className="text-[10px] text-[var(--text-muted)]">
+                                              +{kw.aliases.length - 4} more
+                                            </span>
+                                          )}
+                                        </div>
+                                      </td>
+
+                                      {/* Actions */}
+                                      <td className="px-5 py-3.5 text-right">
+                                        <div className="flex items-center justify-end gap-1.5">
                                           {manageSubTab === "base" && (
-                                            <button 
-                                              onClick={() => startEdit(kw, "base")} 
-                                              className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs font-bold rounded-lg cursor-pointer transition flex items-center gap-1"
+                                            <button
+                                              onClick={() => startEdit(kw, "base")}
+                                              className="px-2.5 py-1 rounded-lg text-xs font-bold text-[var(--text-secondary)] hover:text-amber-500 hover:bg-amber-500/10 border border-[var(--border)] transition-colors cursor-pointer"
                                             >
-                                              <Edit3 size={12} /> Edit
+                                              <Edit3 size={12} />
                                             </button>
                                           )}
-                                          <button 
-                                            onClick={() => setDeleteConfirm({ keyword: kw.keyword, layer: manageSubTab })} 
-                                            className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 border border-rose-200 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-lg cursor-pointer transition flex items-center gap-1"
+                                          <button
+                                            onClick={() => setDeleteConfirm({ keyword: kw.keyword, layer: manageSubTab })}
+                                            className="px-2.5 py-1 rounded-lg text-xs font-bold text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 border border-[var(--border)] transition-colors cursor-pointer"
                                           >
-                                            <Trash2 size={12} /> Delete
+                                            <Trash2 size={12} />
                                           </button>
                                         </div>
                                       </td>
@@ -604,230 +927,253 @@ export default function AdminKeywordsPage() {
                 </>
               )}
             </div>
+
           </div>
         )
       )}
 
-        {/* ═══════════════════ TAB: CREATE CATEGORY ═══════════════════════════ */}
-        {mainTab === "create" && (
-          <div className="max-w-3xl">
-            <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6 hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
-              <div>
-                <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0 flex items-center gap-2">
-                  <FolderPlus size={20} className="text-emerald-500 dark:text-emerald-400" /> Create New ATS Category
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
-                  Add a brand new industry/role category with initial keywords. It will be instantly active in the ATS engine.
-                </p>
-              </div>
+      {/* ═══════════════════ TAB 2: CREATE CATEGORY ═══════════════════════════ */}
+      {mainTab === "create" && (
+        <div className="max-w-3xl mx-auto">
+          <div className="p-6 md:p-8 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)] shadow-sm backdrop-blur-xl space-y-6">
+            <div>
+              <h2 className="text-xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif] flex items-center gap-2">
+                <FolderPlus size={20} className="text-amber-500" />
+                <span>Create New ATS Industry Category</span>
+              </h2>
+              <p className="text-xs text-[var(--text-muted)] mt-1 leading-relaxed">
+                Add a new industry category with initial skill banks. It will instantly calibrate in the Workday & Greenhouse ATS parsing engine.
+              </p>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 dark:text-[#9ea3c8] block">
-                    Category Slug * <span className="font-normal">(e.g. logistics_operations)</span>
-                  </label>
-                  <input 
-                    className="px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-full"
-                    placeholder="e.g. logistics_operations"
-                    value={newCatSlug} 
-                    onChange={e => setNewCatSlug(e.target.value.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, ""))}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 dark:text-[#9ea3c8] block">
-                    Display Name * <span className="font-normal">(shown in admin + ATS)</span>
-                  </label>
-                  <input 
-                    className="px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-full"
-                    placeholder="e.g. Logistics & Operations"
-                    value={newCatDisplay} 
-                    onChange={e => setNewCatDisplay(e.target.value)}
-                  />
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-[var(--text-secondary)]">
+                  Category Slug * <span className="font-normal text-[var(--text-muted)]">(e.g. logistics_supply_chain)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. logistics_supply_chain"
+                  value={newCatSlug}
+                  onChange={(e) =>
+                    setNewCatSlug(e.target.value.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, ""))
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs md:text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
+                />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 dark:text-[#9ea3c8] block">
-                  Initial Keywords <span className="font-normal">— one per line: <code className="text-xs text-indigo-500 font-mono">Keyword Name,Weight,Alias1,Alias2</code></span>
+                <label className="text-xs font-bold text-[var(--text-secondary)]">
+                  Display Label * <span className="font-normal text-[var(--text-muted)]">(shown in resume builder)</span>
                 </label>
-                <textarea
-                  className="px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-full font-mono min-h-[160px] resize-y"
-                  rows={8}
-                  value={newCatKeywordsRaw}
-                  onChange={e => setNewCatKeywordsRaw(e.target.value)}
-                  placeholder={"Supply Chain,9,SCM,Logistics\nInventory Management,8,WMS,Stock Control\nVendor Management,7,Procurement,Sourcing"}
+                <input
+                  type="text"
+                  placeholder="e.g. Logistics & Supply Chain"
+                  value={newCatDisplay}
+                  onChange={(e) => setNewCatDisplay(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs md:text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50"
                 />
-                <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-1">
-                  Format: <code className="font-mono bg-slate-100 dark:bg-white/5 px-1 py-0.5 rounded">Keyword Name,Weight(1-10),Alias1,Alias2,...</code> — Weight is optional (default: 7)
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[var(--text-secondary)]">
+                Initial Keywords Specification <span className="font-normal text-[var(--text-muted)]">(one per line)</span>
+              </label>
+              <textarea
+                rows={7}
+                value={newCatKeywordsRaw}
+                onChange={(e) => setNewCatKeywordsRaw(e.target.value)}
+                placeholder={"Supply Chain Optimization,9,SCM,Logistics\nInventory Forecasting,8,WMS,Demand Planning\nVendor Procurement,7,Sourcing,Supplier Relations"}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs text-[var(--text-primary)] font-mono focus:outline-none focus:border-amber-500/50 leading-relaxed resize-y"
+              />
+              <p className="text-[10px] text-[var(--text-muted)]">
+                Format: <code className="font-mono bg-[var(--bg-page)] px-1.5 py-0.5 rounded border border-[var(--border)]">Keyword,Weight(1-10),Alias1,Alias2</code>
+              </p>
+            </div>
+
+            <button
+              onClick={handleCreateCategory}
+              disabled={createCatLoading || !newCatSlug.trim() || !newCatDisplay.trim()}
+              className="btn-primary inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs md:text-sm font-bold shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-50"
+            >
+              {createCatLoading ? "Compiling Category..." : "+ Compile & Deploy Category"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════ TAB 3: AI SCANNER ═════════════════════════════════ */}
+      {mainTab === "scanner" && (
+        <div className="space-y-6">
+          <div className="flex gap-2 border-b border-[var(--border)] pb-2">
+            {[
+              { key: "scan", label: "🤖 AI Market Trend Discovery" },
+              { key: "pending", label: `⏳ Pending Review Queue (${pendingKeywords.length})` },
+            ].map((t) => {
+              const isScannerSubActive = scannerSubTab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => setScannerSubTab(t.key as any)}
+                  className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition border cursor-pointer ${
+                    isScannerSubActive
+                      ? "bg-amber-500/15 border-amber-500/30 text-amber-600 dark:text-amber-400 font-extrabold"
+                      : "bg-transparent border-transparent text-[var(--text-muted)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {scannerSubTab === "scan" && (
+            <div className="p-6 md:p-8 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)] shadow-sm backdrop-blur-xl space-y-6">
+              <div>
+                <h2 className="text-xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif]">
+                  AI Market Trend Keyword Discovery
+                </h2>
+                <p className="text-xs text-[var(--text-muted)] mt-1">
+                  Discover newly emerging industry skills from live hiring benchmarks and push them directly to your review queue.
                 </p>
               </div>
 
-              {/* Preview */}
-              {newCatKeywordsRaw.trim() && (
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 space-y-2">
-                  <span className="text-[10px] font-bold text-slate-500 dark:text-[#9ea3c8] uppercase tracking-wider block">Preview ({newCatKeywordsRaw.split("\n").filter(l => l.trim()).length} keywords):</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {newCatKeywordsRaw.split("\n").filter(l => l.trim()).map((line, i) => {
-                      const parts = line.split(",");
-                      const kw = parts[0]?.trim();
-                      const wt = parseInt(parts[1]?.trim()) || 7;
-                      if (!kw) return null;
-                      return (
-                        <span key={i} className="px-2 py-0.5 rounded text-[10px] bg-white dark:bg-white/5 text-slate-700 dark:text-gray-300 font-semibold border border-slate-200/40 dark:border-white/5 flex items-center gap-1.5">
-                          <span className="font-extrabold" style={{ color: WEIGHT_COLORS[wt] }}>{wt}</span>
-                          {kw}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              <div className="flex flex-wrap gap-3 items-center">
+                <select
+                  value={scanIndustry}
+                  onChange={(e) => setScanIndustry(e.target.value)}
+                  className="px-4 py-2.5 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] text-xs md:text-sm text-[var(--text-primary)] focus:outline-none focus:border-amber-500/50 w-72"
+                >
+                  {Object.entries(allCategories).map(([key, d]) => (
+                    <option key={key} value={key}>
+                      {d.displayName} ({key})
+                    </option>
+                  ))}
+                </select>
 
-              <button
-                onClick={handleCreateCategory}
-                disabled={createCatLoading || !newCatSlug.trim() || !newCatDisplay.trim()}
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs md:text-sm rounded-xl border-none cursor-pointer transition flex items-center gap-1.5 disabled:opacity-50"
-              >
-                {createCatLoading ? <><div className="spinner w-4 h-4" /> Creating...</> : <><FolderPlus size={15} /> Create Category</>}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════════════ TAB: AI SCANNER ═════════════════════════════════ */}
-        {mainTab === "scanner" && (
-          <div className="space-y-6">
-            <div className="flex gap-2 border-b border-slate-200 dark:border-white/10 pb-2 overflow-x-auto no-scrollbar">
-              {[{ key: "scan", label: "🤖 AI Scan" }, { key: "pending", label: `⏳ Pending Queue (${pendingKeywords.length})` }].map(t => {
-                const isScannerSubActive = scannerSubTab === t.key;
-                return (
-                  <button 
-                    key={t.key} 
-                    onClick={() => setScannerSubTab(t.key as any)} 
-                    className={`
-                      px-4 py-2 rounded-xl font-bold text-xs transition border cursor-pointer whitespace-nowrap
-                      ${isScannerSubActive
-                        ? "bg-indigo-600/10 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold"
-                        : "bg-transparent border-transparent text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5"
-                      }
-                    `}
-                  >
-                    {t.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {scannerSubTab === "scan" && (
-              <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6 hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
-                <div>
-                  <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0">AI Market Trend Scanner</h2>
-                  <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
-                    Let AI discover new emerging keywords for a category and add them to the pending queue for your review.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-3 items-center">
-                  <select 
-                    className="px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs md:text-sm text-[var(--text)] outline-none focus:border-indigo-500 transition w-72" 
-                    value={scanIndustry} 
-                    onChange={e => setScanIndustry(e.target.value)}
-                  >
-                    {Object.entries(allCategories).map(([key, d]) => (
-                      <option key={key} value={key}>{d.displayName}</option>
-                    ))}
-                  </select>
-                  <button 
-                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs md:text-sm rounded-xl border-none cursor-pointer transition disabled:opacity-50" 
-                    onClick={runAIScanner} 
-                    disabled={scanLoading}
-                  >
-                    {scanLoading ? "Scanning..." : "🔍 Run AI Scan"}
-                  </button>
-                </div>
-                {scanResults.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {scanResults.map((kw, i) => (
-                      <div key={kw.id || i} className="p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-500/[0.02] border border-indigo-100 dark:border-indigo-500/10 space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="font-bold text-slate-900 dark:text-white">{kw.keyword}</span>
-                          <span className="text-xs font-bold" style={{ color: WEIGHT_COLORS[kw.weight] }}>{kw.weight}/10</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-gray-400 m-0">
-                          {kw.aliases?.length > 0 ? `Aliases: ${kw.aliases.join(", ")}` : "No aliases"}
-                        </p>
-                        {kw.id && (
-                          <div className="flex gap-2 pt-2">
-                            <button 
-                              className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg border-none cursor-pointer transition" 
-                              onClick={() => handleAction(kw.id, "approve", "scan")}
-                            >
-                              ✓ Approve
-                            </button>
-                            <button 
-                              className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-rose-500 font-bold text-xs rounded-lg cursor-pointer transition" 
-                              onClick={() => handleAction(kw.id, "reject", "scan")}
-                            >
-                              ✕ Reject
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <button
+                  onClick={runAIScanner}
+                  disabled={scanLoading}
+                  className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-50"
+                >
+                  {scanLoading ? "Analyzing Hiring Benchmarks..." : "🔍 Run AI Discovery Scan"}
+                </button>
               </div>
-            )}
 
-            {scannerSubTab === "pending" && (
-              <div className="p-6 md:p-8 rounded-2xl bg-white/80 dark:bg-slate-950/40 dark:bg-gradient-to-br dark:from-white/[0.05] dark:to-white/[0.01] border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-xl space-y-6 hover:-translate-y-1 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(99,102,241,0.08)] transition-all duration-300">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-extrabold font-['Syne',sans-serif] text-slate-900 dark:text-white m-0">Pending Queue ({pendingKeywords.length})</h2>
-                  {pendingKeywords.length > 0 && (
-                    <button 
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl border-none cursor-pointer transition" 
-                      onClick={() => setApproveAllConfirmOpen(true)} 
-                      disabled={pendingLoading}
+              {scanResults.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                  {scanResults.map((kw, i) => (
+                    <div
+                      key={kw.id || i}
+                      className="p-4 rounded-xl bg-[var(--bg-page)] border border-[var(--border)] hover:border-amber-500/30 transition-all space-y-3"
                     >
-                      Approve All
-                    </button>
-                  )}
-                </div>
-                {pendingLoading ? <div className="spinner mx-auto" /> : pendingKeywords.length === 0 ? (
-                  <p className="text-slate-500 dark:text-gray-400 text-center py-8 text-xs md:text-sm">No pending keywords. Run the AI scanner to add some!</p>
-                ) : (
-                  <div className="grid gap-3">
-                    {pendingKeywords.map(kw => (
-                      <div key={kw.id} className="flex flex-wrap justify-between items-center p-4 bg-indigo-50/50 dark:bg-indigo-500/[0.02] border border-indigo-100 dark:border-indigo-500/10 rounded-xl gap-4">
-                        <div>
-                          <strong className="text-slate-900 dark:text-white text-xs md:text-sm">{kw.keyword}</strong>
-                          <span className="text-[10px] text-slate-500 dark:text-gray-400 ml-2 font-mono">({kw.industry}) — Weight: {kw.weight}</span>
-                          {kw.aliases?.length > 0 && <div className="text-[10px] text-slate-400 dark:text-gray-500 mt-1">Aliases: {kw.aliases.join(", ")}</div>}
-                        </div>
-                        <div className="flex gap-2">
-                          <button 
-                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg border-none cursor-pointer transition" 
-                            onClick={() => handleAction(kw.id, "approve", "pending")}
+                      <div className="flex justify-between items-center">
+                        <span className="font-extrabold text-sm text-[var(--text-primary)]">{kw.keyword}</span>
+                        <span className="text-xs font-black text-amber-500">{kw.weight}/10</span>
+                      </div>
+
+                      <p className="text-[11px] text-[var(--text-muted)] m-0">
+                        {kw.aliases?.length > 0 ? `Aliases: ${kw.aliases.join(", ")}` : "No aliases configured"}
+                      </p>
+
+                      {kw.id && (
+                        <div className="flex gap-2 pt-2 border-t border-[var(--border)]">
+                          <button
+                            onClick={() => handleAction(kw.id, "approve", "scan")}
+                            className="flex-1 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer"
                           >
                             ✓ Approve
                           </button>
-                          <button 
-                            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-rose-500 font-bold text-xs rounded-lg cursor-pointer transition" 
-                            onClick={() => handleAction(kw.id, "reject", "pending")}
+                          <button
+                            onClick={() => handleAction(kw.id, "reject", "scan")}
+                            className="flex-1 py-1.5 bg-[var(--bg-elevated)] hover:bg-rose-500/10 text-rose-500 font-bold text-xs rounded-lg border border-[var(--border)] transition-colors cursor-pointer"
                           >
-                            Reject
+                            ✕ Reject
                           </button>
                         </div>
-                       </div>
-                     ))}
-                   </div>
-                 )}
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {scannerSubTab === "pending" && (
+            <div className="p-6 md:p-8 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)] shadow-sm backdrop-blur-xl space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h2 className="text-xl font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif]">
+                    Pending Verification Queue ({pendingKeywords.length})
+                  </h2>
+                  <p className="text-xs text-[var(--text-muted)] mt-1">
+                    Review and approve automated discoveries before promoting them into the active ATS scoring rules.
+                  </p>
+                </div>
+
+                {pendingKeywords.length > 0 && (
+                  <button
+                    onClick={() => setApproveAllConfirmOpen(true)}
+                    disabled={pendingLoading}
+                    className="btn-primary px-4 py-2 rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 cursor-pointer"
+                  >
+                    ✓ Approve All ({pendingKeywords.length})
+                  </button>
+                )}
               </div>
-            )}
-          </div>
-        )}
 
+              {pendingLoading ? (
+                <div className="spinner mx-auto" />
+              ) : pendingKeywords.length === 0 ? (
+                <div className="text-center py-12 text-xs text-[var(--text-muted)] space-y-2">
+                  <CheckCircle2 size={24} className="text-teal-500 mx-auto" />
+                  <p className="font-bold text-[var(--text-primary)]">Pending Queue is Clear</p>
+                  <p>All automated discoveries have been evaluated and indexed.</p>
+                </div>
+              ) : (
+                <div className="grid gap-3">
+                  {pendingKeywords.map((kw) => (
+                    <div
+                      key={kw.id}
+                      className="flex flex-wrap justify-between items-center p-4 bg-[var(--bg-page)] border border-[var(--border)] rounded-xl gap-4"
+                    >
+                      <div>
+                        <strong className="text-sm font-bold text-[var(--text-primary)]">{kw.keyword}</strong>
+                        <span className="text-[11px] text-[var(--text-muted)] ml-2 font-mono">
+                          ({kw.industry}) · Weight: {kw.weight}/10
+                        </span>
+                        {kw.aliases?.length > 0 && (
+                          <div className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                            Aliases: {kw.aliases.join(", ")}
+                          </div>
+                        )}
+                      </div>
 
-      {/* Delete Confirm Modal */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleAction(kw.id, "approve", "pending")}
+                          className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-lg cursor-pointer transition-colors"
+                        >
+                          ✓ Approve
+                        </button>
+                        <button
+                          onClick={() => handleAction(kw.id, "reject", "pending")}
+                          className="px-3.5 py-1.5 bg-[var(--bg-elevated)] hover:bg-rose-500/10 text-rose-500 font-bold text-xs rounded-lg border border-[var(--border)] cursor-pointer transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── DELETE CONFIRMATION MODAL ── */}
       <ConfirmationModal
         isOpen={!!deleteConfirm}
         title={`Delete "${deleteConfirm?.keyword}"?`}
@@ -839,17 +1185,21 @@ export default function AdminKeywordsPage() {
         onCancel={() => setDeleteConfirm(null)}
       />
 
-      {/* Approve All Confirm */}
+      {/* ── APPROVE ALL CONFIRMATION MODAL ── */}
       <ConfirmationModal
         isOpen={approveAllConfirmOpen}
         title="Approve All Pending Keywords?"
-        message="This will make all pending keywords immediately active in the ATS engine."
+        message="This will activate all pending candidate keywords into the production ATS scoring engine."
         confirmLabel="Approve All"
         cancelLabel="Cancel"
         isDanger={false}
-        onConfirm={() => { setApproveAllConfirmOpen(false); executeApproveAllPending(); }}
+        onConfirm={() => {
+          setApproveAllConfirmOpen(false);
+          executeApproveAllPending();
+        }}
         onCancel={() => setApproveAllConfirmOpen(false)}
       />
+
     </div>
   );
 }
