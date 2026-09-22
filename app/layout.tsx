@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Suspense } from "react";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ToastProvider } from "@/components/ui/toast-1";
 import CreditBannerWrapper from "@/components/credits/CreditBannerWrapper";
 import ReferralTracker from "@/components/ReferralTracker";
 import InsufficientCreditsModal from "@/components/InsufficientCreditsModal";
+import CookieBanner from "@/components/CookieBanner";
+import StickyMobileCTA from "@/components/StickyMobileCTA";
+import AnalyticsProvider from "@/components/AnalyticsProvider";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import "./globals.css";
 
@@ -100,6 +104,11 @@ export default function RootLayout({
             <CreditBannerWrapper />
             <ReferralTracker />
             <InsufficientCreditsModal />
+            <StickyMobileCTA />
+            <CookieBanner />
+            <Suspense fallback={null}>
+              <AnalyticsProvider />
+            </Suspense>
           </ToastProvider>
         </AuthProvider>
       </body>

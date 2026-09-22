@@ -1,8 +1,19 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { INITIAL_QUESTION_QUEUE, CDE_QUESTIONS, QuestionDef } from '@/lib/cde/questionConfig';
 import { evaluateNextQuestions, shouldSkipQuestion, KnownFacts } from '@/lib/cde/rulesEngine';
+
+export interface ResumeContextInfo {
+  hasResume: boolean;
+  candidateName?: string;
+  primaryRole?: string;
+  primaryCompany?: string;
+  companiesList?: string[];
+  extractedTechSkills?: string[];
+  estimatedYears?: number;
+  fileName?: string;
+}
 
 interface CDEState {
   sessionId: string | null;
@@ -14,6 +25,8 @@ interface CDEState {
   isComplete: boolean;
   history: string[]; // Stack of previous question IDs
   isLoading: boolean;
+  resumeContext: ResumeContextInfo | null;
+  questionsMap: Record<string, QuestionDef>;
 }
 
 interface CDEContextProps extends CDEState {
@@ -21,6 +34,9 @@ interface CDEContextProps extends CDEState {
   skipQuestion: () => void;
   goBack: () => void;
   updateFact: (key: string, value: any) => void;
+  restartSession: () => void;
+  stepIndex: number;
+  totalSteps: number;
 }
 
 const CDEContext = createContext<CDEContextProps | undefined>(undefined);
@@ -35,43 +51,56 @@ export const CDEProvider = ({ children }: { children: ReactNode }) => {
     profileStrength: 0,
     isComplete: false,
     history: [],
-    isLoading: true, // start loading
+    isLoading: true,
+    resumeContext: null,
+    questionsMap: CDE_QUESTIONS,
   });
 
-  // Initialize Session
-  useEffect(() => {
-    const initSession = async () => {
-      try {
-        const res = await fetch('/api/cde/session', { method: 'POST' });
-        if (res.ok) {
-          const { session, knownFacts } = await res.json();
-          setState(prev => {
-            // Recalculate queue based on known facts
-            let newQueue = INITIAL_QUESTION_QUEUE;
-            // E.g. skip questions already answered
-            const nextId = newQueue.find(id => !knownFacts[id]);
-            
-            return {
-              ...prev,
-              sessionId: session.id,
-              knownFacts,
-              profileStrength: Math.min(Object.keys(knownFacts).length * 15, 100),
-              currentQuestionId: nextId || null,
-              currentQuestion: nextId ? CDE_QUESTIONS[nextId] : null,
-              isComplete: !nextId,
-              isLoading: false
-            };
-          });
-        } else {
-          setState(prev => ({ ...prev, isLoading: false }));
-        }
-      } catch (error) {
-        console.error("Failed to init CDE session", error);
-        setState(prev => ({ ...prev, isLoading: false }));
+  const initSession = useCallback(async () => {
+    setState((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const res = await fetch('/api/cde/session', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        const { session, knownFacts = {}, dynamicQuestions = {}, questionQueue = INITIAL_QUESTION_QUEUE, resumeContext = null } = data;
+
+        const mergedQuestions: Record<string, QuestionDef> = {
+          ...CDE_QUESTIONS,
+          ...dynamicQuestions,
+        };
+
+        const activeQueue: string[] = Array.isArray(questionQueue) && questionQueue.length > 0
+          ? questionQueue
+          : INITIAL_QUESTION_QUEUE;
+
+        // Skip questions already answered in knownFacts
+        const nextId = activeQueue.find((id) => knownFacts[id] === undefined) || null;
+
+        setState({
+          sessionId: session?.id || null,
+          knownFacts,
+          questionQueue: activeQueue,
+          currentQuestionId: nextId,
+          currentQuestion: nextId ? mergedQuestions[nextId] || null : null,
+          profileStrength: Math.min(Object.keys(knownFacts).length * 15, 100),
+          isComplete: !nextId,
+          history: [],
+          isLoading: false,
+          resumeContext,
+          questionsMap: mergedQuestions,
+        });
+      } else {
+        setState((prev) => ({ ...prev, isLoading: false }));
       }
-    };
-    initSession();
+    } catch (error) {
+      console.error('Failed to init CDE session', error);
+      setState((prev) => ({ ...prev, isLoading: false }));
+    }
   }, []);
+
+  useEffect(() => {
+    initSession();
+  }, [initSession]);
 
   const moveToNextQuestion = (newQueue: string[], currentFacts: KnownFacts, newHistory: string[]) => {
     let nextIndex = newQueue.indexOf(state.currentQuestionId!) + 1;
@@ -83,15 +112,15 @@ export const CDEProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (!nextId) {
-      setState(prev => ({ ...prev, isComplete: true, profileStrength: 100 }));
+      setState((prev) => ({ ...prev, isComplete: true, profileStrength: 100 }));
       return;
     }
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       questionQueue: newQueue,
       currentQuestionId: nextId,
-      currentQuestion: CDE_QUESTIONS[nextId],
+      currentQuestion: prev.questionsMap[nextId] || CDE_QUESTIONS[nextId] || null,
       history: newHistory,
     }));
   };
@@ -106,11 +135,11 @@ export const CDEProvider = ({ children }: { children: ReactNode }) => {
           sessionId: state.sessionId,
           factKey,
           factValue,
-          sourceQuestionId: state.currentQuestionId
-        })
+          sourceQuestionId: state.currentQuestionId,
+        }),
       });
     } catch (e) {
-      console.error("Failed to save fact", e);
+      console.error('Failed to save fact', e);
     }
   };
 
@@ -120,18 +149,21 @@ export const CDEProvider = ({ children }: { children: ReactNode }) => {
     // Save to DB in background
     saveFactToDB(state.currentQuestionId, answer);
     if (extractedFacts) {
-      // also save extracted facts
-      Object.keys(extractedFacts).forEach(key => {
+      Object.keys(extractedFacts).forEach((key) => {
         saveFactToDB(key, extractedFacts[key]);
       });
     }
 
-    const newFacts = { ...state.knownFacts, [state.currentQuestionId]: answer, ...(extractedFacts || {}) };
+    const newFacts = {
+      ...state.knownFacts,
+      [state.currentQuestionId]: answer,
+      ...(extractedFacts || {}),
+    };
     const newStrength = Math.min(state.profileStrength + 15, 100);
     const newHistory = [...state.history, state.currentQuestionId];
     const newQueue = evaluateNextQuestions(state.currentQuestionId, answer, newFacts, state.questionQueue);
 
-    setState(prev => ({ ...prev, knownFacts: newFacts, profileStrength: newStrength }));
+    setState((prev) => ({ ...prev, knownFacts: newFacts, profileStrength: newStrength }));
     moveToNextQuestion(newQueue, newFacts, newHistory);
   };
 
@@ -145,25 +177,53 @@ export const CDEProvider = ({ children }: { children: ReactNode }) => {
     if (state.history.length === 0) return;
     const newHistory = [...state.history];
     const prevId = newHistory.pop()!;
-    
-    setState(prev => ({
+
+    setState((prev) => ({
       ...prev,
       currentQuestionId: prevId,
-      currentQuestion: CDE_QUESTIONS[prevId],
+      currentQuestion: prev.questionsMap[prevId] || CDE_QUESTIONS[prevId] || null,
       history: newHistory,
       isComplete: false,
     }));
   };
 
   const updateFact = (key: string, value: any) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
-      knownFacts: { ...prev.knownFacts, [key]: value }
+      knownFacts: { ...prev.knownFacts, [key]: value },
     }));
   };
 
+  const restartSession = () => {
+    setState((prev) => ({
+      ...prev,
+      knownFacts: {},
+      currentQuestionId: prev.questionQueue[0] || null,
+      currentQuestion: prev.questionsMap[prev.questionQueue[0]] || null,
+      profileStrength: 0,
+      isComplete: false,
+      history: [],
+    }));
+  };
+
+  const stepIndex = state.currentQuestionId
+    ? state.questionQueue.indexOf(state.currentQuestionId) + 1
+    : state.questionQueue.length;
+  const totalSteps = state.questionQueue.length;
+
   return (
-    <CDEContext.Provider value={{ ...state, submitAnswer, skipQuestion, goBack, updateFact }}>
+    <CDEContext.Provider
+      value={{
+        ...state,
+        submitAnswer,
+        skipQuestion,
+        goBack,
+        updateFact,
+        restartSession,
+        stepIndex,
+        totalSteps,
+      }}
+    >
       {children}
     </CDEContext.Provider>
   );

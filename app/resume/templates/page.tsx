@@ -6,7 +6,6 @@ import ResumeDocument from "@/components/ResumeDocument";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import ParticleBackground from "@/components/ui/ParticleBackground";
 import { ResumeData } from "@/types";
 import { useToast } from "@/components/ui/toast-1";
 
@@ -311,7 +310,6 @@ function TemplatesContent() {
 export default function TemplatesPage() {
   return (
     <div className="min-h-screen bg-[var(--bg-page)] relative overflow-hidden">
-      <ParticleBackground count={50} connectionDist={110} />
       <div style={{ position: 'relative', zIndex: 10 }}>
         <Navbar />
         <Suspense fallback={

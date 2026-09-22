@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import UpRoleLogo from "@/components/UpRoleLogo";
+import Footer from "@/components/Footer";
 
 /** Hand-drawn curved orange brush stroke matching the reference design */
 function OrangeBrushStroke({ className = "w-16 h-2.5" }: { className?: string }) {
@@ -774,27 +775,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════════════
-          FOOTER (Clean Master Brand Footer)
-          ════════════════════════════════════════════════════════════════ */}
-      <footer id="footer" className="bg-white border-t border-gray-200 py-12 px-6 sm:px-8 text-[#4B5563]">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-6 text-xs">
-          <div>
-            <UpRoleLogo href="/" size="sm" variant="light" />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-6 font-medium text-[#4B5563]">
-            <Link href="/privacy" className="hover:text-[#EB5A28] transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-[#EB5A28] transition-colors">Terms of Service</Link>
-            <Link href="/career-copilot" className="hover:text-[#EB5A28] transition-colors">Career Intelligence</Link>
-            <Link href="/resume/builder?new=true" className="hover:text-[#EB5A28] transition-colors">Resume Platform</Link>
-          </div>
-
-          <p className="text-[11px] font-semibold text-gray-400">
-            UPROLE | CAREERS WITH CLARITY. PROGRESS WITH PURPOSE.
-          </p>
-        </div>
-      </footer>
+      {/* Unified Master Brand Footer */}
+      <Footer />
 
       {/* QuickScan / Assessment Modal */}
       <QuickScanModal isOpen={isQuickScanOpen} onClose={() => setIsQuickScanOpen(false)} />

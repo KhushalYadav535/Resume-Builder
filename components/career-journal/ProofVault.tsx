@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
-import { Upload, FileText, CheckCircle, AlertCircle, X } from "lucide-react";
+import { Upload, FileText, CheckCircle, AlertCircle, X, Shield, Sparkles } from "lucide-react";
 
 interface ProofVaultProps {
   onExtracted: (text: string) => void;
@@ -37,7 +37,6 @@ export default function ProofVault({ onExtracted }: ProofVaultProps) {
   };
 
   const processFile = (selectedFile: File) => {
-    // Check file type (allow images and pdfs)
     if (!selectedFile.type.startsWith("image/") && selectedFile.type !== "application/pdf" && selectedFile.type !== "text/plain") {
       setError("Please upload an image, PDF, or text file.");
       return;
@@ -67,7 +66,7 @@ export default function ProofVault({ onExtracted }: ProofVaultProps) {
       const data = await response.json();
       if (data.extractedText) {
         onExtracted(data.extractedText);
-        setFile(null); // Clear after success
+        setFile(null);
       } else {
         throw new Error("No text extracted");
       }
@@ -79,16 +78,67 @@ export default function ProofVault({ onExtracted }: ProofVaultProps) {
   };
 
   return (
-    <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "16px", padding: "1.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.05)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", marginBottom: "1rem" }}>
-        <div style={{ background: "rgba(16, 185, 129, 0.1)", padding: "0.6rem", borderRadius: "8px" }}>
-          <Upload size={20} className="text-emerald-500" />
+    <div
+      style={{
+        background: "var(--bg-elevated, #ffffff)",
+        border: "1px solid var(--border)",
+        borderRadius: "16px",
+        padding: "1.2rem",
+        boxShadow: "0 4px 16px rgba(16, 27, 59, 0.03)",
+        position: "relative",
+        overflow: "hidden",
+        animation: "journal-fadeInUp 0.6s ease forwards",
+        animationDelay: "0.1s",
+      }}
+    >
+      {/* Top accent hairline */}
+      <div style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "3px",
+        background: "linear-gradient(90deg, #2563EB, #60A5FA)",
+        borderRadius: "16px 16px 0 0",
+      }} />
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", marginBottom: "0.55rem" }}>
+        <div style={{
+          width: 32,
+          height: 32,
+          borderRadius: "9px",
+          background: "rgba(37, 99, 235, 0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
+          <Shield size={17} style={{ color: "var(--uprole-blue, #2563EB)" }} />
         </div>
         <div>
-          <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, fontFamily: "Syne, sans-serif" }}>Proof Vault</h3>
-          <p style={{ margin: "0.2rem 0 0", fontSize: "0.85rem", color: "var(--text-muted)" }}>Upload praise emails, screenshots, or certificates. AI will extract the achievements.</p>
+          <h3 style={{
+            margin: 0,
+            fontSize: "0.95rem",
+            fontWeight: 800,
+            fontFamily: "Space Grotesk, Syne, sans-serif",
+            color: "var(--text-primary)",
+          }}>
+            Proof Vault
+          </h3>
+          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
+            Verified Evidence Storage
+          </span>
         </div>
       </div>
+
+      <p style={{
+        margin: "0 0 0.85rem",
+        fontSize: "0.78rem",
+        color: "var(--text-secondary)",
+        lineHeight: 1.45,
+      }}>
+        Upload client emails, review snippets, or certificates. AI extracts the achievement into a ready event.
+      </p>
 
       {!file ? (
         <div
@@ -97,13 +147,13 @@ export default function ProofVault({ onExtracted }: ProofVaultProps) {
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           style={{
-            border: `2px dashed ${isDragging ? "var(--accent)" : "var(--border-light)"}`,
+            border: isDragging ? "1.5px dashed var(--uprole-blue, #2563EB)" : "1.5px dashed var(--border-strong)",
             borderRadius: "12px",
-            padding: "2.5rem 1rem",
+            padding: "1.1rem 0.8rem",
             textAlign: "center",
-            background: isDragging ? "rgba(108, 99, 255, 0.05)" : "var(--bg-2)",
             cursor: "pointer",
-            transition: "all 0.2s ease"
+            background: isDragging ? "rgba(37, 99, 235, 0.04)" : "var(--bg-2, #F1F4F9)",
+            transition: "all 0.2s ease",
           }}
         >
           <input
@@ -113,35 +163,128 @@ export default function ProofVault({ onExtracted }: ProofVaultProps) {
             accept="image/*,application/pdf,text/plain"
             style={{ display: "none" }}
           />
-          <FileText size={32} style={{ margin: "0 auto 1rem", color: isDragging ? "var(--accent)" : "var(--text-muted)" }} />
-          <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 600 }}>Drag & drop a file here</p>
-          <p style={{ margin: "0.3rem 0 0", fontSize: "0.8rem", color: "var(--text-muted)" }}>or click to browse</p>
+          <div style={{
+            width: 36,
+            height: 36,
+            borderRadius: "10px",
+            background: "var(--bg-elevated, #ffffff)",
+            border: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 0.45rem",
+            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.03)",
+          }}>
+            <Upload size={17} style={{ color: "var(--uprole-blue, #2563EB)" }} />
+          </div>
+          <p style={{ margin: 0, fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>
+            Drop proof or browse
+          </p>
+          <p style={{ margin: "0.15rem 0 0", fontSize: "0.7rem", color: "var(--text-muted)" }}>
+            PDF, Image, or Text (praise & certs)
+          </p>
         </div>
       ) : (
-        <div style={{ background: "var(--bg-2)", border: "1px solid var(--border)", borderRadius: "12px", padding: "1.2rem" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
-              <CheckCircle size={20} className="text-emerald-500" />
-              <span style={{ fontSize: "0.9rem", fontWeight: 600, wordBreak: "break-all" }}>{file.name}</span>
+        <div style={{
+          background: "var(--bg-2, #F1F4F9)",
+          border: "1px solid var(--border)",
+          borderRadius: "12px",
+          padding: "0.85rem",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", overflow: "hidden" }}>
+              <div style={{
+                width: 28,
+                height: 28,
+                borderRadius: "7px",
+                background: "rgba(16, 185, 129, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <CheckCircle size={15} style={{ color: "#10b981" }} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>
+                  {file.name}
+                </span>
+                <span style={{ fontSize: "0.66rem", color: "var(--text-muted)" }}>
+                  {(file.size / 1024).toFixed(1)} KB
+                </span>
+              </div>
             </div>
-            <button onClick={() => setFile(null)} disabled={loading} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)" }}>
-              <X size={18} />
+            <button
+              onClick={() => setFile(null)}
+              disabled={loading}
+              style={{
+                background: "none",
+                border: "1px solid var(--border)",
+                borderRadius: "6px",
+                width: 24,
+                height: 24,
+                cursor: "pointer",
+                color: "var(--text-muted)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+              aria-label="Remove file"
+            >
+              <X size={12} />
             </button>
           </div>
+
           <button
             onClick={extractData}
             disabled={loading}
-            className="btn-primary"
-            style={{ width: "100%", padding: "0.8rem", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", border: "none" }}
+            style={{
+              width: "100%",
+              padding: "0.55rem",
+              background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
+              color: "#FFFFFF",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "9px",
+              fontSize: "0.8rem",
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.4rem",
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: "0 3px 10px rgba(37, 99, 235, 0.25)",
+            }}
           >
-            {loading ? "Extracting with AI..." : "Extract Achievement"}
+            {loading ? (
+              <span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <div className="spinner" style={{ width: 13, height: 13 }} />
+                Extracting Evidence...
+              </span>
+            ) : (
+              <>
+                <Sparkles size={13} />
+                Extract into Event
+              </>
+            )}
           </button>
         </div>
       )}
 
       {error && (
-        <div style={{ marginTop: "1rem", padding: "0.8rem", background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: "8px", display: "flex", gap: "0.5rem", alignItems: "center", color: "#ef4444", fontSize: "0.85rem" }}>
-          <AlertCircle size={16} />
+        <div style={{
+          marginTop: "0.7rem",
+          padding: "0.55rem 0.75rem",
+          background: "rgba(239, 68, 68, 0.08)",
+          border: "1px solid rgba(239, 68, 68, 0.18)",
+          borderRadius: "9px",
+          display: "flex",
+          gap: "0.4rem",
+          alignItems: "center",
+          color: "#ef4444",
+          fontSize: "0.75rem",
+        }}>
+          <AlertCircle size={14} style={{ flexShrink: 0 }} />
           <span>{error}</span>
         </div>
       )}

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { QuestionDef } from '@/lib/cde/questionConfig';
-import { Mic, MicOff, Loader2 } from 'lucide-react';
-import { cn } from '../CDEContainer';
+import { Mic, MicOff, Loader2, Sparkles, ArrowRight, Volume2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface VoiceCardProps {
   question: QuestionDef;
@@ -18,9 +18,9 @@ export const VoiceCard = ({ question, onAnswer, onSkip }: VoiceCardProps) => {
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
-    // Initialize Web Speech API
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
         recognitionRef.current = new SpeechRecognition();
         recognitionRef.current.continuous = true;
@@ -35,7 +35,7 @@ export const VoiceCard = ({ question, onAnswer, onSkip }: VoiceCardProps) => {
         };
 
         recognitionRef.current.onerror = (event: any) => {
-          console.error("Speech recognition error", event.error);
+          console.warn('Speech recognition warning:', event.error);
           setIsRecording(false);
         };
 
@@ -44,7 +44,7 @@ export const VoiceCard = ({ question, onAnswer, onSkip }: VoiceCardProps) => {
         };
       }
     }
-    
+
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.stop();
@@ -58,94 +58,122 @@ export const VoiceCard = ({ question, onAnswer, onSkip }: VoiceCardProps) => {
       setIsRecording(false);
     } else {
       if (recognitionRef.current) {
-        setText(''); // clear previous before starting new recording
+        setText('');
         recognitionRef.current.start();
         setIsRecording(true);
       } else {
-        alert("Your browser does not support Speech Recognition. Please type your answer.");
+        alert('Your browser does not support Speech Recognition. You can type your response below!');
       }
     }
   };
 
   const handleContinue = async () => {
     if (!text.trim()) return;
-    
+
     setIsAnalyzing(true);
     try {
-      // Pass to our existing AI Inference endpoint to extract facts
       const res = await fetch('/api/cde/inference', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          text, 
-          promptHint: question.aiHint 
-        })
+        body: JSON.stringify({
+          text,
+          promptHint: question.aiHint,
+        }),
       });
 
-      if (!res.ok) throw new Error("Failed to extract facts");
+      if (!res.ok) throw new Error('Failed to extract facts');
 
       const data = await res.json();
       onAnswer(text, data.facts);
     } catch (error) {
-      console.error("Inference error", error);
-      onAnswer(text); // Fallback
+      console.warn('Inference note:', error);
+      onAnswer(text);
     } finally {
       setIsAnalyzing(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <h2 className="text-3xl font-medium mb-4 text-neutral-900 dark:text-neutral-100">
-        {question.question}
-      </h2>
-      
-      {question.helpText && (
-        <p className="text-neutral-500 mb-6">{question.helpText}</p>
+    <div className="flex flex-col h-full items-center text-center justify-center">
+      {/* Category Pill */}
+      {question.title && (
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-[11px] font-black uppercase tracking-wider mb-3">
+          <Sparkles size={12} />
+          <span>{question.title}</span>
+        </div>
       )}
 
-      <div className="relative w-full h-48 mb-6">
+      <h2 className="text-xl sm:text-2xl font-bold mb-2 text-[var(--text-primary)] max-w-lg font-['Syne',sans-serif] tracking-tight">
+        {question.question}
+      </h2>
+
+      {question.helpText && (
+        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-4 max-w-md leading-relaxed">
+          {question.helpText}
+        </p>
+      )}
+
+      {/* Recording Status Bar */}
+      {isRecording && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-lg mb-2 p-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 flex items-center justify-center gap-2 text-xs font-bold"
+        >
+          <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+          <span>Listening... speak naturally about your technical challenge</span>
+        </motion.div>
+      )}
+
+      <div className="relative w-full max-w-lg">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Click the microphone to start speaking, or type here..."
-          className="w-full h-full p-4 pr-16 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 bg-transparent outline-none focus:border-blue-500 transition-colors text-lg resize-none"
+          rows={4}
+          placeholder="Click the microphone to record your voice, or type your story here..."
+          className="w-full p-4 pr-16 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] text-xs sm:text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none shadow-xs"
         />
+
+        {/* Floating Mic Trigger Button */}
         <button
+          type="button"
           onClick={toggleRecording}
-          className={cn(
-            "absolute right-4 bottom-4 p-3 rounded-full transition-all shadow-md",
-            isRecording 
-              ? "bg-red-500 hover:bg-red-600 text-white animate-pulse" 
-              : "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
-          )}
+          title={isRecording ? 'Stop Recording' : 'Start Voice Speech-to-Text'}
+          className={`absolute right-3.5 bottom-3.5 p-3 rounded-full transition-all shadow-md cursor-pointer ${
+            isRecording
+              ? 'bg-rose-500 text-white animate-pulse shadow-rose-500/30 scale-105'
+              : 'bg-amber-500 hover:bg-amber-400 text-brand-navy shadow-amber-500/25'
+          }`}
         >
-          {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
         </button>
       </div>
 
-      <div className="flex items-center justify-between mt-auto">
+      <div className="flex items-center justify-between mt-6 w-full max-w-lg mx-auto">
         {question.skipAllowed !== false && onSkip && (
           <button
             onClick={onSkip}
             disabled={isAnalyzing || isRecording}
-            className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 font-medium transition-colors disabled:opacity-50"
+            className="text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
           >
-            Skip for now
+            Skip for now &rarr;
           </button>
         )}
         <button
           onClick={handleContinue}
           disabled={text.trim().length === 0 || isAnalyzing || isRecording}
-          className="ml-auto flex items-center gap-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 px-8 py-3 rounded-full font-medium disabled:opacity-50 hover:opacity-90 transition-opacity"
+          className="ml-auto inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-xs text-brand-navy bg-amber-500 hover:bg-amber-400 transition-all shadow-md shadow-amber-500/25 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
         >
           {isAnalyzing ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Analyzing...
+              <Loader2 size={13} className="animate-spin" />
+              <span>Extracting Story Signals...</span>
             </>
           ) : (
-            'Continue'
+            <>
+              <span>Save & Continue</span>
+              <ArrowRight size={13} />
+            </>
           )}
         </button>
       </div>

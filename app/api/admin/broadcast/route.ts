@@ -29,21 +29,29 @@ export async function POST(req: NextRequest) {
     if (targetAudience === "all_users") {
       const { data: users, error } = await supabaseAdmin.from("user_profiles").select("id");
       if (error) throw error;
-      targetUserIds = users.map(u => u.id);
+      targetUserIds = users.map((u) => u.id);
     } else {
       // Need tier information from profiles
       const { data: profiles, error } = await supabaseAdmin.from("profiles").select("id, tier");
       if (error) throw error;
 
       if (targetAudience === "free_tier") {
-        targetUserIds = profiles.filter(p => p.tier === "free").map(p => p.id);
+        targetUserIds = profiles
+          .filter((p) => !p.tier || p.tier === "free")
+          .map((p) => p.id);
       } else if (targetAudience === "premium") {
-        targetUserIds = profiles.filter(p => p.tier !== "free").map(p => p.id);
+        targetUserIds = profiles
+          .filter((p) => p.tier && p.tier !== "free")
+          .map((p) => p.id);
       }
     }
 
     if (targetUserIds.length === 0) {
-      return NextResponse.json({ success: true, message: "No users matched the target audience.", sentCount: 0 });
+      return NextResponse.json({
+        success: true,
+        message: "No users matched the target audience.",
+        sentCount: 0,
+      });
     }
 
     // 2. Prepare notifications for bulk insert
@@ -51,8 +59,8 @@ export async function POST(req: NextRequest) {
       user_id: userId,
       message,
       type,
-      link: link || null,
-      is_read: false
+      link: link ? link.trim() : null,
+      is_read: false,
     }));
 
     // 3. Insert in batches of 1000 to prevent payload limits
@@ -69,7 +77,11 @@ export async function POST(req: NextRequest) {
       sentCount += batch.length;
     }
 
-    return NextResponse.json({ success: true, message: "Broadcast sent successfully.", sentCount });
+    return NextResponse.json({
+      success: true,
+      message: "Broadcast sent successfully.",
+      sentCount,
+    });
   } catch (err: unknown) {
     console.error("Admin Broadcast Error:", err);
     return NextResponse.json(
@@ -81,8 +93,7 @@ export async function POST(req: NextRequest) {
 
 /**
  * GET /api/admin/broadcast
- * Optional: Fetch recent broadcasts for the history table.
- * Since we don't have a "broadcasts" table, we can just aggregate recent unique messages from the notifications table.
+ * Fetches recent broadcasts with recipient statistics and live audience counts.
  */
 export async function GET(req: NextRequest) {
   try {
@@ -96,39 +107,112 @@ export async function GET(req: NextRequest) {
       process.env.NEXT_SERVICE_ROLE_KEY!
     );
 
-    // Group by message to reconstruct broadcast history
-    // We can just fetch the latest 500 notifications and deduplicate them by message+created_at (approx)
-    const { data: rawNotifs, error } = await supabaseAdmin
-      .from("notifications")
-      .select("message, type, link, created_at")
-      .order("created_at", { ascending: false })
-      .limit(1000);
+    // 1. Fetch audience counts in parallel
+    const [usersRes, profilesRes, notifsRes] = await Promise.all([
+      supabaseAdmin.from("user_profiles").select("id", { count: "exact", head: true }),
+      supabaseAdmin.from("profiles").select("id, tier"),
+      supabaseAdmin
+        .from("notifications")
+        .select("message, type, link, created_at, is_read")
+        .order("created_at", { ascending: false })
+        .limit(1000),
+    ]);
 
-    if (error) throw error;
+    const totalUsers = usersRes.count || 0;
+    const profiles = profilesRes.data || [];
+    const premiumUsers = profiles.filter((p) => p.tier && p.tier !== "free").length;
+    const freeUsers = Math.max(0, totalUsers - premiumUsers);
 
-    // Deduplicate
-    const uniqueBroadcasts: any[] = [];
-    const seen = new Set();
+    const audienceCounts = {
+      all: totalUsers,
+      free: freeUsers,
+      premium: premiumUsers,
+    };
 
-    for (const n of (rawNotifs || [])) {
-      // Use message and date (truncated to minute) as unique key
+    // 2. Group & aggregate notifications by message and timestamp
+    const rawNotifs = notifsRes.data || [];
+    const groupedMap = new Map<string, {
+      message: string;
+      type: string;
+      link: string | null;
+      created_at: string;
+      sent_count: number;
+      read_count: number;
+    }>();
+
+    for (const n of rawNotifs) {
       const minute = new Date(n.created_at).toISOString().slice(0, 16);
-      const key = `${n.message}-${minute}`;
-      
-      if (!seen.has(key)) {
-        seen.add(key);
-        uniqueBroadcasts.push({
+      const key = `${n.message}---${minute}`;
+
+      if (!groupedMap.has(key)) {
+        groupedMap.set(key, {
           message: n.message,
           type: n.type,
           link: n.link,
-          created_at: n.created_at
+          created_at: n.created_at,
+          sent_count: 1,
+          read_count: n.is_read ? 1 : 0,
         });
+      } else {
+        const item = groupedMap.get(key)!;
+        item.sent_count += 1;
+        if (n.is_read) item.read_count += 1;
       }
     }
 
-    return NextResponse.json(uniqueBroadcasts);
+    const uniqueBroadcasts = Array.from(groupedMap.values());
+
+    return NextResponse.json({
+      broadcasts: uniqueBroadcasts,
+      audienceCounts,
+    });
   } catch (err: unknown) {
     console.error("Admin Broadcast History Error:", err);
     return NextResponse.json({ error: "Failed to fetch history." }, { status: 500 });
   }
 }
+
+/**
+ * DELETE /api/admin/broadcast
+ * Allows administrators to retract a broadcast message across all user drawers.
+ */
+export async function DELETE(req: NextRequest) {
+  try {
+    const adminCheck = await isAdmin();
+    if (!adminCheck) {
+      return NextResponse.json({ error: "Forbidden. Admin rights required." }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const message = searchParams.get("message");
+
+    if (!message) {
+      return NextResponse.json({ error: "Missing message parameter to retract." }, { status: 400 });
+    }
+
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_SERVICE_ROLE_KEY!
+    );
+
+    const { error, count } = await supabaseAdmin
+      .from("notifications")
+      .delete({ count: "exact" })
+      .eq("message", message);
+
+    if (error) throw error;
+
+    return NextResponse.json({
+      success: true,
+      message: `Retracted ${count || 0} notifications successfully.`,
+      retractedCount: count || 0,
+    });
+  } catch (err: unknown) {
+    console.error("Admin Broadcast Retract Error:", err);
+    return NextResponse.json(
+      { error: "Failed to retract broadcast." },
+      { status: 500 }
+    );
+  }
+}
+
