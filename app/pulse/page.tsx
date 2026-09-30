@@ -1,363 +1,633 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
-import { Resume } from "@/types";
+import PulseHeader from "@/components/pulse/PulseHeader";
+import CareerSnapshotCard from "@/components/pulse/CareerSnapshotCard";
+import CareerValueCard from "@/components/pulse/CareerValueCard";
+import RecentProgressCard from "@/components/pulse/RecentProgressCard";
+import RecentCareerEventCard from "@/components/pulse/RecentCareerEventCard";
+import CareerDirectionCard from "@/components/pulse/CareerDirectionCard";
+import CareerGoalCard from "@/components/pulse/CareerGoalCard";
+import NextBestActionCard from "@/components/pulse/NextBestActionCard";
+import CareerMomentumCard from "@/components/pulse/CareerMomentumCard";
+import ExploreCareerSection from "@/components/pulse/ExploreCareerSection";
+import AiTraceabilityModal from "@/components/pulse/AiTraceabilityModal";
+import CaptureEventModal from "@/components/pulse/CaptureEventModal";
+import PulseSkeleton from "@/components/pulse/PulseSkeleton";
 import {
-  Sparkles,
-  Briefcase,
-  Zap,
-  TrendingUp,
-  ShieldCheck,
-  Target,
-  ArrowRight,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  FolderGit2,
-  Award,
-  GraduationCap,
-  Compass,
-  BookOpen,
-  Search,
-  Layers,
-  ChevronRight,
-} from "lucide-react";
+  PulseDashboardData,
+  ScenarioPreset,
+  AiTraceabilityContext,
+  CareerEventData,
+  CareerGoalData,
+} from "@/components/pulse/types";
+import {
+  trackPulseViewed,
+  trackAiExplanationOpened,
+  trackAiInterpretationAccepted,
+  trackAiInterpretationRejected,
+  trackAiInterpretationEdited,
+  trackNextBestActionCompleted,
+  trackNextBestActionDismissed,
+  trackCareerEventCreatedFromPulse,
+  trackCareerGoalCreatedFromPulse,
+} from "@/lib/analytics";
+import PulseToast, { ToastVariant } from "@/components/pulse/PulseToast";
+import MobileActionBar from "@/components/pulse/MobileActionBar";
 
-interface CareerSignal {
-  label: string;
-  value: string | number;
-  icon: any;
-  color: string;
-  status: "strong" | "moderate" | "weak";
-  statusLabel: string;
-}
+// Canonical Established Leader Data (Matching Spec Sections 1–13)
+const CANONICAL_ESTABLISHED_DATA: PulseDashboardData = {
+  snapshot: {
+    headline: "Product & Technology Leader",
+    currentRole: "Head of Product",
+    organization: "Enterprise Cloud Platforms",
+    experience: 14,
+    scope: "Leading 3 product squads (24 engineers & designers) across core B2B SaaS",
+    capabilities: [
+      "Product Strategy",
+      "Digital Transformation",
+      "Team Leadership",
+      "B2B SaaS Architecture",
+      "P&L Governance",
+    ],
+    progressionSignal: "Fast-track trajectory · 3 strategic promotions across 6 years",
+    evidenceCount: 18,
+  },
+  careerValue: {
+    capabilities: "Strong",
+    experience: "Strong",
+    impact: "Developing",
+    progression: "Strong",
+    evidence: "Needs strengthening",
+    traceableCount: 18,
+    pendingReviewCount: 2,
+  },
+  recentProgress: [
+    {
+      id: "rp-1",
+      title: "Expanded leadership scope",
+      description: "Team responsibility increased from 8 → 14 engineers and product designers across APAC.",
+      evidenceLink: "/career-journal#events",
+      isPrimary: true,
+      category: "Leadership Scope",
+    },
+    {
+      id: "rp-2",
+      title: "New capability substantiated: Cloud Infrastructure ROI",
+      description: "Quantified 28% server efficiency reduction linked to microservices refactoring.",
+      evidenceLink: "/value/profile",
+      isPrimary: false,
+      category: "Technical Impact",
+    },
+    {
+      id: "rp-3",
+      title: "Executive alignment milestone completed",
+      description: "Presented Q3 Multi-Year Product Roadmap to C-Suite stakeholders.",
+      evidenceLink: "/career-journal",
+      isPrimary: false,
+      category: "Milestone",
+    },
+  ],
+  recentEvent: {
+    id: "re-1",
+    title: "Completed ERP Cloud Transformation Project",
+    date: "August 2026 · 6 months duration",
+    context: "Migrated 2.4M customer records with zero downtime across 4 distributed business units.",
+    impact: "Cut legacy infrastructure overhead by ₹48L/year and shortened batch reconciliation from 4hrs to 12mins.",
+    capability: "Enterprise Architecture & Scaled Systems",
+  },
+  careerDirection: {
+    title: "Senior Product Leadership / VP of Product",
+    confidence: "High Alignment",
+    signals: [
+      "Multi-Squad Product Strategy",
+      "Executive Stakeholder Governance",
+      "Enterprise SaaS Commercialization",
+      "P&L & Org Scaling",
+    ],
+    evidence: [
+      "7+ years leading end-to-end B2B software products",
+      "3 cross-functional engineering teams led concurrently",
+      "Two zero-to-one enterprise platform rollouts delivered",
+      "Documented expansion in organizational budget and team scope",
+    ],
+  },
+  careerGoal: {
+    title: "Become Product Director",
+    timeframe: "Next 6–12 months",
+    status: "Building readiness",
+    progressPercent: 65,
+    currentMilestoneIndex: 2,
+    milestones: [
+      "Substantiate B2B Domain Expertise",
+      "Quantify Enterprise Revenue Impact",
+      "Strengthen Executive Leadership Evidence",
+      "Target Committee & Board Readiness",
+    ],
+    nextMilestone: "Strengthen executive leadership & business impact evidence",
+  },
+  nextBestAction: {
+    title: "Strengthen your leadership evidence",
+    reason: "You have strong team-management experience, but only one documented entry demonstrating direct business/P&L outcomes.",
+    goalRelevance: "Your current target is Product Director, where executive hiring committees specifically evaluate evidence of organizational ROI.",
+    actionType: "evidence",
+    cta: "Add Leadership Evidence",
+    ctaLink: "/value",
+  },
+  momentum: {
+    state: "Building",
+    trajectory: "up",
+    summary: "3 meaningful career developments recorded in the last 60 days",
+    signals: [
+      "Leadership scope expansion logged",
+      "Cloud ROI achievement verified",
+      "Executive strategy deck delivered",
+    ],
+  },
+  careerExploration: [
+    {
+      id: "exp-1",
+      role: "Product Director",
+      alignment: "Strong alignment",
+      alignmentScore: 92,
+      rationale: "Matches your scale of cross-functional team leadership, multi-product roadmap delivery, and commercial SaaS accountability.",
+      relevantCapabilities: ["Product Strategy", "Team Leadership", "B2B SaaS"],
+    },
+    {
+      id: "exp-2",
+      role: "Digital Transformation Lead",
+      alignment: "Strong alignment",
+      alignmentScore: 86,
+      rationale: "Directly leverages your ERP cloud migration, legacy system modernization, and enterprise stakeholder alignment experience.",
+      relevantCapabilities: ["Digital Transformation", "Enterprise Architecture", "Change Governance"],
+    },
+    {
+      id: "exp-3",
+      role: "AI Product Strategy Principal",
+      alignment: "Emerging opportunity",
+      alignmentScore: 78,
+      rationale: "Fast-growing high-leverage path building upon your data architecture, automation workflows, and modern product discovery.",
+      relevantCapabilities: ["AI Workflows", "Product Discovery", "Scaled Systems"],
+    },
+  ],
+};
 
-export default function PulsePage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+export default function PulseDashboardPage() {
+  const { user } = useAuth();
+  const [scenario, setScenario] = useState<ScenarioPreset>("full");
+  const [liveData, setLiveData] = useState<PulseDashboardData | null>(null);
+  // initialLoading: true only on first mount (Section 21 — skeleton until data ready)
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Toast notification state
+  const [toast, setToast] = useState<{ message: string; variant: ToastVariant } | null>(null);
+  const showToast = useCallback((message: string, variant: ToastVariant = "success") => {
+    setToast({ message, variant });
+  }, []);
+  const dismissToast = useCallback(() => setToast(null), []);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login");
+  // Modals state
+  const [explainContext, setExplainContext] = useState<AiTraceabilityContext | null>(null);
+  const [captureEventOpen, setCaptureEventOpen] = useState(false);
+
+  // Custom live user events added during session
+  const [sessionEvents, setSessionEvents] = useState<CareerEventData[]>([]);
+  // Custom goal selected dynamically
+  const [customGoal, setCustomGoal] = useState<CareerGoalData | null>(null);
+
+  // Fetch Live Data from /api/pulse (Section 20)
+  const fetchPulseData = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch("/api/pulse");
+      if (res.ok) {
+        const data = await res.json();
+        setLiveData(data);
+      }
+    } catch (err) {
+      console.error("Failed to load pulse data:", err);
+    } finally {
+      setIsRefreshing(false);
+      setInitialLoading(false);
     }
-  }, [authLoading, user, router]);
+  };
 
   useEffect(() => {
-    if (!user) return;
-    setLoading(true);
-    fetch("/api/get-resumes")
-      .then((res) => res.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : [];
-        setResumes(list);
-      })
-      .catch((err) => console.error("Error fetching resumes:", err))
-      .finally(() => setLoading(false));
+    fetchPulseData();
   }, [user]);
 
-  const activeResume = useMemo(() => {
-    return resumes.find((r) => r.is_base_resume) || resumes[0] || null;
-  }, [resumes]);
+  // Fire pulse_viewed analytics once data loads (Section 25)
+  useEffect(() => {
+    if (!initialLoading) {
+      trackPulseViewed(scenario);
+    }
+  }, [initialLoading]);
 
-  const data = activeResume?.resume_data;
+  // Compute active dashboard view data based on selected scenario preset (Section 14)
+  const activeData: PulseDashboardData = useMemo(() => {
+    const base = scenario === "live" && liveData ? liveData : CANONICAL_ESTABLISHED_DATA;
 
-  // Compute career signals
-  const signals: CareerSignal[] = useMemo(() => {
-    if (!data) return [];
+    // Apply any newly captured session event
+    const effectiveRecentEvent = sessionEvents.length > 0 ? sessionEvents[0] : base.recentEvent;
+    const effectiveGoal = customGoal || base.careerGoal;
 
-    const expCount = data.workExperience?.length || 0;
-    const totalTenure = data.workExperience?.reduce((acc: number, w: any) => {
-      if (w.startDate && (w.endDate || w.current)) return acc + 1;
-      return acc;
-    }, 0) || 0;
+    switch (scenario) {
+      case "scenarioA_new":
+        return {
+          ...base,
+          snapshot: {
+            ...base.snapshot,
+            headline: "Let's understand where you stand",
+            currentRole: "Senior Engineer / Tech Lead",
+            organization: "Emerging Enterprise",
+            experience: 5,
+            scope: "Initial profile established from uploaded resume. Core areas awaiting discovery.",
+            capabilities: ["Software Engineering", "Full-Stack Web", "API Design"],
+            progressionSignal: "Foundation set · Initial career record ready for enrichment",
+            evidenceCount: 4,
+          },
+          careerValue: {
+            capabilities: "Developing",
+            experience: "Established",
+            impact: "Needs strengthening",
+            progression: "Developing",
+            evidence: "Needs strengthening",
+            traceableCount: 4,
+            pendingReviewCount: 1,
+          },
+          recentProgress: [
+            {
+              id: "new-1",
+              title: "Career Memory Initiated",
+              description: "Extracted base employment and skills profile from resume upload.",
+              isPrimary: true,
+              category: "Onboarding",
+            },
+          ],
+          careerGoal: null,
+          recentEvent: null,
+          nextBestAction: {
+            title: "Discover your hidden impact",
+            reason: "Your resume lists technical responsibilities, but lacks quantified business outcomes.",
+            goalRelevance: "Adding 2–3 quantified wins establishes your career value baseline.",
+            actionType: "impact",
+            cta: "Discover Impact Now",
+            ctaLink: "/value",
+          },
+        };
 
-    const skillsCount =
-      (data.skills?.technical?.length || 0) + (data.skills?.soft?.length || 0);
+      case "scenarioB_partial":
+        return {
+          ...base,
+          careerValue: {
+            capabilities: "Strong",
+            experience: "Established",
+            impact: "Developing",
+            progression: "Developing",
+            evidence: "Needs strengthening",
+            traceableCount: 8,
+            pendingReviewCount: 3,
+          },
+          nextBestAction: {
+            title: "Substantiate your progression signals",
+            reason: "Your career picture is taking shape: capabilities are strong, but leadership transitions need documented evidence.",
+            goalRelevance: "Targeting Director level requires clear signals of team and budget growth.",
+            actionType: "evidence",
+            cta: "Strengthen Career Value",
+            ctaLink: "/value/profile",
+          },
+        };
 
-    const quantifiedBullets = (data.workExperience || [])
-      .flatMap((w: any) => w.bullets || [])
-      .filter((b: string) =>
-        /\d+%|\$\d+|₹\d+|\d+x|reduced|increased|improved|scaled|delivered/i.test(b)
-      ).length;
+      case "scenarioC_no_goal":
+        return {
+          ...base,
+          careerGoal: customGoal ? customGoal : null,
+          nextBestAction: customGoal
+            ? base.nextBestAction
+            : {
+                title: "Define your near-term career target",
+                reason: "You have a solid career foundation with 14 years of proven capability.",
+                goalRelevance: "Setting a specific target activates calibrated opportunity matching and readiness tracking.",
+                actionType: "goal",
+                cta: "Set Career Goal",
+                ctaLink: "/momentum#priorities",
+              },
+        };
 
-    const roleChanges = (data.workExperience || []).filter(
-      (_: any, idx: number) => idx > 0
-    ).length;
+      case "scenarioD_no_event":
+        return {
+          ...base,
+          recentEvent: null,
+          nextBestAction: {
+            title: "Capture a recent achievement",
+            reason: "No meaningful career milestone logged in the last 90 days.",
+            goalRelevance: "Logging wins while fresh preserves critical evidence for review cycles and promotions.",
+            actionType: "evidence",
+            cta: "Capture Win Now",
+            ctaLink: "/career-journal",
+          },
+        };
 
-    const projCount = data.projects?.length || 0;
-    const certCount = data.certifications?.length || 0;
+      case "live":
+        return liveData
+          ? { ...liveData, recentEvent: effectiveRecentEvent, careerGoal: effectiveGoal }
+          : CANONICAL_ESTABLISHED_DATA;
 
-    return [
-      {
-        label: "Experience Profile",
-        value: `${expCount} roles`,
-        icon: Briefcase,
-        color: "text-amber-500",
-        status: expCount >= 2 ? "strong" : expCount >= 1 ? "moderate" : "weak",
-        statusLabel: expCount >= 2 ? "Well documented" : expCount >= 1 ? "Foundation set" : "Needs data",
-      },
-      {
-        label: "Capability Signals",
-        value: `${skillsCount} skills`,
-        icon: Zap,
-        color: "text-purple-500",
-        status: skillsCount >= 5 ? "strong" : skillsCount >= 2 ? "moderate" : "weak",
-        statusLabel: skillsCount >= 5 ? "Rich skill profile" : skillsCount >= 2 ? "Growing" : "Needs enrichment",
-      },
-      {
-        label: "Impact Signals",
-        value: `${quantifiedBullets} quantified`,
-        icon: TrendingUp,
-        color: "text-blue-500",
-        status: quantifiedBullets >= 3 ? "strong" : quantifiedBullets >= 1 ? "moderate" : "weak",
-        statusLabel: quantifiedBullets >= 3 ? "Strong evidence" : quantifiedBullets >= 1 ? "Partial evidence" : "Discovery needed",
-      },
-      {
-        label: "Progression Signals",
-        value: `${roleChanges} transitions`,
-        icon: Layers,
-        color: "text-teal-500",
-        status: roleChanges >= 2 ? "strong" : roleChanges >= 1 ? "moderate" : "weak",
-        statusLabel: roleChanges >= 2 ? "Clear progression" : roleChanges >= 1 ? "Single transition" : "Early career",
-      },
-      {
-        label: "Project Evidence",
-        value: `${projCount} projects`,
-        icon: FolderGit2,
-        color: "text-emerald-500",
-        status: projCount >= 2 ? "strong" : projCount >= 1 ? "moderate" : "weak",
-        statusLabel: projCount >= 2 ? "Well documented" : projCount >= 1 ? "Foundation set" : "Add projects",
-      },
-      {
-        label: "Credentials",
-        value: `${certCount} certs`,
-        icon: ShieldCheck,
-        color: "text-indigo-500",
-        status: certCount >= 1 ? "strong" : "weak",
-        statusLabel: certCount >= 1 ? "Credentials present" : "No credentials yet",
-      },
-    ];
-  }, [data]);
+      case "full":
+      default:
+        return {
+          ...CANONICAL_ESTABLISHED_DATA,
+          recentEvent: effectiveRecentEvent,
+          careerGoal: effectiveGoal,
+        };
+    }
+  }, [scenario, liveData, sessionEvents, customGoal]);
 
-  const currentRole =
-    data?.workExperience?.find((w: any) => w.current)?.role ||
-    data?.workExperience?.[0]?.role ||
-    "Professional";
+  const handleScenarioChange = (preset: ScenarioPreset) => {
+    setScenario(preset);
+    if (preset === "scenarioC_no_goal") {
+      setCustomGoal(null);
+    }
+    const hints: Record<ScenarioPreset, string> = {
+      full: "Loaded canonical Established Leader profile",
+      live: "Loaded live account data from database",
+      scenarioA_new: "Scenario A: New User (orientation mode)",
+      scenarioB_partial: "Scenario B: Partial evidence breakdown",
+      scenarioC_no_goal: "Scenario C: Interactive goal selection",
+      scenarioD_no_event: "Scenario D: Continuity & capture prompt",
+    };
+    showToast(hints[preset] || "Scenario updated", "info");
+  };
 
-  const discoveryOptions = [
-    {
-      title: "Discover Career Value",
-      desc: "Understand what your career experience is worth through evidence-backed interpretation.",
-      href: "/value",
-      icon: Sparkles,
-      color: "bg-violet-500/15 text-violet-500 border-violet-500/30",
-    },
-    {
-      title: "Explore Impact",
-      desc: "Uncover hidden impact and outcomes from your work that aren't captured in your resume.",
-      href: "/value",
-      icon: TrendingUp,
-      color: "bg-blue-500/15 text-blue-500 border-blue-500/30",
-    },
-    {
-      title: "Strengthen Evidence",
-      desc: "Add recognition, feedback, and progression signals that validate your accomplishments.",
-      href: "/value",
-      icon: ShieldCheck,
-      color: "bg-teal-500/15 text-teal-500 border-teal-500/30",
-    },
-    {
-      title: "Understand Capabilities",
-      desc: "See how your career facts translate into demonstrated professional capabilities.",
-      href: "/value/profile",
-      icon: Award,
-      color: "bg-amber-500/15 text-amber-500 border-amber-500/30",
-    },
-    {
-      title: "Explore Career Direction",
-      desc: "Analyze your trajectory and identify areas for growth and strategic positioning.",
-      href: "/career-copilot",
-      icon: Compass,
-      color: "bg-rose-500/15 text-rose-500 border-rose-500/30",
-    },
-    {
-      title: "Continue Later",
-      desc: "Your Career Memory is saved. Return anytime to explore further.",
-      href: "/dashboard",
-      icon: Clock,
-      color: "bg-slate-500/15 text-slate-500 border-slate-500/30",
-    },
-  ];
+  const handleSaveEvent = (newEvent: CareerEventData) => {
+    setSessionEvents([newEvent, ...sessionEvents]);
+    // Section 25: fire analytics
+    trackCareerEventCreatedFromPulse(newEvent.capability);
+    showToast(`Career event "${newEvent.title}" added to your record ✓`, "success");
 
-  const statusColor = (s: string) => {
-    if (s === "strong") return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
-    if (s === "moderate") return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
-    return "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20";
+    // Persist to database if authenticated
+    if (user) {
+      fetch("/api/journal/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: `${newEvent.title}. ${newEvent.context} Impact: ${newEvent.impact}`,
+          entry_type: "milestone",
+          tags: [newEvent.capability],
+          date: new Date().toISOString(),
+          extracted_metrics: { impact: newEvent.impact },
+        }),
+      }).catch((e) => console.error("Could not persist event to DB:", e));
+    }
+  };
+
+  const handleSelectGoalType = (goalTitle: string) => {
+    const newGoal: CareerGoalData = {
+      title: `Target: ${goalTitle}`,
+      timeframe: "Next 6–12 months",
+      status: "Active Focus",
+      progressPercent: 25,
+      currentMilestoneIndex: 1,
+      milestones: [
+        "Define Target Role Scope",
+        "Audit Capability Gaps",
+        "Assemble Strategic Evidence",
+        "Market Outreach & Alignment",
+      ],
+      nextMilestone: "Audit capability gaps against market benchmarks",
+    };
+    setCustomGoal(newGoal);
+    // Section 25: fire analytics
+    trackCareerGoalCreatedFromPulse(goalTitle);
+    showToast(`Goal set: ${goalTitle}. Recommendations calibrated!`, "goal");
+  };
+
+  // Analytics wrapper for AI explain modal (Section 25)
+  const handleOpenExplain = (ctx: AiTraceabilityContext) => {
+    setExplainContext(ctx);
+    trackAiExplanationOpened(ctx.componentTitle);
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans">
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex flex-col font-sans selection:bg-amber-500 selection:text-brand-navy transition-colors duration-200">
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--card)] py-10 px-6 sm:px-8">
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Main Container */}
+      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10 pb-24 lg:pb-10">
+        {/* Pulse Shell Header */}
+        <PulseHeader
+          currentScenario={scenario}
+          onScenarioChange={handleScenarioChange}
+          onOpenCaptureEvent={() => setCaptureEventOpen(true)}
+          isRefreshing={isRefreshing}
+          onRefresh={fetchPulseData}
+        />
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-600 dark:text-violet-400 text-xs font-bold uppercase tracking-wider mb-3">
-            <Sparkles size={14} />
-            <span>The Pulse · Career Intelligence</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
-            Your Career at a Glance
-          </h1>
-          <p className="mt-2 text-sm sm:text-base text-[var(--text-secondary)] max-w-2xl leading-relaxed">
-            An initial view of your career signals based on the information extracted from your resume. No forced score — just your facts, ready to explore.
-          </p>
-        </div>
-      </section>
-
-      <main className="max-w-7xl mx-auto w-full px-6 sm:px-8 py-10 flex-1 space-y-10">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="spinner" style={{ width: 36, height: 36 }} />
-            <p className="text-sm text-[var(--text-muted)]">Loading your career signals...</p>
-          </div>
-        ) : !data ? (
-          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-12 text-center max-w-lg mx-auto">
-            <AlertCircle size={40} className="mx-auto text-amber-500 mb-4" />
-            <h3 className="text-base font-bold text-[var(--text-primary)]">No Resume Data Found</h3>
-            <p className="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">
-              Upload a resume to generate your initial career intelligence.
-            </p>
-            <Link
-              href="/resume/builder?new=true"
-              className="mt-5 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black text-brand-navy bg-amber-500 hover:bg-amber-400 transition-all"
-            >
-              <span>Upload Resume</span>
-              <ArrowRight size={13} />
-            </Link>
-          </div>
+        {/* Section 21: Show skeleton while initial data loads */}
+        {initialLoading ? (
+          <PulseSkeleton />
         ) : (
-          <>
-            {/* Career Summary */}
-            <section className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-11 h-11 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center">
-                  <Briefcase size={20} />
-                </div>
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                    Current Profile · {currentRole}
-                  </div>
-                  <div className="text-sm text-[var(--text-secondary)] mt-0.5">
-                    Initial Career Memory established from your uploaded resume.
-                  </div>
-                </div>
+          /*
+           * 4-Zone Layout — Section 4 (desktop) & Section 22 (responsive)
+           *
+           * Mobile priority order per spec §22:
+           *   Snapshot → Value → Goal → Next Best Action →
+           *   Progress → Direction → Event → Explore → Momentum
+           *
+           * Achieved via CSS `order-` classes:
+           *   - Zone 1 cards: order-1, order-2 (same on all viewports)
+           *   - Zone 3 Goal + Zone 4 NBA bubble up to order-3,4 on mobile
+           *   - Zone 2 Progress/Event drop to order-5,6 on mobile
+           *   - Zone 3 Direction drops to order-7 on mobile
+           *   - Zone 4 Explore/Momentum drop to order-8,9 on mobile
+           */
+          <div className="flex flex-col gap-8 sm:gap-10">
+
+            {/* ── ZONE 1: WHERE I AM (order 1-2 on all viewports) ───────── */}
+            <section id="zone-1" className="space-y-3 order-1 scroll-mt-24 sm:scroll-mt-28">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 font-['Syne',sans-serif]">
+                  1. Where I Am
+                </h2>
               </div>
-              {data.summary && (
-                <p className="text-xs text-[var(--text-secondary)] leading-relaxed line-clamp-3">
-                  {data.summary}
-                </p>
-              )}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-7 items-stretch">
+                <CareerSnapshotCard
+                  data={activeData.snapshot}
+                  onOpenExplain={handleOpenExplain}
+                />
+                <CareerValueCard
+                  data={activeData.careerValue}
+                  onOpenExplain={handleOpenExplain}
+                />
+              </div>
             </section>
 
-            {/* Career Signals Grid */}
-            <section className="space-y-4">
-              <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">
-                  Career Intelligence Signals
+            {/*
+             * ── ZONE 3 (Goal only) — Mobile: order-2 / Desktop: hidden here ──
+             * On mobile, Career Goal bubbles up to position 3 per spec §22
+             */}
+            <section className="space-y-3 order-2 lg:hidden scroll-mt-24 sm:scroll-mt-28">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 font-['Syne',sans-serif]">
+                  3. Where I&apos;m Going — Goal
+                </h2>
+              </div>
+              <CareerGoalCard
+                goal={activeData.careerGoal}
+                onSelectGoalType={handleSelectGoalType}
+              />
+            </section>
+
+            {/*
+             * ── ZONE 4 (NBA only) — Mobile: order-3 / Desktop: hidden here ──
+             * On mobile, Next Best Action bubbles up to position 4 per spec §22
+             */}
+            <section className="space-y-3 order-3 lg:hidden scroll-mt-24 sm:scroll-mt-28">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 font-['Syne',sans-serif]">
+                  4. What I Do Next
+                </h2>
+              </div>
+              <NextBestActionCard
+                action={activeData.nextBestAction}
+                onOpenExplain={handleOpenExplain}
+                onOpenCaptureModal={() => setCaptureEventOpen(true)}
+                onComplete={() => {
+                  trackNextBestActionCompleted(activeData.nextBestAction.title);
+                  showToast("Action completed! Great work advancing toward your goal.", "success");
+                }}
+                onDismiss={() => {
+                  trackNextBestActionDismissed(activeData.nextBestAction.title);
+                  showToast("Recommendation dismissed.", "info");
+                }}
+              />
+            </section>
+
+            {/* ── ZONE 2: WHAT'S CHANGED (Mobile: order-4, Desktop: order-2) ── */}
+            <section id="zone-2" className="space-y-3 order-4 lg:order-2 scroll-mt-24 sm:scroll-mt-28">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-teal-500" />
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-teal-600 dark:text-teal-400 font-['Syne',sans-serif]">
+                  2. What&apos;s Changed
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-7 items-stretch">
+                <RecentProgressCard items={activeData.recentProgress} />
+                <RecentCareerEventCard
+                  event={activeData.recentEvent}
+                  onOpenCaptureEvent={() => setCaptureEventOpen(true)}
+                />
+              </div>
+            </section>
+
+            {/* ── ZONE 3: WHERE I'M GOING (Mobile: order-5, Desktop: order-3) ── */}
+            <section id="zone-3" className="space-y-3 order-5 lg:order-3 scroll-mt-24 sm:scroll-mt-28">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 font-['Syne',sans-serif]">
+                  3. Where I&apos;m Going
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-7 items-stretch">
+                {/* Direction always visible */}
+                <CareerDirectionCard
+                  direction={activeData.careerDirection}
+                  onOpenExplain={handleOpenExplain}
+                />
+                {/* Goal: hidden on mobile (shown in mobile-only section above), visible on desktop */}
+                <div className="hidden lg:block">
+                  <CareerGoalCard
+                    goal={activeData.careerGoal}
+                    onSelectGoalType={handleSelectGoalType}
+                  />
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
-                  Initial Career Profile
+              </div>
+            </section>
+
+            {/* ── ZONE 4: WHAT I DO NEXT (Mobile: order-6, Desktop: order-4) ── */}
+            <section id="zone-4" className="space-y-6 sm:space-y-7 order-6 lg:order-4 scroll-mt-24 sm:scroll-mt-28">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 font-['Syne',sans-serif]">
+                  4. What I Do Next
                 </h2>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                {signals.map((sig) => {
-                  const Icon = sig.icon;
-                  return (
-                    <div
-                      key={sig.label}
-                      className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-sm hover:shadow-md transition-all space-y-3"
-                    >
-                      <div className="flex items-center justify-between">
-                        <Icon size={18} className={sig.color} />
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusColor(sig.status)}`}>
-                          {sig.status}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="text-lg font-black text-[var(--text-primary)] font-['Syne',sans-serif]">
-                          {sig.value}
-                        </div>
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] mt-0.5">
-                          {sig.label}
-                        </div>
-                      </div>
-                      <div className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
-                        {sig.statusLabel}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* Discovery Opportunities */}
-            <section className="space-y-4">
-              <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                  What would you like to explore?
+              {/* Full 3-col grid — desktop only (mobile NBA is in the mobile-priority section above) */}
+              <div className="hidden lg:grid grid-cols-3 gap-6 sm:gap-7 items-stretch">
+                <div className="col-span-2">
+                  <NextBestActionCard
+                    action={activeData.nextBestAction}
+                    onOpenExplain={handleOpenExplain}
+                    onOpenCaptureModal={() => setCaptureEventOpen(true)}
+                    onComplete={() => {
+                      trackNextBestActionCompleted(activeData.nextBestAction.title);
+                      showToast("Action completed! Great work advancing toward your goal.", "success");
+                    }}
+                    onDismiss={() => {
+                      trackNextBestActionDismissed(activeData.nextBestAction.title);
+                      showToast("Recommendation dismissed.", "info");
+                    }}
+                  />
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
-                  Choose Your Next Action
-                </h2>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">
-                  All activities are optional and user-initiated. There's no mandatory goal or forced career path.
-                </p>
+                <div className="col-span-1">
+                  <CareerMomentumCard momentum={activeData.momentum} />
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {discoveryOptions.map((opt) => {
-                  const Icon = opt.icon;
-                  return (
-                    <Link
-                      key={opt.title}
-                      href={opt.href}
-                      className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:border-amber-500/40 hover:shadow-md transition-all group no-underline flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className={`w-10 h-10 rounded-xl ${opt.color} border flex items-center justify-center mb-3`}>
-                          <Icon size={18} />
-                        </div>
-                        <h3 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-amber-500 transition-colors">
-                          {opt.title}
-                        </h3>
-                        <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-                          {opt.desc}
-                        </p>
-                      </div>
-                      <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center gap-1 text-xs font-bold text-amber-500 group-hover:translate-x-0.5 transition-transform">
-                        <span>Explore</span>
-                        <ChevronRight size={13} />
-                      </div>
-                    </Link>
-                  );
-                })}
+              {/* Momentum — mobile: shown here (order-7 in spec, after Explore) */}
+              <div className="lg:hidden">
+                <CareerMomentumCard momentum={activeData.momentum} />
               </div>
+
+              {/* Explore Your Career */}
+              <ExploreCareerSection items={activeData.careerExploration} />
             </section>
-          </>
+
+          </div>
         )}
       </main>
+
+      <Footer />
+
+      {/* AI Traceability Modal — Section 15 & 16 */}
+      <AiTraceabilityModal
+        context={explainContext}
+        onClose={() => setExplainContext(null)}
+        onConfirm={() => explainContext && trackAiInterpretationAccepted(explainContext.componentTitle)}
+        onReject={() => explainContext && trackAiInterpretationRejected(explainContext.componentTitle)}
+      />
+
+      {/* Quick Event Capture Modal */}
+      <CaptureEventModal
+        isOpen={captureEventOpen}
+        onClose={() => setCaptureEventOpen(false)}
+        onSave={handleSaveEvent}
+      />
+
+      {/* Toast notifications (UX feedback) */}
+      <PulseToast
+        message={toast?.message ?? ""}
+        show={!!toast}
+        variant={toast?.variant}
+        onClose={dismissToast}
+      />
+
+      {/* Sticky mobile action bar (UX improvement — Section 22 mobile) */}
+      {!initialLoading && (
+        <MobileActionBar
+          onLogEvent={() => setCaptureEventOpen(true)}
+          nextActionCta={activeData.nextBestAction.cta || "Take Action"}
+          nextActionLink={activeData.nextBestAction.ctaLink || "/value"}
+        />
+      )}
     </div>
   );
 }
