@@ -166,9 +166,9 @@ export default function Navbar() {
   const pillars: NavItem[] = [
     {
       label: "Pulse",
-      href: "/dashboard",
+      href: "/pulse",
       icon: Activity,
-      activeMatch: (p) => p === "/dashboard" || p.startsWith("/dashboard/"),
+      activeMatch: (p) => p === "/pulse" || p.startsWith("/pulse") || p === "/dashboard",
     },
     {
       label: "Value",
