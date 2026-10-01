@@ -4,10 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ZONES = [
-  { id: "zone-1", label: "Where I Am", color: "bg-amber-500", ring: "ring-amber-400/40", label_color: "bg-amber-500" },
-  { id: "zone-2", label: "What's Changed", color: "bg-teal-500", ring: "ring-teal-400/40", label_color: "bg-teal-500" },
-  { id: "zone-3", label: "Where I'm Going", color: "bg-blue-500", ring: "ring-blue-400/40", label_color: "bg-blue-500" },
-  { id: "zone-4", label: "What I Do Next", color: "bg-amber-500", ring: "ring-amber-400/40", label_color: "bg-amber-500" },
+  { id: "row-1", label: "Snapshot & Value", color: "bg-amber-500", ring: "ring-amber-400/40", label_color: "bg-amber-500" },
+  { id: "row-2", label: "Progress & Event", color: "bg-teal-500", ring: "ring-teal-400/40", label_color: "bg-teal-500" },
+  { id: "row-3", label: "Direction & Goal", color: "bg-blue-500", ring: "ring-blue-400/40", label_color: "bg-blue-500" },
+  { id: "row-4", label: "Action & Momentum", color: "bg-amber-500", ring: "ring-amber-400/40", label_color: "bg-amber-500" },
+  { id: "row-5", label: "Explore Career", color: "bg-violet-500", ring: "ring-violet-400/40", label_color: "bg-violet-500" },
 ];
 
 export default function ZoneProgressRail() {

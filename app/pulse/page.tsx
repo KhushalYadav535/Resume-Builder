@@ -177,11 +177,12 @@ const CANONICAL_ESTABLISHED_DATA: PulseDashboardData = {
 
 export default function PulseDashboardPage() {
   const { user } = useAuth();
-  const [scenario, setScenario] = useState<ScenarioPreset>("full");
+  const [scenario, setScenario] = useState<ScenarioPreset>("live");
   const [liveData, setLiveData] = useState<PulseDashboardData | null>(null);
   // initialLoading: true only on first mount (Section 21 — skeleton until data ready)
   const [initialLoading, setInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isAllExpanded, setIsAllExpanded] = useState(false);
 
   // Toast notification state
   const [toast, setToast] = useState<{ message: string; variant: ToastVariant } | null>(null);
@@ -335,7 +336,7 @@ export default function PulseDashboardPage() {
       case "live":
         return liveData
           ? { ...liveData, recentEvent: effectiveRecentEvent, careerGoal: effectiveGoal }
-          : CANONICAL_ESTABLISHED_DATA;
+          : { ...CANONICAL_ESTABLISHED_DATA, recentEvent: effectiveRecentEvent, careerGoal: effectiveGoal };
 
       case "full":
       default:
@@ -418,13 +419,15 @@ export default function PulseDashboardPage() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10 pb-24 lg:pb-10">
-        {/* Pulse Shell Header */}
+        {/* Pulse Shell Header with Scenario Switcher & View Controls */}
         <PulseHeader
           currentScenario={scenario}
           onScenarioChange={handleScenarioChange}
           onOpenCaptureEvent={() => setCaptureEventOpen(true)}
           isRefreshing={isRefreshing}
           onRefresh={fetchPulseData}
+          isAllExpanded={isAllExpanded}
+          onToggleExpandAll={() => setIsAllExpanded((prev) => !prev)}
         />
 
         {/* Section 21: Show skeleton while initial data loads */}
@@ -432,69 +435,80 @@ export default function PulseDashboardPage() {
           <PulseSkeleton />
         ) : (
           /*
-           * 4-Zone Layout — Section 4 (desktop) & Section 22 (responsive)
-           *
-           * Mobile priority order per spec §22:
-           *   Snapshot → Value → Goal → Next Best Action →
-           *   Progress → Direction → Event → Explore → Momentum
-           *
-           * Achieved via CSS `order-` classes:
-           *   - Zone 1 cards: order-1, order-2 (same on all viewports)
-           *   - Zone 3 Goal + Zone 4 NBA bubble up to order-3,4 on mobile
-           *   - Zone 2 Progress/Event drop to order-5,6 on mobile
-           *   - Zone 3 Direction drops to order-7 on mobile
-           *   - Zone 4 Explore/Momentum drop to order-8,9 on mobile
+           * Responsive Grid:
+           * - Desktop (lg): 4 rows of 2 cards + 1 full-width Explore section matching 30 Sep 2026 Box Diagram
+           *   Row 1: Snapshot (lg:order-1) & Value (lg:order-2)
+           *   Row 2: Progress (lg:order-3) & Event (lg:order-4)
+           *   Row 3: Direction (lg:order-5) & Goal (lg:order-6)
+           *   Row 4: Next Best Action (lg:order-7) & Momentum (lg:order-8)
+           *   Row 5: Explore Career (lg:order-9, col-span-2)
+           * - Mobile (< lg): Strict priority sequence per Section 22:
+           *   1. Snapshot (order-1)
+           *   2. Value (order-2)
+           *   3. Goal (order-3)
+           *   4. Next Best Action (order-4)
+           *   5. Recent Progress (order-5)
+           *   6. Career Direction (order-6)
+           *   7. Recent Event (order-7)
+           *   8. Explore Career (order-8)
+           *   9. Career Momentum (order-9)
            */
-          <div className="flex flex-col gap-8 sm:gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 items-stretch">
+            {/* 1. Career Snapshot — Mobile: #1, Desktop: Row 1 Left */}
+            <div className="order-1 lg:order-1 flex flex-col">
+              <CareerSnapshotCard
+                data={activeData.snapshot}
+                onOpenExplain={handleOpenExplain}
+                forceExpand={isAllExpanded}
+              />
+            </div>
 
-            {/* ── ZONE 1: WHERE I AM (order 1-2 on all viewports) ───────── */}
-            <section id="zone-1" className="space-y-3 order-1 scroll-mt-24 sm:scroll-mt-28">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 font-['Syne',sans-serif]">
-                  1. Where I Am
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-7 items-stretch">
-                <CareerSnapshotCard
-                  data={activeData.snapshot}
-                  onOpenExplain={handleOpenExplain}
-                />
-                <CareerValueCard
-                  data={activeData.careerValue}
-                  onOpenExplain={handleOpenExplain}
-                />
-              </div>
-            </section>
+            {/* 2. Career Value — Mobile: #2, Desktop: Row 1 Right */}
+            <div className="order-2 lg:order-2 flex flex-col">
+              <CareerValueCard
+                data={activeData.careerValue}
+                onOpenExplain={handleOpenExplain}
+                forceExpand={isAllExpanded}
+              />
+            </div>
 
-            {/*
-             * ── ZONE 3 (Goal only) — Mobile: order-2 / Desktop: hidden here ──
-             * On mobile, Career Goal bubbles up to position 3 per spec §22
-             */}
-            <section className="space-y-3 order-2 lg:hidden scroll-mt-24 sm:scroll-mt-28">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 font-['Syne',sans-serif]">
-                  3. Where I&apos;m Going — Goal
-                </h2>
-              </div>
+            {/* 3. Recent Progress — Mobile: #5, Desktop: Row 2 Left */}
+            <div className="order-5 lg:order-3 flex flex-col">
+              <RecentProgressCard
+                items={activeData.recentProgress}
+                forceExpand={isAllExpanded}
+              />
+            </div>
+
+            {/* 4. Recent Event — Mobile: #7, Desktop: Row 2 Right */}
+            <div className="order-7 lg:order-4 flex flex-col">
+              <RecentCareerEventCard
+                event={activeData.recentEvent}
+                onOpenCaptureEvent={() => setCaptureEventOpen(true)}
+                forceExpand={isAllExpanded}
+              />
+            </div>
+
+            {/* 5. Career Direction — Mobile: #6, Desktop: Row 3 Left */}
+            <div className="order-6 lg:order-5 flex flex-col">
+              <CareerDirectionCard
+                direction={activeData.careerDirection}
+                onOpenExplain={handleOpenExplain}
+                forceExpand={isAllExpanded}
+              />
+            </div>
+
+            {/* 6. Career Goal — Mobile: #3, Desktop: Row 3 Right */}
+            <div className="order-3 lg:order-6 flex flex-col">
               <CareerGoalCard
                 goal={activeData.careerGoal}
                 onSelectGoalType={handleSelectGoalType}
+                forceExpand={isAllExpanded}
               />
-            </section>
+            </div>
 
-            {/*
-             * ── ZONE 4 (NBA only) — Mobile: order-3 / Desktop: hidden here ──
-             * On mobile, Next Best Action bubbles up to position 4 per spec §22
-             */}
-            <section className="space-y-3 order-3 lg:hidden scroll-mt-24 sm:scroll-mt-28">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 font-['Syne',sans-serif]">
-                  4. What I Do Next
-                </h2>
-              </div>
+            {/* 7. Next Best Action — Mobile: #4, Desktop: Row 4 Left */}
+            <div className="order-4 lg:order-7 flex flex-col">
               <NextBestActionCard
                 action={activeData.nextBestAction}
                 onOpenExplain={handleOpenExplain}
@@ -507,90 +521,25 @@ export default function PulseDashboardPage() {
                   trackNextBestActionDismissed(activeData.nextBestAction.title);
                   showToast("Recommendation dismissed.", "info");
                 }}
+                forceExpand={isAllExpanded}
               />
-            </section>
+            </div>
 
-            {/* ── ZONE 2: WHAT'S CHANGED (Mobile: order-4, Desktop: order-2) ── */}
-            <section id="zone-2" className="space-y-3 order-4 lg:order-2 scroll-mt-24 sm:scroll-mt-28">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-teal-500" />
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-teal-600 dark:text-teal-400 font-['Syne',sans-serif]">
-                  2. What&apos;s Changed
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-7 items-stretch">
-                <RecentProgressCard items={activeData.recentProgress} />
-                <RecentCareerEventCard
-                  event={activeData.recentEvent}
-                  onOpenCaptureEvent={() => setCaptureEventOpen(true)}
-                />
-              </div>
-            </section>
+            {/* 8. Career Momentum — Mobile: #9, Desktop: Row 4 Right */}
+            <div className="order-9 lg:order-8 flex flex-col">
+              <CareerMomentumCard
+                momentum={activeData.momentum}
+                forceExpand={isAllExpanded}
+              />
+            </div>
 
-            {/* ── ZONE 3: WHERE I'M GOING (Mobile: order-5, Desktop: order-3) ── */}
-            <section id="zone-3" className="space-y-3 order-5 lg:order-3 scroll-mt-24 sm:scroll-mt-28">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 font-['Syne',sans-serif]">
-                  3. Where I&apos;m Going
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-7 items-stretch">
-                {/* Direction always visible */}
-                <CareerDirectionCard
-                  direction={activeData.careerDirection}
-                  onOpenExplain={handleOpenExplain}
-                />
-                {/* Goal: hidden on mobile (shown in mobile-only section above), visible on desktop */}
-                <div className="hidden lg:block">
-                  <CareerGoalCard
-                    goal={activeData.careerGoal}
-                    onSelectGoalType={handleSelectGoalType}
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* ── ZONE 4: WHAT I DO NEXT (Mobile: order-6, Desktop: order-4) ── */}
-            <section id="zone-4" className="space-y-6 sm:space-y-7 order-6 lg:order-4 scroll-mt-24 sm:scroll-mt-28">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 font-['Syne',sans-serif]">
-                  4. What I Do Next
-                </h2>
-              </div>
-
-              {/* Full 3-col grid — desktop only (mobile NBA is in the mobile-priority section above) */}
-              <div className="hidden lg:grid grid-cols-3 gap-6 sm:gap-7 items-stretch">
-                <div className="col-span-2">
-                  <NextBestActionCard
-                    action={activeData.nextBestAction}
-                    onOpenExplain={handleOpenExplain}
-                    onOpenCaptureModal={() => setCaptureEventOpen(true)}
-                    onComplete={() => {
-                      trackNextBestActionCompleted(activeData.nextBestAction.title);
-                      showToast("Action completed! Great work advancing toward your goal.", "success");
-                    }}
-                    onDismiss={() => {
-                      trackNextBestActionDismissed(activeData.nextBestAction.title);
-                      showToast("Recommendation dismissed.", "info");
-                    }}
-                  />
-                </div>
-                <div className="col-span-1">
-                  <CareerMomentumCard momentum={activeData.momentum} />
-                </div>
-              </div>
-
-              {/* Momentum — mobile: shown here (order-7 in spec, after Explore) */}
-              <div className="lg:hidden">
-                <CareerMomentumCard momentum={activeData.momentum} />
-              </div>
-
-              {/* Explore Your Career */}
-              <ExploreCareerSection items={activeData.careerExploration} />
-            </section>
-
+            {/* 9. Explore Career — Mobile: #8, Desktop: Row 5 Full Width */}
+            <div className="col-span-1 lg:col-span-2 order-8 lg:order-9">
+              <ExploreCareerSection
+                items={activeData.careerExploration}
+                forceExpand={isAllExpanded}
+              />
+            </div>
           </div>
         )}
       </main>

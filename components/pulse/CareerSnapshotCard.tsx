@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import Link from "next/link";
 import {
@@ -19,9 +19,12 @@ import { SnapshotData, AiTraceabilityContext } from "./types";
 interface Props {
   data: SnapshotData;
   onOpenExplain: (ctx: AiTraceabilityContext) => void;
+  forceExpand?: boolean;
 }
 
-export default function CareerSnapshotCard({ data, onOpenExplain }: Props) {
+export default function CareerSnapshotCard({ data, onOpenExplain, forceExpand }: Props) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const expanded = forceExpand !== undefined ? forceExpand : isExpanded;
   const cardRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(cardRef, { once: true, amount: 0.15 });
 
@@ -73,77 +76,81 @@ export default function CareerSnapshotCard({ data, onOpenExplain }: Props) {
   return (
     <motion.div
       ref={cardRef}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      whileHover={{ y: -4, transition: { duration: 0.22 } }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative rounded-3xl overflow-hidden
+      whileHover={{ y: -3, transition: { duration: 0.2 } }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="group relative rounded-2xl overflow-hidden
         border border-amber-500/25 dark:border-amber-400/20
         bg-white dark:bg-gradient-to-br dark:from-[#0c1633] dark:via-[#101F48] dark:to-[#0A1229]
         text-[var(--text-primary)]
-        p-7 sm:p-8
-        shadow-[0_4px_24px_rgba(16,27,59,0.06)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.65)]
-        hover:shadow-[0_16px_48px_rgba(16,27,59,0.14)] dark:hover:shadow-[0_32px_80px_rgba(0,0,0,0.8)]
-        hover:border-amber-500/50 dark:hover:border-amber-400/40
-        transition-shadow transition-colors duration-300 cursor-default"
+        p-5 sm:p-6
+        shadow-[0_4px_20px_rgba(16,27,59,0.05)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.6)]
+        hover:shadow-[0_12px_36px_rgba(16,27,59,0.12)] dark:hover:shadow-[0_24px_64px_rgba(0,0,0,0.75)]
+        hover:border-amber-500/40 dark:hover:border-amber-400/35
+        transition-all duration-300 cursor-default flex flex-col justify-between"
     >
       {/* Ambient background glows */}
-      <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-gradient-to-br from-amber-500/10 dark:from-amber-500/15 via-blue-600/5 dark:via-blue-600/10 to-transparent blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-700" />
-      <div className="absolute -bottom-28 -left-20 w-72 h-72 rounded-full bg-gradient-to-tr from-violet-600/10 dark:from-violet-600/15 via-amber-500/5 to-transparent blur-3xl pointer-events-none group-hover:opacity-70 transition-opacity duration-500" />
+      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-amber-500/10 dark:from-amber-500/15 via-blue-600/5 dark:via-blue-600/10 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-28 -left-20 w-64 h-64 rounded-full bg-gradient-to-tr from-violet-600/10 dark:from-violet-600/15 via-amber-500/5 to-transparent blur-3xl pointer-events-none" />
 
       {/* Decorative dot grid watermark */}
       <div className="absolute inset-0 opacity-[0.025] dark:opacity-[0.03] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] dark:bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
 
       <div className="relative z-10 flex flex-col h-full justify-between">
         {/* Top header */}
-        <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2.5">
-            <motion.div
-              whileHover={{ rotate: [0, -10, 10, 0], transition: { duration: 0.4 } }}
-              className="w-9 h-9 rounded-xl bg-amber-500/15 dark:bg-amber-500/20 border border-amber-500/30 dark:border-amber-400/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner"
-            >
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 dark:bg-amber-500/20 border border-amber-500/30 dark:border-amber-400/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner">
               <Sparkles className="w-4 h-4" />
-            </motion.div>
+            </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-700 dark:text-amber-400 font-['Syne',sans-serif]">
-                  Where I Stand · Career Snapshot
+                  CAREER SNAPSHOT
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-                  Verified Snapshot
+                <span className="px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                  Verified
                 </span>
               </div>
-              <p className="text-[12px] text-[var(--text-muted)] font-medium">
-                Living snapshot of your current professional footprint
+              <p className="text-[11.5px] text-[var(--text-muted)] font-medium">
+                Current positioning
               </p>
             </div>
           </div>
 
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleExplainClick}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full
-              bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10
-              border border-slate-200 dark:border-white/15
-              text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)]
-              transition-all cursor-pointer shadow-sm"
-            title="Inspect AI reasoning and evidence sources"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-amber-500" />
-            <span className="hidden sm:inline font-medium">Why this?</span>
-          </motion.button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleExplainClick}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full
+                bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10
+                border border-slate-200 dark:border-white/15
+                text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]
+                transition-all cursor-pointer shadow-2xs"
+              title="Inspect AI reasoning and evidence sources"
+            >
+              <HelpCircle className="w-3 h-3 text-amber-500" />
+              <span className="hidden sm:inline font-medium">Why this?</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!expanded)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/15 text-[11px] font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer shadow-2xs"
+            >
+              <span>{expanded ? "Collapse" : "Expand"}</span>
+              <span className="text-[9px]">{expanded ? "▴" : "▾"}</span>
+            </button>
+          </div>
         </div>
 
         {/* Main Headline & Experience */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-3 mb-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-lg
               bg-amber-50 dark:bg-white/10 border border-amber-200 dark:border-white/10
-              text-xs font-semibold text-amber-800 dark:text-amber-300 mb-2.5">
-              <Briefcase className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              {/* Animated counter */}
+              text-[11px] font-semibold text-amber-800 dark:text-amber-300 mb-2">
+              <Briefcase className="w-3 h-3 text-amber-600 dark:text-amber-400" />
               <span>
                 <motion.span>{yearsDisplay}</motion.span>
                 {" "}Years Relevant Experience
@@ -152,83 +159,84 @@ export default function CareerSnapshotCard({ data, onOpenExplain }: Props) {
               <span>{data.evidenceCount} Evidenced Facts</span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif] leading-tight">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif] leading-tight">
               {data.headline}
-            </h1>
+            </h2>
           </div>
 
-          {/* Role & Scope Box */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-4 rounded-2xl
-            bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10
-            hover:bg-slate-100/70 dark:hover:bg-white/[0.06] transition-colors duration-200">
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                <Building2 className="w-3.5 h-3.5 text-amber-500" />
-                <span>Current Role & Org</span>
+          {/* Role, Org & Scope Container */}
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 space-y-2">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-amber-500 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-[var(--text-primary)] truncate">{data.currentRole}</p>
+                <p className="text-[11px] text-[var(--text-muted)] font-medium truncate">{data.organization}</p>
               </div>
-              <p className="text-[14px] font-bold text-[var(--text-primary)]">{data.currentRole}</p>
-              <p className="text-[12px] text-[var(--text-muted)] font-medium">{data.organization}</p>
             </div>
 
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                <Users className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
-                <span>Responsibility & Scope</span>
-              </div>
-              <p className="text-[13px] text-[var(--text-secondary)] leading-snug line-clamp-2">{data.scope}</p>
+            {/* Scope (Always visible per 30 Sep 2026 specs: 1-line clamp in compact, full in expanded) */}
+            <div className="pt-2 border-t border-slate-200/60 dark:border-white/5 flex items-start gap-1.5">
+              <Users className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
+              <p className={`text-[11.5px] text-[var(--text-secondary)] leading-relaxed ${expanded ? "" : "line-clamp-1"}`}>
+                <span className="font-semibold text-[var(--text-primary)]">Scope: </span>
+                {data.scope}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Capabilities */}
-        <div className="space-y-2 mb-6">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-amber-500" />
-              Core Capabilities Established
+        <div className="space-y-1.5 mb-4">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <Layers className="w-3 h-3 text-amber-500" />
+              Key Capabilities
             </span>
-            <span className="text-[11px] text-[var(--text-muted)] lowercase">
+            <span className="text-[10px] text-[var(--text-muted)]">
               {data.capabilities.length} verified
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {data.capabilities.map((cap, i) => (
-              <motion.span
+          <div className="flex flex-wrap gap-1.5">
+            {(expanded ? data.capabilities : data.capabilities.slice(0, 4)).map((cap) => (
+              <span
                 key={cap}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ delay: 0.3 + i * 0.06, duration: 0.25 }}
-                whileHover={{ scale: 1.05, y: -1 }}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold
+                className="px-2.5 py-1 rounded-lg text-[11px] font-semibold
                   bg-slate-50 dark:bg-white/10 hover:bg-amber-50 dark:hover:bg-amber-500/15
                   border border-slate-200 dark:border-white/10 hover:border-amber-400/40
-                  text-[var(--text-primary)] transition-all shadow-sm cursor-default"
+                  text-[var(--text-primary)] transition-all cursor-default"
               >
                 {cap}
-              </motion.span>
+              </span>
             ))}
+            {!expanded && data.capabilities.length > 4 && (
+              <button
+                type="button"
+                onClick={() => setIsExpanded(true)}
+                className="px-2 py-1 rounded-lg text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 cursor-pointer"
+              >
+                +{data.capabilities.length - 4} more
+              </button>
+            )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
-            <span className="text-xs text-[var(--text-secondary)] font-medium">{data.progressionSignal}</span>
+        <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981] shrink-0" />
+            <span className="text-[11.5px] text-[var(--text-secondary)] font-medium truncate">{data.progressionSignal}</span>
           </div>
 
-          <motion.div whileHover={{ x: 2 }}>
-            <Link
-              href="/value/profile"
-              className="inline-flex items-center gap-1.5 text-xs font-bold
-                text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300
-                transition-all no-underline group/link"
-            >
-              <span>Explore Career Profile</span>
-              <ArrowUpRight className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-            </Link>
-          </motion.div>
+          <Link
+            href="/value/profile"
+            className="inline-flex items-center gap-1 text-[11.5px] font-bold
+              text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300
+              transition-all no-underline shrink-0"
+          >
+            <span>View Profile →</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </div>
     </motion.div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 import {
@@ -19,9 +19,12 @@ import { CareerValueData, QualitativeLevel, AiTraceabilityContext } from "./type
 interface Props {
   data: CareerValueData;
   onOpenExplain: (ctx: AiTraceabilityContext) => void;
+  forceExpand?: boolean;
 }
 
-export default function CareerValueCard({ data, onOpenExplain }: Props) {
+export default function CareerValueCard({ data, onOpenExplain, forceExpand }: Props) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const expanded = forceExpand !== undefined ? forceExpand : isExpanded;
   const cardRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(cardRef, { once: true, amount: 0.15 });
   const dimensions: {
@@ -138,11 +141,11 @@ export default function CareerValueCard({ data, onOpenExplain }: Props) {
   return (
     <motion.div
       ref={cardRef}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      whileHover={{ y: -4, transition: { duration: 0.22 } }}
-      transition={{ duration: 0.45, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-[#101A38] dark:via-[#12224F] dark:to-[#0D1530] text-[var(--text-primary)] p-7 sm:p-8 shadow-[0_4px_24px_rgba(16,27,59,0.06)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] hover:shadow-[0_16px_48px_rgba(16,27,59,0.14)] dark:hover:shadow-[0_32px_80px_rgba(0,0,0,0.8)] hover:border-slate-300 dark:hover:border-white/20 transition-shadow transition-colors duration-300 flex flex-col justify-between"
+      whileHover={{ y: -3, transition: { duration: 0.2 } }}
+      transition={{ duration: 0.4, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+      className="group relative rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-[#101A38] dark:via-[#12224F] dark:to-[#0D1530] text-[var(--text-primary)] p-5 sm:p-6 shadow-[0_4px_20px_rgba(16,27,59,0.05)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.6)] hover:shadow-[0_12px_36px_rgba(16,27,59,0.12)] dark:hover:shadow-[0_24px_64px_rgba(0,0,0,0.75)] hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300 flex flex-col justify-between"
     >
       {/* Ambient background glows */}
       <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-3xl pointer-events-none" />
@@ -150,99 +153,107 @@ export default function CareerValueCard({ data, onOpenExplain }: Props) {
 
       <div>
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-400/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-inner">
-              <ShieldCheck className="w-4.5 h-4.5" />
+            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-400/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-inner">
+              <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-black uppercase tracking-[0.16em] text-blue-700 dark:text-blue-400 font-['Syne',sans-serif]">
-                  What I Have Built · Career Value
+                  CAREER VALUE
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-800 dark:text-blue-300 border border-blue-400/30">
+                <span className="px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-blue-500/15 text-blue-800 dark:text-blue-300 border border-blue-400/30">
                   Multidimensional
                 </span>
               </div>
-              <p className="text-[12px] text-[var(--text-muted)] font-medium">
+              <p className="text-[11.5px] text-[var(--text-muted)] font-medium">
                 5 qualitative pillars of substantiated career equity
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleExplainClick}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/15 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer shadow-2xs"
-            title="Inspect dimension criteria"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-blue-500" />
-            <span className="hidden sm:inline font-medium">Criteria</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleExplainClick}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/15 text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer shadow-2xs"
+              title="Inspect dimension criteria"
+            >
+              <HelpCircle className="w-3 h-3 text-blue-500" />
+              <span className="hidden sm:inline font-medium">Criteria</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!expanded)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/15 text-[11px] font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer shadow-2xs"
+            >
+              <span>{expanded ? "Collapse" : "Expand"}</span>
+              <span className="text-[9px]">{expanded ? "▴" : "▾"}</span>
+            </button>
+          </div>
         </div>
 
         {/* 5 Dimensions Meter List */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-2 mb-4">
           {dimensions.map((dim) => {
             const config = getLevelConfig(dim.level);
             const Icon = dim.icon;
             return (
-            <motion.div
+              <div
                 key={dim.label}
-                whileHover={{ scale: 1.01, x: 2, transition: { duration: 0.18 } }}
-                className="p-3 rounded-2xl bg-slate-50 dark:bg-white/[0.03] hover:bg-slate-100/70 dark:hover:bg-white/[0.06] border border-slate-200 dark:border-white/5 transition-all cursor-default"
+                className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] hover:bg-slate-100/70 dark:hover:bg-white/[0.06] border border-slate-200 dark:border-white/5 transition-all cursor-default"
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-1.5">
                     <Icon className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                     <span className="text-xs font-bold text-[var(--text-primary)] font-['Syne',sans-serif]">
                       {dim.label}
                     </span>
                   </div>
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${config.badgeBg}`}
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${config.badgeBg}`}
                   >
                     {dim.level}
                   </span>
                 </div>
 
-                {/* Qualitative Bar Meter — animates when card scrolls into view */}
-                <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden relative">
+                {/* Qualitative Bar Meter */}
+                <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden relative">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={isInView ? { width: `${config.percent}%` } : { width: 0 }}
-                    transition={{ duration: 0.9, delay: dimensions.indexOf(dim) * 0.12, ease: "easeOut" }}
-                    className={`h-full rounded-full bg-gradient-to-r ${config.color} shadow-sm`}
-                    style={{ boxShadow: `0 0 12px ${config.glow}` }}
+                    transition={{ duration: 0.8, delay: dimensions.indexOf(dim) * 0.1, ease: "easeOut" }}
+                    className={`h-full rounded-full bg-gradient-to-r ${config.color}`}
                   />
                 </div>
-                <p className="text-[11px] text-[var(--text-muted)] mt-1.5 font-medium line-clamp-1">
-                  {dim.description}
-                </p>
-              </motion.div>
+                {expanded && (
+                  <p className="text-[10.5px] text-[var(--text-muted)] mt-1 font-medium leading-tight">
+                    {dim.description}
+                  </p>
+                )}
+              </div>
             );
           })}
         </div>
       </div>
 
       {/* Footer & Deep Dive CTA */}
-      <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+      <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)]">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
           <span>
-            {data.traceableCount} verified facts ·{" "}
-            {data.pendingReviewCount > 0
-              ? `${data.pendingReviewCount} ready for review`
-              : "fully calibrated"}
+            {data.traceableCount} verified facts
+            {expanded && data.pendingReviewCount > 0 && ` · ${data.pendingReviewCount} review pending`}
           </span>
         </div>
 
         <Link
-          href="/value/profile"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-500/30 border border-blue-200 dark:border-blue-400/30 text-xs font-bold text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-white transition-all shadow-xs no-underline w-fit"
+          href="/value"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-500/30 border border-blue-200 dark:border-blue-400/30 text-xs font-bold text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-white transition-all shadow-2xs no-underline"
         >
           <span>View Career Value</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3 h-3" />
         </Link>
       </div>
     </motion.div>

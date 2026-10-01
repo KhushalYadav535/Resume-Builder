@@ -13,7 +13,7 @@ import {
   Bot, BookOpen, LayoutTemplate, Search, ArrowRight, CheckCircle2,
   AlertTriangle, Sparkles, Clock, ChevronRight, ChevronLeft, Trash2,
   MoreVertical, Star, Compass, Award, TrendingUp, Edit3, Eye, Zap,
-  Check, ArrowUpRight, Activity
+  Check, ArrowUpRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImpactNudgeCard from "@/components/value/ImpactNudgeCard";
@@ -432,13 +432,6 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/pulse"
-              className="flex items-center gap-2 px-4 h-11 rounded-xl border border-amber-500/30 text-sm font-bold text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 transition-all shadow-xs"
-            >
-              <Activity className="w-4 h-4 text-amber-500 animate-pulse" />
-              <span>Open Pulse</span>
-            </Link>
             <Link
               href="/resume/upload"
               className="flex items-center gap-2 px-4 h-11 rounded-xl border border-[var(--border)] text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--card)] hover:bg-[var(--bg-2)] transition-all shadow-xs"

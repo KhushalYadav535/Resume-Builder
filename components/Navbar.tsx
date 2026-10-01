@@ -51,25 +51,11 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-interface SubMenuItem {
-  label: string;
-  desc?: string;
-  href: string;
-  badge?: string;
-  icon?: any;
-}
-
-interface SubSection {
-  heading: string;
-  items: SubMenuItem[];
-}
-
 interface NavItem {
   href: string;
   label: string;
   icon: any;
   activeMatch: (pathname: string) => boolean;
-  subSections?: SubSection[];
 }
 
 export default function Navbar() {
@@ -81,13 +67,6 @@ export default function Navbar() {
     tier: "Loading...",
     credit_balance: 0,
   });
-
-  // Desktop hover dropdown state
-  const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Mobile drawer accordion state
-  const [expandedMobileMenu, setExpandedMobileMenu] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && user.id) {
@@ -129,7 +108,6 @@ export default function Navbar() {
 
   useEffect(() => {
     setMobileMenuOpen(false);
-    setHoveredMenu(null);
   }, [pathname]);
 
   useEffect(() => {
@@ -139,17 +117,6 @@ export default function Navbar() {
       document.body.style.overflow = "";
     }
   }, [mobileMenuOpen]);
-
-  const handleMouseEnter = (label: string) => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    setHoveredMenu(label);
-  };
-
-  const handleMouseLeave = () => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      setHoveredMenu(null);
-    }, 160);
-  };
 
   // Admin Navigation Links
   const adminLinks = [
@@ -168,7 +135,7 @@ export default function Navbar() {
       label: "Pulse",
       href: "/pulse",
       icon: Activity,
-      activeMatch: (p) => p === "/pulse" || p.startsWith("/pulse") || p === "/dashboard",
+      activeMatch: (p) => p === "/pulse" || p.startsWith("/pulse"),
     },
     {
       label: "Value",
@@ -178,163 +145,12 @@ export default function Navbar() {
         p.startsWith("/value") ||
         p.startsWith("/career-discovery") ||
         p.startsWith("/resume"),
-      subSections: [
-        {
-          heading: "Discovery Modes (Level 2)",
-          items: [
-            {
-              label: "Career Value Profile",
-              desc: "Multidimensional capabilities, impact patterns & progression",
-              href: "/value/profile",
-              badge: "Derived",
-              icon: Brain,
-            },
-            {
-              label: "Value Overview Workspace",
-              desc: "Consolidated view of your career facts and categories",
-              href: "/value",
-              badge: "Overview",
-              icon: FileText,
-            },
-            {
-              label: "Interactive Discovery (CDE)",
-              desc: "Google Maps-like card-based information gathering",
-              href: "/career-discovery",
-              badge: "Cards",
-              icon: Map,
-            },
-            {
-              label: "Resume & Profile Studio",
-              desc: "Edit and curate your core resume information",
-              href: "/resume/builder?new=true",
-              badge: "Editor",
-              icon: FileText,
-            },
-          ],
-        },
-        {
-          heading: "Value Dimensions",
-          items: [
-            {
-              label: "Employment History",
-              desc: "Companies, roles, tenures & responsibilities",
-              href: "/value/employment",
-              icon: Briefcase,
-            },
-            {
-              label: "Projects",
-              desc: "Engineering deliverables, architecture & ownership",
-              href: "/value/projects",
-              icon: FileText,
-            },
-            {
-              label: "Achievements",
-              desc: "Quantified accomplishments & business metrics",
-              href: "/value/achievements",
-              icon: Award,
-            },
-            {
-              label: "Skills & Capabilities",
-              desc: "Technical stack, tools & leadership skills",
-              href: "/value/skills",
-              icon: Sparkles,
-            },
-            {
-              label: "Education & Certifications",
-              desc: "Academic qualifications & credentials",
-              href: "/value/education",
-              icon: Award,
-            },
-            {
-              label: "Career Events",
-              desc: "Milestones, promotions & transitions",
-              href: "/career-journal#events",
-              icon: BookOpen,
-            },
-          ],
-        },
-      ],
     },
     {
       label: "Momentum",
       href: "/momentum",
       icon: TrendingUp,
-      activeMatch: (p) => p.startsWith("/momentum"),
-      subSections: [
-        {
-          heading: "Foundation (Level 1)",
-          items: [
-            {
-              label: "Career Priorities",
-              desc: "What matters most to you right now",
-              href: "/momentum#priorities",
-              icon: Target,
-            },
-            {
-              label: "Target Career Goals",
-              desc: "Specific desired outcome & timeline",
-              href: "/momentum#priorities",
-              icon: Award,
-            },
-          ],
-        },
-        {
-          heading: "Execution Engine (Level 2)",
-          items: [
-            {
-              label: "Readiness & Gaps",
-              desc: "Audit current state against target benchmarks",
-              href: "/momentum#readiness",
-              icon: CheckCircle2,
-            },
-            {
-              label: "Strategy, Actions & Outcomes",
-              desc: "Concrete milestones, next steps & tracked wins",
-              href: "/momentum#strategy",
-              icon: Rocket,
-            },
-          ],
-        },
-        {
-          heading: "Strategic Tools (Level 3)",
-          items: [
-            {
-              label: "Negotiations & Offers",
-              desc: "Offer evaluator & negotiation script generator",
-              href: "/career-copilot?tab=negotiation",
-              badge: "Strategy",
-              icon: Handshake,
-            },
-            {
-              label: "Interview Prep & Pitch",
-              desc: "Narrative studio, AI questions & gap storyteller",
-              href: "/career-copilot?tab=interview",
-              badge: "AI",
-              icon: MessageSquare,
-            },
-            {
-              label: "Skill Gap & Career Path",
-              desc: "Telemetry & trajectory recommendations",
-              href: "/career-copilot?tab=skillgap",
-              badge: "Audit",
-              icon: Sparkles,
-            },
-            {
-              label: "Planning & Growth",
-              desc: "Promotion case builder & networking assistant",
-              href: "/career-copilot?tab=growth",
-              icon: TrendingUp,
-            },
-            {
-              label: "Match: Precision JD Matching",
-              desc: "Job description matching & AI resume tailoring",
-              href: "/resume/tailor",
-              badge: "ATS",
-              icon: Crosshair,
-            },
-          ],
-        },
-      ],
+      activeMatch: (p) => p === "/momentum" || p.startsWith("/momentum"),
     },
     {
       label: "Journal",
@@ -347,61 +163,6 @@ export default function Navbar() {
       href: "/career-copilot",
       icon: Compass,
       activeMatch: (p) => p.startsWith("/career-copilot"),
-      subSections: [
-        {
-          heading: "AI Career Partner",
-          items: [
-            {
-              label: "AI Career Partner",
-              desc: "Personalized executive copilot for tech careers",
-              href: "/career-copilot",
-              badge: "Core",
-              icon: Compass,
-            },
-            {
-              label: "LinkedIn & Recruiter Visibility",
-              desc: "Profile audit & recruiter search optimization",
-              href: "/career-copilot?tab=market",
-              icon: Users,
-            },
-            {
-              label: "Career Paths",
-              desc: "Next-step trajectory & role recommendations",
-              href: "/career-copilot?tab=skillgap",
-              icon: TrendingUp,
-            },
-          ],
-        },
-        {
-          heading: "Market Awareness Suite",
-          items: [
-            {
-              label: "Salary Benchmarking",
-              desc: "Real-time tech compensation benchmarks",
-              href: "/career-copilot?tab=market",
-              icon: BarChart3,
-            },
-            {
-              label: "Market Timing Alerts",
-              desc: "Hiring cycles & industry trends",
-              href: "/career-copilot?tab=market",
-              icon: Clock,
-            },
-            {
-              label: "Company Research Brief",
-              desc: "Deep-dive culture, stack & interview intel",
-              href: "/career-copilot?tab=market",
-              icon: FileText,
-            },
-            {
-              label: "Recruiter Visibility Audit",
-              desc: "Audit inbound visibility & search indexing",
-              href: "/career-copilot?tab=market",
-              icon: Search,
-            },
-          ],
-        },
-      ],
     },
   ];
 
@@ -483,102 +244,21 @@ export default function Navbar() {
               {pillars.map((pillar) => {
                 const Icon = pillar.icon;
                 const isActive = pillar.activeMatch(pathname);
-                const hasSub = !!pillar.subSections && pillar.subSections.length > 0;
-                const isOpen = hoveredMenu === pillar.label;
 
                 return (
-                  <div
+                  <Link
                     key={pillar.label}
-                    className="relative"
-                    onMouseEnter={() => handleMouseEnter(pillar.label)}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <Link
-                      href={pillar.href}
-                      className={cn(
-                        "relative px-3 py-1.5 text-[13px] rounded-full transition-all duration-200 ease-out no-underline flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.97]",
-                        isActive
-                          ? "bg-amber-500 text-brand-navy font-bold shadow-sm shadow-amber-500/25 border border-amber-500"
-                          : isOpen
-                          ? "text-brand-navy dark:text-amber-400 bg-amber-500/15 border border-amber-500/40 font-semibold"
-                          : "font-semibold text-slate-600 dark:text-slate-300 bg-slate-100/75 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 hover:text-brand-navy dark:hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/30"
-                      )}
-                    >
-                      <Icon size={14} className="shrink-0" />
-                      <span>{pillar.label}</span>
-                      {hasSub && (
-                        <ChevronDown
-                          size={12}
-                          className={cn(
-                            "transition-transform duration-200 opacity-60",
-                            isOpen && "transform rotate-180 opacity-100 text-amber-500"
-                          )}
-                        />
-                      )}
-                    </Link>
-
-                    {/* Rich Desktop Dropdown Menu */}
-                    {hasSub && isOpen && (
-                      <div
-                        className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-[150]"
-                        onMouseEnter={() => handleMouseEnter(pillar.label)}
-                        onMouseLeave={handleMouseLeave}
-                      >
-                        <div
-                          className={cn(
-                            "bg-white/95 dark:bg-[#0B132B]/95 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-4 transition-all duration-200",
-                            pillar.subSections!.length > 2
-                              ? "w-[680px] grid grid-cols-3 gap-4"
-                              : pillar.subSections!.length === 2
-                              ? "w-[560px] grid grid-cols-2 gap-4"
-                              : "w-[340px] space-y-3"
-                          )}
-                        >
-                          {pillar.subSections!.map((section, idx) => (
-                            <div key={idx} className="space-y-2">
-                              <div className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] px-2 pb-1 border-b border-[var(--border)]">
-                                {section.heading}
-                              </div>
-                              <div className="space-y-1">
-                                {section.items.map((item, itemIdx) => {
-                                  const ItemIcon = item.icon || ChevronRight;
-                                  return (
-                                    <Link
-                                      key={itemIdx}
-                                      href={item.href}
-                                      className="flex items-start gap-2.5 p-2 rounded-xl text-left hover:bg-amber-500/10 dark:hover:bg-white/[0.06] transition-colors group no-underline"
-                                      onClick={() => setHoveredMenu(null)}
-                                    >
-                                      <div className="w-6 h-6 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-amber-500 group-hover:text-brand-navy transition-colors">
-                                        <ItemIcon size={13} />
-                                      </div>
-                                      <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-1.5">
-                                          <span className="text-[12px] font-bold text-[var(--text-primary)] group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate">
-                                            {item.label}
-                                          </span>
-                                          {item.badge && (
-                                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 uppercase">
-                                              {item.badge}
-                                            </span>
-                                          )}
-                                        </div>
-                                        {item.desc && (
-                                          <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-snug line-clamp-2">
-                                            {item.desc}
-                                          </p>
-                                        )}
-                                      </div>
-                                    </Link>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                    href={pillar.href}
+                    className={cn(
+                      "relative px-3.5 py-1.5 text-[13px] rounded-full transition-all duration-200 ease-out no-underline flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.97]",
+                      isActive
+                        ? "bg-amber-500 text-brand-navy font-bold shadow-sm shadow-amber-500/25 border border-amber-500"
+                        : "font-semibold text-slate-600 dark:text-slate-300 bg-slate-100/75 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 hover:text-brand-navy dark:hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/30"
                     )}
-                  </div>
+                  >
+                    <Icon size={14} className="shrink-0" />
+                    <span>{pillar.label}</span>
+                  </Link>
                 );
               })}
             </div>
@@ -796,68 +476,22 @@ export default function Navbar() {
               pillars.map((pillar) => {
                 const Icon = pillar.icon;
                 const isActive = pillar.activeMatch(pathname);
-                const hasSub = !!pillar.subSections && pillar.subSections.length > 0;
-                const isExpanded = expandedMobileMenu === pillar.label;
 
                 return (
-                  <div key={pillar.label} className="flex flex-col">
-                    <div className="flex items-center justify-between">
-                      <Link
-                        href={pillar.href}
-                        className={cn(
-                          "flex items-center gap-2.5 h-[46px] px-4 rounded-[var(--radius-md)] text-[15px] font-semibold transition-colors flex-1 no-underline",
-                          isActive
-                            ? "text-amber-600 dark:text-amber-400 bg-amber-500/10 font-bold"
-                            : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
-                        )}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Icon size={18} className="shrink-0" />
-                        <span>{pillar.label}</span>
-                      </Link>
-                      {hasSub && (
-                        <button
-                          onClick={() =>
-                            setExpandedMobileMenu(isExpanded ? null : pillar.label)
-                          }
-                          className="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-transform"
-                        >
-                          <ChevronDown
-                            size={18}
-                            className={cn("transition-transform", isExpanded && "rotate-180")}
-                          />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Mobile Accordion Submenu */}
-                    {hasSub && isExpanded && (
-                      <div className="pl-6 pr-2 py-2 space-y-3 bg-[var(--bg-elevated)] rounded-xl my-1">
-                        {pillar.subSections!.map((sec, sIdx) => (
-                          <div key={sIdx} className="space-y-1.5">
-                            <div className="text-[10px] font-extrabold uppercase text-[var(--text-muted)] tracking-wider">
-                              {sec.heading}
-                            </div>
-                            {sec.items.map((item, iIdx) => (
-                              <Link
-                                key={iIdx}
-                                href={item.href}
-                                className="flex items-center justify-between py-1.5 px-2 text-[12px] font-medium text-[var(--text-secondary)] hover:text-amber-500 transition-colors no-underline"
-                                onClick={() => setMobileMenuOpen(false)}
-                              >
-                                <span className="truncate">{item.label}</span>
-                                {item.badge && (
-                                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500">
-                                    {item.badge}
-                                  </span>
-                                )}
-                              </Link>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
+                  <Link
+                    key={pillar.label}
+                    href={pillar.href}
+                    className={cn(
+                      "flex items-center gap-2.5 h-[46px] px-4 rounded-[var(--radius-md)] text-[15px] font-semibold transition-colors no-underline",
+                      isActive
+                        ? "text-amber-600 dark:text-amber-400 bg-amber-500/10 font-bold"
+                        : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
                     )}
-                  </div>
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Icon size={18} className="shrink-0" />
+                    <span>{pillar.label}</span>
+                  </Link>
                 );
               })
             )
