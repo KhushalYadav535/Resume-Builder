@@ -3,8 +3,16 @@
 import Link from "next/link";
 import UpRoleLogo from "@/components/UpRoleLogo";
 import { Sparkles, ArrowRight, ShieldCheck, Heart } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Footer() {
+  const { user } = useAuth();
+
+  // Hide footer when user is logged in
+  if (user) {
+    return null;
+  }
+
   return (
     <footer id="footer" className="bg-[var(--bg-elevated)] border-t border-[var(--border)] text-[var(--text-secondary)] font-sans">
       <div className="max-w-7xl mx-auto px-6 py-12 md:py-16">

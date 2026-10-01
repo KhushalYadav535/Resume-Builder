@@ -2153,4 +2153,240 @@ textarea.input {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   VALUE SCREEN — PREMIUM UX LAYER (same theme tokens)
+   Entrance choreography · focus rings · skeletons · journey
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes value-rise {
+  from { opacity: 0; transform: translateY(26px) scale(0.995); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes value-pop {
+  0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
+  60%  { opacity: 1; transform: scale(1.015) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes value-bar-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.value-rise {
+  opacity: 0;
+  animation: value-rise 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.value-pop {
+  opacity: 0;
+  animation: value-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.value-delay-1 { animation-delay: 0.05s; }
+.value-delay-2 { animation-delay: 0.14s; }
+.value-delay-3 { animation-delay: 0.23s; }
+.value-delay-4 { animation-delay: 0.32s; }
+.value-delay-5 { animation-delay: 0.41s; }
+
+/* Anchor sections sit below the sticky tab bar */
+.value-anchor {
+  scroll-margin-top: 140px;
+}
+
+/* Pulse card anchors sit below the 68px navbar */
+.pulse-anchor {
+  scroll-margin-top: 88px;
+  scroll-behavior: smooth;
+}
+
+/* Premium gold focus ring — keyboard users only */
+.value-scope :focus-visible {
+  outline: 2px solid #F59E0B;
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+/* Skeleton shimmer for value loading state */
+.value-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+}
+.value-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(245, 158, 11, 0.10) 45%, rgba(255, 255, 255, 0.35) 50%, rgba(245, 158, 11, 0.10) 55%, transparent 80%);
+  background-size: 200% 100%;
+  animation: journal-shimmer 1.8s linear infinite;
+}
+[data-theme="dark"] .value-skeleton::after {
+  background: linear-gradient(100deg, transparent 20%, rgba(245, 158, 11, 0.14) 45%, rgba(255, 255, 255, 0.08) 50%, rgba(245, 158, 11, 0.14) 55%, transparent 80%);
+  background-size: 200% 100%;
+}
+
+/* Animated meter bars */
+.value-bar {
+  transform-origin: left center;
+  animation: value-bar-grow 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* No-scrollbar helper for horizontal strips */
+.value-noscroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.value-noscroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Slow ambient drift for hero glows (disabled under reduced-motion globally) */
+@keyframes value-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(40px, 24px, 0) scale(1.08); }
+}
+.value-drift {
+  animation: value-drift 16s ease-in-out infinite alternate;
+}
+.value-drift-slow {
+  animation: value-drift 24s ease-in-out infinite alternate-reverse;
+}
+
+/* Editorial serif accent — Playfair is already in the theme bundle */
+.font-editorial {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+}
+
+/* ── Awwwards layer: grain · ghost type · marquee · orbit ── */
+.value-noise {
+  position: relative;
+}
+.value-noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");
+}
+
+.value-ghost {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: rgba(245, 158, 11, 0.08);
+  user-select: none;
+  pointer-events: none;
+}
+@supports (-webkit-text-stroke: 1px black) {
+  .value-ghost {
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(245, 158, 11, 0.22);
+  }
+  [data-theme="dark"] .value-ghost {
+    -webkit-text-stroke-color: rgba(245, 158, 11, 0.3);
+  }
+}
+
+.value-watermark {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(16, 27, 59, 0.10);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+[data-theme="dark"] .value-watermark {
+  -webkit-text-stroke-color: rgba(255, 255, 255, 0.09);
+}
+
+@keyframes value-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.value-marquee-track {
+  animation: value-marquee 30s linear infinite;
+}
+.value-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes value-spin {
+  to { transform: rotate(360deg); }
+}
+.value-spin-slower {
+  animation: value-spin 20s linear infinite;
+}
+
+/* Cursor spotlight — amber glow follows the pointer inside cards */
+.value-spot {
+  position: relative;
+}
+.value-spot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(440px circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(245, 158, 11, 0.13), transparent 65%);
+  z-index: 1;
+}
+.value-spot:hover::before {
+  opacity: 1;
+}
+[data-theme="dark"] .value-spot::before {
+  background: radial-gradient(440px circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(245, 158, 11, 0.17), transparent 65%);
+}
+
+/* Flowing gradient border for the hero AI card */
+@keyframes value-border-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.value-border-flow {
+  background-size: 220% 220%;
+  animation: value-border-pan 7s ease infinite;
+}
+
+/* Light pulse travelling along the traceability pipeline */
+@keyframes value-chain-flow {
+  from { transform: translateX(-130%); }
+  to   { transform: translateX(430%); }
+}
+.value-chain-flow {
+  animation: value-chain-flow 3.4s cubic-bezier(0.45, 0, 0.3, 1) infinite;
+}
+
+/* ── Awwwards research layer ───────────────────────────────
+   1. Bento focus-dim: hovered tile stays lit, siblings recede
+   2. Kinetic word reveal for editorial heroes (CSS-only)      */
+@media (hover: hover) {
+  .value-dim-grid:has(.dim-spot:hover) .dim-spot:not(:hover) {
+    opacity: 0.55;
+    filter: saturate(0.8);
+  }
+  .pulse-dim-grid:has(.pulse-dim:hover) .pulse-dim:not(:hover) {
+    opacity: 0.6;
+    filter: saturate(0.85);
+  }
+}
+
+.value-word {
+  display: inline-block;
+  opacity: 0;
+  animation: value-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
 }

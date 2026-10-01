@@ -14,6 +14,7 @@ import {
 } from "@/types/value";
 import ValueDashboardHeader from "@/components/value/ValueDashboardHeader";
 import ValueNavigationTabs from "@/components/value/ValueNavigationTabs";
+import ValueJourneySteps from "@/components/value/ValueJourneySteps";
 import ValueProfileCard from "@/components/value/ValueProfileCard";
 import ValuePatternCard from "@/components/value/ValuePatternCard";
 import EvidenceFoundationCard from "@/components/value/EvidenceFoundationCard";
@@ -23,7 +24,42 @@ import ValueFactsView from "@/components/value/ValueFactsView";
 import ValueDimensionDetailView from "@/components/value/ValueDimensionDetailView";
 import { useToast } from "@/components/ui/toast-1";
 import { trackValueEvent } from "@/lib/valueAnalytics";
-import { Sparkles, FileText, ArrowRight, RefreshCw, Upload, BookOpen, Award } from "lucide-react";
+import { Sparkles, ArrowRight, Upload, BookOpen, Award, Layers, Database, FileCheck2 } from "lucide-react";
+
+/** Skeleton that mirrors the dashboard layout — reduces perceived wait + layout shift. */
+function ValueLoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-[var(--bg)] flex flex-col font-sans" aria-label="Loading career value" role="status">
+      <Navbar />
+      {/* hero skeleton */}
+      <div className="border-b border-[var(--border)] bg-[var(--card)] px-6 sm:px-8 py-10">
+        <div className="max-w-7xl mx-auto space-y-4">
+          <div className="value-skeleton h-6 w-64 rounded-full" />
+          <div className="value-skeleton h-12 w-2/3 max-w-xl rounded-2xl" />
+          <div className="value-skeleton h-5 w-1/2 max-w-md rounded-xl" />
+          <div className="flex gap-3 pt-2">
+            <div className="value-skeleton h-11 w-40 rounded-2xl" />
+            <div className="value-skeleton h-11 w-36 rounded-2xl" />
+          </div>
+        </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-8 w-full flex-1 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="value-skeleton h-72 rounded-[1.4rem]" style={{ animationDelay: `${i * 0.08}s` }} />
+          ))}
+        </div>
+        <div className="value-skeleton h-64 rounded-[1.75rem]" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="value-skeleton h-44 rounded-[1.4rem]" />
+          ))}
+        </div>
+        <p className="sr-only">We&apos;re understanding your career experience…</p>
+      </div>
+    </div>
+  );
+}
 
 function CareerValueDashboardContent() {
   const { user, loading: authLoading } = useAuth();
@@ -357,65 +393,75 @@ function CareerValueDashboardContent() {
 
   // Loading state (Spec Section 30)
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans">
-        <Navbar />
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 animate-pulse">
-            <Sparkles size={32} />
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-xl font-bold text-[var(--text-primary)] font-['Syne',sans-serif]">
-              We&apos;re understanding your career experience...
-            </h2>
-            <p className="text-xs text-[var(--text-muted)] max-w-md">
-              Constructing the 5-layer traceability graph from verified facts and career events.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ValueLoadingSkeleton />;
   }
 
   // Empty state if no resume is available (Spec Section 31: Constructive action guidance)
   if (!valueData && resumes.length === 0) {
+    const steps = [
+      { icon: Upload, title: "Add your source", text: "Upload or build your resume — it becomes the evidence source." },
+      { icon: FileCheck2, title: "Confirm facts", text: "Review extracted facts in one tap. Nothing becomes truth without you." },
+      { icon: Layers, title: "See your value", text: "Capabilities, impact and patterns appear — every claim traceable." },
+    ];
     return (
-      <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans">
+      <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans value-scope">
         <Navbar />
-        <div className="max-w-2xl mx-auto my-auto p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] text-center space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 mx-auto">
-            <Upload size={30} />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl font-black text-[var(--text-primary)] font-['Syne',sans-serif]">
-              We don&apos;t have enough evidence to interpret this yet.
-            </h2>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-              Upload your resume or record career events to derive verified capabilities, impact patterns, and progression.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <Link
-              href="/resume/builder?new=true"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black text-brand-navy bg-amber-500 hover:bg-amber-400 transition-all shadow-md"
-            >
-              <span>Upload or Build Resume</span>
-              <ArrowRight size={14} />
-            </Link>
-            <Link
-              href="/career-journal"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-primary)] hover:border-amber-500/50"
-            >
-              <BookOpen size={14} />
-              <span>Add a career event</span>
-            </Link>
-            <Link
-              href="/career-journal?type=win"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-primary)] hover:border-amber-500/50"
-            >
-              <Award size={14} className="text-amber-500" />
-              <span>Tell us about an achievement</span>
-            </Link>
+        <div className="max-w-2xl w-full mx-auto my-auto p-6 sm:p-8">
+          <div className="value-pop rounded-[1.75rem] bg-[var(--card)] border border-[var(--border)] shadow-[0_24px_70px_rgba(16,27,59,0.12)] overflow-hidden text-center">
+            <div className="h-[3px] w-full bg-gradient-to-r from-amber-500 via-amber-400/70 to-violet-500/50" aria-hidden="true" />
+            <div className="p-8 sm:p-10 space-y-6">
+              <div className="w-16 h-16 rounded-[1.25rem] bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-brand-navy mx-auto shadow-[0_12px_32px_rgba(245,158,11,0.45)]">
+                <Sparkles size={30} strokeWidth={2.2} />
+              </div>
+              <div className="space-y-2">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">Get started in 3 steps</p>
+                <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
+                  We don&apos;t have enough evidence to interpret this yet.
+                </h2>
+              </div>
+              {/* How it works */}
+              <ol className="grid sm:grid-cols-3 gap-3 text-left">
+                {steps.map((s, i) => {
+                  const Icon = s.icon;
+                  return (
+                    <li key={s.title} className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)]/60 p-4 space-y-2">
+                      <span className="absolute top-3 right-3 text-[11px] font-black text-amber-500/70 tabular-nums">0{i + 1}</span>
+                      <span className="w-9 h-9 rounded-xl bg-amber-500/12 border border-amber-500/25 flex items-center justify-center text-amber-500">
+                        <Icon size={17} />
+                      </span>
+                      <p className="text-[13px] font-extrabold text-[var(--text-primary)]">{s.title}</p>
+                      <p className="text-xs text-[var(--text-muted)] leading-relaxed">{s.text}</p>
+                    </li>
+                  );
+                })}
+              </ol>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+                <Link
+                  href="/resume/builder?new=true"
+                  className="group relative overflow-hidden inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-black text-brand-navy bg-gradient-to-r from-amber-500 to-amber-400 shadow-[0_10px_30px_rgba(245,158,11,0.4)] hover:-translate-y-0.5 transition-all"
+                >
+                  <span>Upload or Build Resume</span>
+                  <ArrowRight size={14} strokeWidth={2.6} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  href="/career-journal"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-primary)] hover:border-amber-500/50 transition-all"
+                >
+                  <BookOpen size={14} />
+                  <span>Add a career event</span>
+                </Link>
+                <Link
+                  href="/career-journal?type=win"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-primary)] hover:border-amber-500/50 transition-all"
+                >
+                  <Award size={14} className="text-amber-500" />
+                  <span>Tell us about an achievement</span>
+                </Link>
+              </div>
+              <p className="flex items-center justify-center gap-1.5 text-[11px] text-[var(--text-muted)]">
+                <Database size={12} className="text-emerald-500" /> No scores · No hallucinations · You approve every fact
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -425,7 +471,14 @@ function CareerValueDashboardContent() {
   const primaryValuePattern = valueData?.valuePatterns?.[0] || null;
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans transition-colors">
+    <div className="value-scope min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans transition-colors relative">
+      {/* Premium page ambience — same theme, subtle depth */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute top-[-180px] left-1/2 -translate-x-1/2 w-[900px] h-[420px] bg-amber-500/[0.06] rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] right-[-200px] w-[480px] h-[480px] bg-violet-500/[0.05] rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-200px] left-[-160px] w-[480px] h-[480px] bg-sky-500/[0.05] rounded-full blur-[120px]" />
+      </div>
+      <div className="relative z-10 flex flex-col min-h-screen">
       <Navbar />
 
       {/* Main Header (Spec Section 4.1) */}
@@ -460,34 +513,54 @@ function CareerValueDashboardContent() {
       />
 
       {/* Tab Contents */}
-      <main className="max-w-7xl mx-auto px-6 sm:px-8 py-8 w-full flex-1">
+      <main aria-live="polite" className="max-w-7xl mx-auto px-6 sm:px-8 py-8 sm:py-10 w-full flex-1">
         {/* TAB 1: OVERVIEW (The 4 Primary Dashboard Areas) */}
         {activeTab === "overview" && valueData && (
-          <div className="space-y-8 animate-in fade-in duration-300">
+          <div key="overview" className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
+            {/* Premium section rhythm */}
+            <div className="value-rise flex items-center gap-3 px-1">
+              <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Career Value Dashboard</span>
+              <span className="flex-1 h-px bg-gradient-to-r from-[var(--border-strong)] via-amber-500/30 to-transparent" />
+              <span className="hidden sm:inline text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/25 rounded-full px-2.5 py-0.5">Multidimensional · No single score</span>
+            </div>
+
+            {/* Journey orientation */}
+            <div className="value-rise value-delay-1">
+              <ValueJourneySteps />
+            </div>
+
             {/* AREA 1: Career Value Profile (Spec Section 6) */}
-            <ValueProfileCard
-              capabilities={valueData.profile.capabilities}
-              impact={valueData.profile.impact}
-              experience={valueData.profile.experience}
-              progression={valueData.profile.progression}
-              onSelectInterpretation={handleOpenTraceability}
-              onExploreDimension={(dim) => handleTabChange(dim)}
-            />
+            <div className="value-rise value-delay-2">
+              <ValueProfileCard
+                capabilities={valueData.profile.capabilities}
+                impact={valueData.profile.impact}
+                experience={valueData.profile.experience}
+                progression={valueData.profile.progression}
+                onSelectInterpretation={handleOpenTraceability}
+                onExploreDimension={(dim) => handleTabChange(dim)}
+              />
+            </div>
 
             {/* AREA 2: Your Value Pattern (Spec Section 7) */}
-            <ValuePatternCard
-              pattern={primaryValuePattern}
-              onWhyWeSayThis={handleOpenTraceability}
-            />
+            <div className="value-rise value-delay-3">
+              <ValuePatternCard
+                pattern={primaryValuePattern}
+                onWhyWeSayThis={handleOpenTraceability}
+              />
+            </div>
 
             {/* AREA 3: Evidence Foundation (Spec Section 8) */}
-            <EvidenceFoundationCard
-              evidenceSummary={valueData.evidenceSummary}
-              onExploreFacts={() => handleTabChange("facts")}
-            />
+            <div className="value-rise value-delay-4">
+              <EvidenceFoundationCard
+                evidenceSummary={valueData.evidenceSummary}
+                onExploreFacts={() => handleTabChange("facts")}
+              />
+            </div>
 
             {/* AREA 4: Areas to Strengthen (Spec Section 9) */}
-            <AreasToStrengthenCard areas={valueData.strengtheningAreas} />
+            <div className="value-rise value-delay-5">
+              <AreasToStrengthenCard areas={valueData.strengtheningAreas} />
+            </div>
           </div>
         )}
 
@@ -497,7 +570,7 @@ function CareerValueDashboardContent() {
           activeTab === "experience" ||
           activeTab === "progression") &&
           valueData && (
-            <div className="animate-in fade-in duration-300">
+            <div key={activeTab} className="value-rise">
               <ValueDimensionDetailView
                 dimension={activeTab}
                 capabilities={valueData.profile.capabilities}
@@ -511,7 +584,7 @@ function CareerValueDashboardContent() {
           )}
 
         {activeTab === "facts" && (
-          <div className="animate-in fade-in duration-300">
+          <div key="facts" className="value-rise">
             <ValueFactsView
               facts={facts}
               onConfirmFact={handleConfirmFact}
@@ -539,29 +612,14 @@ function CareerValueDashboardContent() {
         onReject={handleRejectInterpretation}
         onViewAllEvidence={() => handleTabChange("facts")}
       />
+      </div>
     </div>
   );
 }
 
 export default function CareerValueDashboardPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans">
-          <Navbar />
-          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 animate-pulse">
-              <Sparkles size={32} />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-xl font-bold text-[var(--text-primary)] font-['Syne',sans-serif]">
-                Loading Career Value...
-              </h2>
-            </div>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<ValueLoadingSkeleton />}>
       <CareerValueDashboardContent />
     </Suspense>
   );

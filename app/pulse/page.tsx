@@ -17,8 +17,10 @@ import ExploreCareerSection from "@/components/pulse/ExploreCareerSection";
 import AiTraceabilityModal from "@/components/pulse/AiTraceabilityModal";
 import CaptureEventModal from "@/components/pulse/CaptureEventModal";
 import PulseSkeleton from "@/components/pulse/PulseSkeleton";
+import PulseCardDetailDrawer from "@/components/pulse/PulseCardDetailDrawer";
 import {
   PulseDashboardData,
+  PulseCardId,
   ScenarioPreset,
   AiTraceabilityContext,
   CareerEventData,
@@ -37,6 +39,8 @@ import {
 } from "@/lib/analytics";
 import PulseToast, { ToastVariant } from "@/components/pulse/PulseToast";
 import MobileActionBar from "@/components/pulse/MobileActionBar";
+import PulseAtAGlance from "@/components/pulse/PulseAtAGlance";
+import PulseChapterRail from "@/components/pulse/PulseChapterRail";
 
 // Canonical Established Leader Data (Matching Spec Sections 1–13)
 const CANONICAL_ESTABLISHED_DATA: PulseDashboardData = {
@@ -182,7 +186,6 @@ export default function PulseDashboardPage() {
   // initialLoading: true only on first mount (Section 21 — skeleton until data ready)
   const [initialLoading, setInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isAllExpanded, setIsAllExpanded] = useState(false);
 
   // Toast notification state
   const [toast, setToast] = useState<{ message: string; variant: ToastVariant } | null>(null);
@@ -191,9 +194,18 @@ export default function PulseDashboardPage() {
   }, []);
   const dismissToast = useCallback(() => setToast(null), []);
 
-  // Modals state
+  // Modals & Drawer state
   const [explainContext, setExplainContext] = useState<AiTraceabilityContext | null>(null);
   const [captureEventOpen, setCaptureEventOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<PulseCardId | null>(null);
+
+  const handleCardClick = (cardId: PulseCardId, e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("button, a, input, select")) {
+      return;
+    }
+    setSelectedCard(cardId);
+  };
 
   // Custom live user events added during session
   const [sessionEvents, setSessionEvents] = useState<CareerEventData[]>([]);
@@ -414,20 +426,25 @@ export default function PulseDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex flex-col font-sans selection:bg-amber-500 selection:text-brand-navy transition-colors duration-200">
+    <div className="value-scope min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans selection:bg-amber-500 selection:text-brand-navy transition-colors duration-200 relative">
+      {/* Premium page ambience — same theme, subtle depth */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute top-[-180px] left-1/2 -translate-x-1/2 w-[900px] h-[420px] bg-amber-500/[0.06] rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] right-[-200px] w-[480px] h-[480px] bg-violet-500/[0.05] rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-200px] left-[-160px] w-[480px] h-[480px] bg-sky-500/[0.05] rounded-full blur-[120px]" />
+      </div>
+      <div className="relative z-10 flex flex-col min-h-screen">
       <Navbar />
 
       {/* Main Container */}
       <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10 pb-24 lg:pb-10">
-        {/* Pulse Shell Header with Scenario Switcher & View Controls */}
+        {/* Pulse Shell Header with Scenario Switcher & Action Controls */}
         <PulseHeader
           currentScenario={scenario}
           onScenarioChange={handleScenarioChange}
           onOpenCaptureEvent={() => setCaptureEventOpen(true)}
           isRefreshing={isRefreshing}
           onRefresh={fetchPulseData}
-          isAllExpanded={isAllExpanded}
-          onToggleExpandAll={() => setIsAllExpanded((prev) => !prev)}
         />
 
         {/* Section 21: Show skeleton while initial data loads */}
@@ -436,79 +453,98 @@ export default function PulseDashboardPage() {
         ) : (
           /*
            * Responsive Grid:
-           * - Desktop (lg): 4 rows of 2 cards + 1 full-width Explore section matching 30 Sep 2026 Box Diagram
-           *   Row 1: Snapshot (lg:order-1) & Value (lg:order-2)
-           *   Row 2: Progress (lg:order-3) & Event (lg:order-4)
-           *   Row 3: Direction (lg:order-5) & Goal (lg:order-6)
-           *   Row 4: Next Best Action (lg:order-7) & Momentum (lg:order-8)
-           *   Row 5: Explore Career (lg:order-9, col-span-2)
-           * - Mobile (< lg): Strict priority sequence per Section 22:
-           *   1. Snapshot (order-1)
-           *   2. Value (order-2)
-           *   3. Goal (order-3)
-           *   4. Next Best Action (order-4)
-           *   5. Recent Progress (order-5)
-           *   6. Career Direction (order-6)
-           *   7. Recent Event (order-7)
-           *   8. Explore Career (order-8)
-           *   9. Career Momentum (order-9)
+           * - Desktop (xl): 4 columns x 2 rows (8 compact cards) + 1 full-width Explore section
+           *   Row 1: Snapshot & Value & Progress & Event
+           *   Row 2: Direction & Goal & Next Best Action & Momentum
+           *   Row 3: Explore Career (col-span-full)
+           * - Tablet (md): 2 columns x 4 rows
+           * - Mobile (< md): 1 column priority sequence
            */
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 items-stretch">
-            {/* 1. Career Snapshot — Mobile: #1, Desktop: Row 1 Left */}
-            <div className="order-1 lg:order-1 flex flex-col">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 items-stretch">
+            {/* 1. Career Snapshot — Row 1 Col 1 */}
+            <div
+              id="pulse-snapshot"
+              onClick={(e) => handleCardClick("snapshot", e)}
+              className="pulse-anchor order-1 lg:order-1 flex flex-col cursor-pointer transition-transform hover:-translate-y-1 active:translate-y-0 relative group/tile"
+              title="Click to open full Career Snapshot detail drawer"
+            >
               <CareerSnapshotCard
                 data={activeData.snapshot}
                 onOpenExplain={handleOpenExplain}
-                forceExpand={isAllExpanded}
               />
             </div>
 
-            {/* 2. Career Value — Mobile: #2, Desktop: Row 1 Right */}
-            <div className="order-2 lg:order-2 flex flex-col">
+            {/* 2. Career Value — Row 1 Col 2 */}
+            <div
+              id="pulse-value"
+              onClick={(e) => handleCardClick("value", e)}
+              className="pulse-anchor order-2 lg:order-2 flex flex-col cursor-pointer transition-transform hover:-translate-y-1 active:translate-y-0 relative group/tile"
+              title="Click to open full Career Value detail drawer"
+            >
               <CareerValueCard
                 data={activeData.careerValue}
                 onOpenExplain={handleOpenExplain}
-                forceExpand={isAllExpanded}
               />
             </div>
 
-            {/* 3. Recent Progress — Mobile: #5, Desktop: Row 2 Left */}
-            <div className="order-5 lg:order-3 flex flex-col">
+            {/* 3. Recent Progress — Row 1 Col 3 */}
+            <div
+              id="pulse-progress"
+              onClick={(e) => handleCardClick("progress", e)}
+              className="pulse-anchor order-5 lg:order-3 xl:order-3 flex flex-col cursor-pointer transition-transform hover:-translate-y-1 active:translate-y-0 relative group/tile"
+              title="Click to open full Recent Progress detail drawer"
+            >
               <RecentProgressCard
                 items={activeData.recentProgress}
-                forceExpand={isAllExpanded}
               />
             </div>
 
-            {/* 4. Recent Event — Mobile: #7, Desktop: Row 2 Right */}
-            <div className="order-7 lg:order-4 flex flex-col">
+            {/* 4. Recent Event — Row 1 Col 4 */}
+            <div
+              id="pulse-event"
+              onClick={(e) => handleCardClick("event", e)}
+              className="pulse-anchor order-7 lg:order-4 xl:order-4 flex flex-col cursor-pointer transition-transform hover:-translate-y-1 active:translate-y-0 relative group/tile"
+              title="Click to open full Recent Career Event detail drawer"
+            >
               <RecentCareerEventCard
                 event={activeData.recentEvent}
                 onOpenCaptureEvent={() => setCaptureEventOpen(true)}
-                forceExpand={isAllExpanded}
               />
             </div>
 
-            {/* 5. Career Direction — Mobile: #6, Desktop: Row 3 Left */}
-            <div className="order-6 lg:order-5 flex flex-col">
+            {/* 5. Career Direction — Row 2 Col 1 */}
+            <div
+              id="pulse-direction"
+              onClick={(e) => handleCardClick("direction", e)}
+              className="pulse-anchor order-6 lg:order-5 xl:order-5 flex flex-col cursor-pointer transition-transform hover:-translate-y-1 active:translate-y-0 relative group/tile"
+              title="Click to open full Career Direction detail drawer"
+            >
               <CareerDirectionCard
                 direction={activeData.careerDirection}
                 onOpenExplain={handleOpenExplain}
-                forceExpand={isAllExpanded}
               />
             </div>
 
-            {/* 6. Career Goal — Mobile: #3, Desktop: Row 3 Right */}
-            <div className="order-3 lg:order-6 flex flex-col">
+            {/* 6. Career Goal — Row 2 Col 2 */}
+            <div
+              id="pulse-goal"
+              onClick={(e) => handleCardClick("goal", e)}
+              className="pulse-anchor order-3 lg:order-6 xl:order-6 flex flex-col cursor-pointer transition-transform hover:-translate-y-1 active:translate-y-0 relative group/tile"
+              title="Click to open full Career Goal detail drawer"
+            >
               <CareerGoalCard
                 goal={activeData.careerGoal}
                 onSelectGoalType={handleSelectGoalType}
-                forceExpand={isAllExpanded}
               />
             </div>
 
-            {/* 7. Next Best Action — Mobile: #4, Desktop: Row 4 Left */}
-            <div className="order-4 lg:order-7 flex flex-col">
+            {/* 7. Next Best Action — Row 2 Col 3 */}
+            <div
+              id="pulse-action"
+              onClick={(e) => handleCardClick("action", e)}
+              className="pulse-anchor order-4 lg:order-7 xl:order-7 flex flex-col cursor-pointer transition-transform hover:-translate-y-1 active:translate-y-0 relative group/tile ring-2 ring-amber-500/20 hover:ring-amber-500/40 rounded-2xl"
+              title="Click to open full Next Best Action detail drawer"
+            >
               <NextBestActionCard
                 action={activeData.nextBestAction}
                 onOpenExplain={handleOpenExplain}
@@ -521,32 +557,52 @@ export default function PulseDashboardPage() {
                   trackNextBestActionDismissed(activeData.nextBestAction.title);
                   showToast("Recommendation dismissed.", "info");
                 }}
-                forceExpand={isAllExpanded}
               />
             </div>
 
-            {/* 8. Career Momentum — Mobile: #9, Desktop: Row 4 Right */}
-            <div className="order-9 lg:order-8 flex flex-col">
+            {/* 8. Career Momentum — Row 2 Col 4 */}
+            <div
+              id="pulse-momentum"
+              onClick={(e) => handleCardClick("momentum", e)}
+              className="pulse-anchor order-9 lg:order-8 xl:order-8 flex flex-col cursor-pointer transition-transform hover:-translate-y-1 active:translate-y-0 relative group/tile"
+              title="Click to open full Career Momentum detail drawer"
+            >
               <CareerMomentumCard
                 momentum={activeData.momentum}
-                forceExpand={isAllExpanded}
               />
             </div>
 
-            {/* 9. Explore Career — Mobile: #8, Desktop: Row 5 Full Width */}
-            <div className="col-span-1 lg:col-span-2 order-8 lg:order-9">
+            {/* 9. Explore Career — Full Width Bottom Row */}
+            <div
+              id="pulse-explore"
+              onClick={(e) => handleCardClick("explore", e)}
+              className="pulse-anchor col-span-1 md:col-span-2 xl:col-span-4 order-8 lg:order-9 cursor-pointer transition-transform hover:-translate-y-0.5 active:translate-y-0 relative group/tile"
+              title="Click to open full Explore Career detail drawer"
+            >
               <ExploreCareerSection
                 items={activeData.careerExploration}
-                forceExpand={isAllExpanded}
               />
             </div>
           </div>
         )}
       </main>
 
-      <div className="pb-20 lg:pb-0">
-        <Footer />
-      </div>
+      {!user && (
+        <div className="pb-20 lg:pb-0">
+          <Footer />
+        </div>
+      )}
+
+      {/* Interactive Right Slide-Over Detail Drawer */}
+      <PulseCardDetailDrawer
+        cardId={selectedCard}
+        isOpen={selectedCard !== null}
+        onClose={() => setSelectedCard(null)}
+        data={activeData}
+        onSelectCard={(id) => setSelectedCard(id)}
+        onOpenCaptureEvent={() => setCaptureEventOpen(true)}
+        onOpenExplain={handleOpenExplain}
+      />
 
       {/* AI Traceability Modal — Section 15 & 16 */}
       <AiTraceabilityModal
@@ -579,6 +635,10 @@ export default function PulseDashboardPage() {
           nextActionLink={activeData.nextBestAction.ctaLink || "/value"}
         />
       )}
+
+      {/* Floating chapter rail (xl screens) */}
+      {!initialLoading && <PulseChapterRail />}
+      </div>
     </div>
   );
 }

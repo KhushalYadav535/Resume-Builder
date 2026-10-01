@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { CareerFact, CareerFactCategory, CareerFactStatus, CareerInterpretation } from "@/types/value";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
+import ValueSpotlight from "./ValueSpotlight";
 
 interface ValueFactsViewProps {
   facts: CareerFact[];
@@ -144,53 +145,86 @@ export default function ValueFactsView({
     }
   };
 
+  const isFiltered = statusFilter !== "ALL" || categoryFilter !== "ALL" || searchQuery.trim() !== "";
+
+  const handleClearFilters = () => {
+    setStatusFilter("ALL");
+    setCategoryFilter("ALL");
+    setSearchQuery("");
+  };
+
   return (
     <div className="space-y-6">
       {/* View Header with Explanation & Counters */}
-      <div className="rounded-3xl bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
+      <div className="relative rounded-[1.75rem] bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 space-y-4 overflow-hidden shadow-[0_20px_60px_rgba(16,27,59,0.08)]">
+        <div className="h-[3px] absolute top-0 inset-x-0 bg-gradient-to-r from-emerald-500 via-amber-500/60 to-violet-500/50" aria-hidden="true" />
+        <div className="absolute -top-24 right-0 w-72 h-72 bg-emerald-500/[0.06] rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
           <div>
             <div className="flex items-center gap-2 text-emerald-500 font-bold text-xs uppercase tracking-wider mb-1">
               <ShieldCheck size={14} />
               <span>Fact Governance & Provenance</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-[var(--text-primary)] font-['Syne',sans-serif]">
+            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
               Career Facts Review
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-muted)]">
               Atomic facts extracted from your resume and career events. Only confirmed and edited facts support your Career Value.
             </p>
+            {/* Review progress */}
+            {facts.length > 0 && (
+              <div className="mt-3 flex items-center gap-2.5 max-w-sm">
+                <div
+                  className="flex-1 h-1.5 rounded-full bg-[var(--border)]/60 overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={confirmedCount}
+                  aria-valuemin={0}
+                  aria-valuemax={facts.length}
+                  aria-label="Fact review progress"
+                >
+                  <div
+                    className="value-bar h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                    style={{ width: `${Math.round((confirmedCount / facts.length) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-[11px] font-bold text-[var(--text-muted)] tabular-nums whitespace-nowrap" aria-live="polite">
+                  {confirmedCount}/{facts.length} reviewed
+                </span>
+              </div>
+            )}
           </div>
 
           {unconfirmedCount > 0 && (
             <button
               onClick={handleConfirmAllVisible}
               disabled={batching}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-brand-navy bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] transition-all cursor-pointer shadow-sm disabled:opacity-50 self-start sm:self-auto"
+              className="group relative overflow-hidden inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black text-brand-navy bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-[0_8px_24px_rgba(16,185,129,0.35)] hover:-translate-y-px active:translate-y-0 transition-all cursor-pointer disabled:opacity-50 self-start sm:self-auto"
             >
               <CheckCircle2 size={15} strokeWidth={2.5} />
-              <span>{batching ? "Confirming..." : `Confirm All Visible (${unconfirmedCount})`}</span>
+              <span>{batching ? "Confirming…" : `Confirm All Visible (${unconfirmedCount})`}</span>
             </button>
           )}
         </div>
 
         {/* Filter Controls Row */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
           {/* Status Tabs */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap" role="tablist" aria-label="Filter facts by status">
             {[
               { id: "ALL", label: `All (${facts.length})` },
-              { id: "EXTRACTED", label: `Extracted (${unconfirmedCount})`, alert: unconfirmedCount > 0 },
+              { id: "EXTRACTED", label: `To review (${unconfirmedCount})`, alert: unconfirmedCount > 0 },
               { id: "CONFIRMED", label: `Confirmed (${confirmedCount})` },
               { id: "REJECTED", label: `Rejected (${rejectedCount})` },
             ].map((tab) => (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={statusFilter === tab.id}
                 onClick={() => setStatusFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                   statusFilter === tab.id
-                    ? "bg-amber-500 text-brand-navy shadow-xs"
-                    : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)]"
+                    ? "bg-amber-500 text-brand-navy border-amber-500 shadow-[0_4px_14px_rgba(245,158,11,0.35)]"
+                    : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)] hover:border-amber-500/40"
                 }`}
               >
                 <span>{tab.label}</span>
@@ -209,15 +243,17 @@ export default function ValueFactsView({
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"
               />
               <input
-                type="text"
-                placeholder="Search facts or sources..."
+                type="search"
+                placeholder="Search facts or sources…"
+                aria-label="Search facts or sources"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-amber-500"
+                className="w-full pl-9 pr-8 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-amber-500 focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)] transition-shadow"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
+                  aria-label="Clear search"
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 >
                   <X size={12} />
@@ -229,7 +265,7 @@ export default function ValueFactsView({
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               aria-label="Filter facts by category"
-              className="px-3 py-1.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] text-xs font-semibold text-[var(--text-primary)] focus:outline-none cursor-pointer"
+              className="px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] text-xs font-semibold text-[var(--text-primary)] focus:outline-none focus:border-amber-500 cursor-pointer"
             >
               <option value="ALL">All Categories ({facts.length})</option>
               <option value="ROLE">Roles ({facts.filter(f => f.category === "ROLE").length})</option>
@@ -247,18 +283,49 @@ export default function ValueFactsView({
             </select>
           </div>
         </div>
+
+        {/* Result meta row */}
+        <div className="relative flex items-center justify-between gap-3 pt-1">
+          <p className="text-[11px] font-semibold text-[var(--text-muted)] tabular-nums" aria-live="polite">
+            Showing <strong className="text-[var(--text-primary)]">{filteredFacts.length}</strong> of <strong className="text-[var(--text-primary)]">{facts.length}</strong> facts
+            {isFiltered && <span> · filtered</span>}
+          </p>
+          {isFiltered && (
+            <button
+              onClick={handleClearFilters}
+              className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-600 dark:text-amber-400 hover:text-amber-500 transition-colors cursor-pointer"
+            >
+              <X size={12} strokeWidth={2.5} />
+              Clear all filters
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Facts List */}
-      <div className="space-y-3">
+      <div className="space-y-3" aria-live="polite">
         {filteredFacts.length === 0 ? (
-          <div className="p-12 text-center rounded-3xl bg-[var(--card)] border border-[var(--border)] space-y-2">
-            <p className="text-sm font-bold text-[var(--text-primary)]">
-              No facts match the selected filters.
+          <div className="value-pop p-12 text-center rounded-[1.75rem] bg-[var(--card)] border border-dashed border-[var(--border-strong)] space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-500 mx-auto">
+              <Search size={20} />
+            </div>
+            <p className="text-sm font-extrabold text-[var(--text-primary)]">
+              {facts.length === 0 ? "No career facts yet." : "No facts match these filters."}
             </p>
-            <p className="text-xs text-[var(--text-muted)]">
-              Try switching the status filter or clearing your search term.
+            <p className="text-xs text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed">
+              {facts.length === 0
+                ? "Upload your resume or add a career event — extracted facts will appear here for your review."
+                : "Try a different search term, or reset filters to see the full evidence base."}
             </p>
+            {isFiltered && (
+              <button
+                onClick={handleClearFilters}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold text-brand-navy bg-amber-500 hover:bg-amber-400 transition-all cursor-pointer"
+              >
+                <X size={13} strokeWidth={2.5} />
+                Reset filters
+              </button>
+            )}
           </div>
         ) : (
           filteredFacts.map((fact) => {
@@ -268,16 +335,26 @@ export default function ValueFactsView({
             const isRejected = fact.status === "REJECTED";
 
             return (
-              <div
+              <ValueSpotlight
                 key={fact.id}
-                className={`p-5 rounded-2xl bg-[var(--card)] border transition-all space-y-3 ${
+                className={`relative p-5 pl-6 rounded-[1.4rem] bg-[var(--card)] border transition-all duration-300 hover:-translate-y-px space-y-3 overflow-hidden ${
                   isRejected
                     ? "border-red-500/20 opacity-60 bg-red-500/5"
                     : isConfirmed
-                    ? "border-emerald-500/30 hover:border-emerald-500/50"
-                    : "border-amber-500/30 hover:border-amber-500/50"
+                    ? "border-emerald-500/25 hover:border-emerald-500/50 hover:shadow-[0_16px_44px_rgba(16,185,129,0.12)]"
+                    : "border-amber-500/25 hover:border-amber-500/50 hover:shadow-[0_16px_44px_rgba(245,158,11,0.12)]"
                 }`}
               >
+                <span
+                  className={`absolute left-0 top-0 bottom-0 w-1 ${
+                    isRejected
+                      ? "bg-gradient-to-b from-red-400 to-red-600"
+                      : isConfirmed
+                      ? "bg-gradient-to-b from-emerald-400 to-teal-600"
+                      : "bg-gradient-to-b from-amber-300 to-amber-600"
+                  }`}
+                  aria-hidden="true"
+                />
                 {/* Meta Header */}
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -387,7 +464,7 @@ export default function ValueFactsView({
                     </div>
                   </div>
                 )}
-              </div>
+              </ValueSpotlight>
             );
           })
         )}

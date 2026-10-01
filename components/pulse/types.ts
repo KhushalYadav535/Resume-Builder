@@ -100,6 +100,17 @@ export interface PulseDashboardData {
   careerExploration: ExplorationItem[];
 }
 
+export type PulseCardId =
+  | "snapshot"
+  | "value"
+  | "progress"
+  | "event"
+  | "direction"
+  | "goal"
+  | "action"
+  | "momentum"
+  | "explore";
+
 export type ScenarioPreset =
   | "live"
   | "full"
