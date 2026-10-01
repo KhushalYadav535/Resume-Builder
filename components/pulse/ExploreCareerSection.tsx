@@ -1,28 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   Compass,
   ArrowRight,
-  Sparkles,
-  TrendingUp,
-  Layers,
   ChevronRight,
-  ExternalLink,
 } from "lucide-react";
 import { ExplorationItem } from "./types";
+import { handleSpotMove } from "./pulseSpot";
 
 interface Props {
   items: ExplorationItem[];
   forceExpand?: boolean;
 }
 
-export default function ExploreCareerSection({ items, forceExpand }: Props) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const expanded = forceExpand !== undefined ? forceExpand : isExpanded;
-
+export default function ExploreCareerSection({ items }: Props) {
   const getAlignmentBadge = (alignment: string) => {
     switch (alignment) {
       case "Strong alignment":
@@ -40,42 +33,33 @@ export default function ExploreCareerSection({ items, forceExpand }: Props) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/40 dark:from-[#0D1530] dark:via-[#111C40] dark:to-[#0A1126] text-[var(--text-primary)] p-5 sm:p-6 shadow-sm dark:shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-sm"
+      onMouseMove={handleSpotMove}
+      className="value-spot group relative rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--card)] text-[var(--text-primary)] p-4 sm:p-5 shadow-xs hover:border-violet-500/40 hover:shadow-[0_14px_40px_rgba(139,92,246,0.12)] transition-all duration-300"
     >
+      {/* violet crown hairline + ghost chapter numeral */}
+      <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-violet-500 via-purple-400/80 to-transparent z-20" aria-hidden="true" />
+      <span className="value-ghost absolute top-2 right-4 text-[3.8rem] leading-none z-0" aria-hidden="true">09</span>
+      
       {/* Ambient background glow */}
-      <div className="absolute top-0 right-1/3 w-80 h-80 rounded-full bg-violet-500/10 dark:bg-violet-600/10 blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-1/3 w-80 h-80 rounded-full bg-violet-500/[0.05] blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 relative z-10">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-violet-500/10 dark:bg-violet-500/20 border border-violet-500/20 dark:border-violet-400/30 flex items-center justify-center text-violet-600 dark:text-violet-400">
-              <Compass className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[11px] font-black uppercase tracking-[0.16em] text-violet-600 dark:text-violet-400 font-['Syne',sans-serif]">
-                EXPLORE YOUR CAREER
-              </span>
-              <p className="text-[11.5px] text-[var(--text-muted)] font-medium">
-                3 possible directions
-              </p>
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5 relative z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-600 dark:text-violet-400">
+            <Compass className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <span className="text-[10.5px] font-black uppercase tracking-[0.16em] text-violet-600 dark:text-violet-400 font-['Syne',sans-serif]">
+              EXPLORE YOUR CAREER
+            </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setIsExpanded(!expanded)}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/15 text-[11px] font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer shadow-2xs"
-          >
-            <span>{expanded ? "Collapse" : "Expand"}</span>
-            <span className="text-[9px]">{expanded ? "▴" : "▾"}</span>
-          </button>
-
           <Link
             href="/career-copilot"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/15 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white shadow-sm transition-all no-underline shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] hover:border-violet-400/40 text-[11px] font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] shadow-2xs transition-all no-underline shrink-0"
           >
             <span>Explore All Options</span>
             <ArrowRight className="w-3 h-3" />
@@ -83,20 +67,20 @@ export default function ExploreCareerSection({ items, forceExpand }: Props) {
         </div>
       </div>
 
-      {/* 3 Directions Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 relative z-10">
+      {/* 3 Directions Grid (compact) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10">
         {items.slice(0, 3).map((item, idx) => (
           <div
             key={item.id}
-            className="p-4 rounded-xl bg-white/80 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] border border-slate-200 dark:border-white/10 hover:border-violet-400 dark:hover:border-violet-400/40 shadow-xs transition-all duration-300 flex flex-col justify-between group/card"
+            className="p-3 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] hover:border-violet-400/50 shadow-xs transition-all duration-300 flex flex-col justify-between group/card"
           >
             <div>
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-xs font-black text-slate-400 dark:text-slate-500 font-['Syne',sans-serif]">
+              <div className="flex items-center justify-between gap-1 mb-1.5">
+                <span className="text-[10px] font-black text-[var(--text-muted)] font-['Syne',sans-serif]">
                   0{idx + 1}
                 </span>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[9.5px] font-bold border ${getAlignmentBadge(
+                  className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${getAlignmentBadge(
                     item.alignment
                   )}`}
                 >
@@ -104,43 +88,30 @@ export default function ExploreCareerSection({ items, forceExpand }: Props) {
                 </span>
               </div>
 
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-['Syne',sans-serif] group-hover/card:text-violet-600 dark:group-hover/card:text-violet-300 transition-colors mb-2">
+              <h3 className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] font-['Syne',sans-serif] group-hover/card:text-violet-600 dark:group-hover/card:text-violet-300 transition-colors truncate mb-1">
                 {item.role}
               </h3>
 
-              {/* Rationale and capabilities (revealed in expanded view) */}
-              {expanded && (
-                <div className="space-y-2 mb-3 animate-fadeIn">
-                  <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/5">
-                    <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">
-                      Why this appeared:
-                    </div>
-                    <p className="text-[11.5px] text-slate-700 dark:text-slate-300 leading-relaxed">
-                      {item.rationale}
-                    </p>
-                  </div>
+              <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed line-clamp-1 mb-2">
+                {item.rationale}
+              </p>
 
-                  <div className="flex flex-wrap gap-1">
-                    {item.relevantCapabilities.map((cap) => (
-                      <span
-                        key={cap}
-                        className="px-1.5 py-0.5 rounded-md text-[9.5px] font-medium bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300"
-                      >
-                        {cap}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div className="flex flex-wrap gap-1 mb-1">
+                {item.relevantCapabilities.slice(0, 2).map((cap) => (
+                  <span
+                    key={cap}
+                    className="px-1.5 py-0.5 rounded-md text-[9px] font-medium bg-[var(--card)] border border-[var(--border)] text-[var(--text-muted)] truncate max-w-[110px]"
+                  >
+                    {cap}
+                  </span>
+                ))}
+              </div>
             </div>
 
-            <Link
-              href={`/career-copilot?tab=skillgap&role=${encodeURIComponent(item.role)}`}
-              className="pt-2.5 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs font-bold text-violet-600 dark:text-violet-400 group-hover/card:text-violet-700 dark:group-hover/card:text-violet-300 no-underline"
-            >
-              <span>Explore Trajectory</span>
-              <ChevronRight className="w-3.5 h-3.5 group-hover/card:translate-x-1 transition-transform" />
-            </Link>
+            <div className="pt-2 mt-1 border-t border-[var(--border)] flex items-center justify-between text-[11px] font-bold text-violet-600 dark:text-violet-400">
+              <span>View Trajectory</span>
+              <ChevronRight className="w-3 h-3 group-hover/card:translate-x-0.5 transition-transform" />
+            </div>
           </div>
         ))}
       </div>

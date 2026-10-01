@@ -22,6 +22,8 @@ import {
   ProgressionSignalItem,
   ValueNavigationTab,
 } from "@/types/value";
+import ValueSectionHeader from "./ValueSectionHeader";
+import ValueSpotlight from "./ValueSpotlight";
 
 interface ValueDimensionDetailViewProps {
   dimension: "capabilities" | "impact" | "experience" | "progression";
@@ -48,27 +50,40 @@ export default function ValueDimensionDetailView({
   if (dimension === "capabilities") {
     return (
       <div className="space-y-6">
-        <div className="rounded-3xl bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 space-y-3">
-          <div className="flex items-center gap-2 text-amber-500 font-bold text-xs uppercase tracking-wider">
-            <Brain size={16} />
-            <span>Dimension Deep Dive · Capabilities</span>
+        <div className="relative rounded-[1.75rem] bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 overflow-hidden shadow-[0_20px_60px_rgba(16,27,59,0.08)]">
+          <div className="h-[3px] absolute top-0 inset-x-0 bg-gradient-to-r from-amber-500 via-amber-400/70 to-transparent" aria-hidden="true" />
+          <div className="absolute -top-20 right-0 w-64 h-64 bg-amber-500/[0.07] rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+          <span className="value-ghost absolute right-5 top-1/2 -translate-y-1/2 text-[3rem] sm:text-[4.2rem] hidden md:block" aria-hidden="true">CAPABILITIES</span>
+          <div className="relative">
+            <ValueSectionHeader
+              index="Deep Dive"
+              eyebrow="Capabilities"
+              eyebrowClass="text-amber-600 dark:text-amber-400"
+              icon={<Brain size={20} strokeWidth={2.2} />}
+              iconClass="bg-amber-500/12 text-amber-500 border-amber-500/30 shadow-[0_6px_18px_rgba(245,158,11,0.25)]"
+              title="Demonstrated Capabilities"
+              description="What your career experience demonstrates you can do. Each capability is backed by clusters of verified evidence and atomic career facts."
+              badge={
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-[11px] font-bold tabular-nums">
+                  {capabilities.length} capabilit{capabilities.length === 1 ? "y" : "ies"}
+                </span>
+              }
+            />
           </div>
-          <h2 className="text-2xl font-black text-[var(--text-primary)] font-['Syne',sans-serif]">
-            Demonstrated Capabilities
-          </h2>
-          <p className="text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
-            What your career experience demonstrates you can do. Each capability is backed by clusters of verified evidence and atomic career facts.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {capabilities.map((cap) => {
+          {capabilities.map((cap, idx) => {
             const isConfirmed = cap.status === "ACCEPTED" || cap.status === "EDITED";
             return (
-              <div
+              <ValueSpotlight
                 key={cap.id}
-                className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--border)] hover:border-amber-500/40 transition-all space-y-4 flex flex-col justify-between"
+                className="relative p-6 rounded-[1.4rem] bg-[var(--card)] border border-[var(--border)] hover:border-amber-500/40 hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(245,158,11,0.12)] transition-all space-y-4 flex flex-col justify-between overflow-hidden"
               >
+                <span className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-amber-500 via-amber-400/70 to-transparent" aria-hidden="true" />
+                <span className="absolute top-4 right-5 text-4xl font-black font-['Syne',sans-serif] text-amber-500/[0.12] select-none tabular-nums" aria-hidden="true">
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span
@@ -107,7 +122,7 @@ export default function ValueDimensionDetailView({
                     <ArrowRight size={13} />
                   </button>
                 </div>
-              </div>
+              </ValueSpotlight>
             );
           })}
         </div>
@@ -118,25 +133,38 @@ export default function ValueDimensionDetailView({
   if (dimension === "impact") {
     return (
       <div className="space-y-6">
-        <div className="rounded-3xl bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 space-y-3">
-          <div className="flex items-center gap-2 text-emerald-500 font-bold text-xs uppercase tracking-wider">
-            <Zap size={16} />
-            <span>Dimension Deep Dive · Impact</span>
+        <div className="relative rounded-[1.75rem] bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 overflow-hidden shadow-[0_20px_60px_rgba(16,27,59,0.08)]">
+          <div className="h-[3px] absolute top-0 inset-x-0 bg-gradient-to-r from-emerald-500 via-teal-400/70 to-transparent" aria-hidden="true" />
+          <div className="absolute -top-20 right-0 w-64 h-64 bg-emerald-500/[0.07] rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+          <span className="value-ghost absolute right-5 top-1/2 -translate-y-1/2 text-[3rem] sm:text-[4.2rem] hidden md:block" aria-hidden="true">IMPACT</span>
+          <div className="relative">
+            <ValueSectionHeader
+              index="Deep Dive"
+              eyebrow="Impact"
+              eyebrowClass="text-emerald-600 dark:text-emerald-400"
+              icon={<Zap size={20} strokeWidth={2.2} />}
+              iconClass="bg-emerald-500/12 text-emerald-500 border-emerald-500/30 shadow-[0_6px_18px_rgba(16,185,129,0.22)]"
+              title="Verified Career Impact"
+              description="What changed because of your work. Measurable contributions, scale expansion, and operational transformations derived from real outcomes."
+              badge={
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold tabular-nums">
+                  {impact.length} impact signal{impact.length === 1 ? "" : "s"}
+                </span>
+              }
+            />
           </div>
-          <h2 className="text-2xl font-black text-[var(--text-primary)] font-['Syne',sans-serif]">
-            Verified Career Impact
-          </h2>
-          <p className="text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
-            What changed because of your work. Measurable contributions, scale expansion, and operational transformations derived from real outcomes.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {impact.map((imp) => (
-            <div
+          {impact.map((imp, idx) => (
+            <ValueSpotlight
               key={imp.id}
-              className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500/40 transition-all space-y-4 flex flex-col justify-between"
+              className="relative p-6 rounded-[1.4rem] bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500/40 hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(16,185,129,0.12)] transition-all space-y-4 flex flex-col justify-between overflow-hidden"
             >
+              <span className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-emerald-500 via-teal-400/70 to-transparent" aria-hidden="true" />
+              <span className="absolute top-4 right-5 text-4xl font-black font-['Syne',sans-serif] text-emerald-500/[0.12] select-none tabular-nums" aria-hidden="true">
+                {String(idx + 1).padStart(2, "0")}
+              </span>
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
@@ -168,7 +196,7 @@ export default function ValueDimensionDetailView({
                   <ArrowRight size={13} />
                 </button>
               </div>
-            </div>
+            </ValueSpotlight>
           ))}
         </div>
       </div>
@@ -178,22 +206,32 @@ export default function ValueDimensionDetailView({
   if (dimension === "experience") {
     return (
       <div className="space-y-6">
-        <div className="rounded-3xl bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 space-y-3">
-          <div className="flex items-center gap-2 text-sky-500 font-bold text-xs uppercase tracking-wider">
-            <Briefcase size={16} />
-            <span>Dimension Deep Dive · Experience</span>
+        <div className="relative rounded-[1.75rem] bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 overflow-hidden shadow-[0_20px_60px_rgba(16,27,59,0.08)]">
+          <div className="h-[3px] absolute top-0 inset-x-0 bg-gradient-to-r from-sky-500 via-blue-400/70 to-transparent" aria-hidden="true" />
+          <div className="absolute -top-20 right-0 w-64 h-64 bg-sky-500/[0.07] rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+          <span className="value-ghost absolute right-5 top-1/2 -translate-y-1/2 text-[3rem] sm:text-[4.2rem] hidden md:block" aria-hidden="true">EXPERIENCE</span>
+          <div className="relative">
+            <ValueSectionHeader
+              index="Deep Dive"
+              eyebrow="Experience"
+              eyebrowClass="text-sky-600 dark:text-sky-400"
+              icon={<Briefcase size={20} strokeWidth={2.2} />}
+              iconClass="bg-sky-500/12 text-sky-500 border-sky-500/30 shadow-[0_6px_18px_rgba(14,165,233,0.22)]"
+              title="Breadth & Organizational Context"
+              description="The environments, scale, and operational domains across your career trajectory. Experience is descriptive context rather than a capability rating."
+              badge={
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-700 dark:text-sky-300 text-[11px] font-bold tabular-nums">
+                  {experience.totalYears}y · {experience.rolesCount} roles
+                </span>
+              }
+            />
           </div>
-          <h2 className="text-2xl font-black text-[var(--text-primary)] font-['Syne',sans-serif]">
-            Breadth & Organizational Context
-          </h2>
-          <p className="text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
-            The environments, scale, and operational domains across your career trajectory. Experience is descriptive context rather than a capability rating.
-          </p>
         </div>
 
         {/* Narrative Box */}
-        <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--border)] space-y-4">
-          <h3 className="text-base font-bold text-[var(--text-primary)]">
+        <div className="relative p-6 sm:p-7 rounded-[1.4rem] bg-[var(--card)] border border-[var(--border)] space-y-3 overflow-hidden">
+          <span className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-sky-400 to-blue-600" aria-hidden="true" />
+          <h3 className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">
             Contextual Summary
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
@@ -283,22 +321,32 @@ export default function ValueDimensionDetailView({
   // Progression
   return (
     <div className="space-y-6">
-      <div className="rounded-3xl bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 space-y-3">
-        <div className="flex items-center gap-2 text-violet-500 font-bold text-xs uppercase tracking-wider">
-          <TrendingUp size={16} />
-          <span>Dimension Deep Dive · Progression</span>
+      <div className="relative rounded-[1.75rem] bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 overflow-hidden shadow-[0_20px_60px_rgba(16,27,59,0.08)]">
+        <div className="h-[3px] absolute top-0 inset-x-0 bg-gradient-to-r from-violet-500 via-purple-400/70 to-transparent" aria-hidden="true" />
+        <div className="absolute -top-20 right-0 w-64 h-64 bg-violet-500/[0.07] rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+        <span className="value-ghost absolute right-5 top-1/2 -translate-y-1/2 text-[3rem] sm:text-[4.2rem] hidden md:block" aria-hidden="true">PROGRESSION</span>
+        <div className="relative">
+          <ValueSectionHeader
+            index="Deep Dive"
+            eyebrow="Progression"
+            eyebrowClass="text-violet-600 dark:text-violet-400"
+            icon={<TrendingUp size={20} strokeWidth={2.2} />}
+            iconClass="bg-violet-500/12 text-violet-500 border-violet-500/30 shadow-[0_6px_18px_rgba(139,92,246,0.24)]"
+            title="Career Evolution & Scope Growth"
+            description="How your responsibility, organizational reach, and autonomous ownership have expanded across career milestones."
+            badge={
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/25 text-violet-700 dark:text-violet-300 text-[11px] font-bold tabular-nums">
+                {progression.signals.length} milestone{progression.signals.length === 1 ? "" : "s"}
+              </span>
+            }
+          />
         </div>
-        <h2 className="text-2xl font-black text-[var(--text-primary)] font-['Syne',sans-serif]">
-          Career Evolution & Scope Growth
-        </h2>
-        <p className="text-sm text-[var(--text-muted)] max-w-2xl leading-relaxed">
-          How your responsibility, organizational reach, and autonomous ownership have expanded across career milestones.
-        </p>
       </div>
 
       {/* Evolution Summary Box */}
-      <div className="p-6 rounded-3xl bg-[var(--card)] border border-[var(--border)] space-y-2">
-        <h3 className="text-base font-bold text-[var(--text-primary)]">
+      <div className="relative p-6 sm:p-7 rounded-[1.4rem] bg-[var(--card)] border border-[var(--border)] space-y-3 overflow-hidden">
+        <span className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-violet-400 to-purple-600" aria-hidden="true" />
+        <h3 className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">
           Evolutionary Trajectory
         </h3>
         <p className="text-sm text-[var(--text-secondary)] leading-relaxed">

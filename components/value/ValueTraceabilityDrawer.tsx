@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   X,
   ShieldCheck,
@@ -43,6 +43,7 @@ export default function ValueTraceabilityDrawer({
   const [isRejecting, setIsRejecting] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (interpretation) {
@@ -55,14 +56,26 @@ export default function ValueTraceabilityDrawer({
     }
   }, [interpretation]);
 
-  // Lock body scroll when drawer open
+  // Lock body scroll + Escape to close + autofocus close (a11y)
+  const onCloseRef = useRef(onClose);
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
+    onCloseRef.current = onClose;
+  });
+  useEffect(() => {
+    if (!isOpen) {
       document.body.style.overflow = "";
+      return () => { document.body.style.overflow = ""; };
     }
-    return () => { document.body.style.overflow = ""; };
+    document.body.style.overflow = "hidden";
+    closeBtnRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCloseRef.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
   }, [isOpen]);
 
   if (!isOpen || !interpretation) return null;
@@ -111,10 +124,13 @@ export default function ValueTraceabilityDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Why We Say This — Traceability"
-        className="fixed top-0 right-0 bottom-0 z-[1001] w-full max-w-xl lg:max-w-2xl bg-[var(--card)] border-l border-[var(--border)] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
+        className="fixed top-0 right-0 bottom-0 z-[1001] w-full max-w-xl lg:max-w-2xl bg-[var(--card)] border-l border-[var(--border)] shadow-[0_30px_90px_rgba(0,0,0,0.35)] flex flex-col animate-in slide-in-from-right duration-300 overflow-hidden"
       >
+        <div className="h-[3px] w-full bg-gradient-to-r from-amber-500 via-violet-500/60 to-emerald-500/60 shrink-0" aria-hidden="true" />
         {/* ── STICKY HEADER ────────────────────────────────────── */}
-        <div className="shrink-0 px-6 py-5 border-b border-[var(--border)] bg-[var(--card)] flex items-start justify-between gap-4">
+        <div className="shrink-0 px-6 py-5 border-b border-[var(--border)] bg-[var(--card)]/95 backdrop-blur flex items-start justify-between gap-4 relative overflow-hidden">
+          <div className="absolute -top-16 right-10 w-56 h-56 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-amber-500 via-violet-500/50 to-emerald-500/50" aria-hidden="true" />
           <div className="space-y-1 min-w-0">
             {/* Type + confidence pills */}
             <div className="flex items-center gap-2 flex-wrap">
@@ -138,9 +154,24 @@ export default function ValueTraceabilityDrawer({
             <p className="text-xs text-[var(--text-muted)] leading-relaxed">
               5-level traceability: Career Value → Interpretation → Evidence → Facts → Source
             </p>
+            {/* Level rail */}
+            <ol className="flex items-center gap-1 pt-2" aria-label="Traceability levels">
+              {["Value", "Interp.", "Evidence", "Facts", "Source"].map((lvl, i) => (
+                <React.Fragment key={lvl}>
+                  <li className="flex items-center gap-1">
+                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black tabular-nums ${i === 0 ? "bg-amber-500 text-brand-navy shadow-[0_0_10px_rgba(245,158,11,0.6)]" : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"}`}>
+                      {i + 1}
+                    </span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] hidden sm:inline">{lvl}</span>
+                  </li>
+                  {i < 4 && <span className="w-2.5 h-px bg-gradient-to-r from-amber-500/60 to-emerald-500/40 shrink-0" aria-hidden="true" />}
+                </React.Fragment>
+              ))}
+            </ol>
           </div>
 
           <button
+            ref={closeBtnRef}
             onClick={onClose}
             className="shrink-0 p-2 rounded-xl text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors cursor-pointer"
             aria-label="Close drawer"
@@ -154,7 +185,8 @@ export default function ValueTraceabilityDrawer({
           <div className="p-6 space-y-5">
 
             {/* LEVEL 1 — Career Value Component */}
-            <div className="p-4 rounded-2xl bg-amber-500/8 border border-amber-500/25 space-y-1.5">
+            <div className="relative p-5 rounded-[1.4rem] bg-gradient-to-br from-amber-500/[0.1] to-transparent border border-amber-500/25 space-y-1.5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-amber-400 to-amber-600" aria-hidden="true" />
               <div className="flex items-center gap-2 text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">
                 <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
                 Level 1 · Career Value Component
@@ -267,11 +299,13 @@ export default function ValueTraceabilityDrawer({
               </div>
 
               {interpretation.supportingEvidence && interpretation.supportingEvidence.length > 0 ? (
-                interpretation.supportingEvidence.map((evItem, evIdx) => (
+                <div className="relative space-y-3 before:absolute before:left-[15px] before:top-3 before:bottom-3 before:w-px before:bg-gradient-to-b before:from-emerald-500/50 before:via-amber-500/40 before:to-transparent">
+                {interpretation.supportingEvidence.map((evItem, evIdx) => (
                   <div
                     key={evItem.evidenceId || evIdx}
-                    className="rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)] overflow-hidden"
+                    className="relative ml-0 pl-9 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border)] overflow-hidden hover:border-emerald-500/35 hover:shadow-[0_12px_32px_rgba(16,185,129,0.10)] transition-all"
                   >
+                    <span className="absolute left-[9px] top-4 w-[13px] h-[13px] rounded-full bg-[var(--card)] border-2 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" aria-hidden="true" />
                     {/* Evidence (Level 3) */}
                     <div className="px-4 py-3 flex items-start gap-3 border-b border-[var(--border)]">
                       <span className="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-[10px] font-black shrink-0">
@@ -321,7 +355,8 @@ export default function ValueTraceabilityDrawer({
                       )}
                     </div>
                   </div>
-                ))
+                ))}
+                </div>
               ) : (
                 <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] text-xs text-[var(--text-muted)] italic text-center">
                   Supporting evidence synthesized from verified resume milestones.
