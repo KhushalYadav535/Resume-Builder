@@ -30,7 +30,7 @@ export function ATSScoreBreakdownModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
       <div className="relative w-full max-w-xl bg-neutral-900 border border-neutral-800 rounded-2xl p-6 shadow-2xl overflow-hidden text-neutral-100">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-neutral-800">

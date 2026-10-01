@@ -57,7 +57,12 @@ export default function QuickScanModal({ isOpen, onClose }: QuickScanModalProps)
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]">
-      <div className="relative w-full max-w-2xl bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quickscan-modal-title"
+        className="relative w-full max-w-2xl bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+      >
         {/* Header */}
         <div className="p-6 border-b border-[var(--border)] flex justify-between items-center bg-[var(--bg-2)]/60">
           <div className="flex items-center gap-2.5">
@@ -65,7 +70,7 @@ export default function QuickScanModal({ isOpen, onClose }: QuickScanModalProps)
               <Zap size={18} />
             </div>
             <div>
-              <h2 className="text-lg font-bold font-['Syne',sans-serif] text-[var(--text-primary)]">
+              <h2 id="quickscan-modal-title" className="text-lg font-bold font-['Syne',sans-serif] text-[var(--text-primary)]">
                 30-Second Free ATS Quick Scan
               </h2>
               <p className="text-xs text-[var(--text-muted)]">
@@ -74,8 +79,10 @@ export default function QuickScanModal({ isOpen, onClose }: QuickScanModalProps)
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-[var(--bg-surface)] text-[var(--text-muted)] transition-colors"
+            aria-label="Close ATS Quick Scan modal"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
           >
             <X size={20} />
           </button>
@@ -86,10 +93,11 @@ export default function QuickScanModal({ isOpen, onClose }: QuickScanModalProps)
           {!result ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+                <label htmlFor="quickscan-resume-text" className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5 cursor-pointer">
                   1. Paste Your Resume Text *
                 </label>
                 <textarea
+                  id="quickscan-resume-text"
                   rows={6}
                   placeholder="Paste your full resume text here..."
                   value={resumeText}
@@ -99,10 +107,11 @@ export default function QuickScanModal({ isOpen, onClose }: QuickScanModalProps)
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+                <label htmlFor="quickscan-job-description" className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5 cursor-pointer">
                   2. Paste Target Job Description (Optional)
                 </label>
                 <textarea
+                  id="quickscan-job-description"
                   rows={4}
                   placeholder="Paste target JD to check matching percentage..."
                   value={jobDescription}
@@ -118,9 +127,10 @@ export default function QuickScanModal({ isOpen, onClose }: QuickScanModalProps)
               )}
 
               <button
+                type="button"
                 onClick={handleScan}
                 disabled={loading}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy font-bold text-sm shadow-lg shadow-amber-500/20 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy font-bold text-sm shadow-lg shadow-amber-500/20 hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -208,14 +218,28 @@ export default function QuickScanModal({ isOpen, onClose }: QuickScanModalProps)
                 <p className="text-xs text-white/80">
                   Create a free account to unlock tailored resumes, LinkedIn hooks, STAR interview stories, and real-time ATS targeting.
                 </p>
-                <Link
-                  href="/signup"
-                  onClick={onClose}
-                  className="inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy font-bold text-xs shadow-md shadow-amber-500/20 hover:shadow-lg transition-all no-underline"
-                >
-                  <span>Start Free Advancement</span>
-                  <ArrowRight size={14} />
-                </Link>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+                  <Link
+                    href="/signup"
+                    onClick={onClose}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-brand-navy font-bold text-xs shadow-md shadow-amber-500/20 hover:shadow-lg transition-all no-underline cursor-pointer"
+                  >
+                    <span>Start Free Advancement</span>
+                    <ArrowRight size={14} />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResult(null);
+                      setResumeText("");
+                      setJobDescription("");
+                    }}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition-all cursor-pointer"
+                  >
+                    <RefreshCw size={13} />
+                    <span>Scan Another</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}

@@ -62,6 +62,8 @@ export default function Navbar() {
   const pathname = usePathname();
   const { role, user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const [profile, setProfile] = useState<{ tier: string; credit_balance: number }>({
     tier: "Loading...",
@@ -108,7 +110,28 @@ export default function Navbar() {
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    setUserMenuOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setUserMenuOpen(false);
+        setMobileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -190,11 +213,12 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             className={cn(
-              "md:hidden p-1 -ml-2 transition-colors",
-              pathname === "/" ? "text-white" : "text-[var(--text-primary)] dark:text-white"
+              "md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500",
+              pathname === "/" ? "text-white hover:bg-white/10" : "text-[var(--text-primary)] dark:text-white hover:bg-[var(--bg-elevated)]"
             )}
             onClick={() => setMobileMenuOpen(true)}
-            aria-label="Open menu"
+            aria-label="Open navigation menu"
+            aria-expanded={mobileMenuOpen}
           >
             <Menu size={24} />
           </button>
@@ -240,7 +264,7 @@ export default function Navbar() {
               })}
             </div>
           ) : (
-            <div className="hidden md:flex flex-1 items-center justify-center mx-4 gap-1.5 min-w-0">
+            <div className="hidden md:flex flex-1 items-center justify-start lg:justify-center mx-2 lg:mx-4 gap-1 lg:gap-1.5 min-w-0 overflow-x-auto [scrollbar-width:none] py-1">
               {pillars.map((pillar) => {
                 const Icon = pillar.icon;
                 const isActive = pillar.activeMatch(pathname);
@@ -250,7 +274,7 @@ export default function Navbar() {
                     key={pillar.label}
                     href={pillar.href}
                     className={cn(
-                      "relative px-3.5 py-1.5 text-[13px] rounded-full transition-all duration-200 ease-out no-underline flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.97]",
+                      "relative px-2.5 lg:px-3.5 py-1.5 text-xs lg:text-[13px] rounded-full transition-all duration-200 ease-out no-underline flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.97]",
                       isActive
                         ? "bg-amber-500 text-brand-navy font-bold shadow-sm shadow-amber-500/25 border border-amber-500"
                         : "font-semibold text-slate-600 dark:text-slate-300 bg-slate-100/75 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 hover:text-brand-navy dark:hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/30"
@@ -298,16 +322,30 @@ export default function Navbar() {
           {user && (
             <>
               <NotificationBell />
-              <div className="relative group cursor-pointer">
-                <div
-                  className="flex items-center justify-center w-[34px] h-[34px] rounded-full text-white font-bold text-[13px] transition-all duration-300 hover:scale-[1.08] hover:shadow-[var(--accent-glow)]"
+              <div ref={userMenuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="menu"
+                  aria-label="User Account Menu"
+                  className="flex items-center justify-center min-w-[38px] min-h-[38px] w-[38px] h-[38px] rounded-full text-white font-bold text-[13px] transition-all duration-300 hover:scale-[1.08] hover:shadow-[var(--accent-glow)] focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
                   style={{
                     background: "var(--accent-grad)",
                   }}
                 >
                   {userInitials}
-                </div>
-                <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-[#101B3B] border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right scale-95 group-hover:scale-100 z-50">
+                </button>
+                <div
+                  role="menu"
+                  aria-label="User profile and settings"
+                  className={cn(
+                    "absolute right-0 mt-3 w-64 bg-white dark:bg-[#101B3B] border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl py-2 transition-all duration-200 transform origin-top-right z-50",
+                    userMenuOpen
+                      ? "opacity-100 visible scale-100 pointer-events-auto"
+                      : "opacity-0 invisible scale-95 pointer-events-none"
+                  )}
+                >
                   {/* Header */}
                   <div className="px-4 py-3 border-b border-[var(--border)]">
                     <div className="flex items-center gap-3">
@@ -440,7 +478,8 @@ export default function Navbar() {
           <UpRoleLogo href="/" size="sm" />
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 cursor-pointer"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] rounded-xl transition-colors cursor-pointer"
+            aria-label="Close navigation menu"
           >
             <X size={24} />
           </button>

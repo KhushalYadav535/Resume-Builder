@@ -5,10 +5,12 @@ import { Check, Star, Zap, Briefcase, Sparkles, ShieldCheck, TrendingUp } from "
 import Script from "next/script";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast-1";
 
 export default function PricingSection({ showCards = true }: { showCards?: boolean }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
+  const { showToast } = useToast();
   const supabase = createClient();
 
   const handlePayment = async (amount: number, description: string, tier: string = "free", credits: number = 0) => {
@@ -16,7 +18,7 @@ export default function PricingSection({ showCards = true }: { showCards?: boole
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        alert("Please login or register first to purchase credits/tiers.");
+        showToast("Please login or register first to purchase credits/tiers.", "info");
         router.push("/login?redirect=/pricing");
         setIsProcessing(false);
         return;
@@ -50,10 +52,10 @@ export default function PricingSection({ showCards = true }: { showCards?: boole
           const verifyData = await verifyRes.json();
           
           if (verifyData.success) {
-            alert("Payment successful! Credits/Tier updated.");
+            showToast("Payment successful! Credits/Tier updated.", "success");
             window.location.href = "/dashboard";
           } else {
-            alert("Payment verification failed.");
+            showToast("Payment verification failed.", "error");
           }
         },
         prefill: {
@@ -66,12 +68,12 @@ export default function PricingSection({ showCards = true }: { showCards?: boole
 
       const rzp = new (window as any).Razorpay(options);
       rzp.on("payment.failed", function (response: any) {
-        alert(response.error.description);
+        showToast(response.error?.description || "Payment was not completed.", "error");
       });
       rzp.open();
     } catch (error) {
       console.error(error);
-      alert("Error initiating payment");
+      showToast("Error initiating payment. Please try again.", "error");
     } finally {
       setIsProcessing(false);
     }

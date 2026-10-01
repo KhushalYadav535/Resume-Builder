@@ -544,7 +544,9 @@ export default function PulseDashboardPage() {
         )}
       </main>
 
-      <Footer />
+      <div className="pb-20 lg:pb-0">
+        <Footer />
+      </div>
 
       {/* AI Traceability Modal — Section 15 & 16 */}
       <AiTraceabilityModal

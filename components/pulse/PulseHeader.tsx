@@ -61,6 +61,7 @@ export default function PulseHeader({
               onChange={(e) => onScenarioChange(e.target.value as ScenarioPreset)}
               className="px-2.5 py-2 rounded-xl bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-200 dark:border-white/15 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer shadow-2xs outline-none"
               title="Switch career profile state / scenario (Section 14)"
+              aria-label="Select career profile scenario"
             >
               <option value="live">Live Data</option>
               <option value="full">Established Leader (Full)</option>
@@ -78,6 +79,7 @@ export default function PulseHeader({
               onClick={onToggleExpandAll}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-200 dark:border-white/15 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer shadow-2xs"
               title={isAllExpanded ? "Collapse cards to compact view" : "Expand all cards with full details"}
+              aria-label={isAllExpanded ? "Collapse cards to compact view" : "Expand all cards with full details"}
             >
               <span>{isAllExpanded ? "Collapse View" : "Expand View"}</span>
               <span className="text-[10px] opacity-70">{isAllExpanded ? "▴" : "▾"}</span>
@@ -90,6 +92,7 @@ export default function PulseHeader({
             onClick={onRefresh}
             className="p-2.5 rounded-xl bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-200 dark:border-white/15 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer shadow-2xs shrink-0"
             title="Recalculate Pulse state"
+            aria-label="Recalculate Pulse state"
           >
             <RefreshCw
               className={`w-4 h-4 ${isRefreshing ? "animate-spin text-amber-500" : ""}`}

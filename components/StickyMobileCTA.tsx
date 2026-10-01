@@ -4,10 +4,13 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Sparkles, ArrowRight, FileText } from "lucide-react";
 
+import { useAuth } from "@/hooks/useAuth";
+
 export default function StickyMobileCTA() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
-  // Exclude builder, admin, auth, and sub-editor pages from sticky mobile overlay
+  // Exclude builder, admin, auth, and authenticated core dashboard pages from sticky mobile overlay
   const excludedPrefixes = [
     "/resume/builder",
     "/admin",
@@ -16,9 +19,17 @@ export default function StickyMobileCTA() {
     "/forgot-password",
     "/reset-password",
     "/onboarding",
+    "/pulse",
+    "/value",
+    "/momentum",
+    "/career-journal",
+    "/career-copilot",
+    "/dashboard",
+    "/job-tracker",
+    "/analytics",
   ];
 
-  const shouldHide = excludedPrefixes.some((prefix) => pathname.startsWith(prefix));
+  const shouldHide = user || excludedPrefixes.some((prefix) => pathname.startsWith(prefix));
 
   if (shouldHide) return null;
 
