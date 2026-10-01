@@ -10,6 +10,8 @@ export interface ConfirmationModalProps {
   isDanger?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Optional rich JSX content rendered between title and action buttons */
+  customContent?: React.ReactNode;
 }
 
 export function ConfirmationModal({
@@ -21,8 +23,11 @@ export function ConfirmationModal({
   isDanger = false,
   onConfirm,
   onCancel,
+  customContent,
 }: ConfirmationModalProps) {
   if (!isOpen) return null;
+
+  const hasCustomContent = !!customContent;
 
   return (
     <div style={{
@@ -38,29 +43,42 @@ export function ConfirmationModal({
       justifyContent: 'center',
       zIndex: 1000,
       animation: 'fadeIn 0.2s ease',
+      padding: '1rem',
     }}>
       <div className="card" style={{
-        maxWidth: '420px',
-        width: '90%',
-        padding: '2rem',
-        textAlign: 'center',
+        maxWidth: hasCustomContent ? '520px' : '420px',
+        width: '100%',
+        padding: '1.75rem',
+        textAlign: hasCustomContent ? 'left' : 'center',
         display: 'grid',
-        gap: '1.5rem',
+        gap: '1.25rem',
         boxShadow: 'var(--shadow-3d)',
         border: '1px solid var(--border)',
         animation: 'fadeUp 0.3s var(--ease-spring)',
         backgroundColor: 'var(--card)'
       }}>
-        <div style={{ fontSize: '2.5rem' }}>{isDanger ? '⚠️' : '❓'}</div>
-        <div>
-          <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.25rem', margin: '0 0 0.5rem', color: 'var(--text-primary)' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <span style={{ fontSize: hasCustomContent ? '1.5rem' : '2.5rem', flexShrink: 0 }}>
+            {isDanger ? '⚠️' : '❓'}
+          </span>
+          <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.15rem', margin: 0, color: 'var(--text-primary)' }}>
             {title}
           </h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.5, margin: 0 }}>
+        </div>
+
+        {/* Plain message (shown when no customContent) */}
+        {!hasCustomContent && message && (
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.5, margin: 0, textAlign: 'center' }}>
             {message}
           </p>
-        </div>
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+        )}
+
+        {/* Rich custom content slot */}
+        {hasCustomContent && customContent}
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: hasCustomContent ? 'flex-end' : 'center' }}>
           <button
             className="btn-secondary"
             style={{ padding: '0.55rem 1.4rem', fontSize: '0.85rem', cursor: 'pointer' }}
@@ -87,3 +105,4 @@ export function ConfirmationModal({
     </div>
   );
 }
+

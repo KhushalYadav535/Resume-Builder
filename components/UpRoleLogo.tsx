@@ -135,7 +135,11 @@ export default function UpRoleLogo({
 
   if (href) {
     return (
-      <Link href={href} className="no-underline group inline-flex items-center">
+      <Link
+        href={href}
+        className="no-underline group inline-flex items-center"
+        aria-label="UpRole Home - Higher Careers Ahead"
+      >
         {content}
       </Link>
     );

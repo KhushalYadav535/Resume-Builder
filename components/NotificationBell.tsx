@@ -93,7 +93,11 @@ export default function NotificationBell() {
     <div ref={dropdownRef} style={{ position: "relative", display: "inline-block" }}>
       {/* Bell Button */}
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : "Notifications"}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
         style={{
           border: "none",
           cursor: "pointer",
@@ -101,7 +105,10 @@ export default function NotificationBell() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "0.5rem",
+          minWidth: "44px",
+          minHeight: "44px",
+          width: "44px",
+          height: "44px",
           borderRadius: "50%",
           color: isOpen ? "var(--accent)" : "var(--text-muted)",
           background: isOpen ? "rgba(245,158,11,0.12)" : "none",

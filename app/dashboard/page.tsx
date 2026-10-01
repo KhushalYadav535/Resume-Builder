@@ -25,6 +25,7 @@ import { EvidenceGap } from "@/app/api/value/detect-evidence-gaps/route";
 import DerivationNudgeCard from "@/components/value/DerivationNudgeCard";
 import CapabilityReviewModal from "@/components/value/CapabilityReviewModal";
 import { CapabilityHypothesis } from "@/app/api/value/derive-profile/route";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 export default function Dashboard() {
   const { user, role, loading: authLoading } = useAuth();
@@ -67,6 +68,21 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "ats">("newest");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [settingBaseId, setSettingBaseId] = useState<string | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmLabel?: string;
+    isDanger?: boolean;
+    action: () => Promise<void>;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    confirmLabel: "Confirm",
+    isDanger: false,
+    action: async () => {},
+  });
   
   const [showAllImprovements, setShowAllImprovements] = useState(false);
 
@@ -229,60 +245,76 @@ export default function Dashboard() {
       .catch((err) => console.error("Error deriving profile:", err));
   }, [resumes]);
 
-  const executeSetBase = async (id: string, e: React.MouseEvent) => {
+  const executeSetBase = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
-    if (!confirm("Set this as your Base Resume?")) return;
-    setSettingBaseId(id);
-    try {
-      const res = await fetch("/api/set-base-resume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
+    setConfirmModal({
+      isOpen: true,
+      title: "Set as Base Resume?",
+      message: "This resume will be designated as your primary profile source for Career Value derivations and Pulse intelligence.",
+      confirmLabel: "Set as Base",
+      isDanger: false,
+      action: async () => {
+        setSettingBaseId(id);
+        try {
+          const res = await fetch("/api/set-base-resume", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          });
 
-      if (!res.ok) throw new Error("Failed to set base resume.");
+          if (!res.ok) throw new Error("Failed to set base resume.");
 
-      setResumes((prev) => 
-        prev.map(r => ({
-          ...r,
-          is_base_resume: r.id === id
-        }))
-      );
-      showToast("Base resume updated.", "success");
-    } catch (err) {
-      console.error(err);
-      showToast("Error updating base resume. Please try again.", "error");
-    } finally {
-      setSettingBaseId(null);
-    }
+          setResumes((prev) => 
+            prev.map(r => ({
+              ...r,
+              is_base_resume: r.id === id
+            }))
+          );
+          showToast("Base resume updated.", "success");
+        } catch (err) {
+          console.error(err);
+          showToast("Error updating base resume. Please try again.", "error");
+        } finally {
+          setSettingBaseId(null);
+        }
+      },
+    });
   };
 
-  const executeDelete = async (id: string, e: React.MouseEvent) => {
+  const executeDelete = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     const resumeToDelete = resumes.find(r => r.id === id);
     if (resumeToDelete?.is_base_resume) {
       showToast("Base resume cannot be deleted.", "error");
       return;
     }
-    if (!confirm("Are you sure you want to delete this resume?")) return;
-    setDeletingId(id);
-    try {
-      const res = await fetch("/api/delete-resume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Resume Record?",
+      message: "Are you sure you want to delete this resume? This action cannot be undone.",
+      confirmLabel: "Delete Resume",
+      isDanger: true,
+      action: async () => {
+        setDeletingId(id);
+        try {
+          const res = await fetch("/api/delete-resume", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          });
 
-      if (!res.ok) throw new Error("Failed to delete resume record.");
+          if (!res.ok) throw new Error("Failed to delete resume record.");
 
-      setResumes((prev) => prev.filter((r) => r.id !== id));
-      showToast("Resume deleted successfully.", "success");
-    } catch (err) {
-      console.error(err);
-      showToast("Error deleting resume. Please try again.", "error");
-    } finally {
-      setDeletingId(null);
-    }
+          setResumes((prev) => prev.filter((r) => r.id !== id));
+          showToast("Resume deleted successfully.", "success");
+        } catch (err) {
+          console.error(err);
+          showToast("Error deleting resume. Please try again.", "error");
+        } finally {
+          setDeletingId(null);
+        }
+      },
+    });
   };
 
   const handleQuickLog = async () => {
@@ -1069,6 +1101,20 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+          {/* Confirmation Modal for Destructive/Primary Actions */}
+          <ConfirmationModal
+            isOpen={confirmModal.isOpen}
+            title={confirmModal.title}
+            message={confirmModal.message}
+            confirmLabel={confirmModal.confirmLabel}
+            isDanger={confirmModal.isDanger}
+            onConfirm={async () => {
+              const act = confirmModal.action;
+              setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+              await act();
+            }}
+            onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+          />
         </div>
       </main>
     </div>

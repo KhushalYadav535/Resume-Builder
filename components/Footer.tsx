@@ -28,13 +28,13 @@ export default function Footer() {
             </div>
             <ul className="space-y-2">
               <li>
-                <Link href="/dashboard" className="hover:text-amber-500 transition-colors">
-                  Pulse (Live Dashboard)
+                <Link href="/pulse" className="hover:text-amber-500 transition-colors">
+                  Pulse (Career Snapshot)
                 </Link>
               </li>
               <li>
-                <Link href="/career-discovery" className="hover:text-amber-500 transition-colors">
-                  Value (Discovery & Builder)
+                <Link href="/value" className="hover:text-amber-500 transition-colors">
+                  Value (Career Evidence & Derivation)
                 </Link>
               </li>
               <li>

@@ -11,6 +11,8 @@
   --color-brand-amber-hover: #D97706;
   --color-brand-amber-light: #FBBF24;
   --color-brand-amber-soft: rgba(245, 158, 11, 0.12);
+  --color-brand-orange: #EB5A28;
+  --color-brand-orange-hover: #D94B1B;
   --color-uprole-blue: #2563EB;
   --color-uprole-teal: #14B8A6;
   --color-uprole-purple: #7C3AED;
@@ -33,6 +35,8 @@
   --brand-amber: #F59E0B;
   --brand-amber-hover: #D97706;
   --brand-amber-soft: rgba(245, 158, 11, 0.12);
+  --brand-orange: #EB5A28;
+  --brand-orange-hover: #D94B1B;
   --uprole-blue: #2563EB;
   --uprole-blue-soft: rgba(37, 99, 235, 0.12);
   --uprole-teal: #14B8A6;
@@ -2138,3 +2142,15 @@ textarea.input {
     max-height: 95vh;
   }
 }
+
+/* ── Accessibility: Reduced Motion Support (WCAG 2.2 AA) ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

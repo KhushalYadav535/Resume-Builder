@@ -305,7 +305,7 @@ export default function LoginPage() {
                   <div className="space-y-3 pt-1">
                     {/* Email Field */}
                     <div>
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                      <label htmlFor="login-email" className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 mb-1">
                         Email Address
                       </label>
                       <div className="relative">
@@ -313,7 +313,10 @@ export default function LoginPage() {
                           <Mail size={16} />
                         </div>
                         <input
+                          id="login-email"
                           type="email"
+                          name="email"
+                          autoComplete="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="name@company.com"
@@ -327,7 +330,7 @@ export default function LoginPage() {
                     {/* Password Field */}
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-gray-700">
+                        <label htmlFor="login-password" className="text-[11px] font-bold uppercase tracking-wider text-gray-700">
                           Password
                         </label>
                         <Link
@@ -342,7 +345,10 @@ export default function LoginPage() {
                           <Lock size={16} />
                         </div>
                         <input
+                          id="login-password"
+                          name="password"
                           type={showPassword ? "text" : "password"}
+                          autoComplete="current-password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="••••••••"
@@ -353,7 +359,8 @@ export default function LoginPage() {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer"
                         >
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
@@ -364,13 +371,14 @@ export default function LoginPage() {
                   <div className="space-y-3 pt-1">
                     {!showOtpInput ? (
                       <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                        <label htmlFor="login-phone" className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 mb-1">
                           Mobile Phone
                         </label>
                         <div className="flex gap-2">
                           <div className="w-20">
                             <input
                               type="text"
+                              aria-label="Country calling code"
                               value={countryCode}
                               onChange={(e) => setCountryCode(e.target.value)}
                               disabled={submitting}
@@ -382,7 +390,10 @@ export default function LoginPage() {
                               <Phone size={16} />
                             </div>
                             <input
+                              id="login-phone"
                               type="tel"
+                              name="tel"
+                              autoComplete="tel-national"
                               value={mobileNumber}
                               onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ""))}
                               placeholder="98765 43210"
@@ -396,7 +407,7 @@ export default function LoginPage() {
                       </div>
                     ) : (
                       <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                        <label htmlFor="login-otp" className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 mb-1">
                           6-Digit OTP Code
                         </label>
                         <div className="relative">
@@ -404,7 +415,10 @@ export default function LoginPage() {
                             <Smartphone size={16} />
                           </div>
                           <input
+                            id="login-otp"
                             type="text"
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
                             value={otpToken}
                             onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, ""))}
                             placeholder="123456"
