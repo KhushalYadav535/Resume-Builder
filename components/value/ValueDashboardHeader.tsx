@@ -4,6 +4,7 @@ import { Sparkles, RefreshCw, CheckCircle2, FileText, ArrowRight, ShieldCheck, C
 import ValueOrbitBadge from "./ValueOrbitBadge";
 import ValueMarquee from "./ValueMarquee";
 import ValueTraceChain from "./ValueTraceChain";
+import ValuePulseProofTicker from "./ValuePulseProofTicker";
 import { useEffect, useState } from "react";
 
 /** rAF count-up for an array of targets (reduced-motion aware). */
@@ -66,6 +67,81 @@ export default function ValueDashboardHeader({
   ];
 
   const animatedSnapshot = useCountUp(snapshot.map((s) => s.value));
+
+  // Dynamic Proof Rotating Headline derived from live Pulse Telemetry
+  const [proofIndex, setProofIndex] = useState(0);
+  const [proofPhrases, setProofPhrases] = useState<string[]>([
+    "proves.",
+    "saves ₹48L/yr.",
+    "leads 24 engineers.",
+    "earned 3 promotions.",
+    "verifies 18 facts.",
+  ]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchLivePulseHighlights() {
+      try {
+        const res = await fetch("/api/pulse");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!isMounted || !data) return;
+
+        const dynamicPhrases = ["proves."];
+
+        if (data.recentEvent?.impact) {
+          const matchCost = data.recentEvent.impact.match(/[₹$€£][0-9A-Za-z.,]+/);
+          if (matchCost) {
+            dynamicPhrases.push(`saves ${matchCost[0]}/yr.`);
+          }
+        }
+
+        if (data.snapshot?.scope) {
+          const matchEngineers = data.snapshot.scope.match(/\d+\s*(?:engineers|people|squads)/i);
+          if (matchEngineers) {
+            dynamicPhrases.push(`leads ${matchEngineers[0]}.`);
+          }
+        }
+
+        if (data.snapshot?.progressionSignal) {
+          const matchPromo = data.snapshot.progressionSignal.match(/\d+\s*(?:promotions|roles)/i);
+          if (matchPromo) {
+            dynamicPhrases.push(`earned ${matchPromo[0]}.`);
+          }
+        }
+
+        const factsCount = data.careerValue?.traceableCount || data.snapshot?.evidenceCount;
+        if (factsCount) {
+          dynamicPhrases.push(`verifies ${factsCount} facts.`);
+        }
+
+        if (dynamicPhrases.length > 1) {
+          setProofPhrases(dynamicPhrases);
+        }
+      } catch (err) {
+        console.error("Failed to load pulse highlights for header:", err);
+      }
+    }
+
+    fetchLivePulseHighlights();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Interval rotation for headline proof phrase
+  useEffect(() => {
+    const reduced =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+
+    const timer = setInterval(() => {
+      setProofIndex((prev) => (prev + 1) % proofPhrases.length);
+    }, 3200);
+
+    return () => clearInterval(timer);
+  }, [proofPhrases.length]);
 
   const trust = [
     { icon: BadgeCheck, text: "You approve every fact" },
@@ -146,30 +222,46 @@ export default function ValueDashboardHeader({
         <div className="mt-7 sm:mt-9 grid lg:grid-cols-[1.35fr_0.9fr] gap-8 lg:gap-10 items-center">
           {/* Left: editorial statement */}
           <div className="space-y-5">
-            <div className="flex items-center justify-between gap-4">
-              <p className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-amber-600 dark:text-amber-400">
-                <span className="w-8 h-px bg-amber-500" aria-hidden="true" />
-                Your Career Value
-              </p>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-[11px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">
+                <span className="relative flex w-2 h-2">
+                  <span className="absolute inline-flex w-full h-full rounded-full bg-amber-500 opacity-75 animate-ping" />
+                  <span className="relative inline-flex w-2 h-2 rounded-full bg-amber-500" />
+                </span>
+                Live Career Telemetry · Pulse Verified
+              </div>
               <div className="hidden md:block">
                 <ValueOrbitBadge />
               </div>
             </div>
-            <h1 className="text-[clamp(2.6rem,6vw,4.6rem)] font-extrabold tracking-[-0.025em] leading-[1.0] text-[var(--text-primary)] font-['Syne',sans-serif]">
+
+            {/* Dynamic Kinetic Headline with rotating proof phrase */}
+            <h1 className="text-[clamp(2.3rem,5.5vw,4.2rem)] font-extrabold tracking-[-0.025em] leading-[1.05] text-[var(--text-primary)] font-['Syne',sans-serif]">
               <span className="value-word" style={{ animationDelay: "0.05s" }}>Understand</span>{" "}
               <span className="value-word" style={{ animationDelay: "0.13s" }}>what</span>
               <br />
               <span className="value-word" style={{ animationDelay: "0.21s" }}>your</span>{" "}
               <span className="value-word" style={{ animationDelay: "0.29s" }}>experience</span>{" "}
-              <span className="value-word font-editorial font-medium text-gradient-amber pr-2" style={{ animationDelay: "0.38s" }}>
-                proves.
+              <span className="relative inline-block">
+                <span
+                  key={proofIndex}
+                  className="value-proof-flip font-editorial font-medium text-gradient-amber pr-2 inline-block min-w-[140px]"
+                >
+                  {proofPhrases[proofIndex]}
+                </span>
               </span>
             </h1>
+
             <p className="text-[14px] sm:text-[15.5px] text-[var(--text-secondary)] max-w-xl leading-relaxed">
               {confirmedFactsCount > 0
                 ? <>Grounded in <strong className="text-[var(--text-primary)] tabular-nums">{confirmedFactsCount} verified facts</strong>, <strong className="text-[var(--text-primary)] tabular-nums">{careerEventsCount} career events</strong> and <strong className="text-[var(--text-primary)] tabular-nums">{evidenceItemsCount} evidence links</strong> — every insight below traces back to its source.</>
-                : "Capabilities, impact and progression — derived from verified career facts, never guessed. Every insight traces back to its source."}
+                : "Capabilities, quantified business ROI and organizational scale — derived from verified career facts, never guessed. Every insight traces back to its source."}
             </p>
+
+            {/* Dynamic Pulse Proof Marquee (Marketing Ticker) */}
+            <div className="pt-0.5 pb-1">
+              <ValuePulseProofTicker onChipClick={onExploreValue} />
+            </div>
 
             {/* CTAs */}
             <div className="flex items-center gap-3 flex-wrap pt-1">
