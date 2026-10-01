@@ -311,6 +311,51 @@ export async function GET(req: NextRequest) {
         isPrimary: idx === 0,
         category: j.category || "Progress",
       }));
+    } else if (workExperience.length > 0) {
+      // Synthesize directly from user's active resume bullets & real role experience
+      const topBullet = quantifiedBullets[0] || bullets[0] || `Key deliverable executed successfully at ${companyName}.`;
+      const secondBullet = quantifiedBullets[1] || bullets[1] || `Core competency and domain contribution at ${companyName}.`;
+
+      synthesized.recentEvent = {
+        id: "resume-recent-event",
+        title: `${roleTitle} · Key Milestone`,
+        date: currentExp?.startDate ? `${currentExp.startDate} · ${companyName}` : companyName,
+        context: currentExp?.description || `Professional deliverables and strategic responsibilities at ${companyName}.`,
+        impact: topBullet,
+        capability: allSkills[0] || "Professional Execution",
+      };
+
+      synthesized.recentProgress = [
+        {
+          id: "rp-user-1",
+          title: `${roleTitle} at ${companyName}`,
+          description: topBullet,
+          evidenceLink: "/resume/builder",
+          isPrimary: true,
+          category: "Role Execution",
+        },
+        ...(secondBullet ? [{
+          id: "rp-user-2",
+          title: "Demonstrated Impact",
+          description: secondBullet,
+          evidenceLink: "/resume/builder",
+          isPrimary: false,
+          category: "Professional Impact",
+        }] : []),
+      ];
+
+      // Personalized career trajectory based on user's target role or current role
+      const targetRole = resumeData.targetRole || `Senior ${roleTitle}`;
+      synthesized.careerDirection = {
+        title: targetRole,
+        confidence: totalYears >= 5 ? "High Alignment" : "Moderate Alignment",
+        signals: allSkills.slice(0, 4),
+        evidence: [
+          `${Math.round(totalYears)}+ years of documented experience`,
+          `Demonstrated impact across ${workExperience.length} professional roles`,
+          ...quantifiedBullets.slice(0, 2),
+        ],
+      };
     }
 
     return NextResponse.json(synthesized);

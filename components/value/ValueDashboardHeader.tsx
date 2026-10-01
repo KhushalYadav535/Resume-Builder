@@ -5,7 +5,9 @@ import ValueOrbitBadge from "./ValueOrbitBadge";
 import ValueMarquee from "./ValueMarquee";
 import ValueTraceChain from "./ValueTraceChain";
 import ValuePulseProofTicker from "./ValuePulseProofTicker";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { Resume } from "@/types";
+import { CareerValueResponse } from "@/types/value";
 
 /** rAF count-up for an array of targets (reduced-motion aware). */
 function useCountUp(targets: number[], duration = 1000): number[] {
@@ -31,7 +33,6 @@ function useCountUp(targets: number[], duration = 1000): number[] {
   }, [key]);
   return values;
 }
-import { Resume } from "@/types";
 
 interface ValueDashboardHeaderProps {
   resumes: Resume[];
@@ -45,6 +46,7 @@ interface ValueDashboardHeaderProps {
   confirmedFactsCount?: number;
   careerEventsCount?: number;
   evidenceItemsCount?: number;
+  valueData?: CareerValueResponse | null;
 }
 
 export default function ValueDashboardHeader({
@@ -59,6 +61,7 @@ export default function ValueDashboardHeader({
   confirmedFactsCount = 0,
   careerEventsCount = 0,
   evidenceItemsCount = 0,
+  valueData,
 }: ValueDashboardHeaderProps) {
   const snapshot = [
     { label: "Confirmed facts", value: confirmedFactsCount },
@@ -68,15 +71,56 @@ export default function ValueDashboardHeader({
 
   const animatedSnapshot = useCountUp(snapshot.map((s) => s.value));
 
-  // Dynamic Proof Rotating Headline derived from live Pulse Telemetry
+  // Dynamic Proof Rotating Headline derived from user's actual active profile and confirmed facts
+  const [pulsePhrases, setPulsePhrases] = useState<string[]>([]);
   const [proofIndex, setProofIndex] = useState(0);
-  const [proofPhrases, setProofPhrases] = useState<string[]>([
-    "proves.",
-    "saves ₹48L/yr.",
-    "leads 24 engineers.",
-    "earned 3 promotions.",
-    "verifies 18 facts.",
-  ]);
+
+  // Combine user's verified facts and derived interpretations with live pulse highlights
+  const proofPhrases = useMemo(() => {
+    const list: string[] = ["proves."];
+
+    // 1. Confirmed facts from active profile
+    if (confirmedFactsCount > 0) {
+      list.push(`verifies ${confirmedFactsCount} facts.`);
+    }
+
+    // 2. Career events logged
+    if (careerEventsCount > 0) {
+      list.push(`${careerEventsCount} career milestones.`);
+    }
+
+    // 3. Evidence links
+    if (evidenceItemsCount > 0) {
+      list.push(`${evidenceItemsCount} evidence links.`);
+    }
+
+    // 4. Derived impact interpretation from user's active resume
+    if (valueData?.profile?.impact?.[0]?.title) {
+      const imp = valueData.profile.impact[0].title.trim();
+      list.push(`drives ${imp.length > 20 ? imp.slice(0, 18) + "…" : imp}.`);
+    }
+
+    // 5. Derived top capability
+    if (valueData?.profile?.capabilities?.[0]?.title) {
+      const cap = valueData.profile.capabilities[0].title.trim();
+      list.push(`proves ${cap.length > 20 ? cap.slice(0, 18) + "…" : cap}.`);
+    }
+
+    // 6. Value pattern
+    if (valueData?.valuePatterns?.[0]?.title) {
+      const pat = valueData.valuePatterns[0].title.trim();
+      list.push(`${pat.length > 22 ? pat.slice(0, 20) + "…" : pat}.`);
+    }
+
+    // 7. Pulse dynamic highlights (if unique)
+    pulsePhrases.forEach((p) => {
+      if (!list.includes(p)) {
+        list.push(p);
+      }
+    });
+
+    return list;
+  }, [confirmedFactsCount, careerEventsCount, evidenceItemsCount, valueData, pulsePhrases]);
 
   useEffect(() => {
     let isMounted = true;
@@ -87,7 +131,7 @@ export default function ValueDashboardHeader({
         const data = await res.json();
         if (!isMounted || !data) return;
 
-        const dynamicPhrases = ["proves."];
+        const dynamicPhrases: string[] = [];
 
         if (data.recentEvent?.impact) {
           const matchCost = data.recentEvent.impact.match(/[₹$€£][0-9A-Za-z.,]+/);
@@ -110,13 +154,8 @@ export default function ValueDashboardHeader({
           }
         }
 
-        const factsCount = data.careerValue?.traceableCount || data.snapshot?.evidenceCount;
-        if (factsCount) {
-          dynamicPhrases.push(`verifies ${factsCount} facts.`);
-        }
-
-        if (dynamicPhrases.length > 1) {
-          setProofPhrases(dynamicPhrases);
+        if (dynamicPhrases.length > 0) {
+          setPulsePhrases(dynamicPhrases);
         }
       } catch (err) {
         console.error("Failed to load pulse highlights for header:", err);
@@ -204,17 +243,6 @@ export default function ValueDashboardHeader({
                 </select>
               </label>
             )}
-
-            <button
-              onClick={onRecalculate}
-              disabled={recalculating}
-              className="group inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[var(--bg-elevated)]/80 backdrop-blur border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-amber-500/50 hover:shadow-[0_4px_18px_rgba(245,158,11,0.18)] transition-all cursor-pointer disabled:opacity-50"
-              title="Recalculate Career Value from confirmed facts"
-              aria-label="Recalculate Career Value from confirmed facts"
-            >
-              <RefreshCw size={13} className={recalculating ? "animate-spin text-amber-500" : "group-hover:rotate-90 transition-transform duration-300 text-amber-500"} />
-              <span>{recalculating ? "Deriving…" : "Recalculate"}</span>
-            </button>
           </div>
         </div>
 
@@ -236,16 +264,17 @@ export default function ValueDashboardHeader({
             </div>
 
             {/* Dynamic Kinetic Headline with rotating proof phrase */}
-            <h1 className="text-[clamp(2.3rem,5.5vw,4.2rem)] font-extrabold tracking-[-0.025em] leading-[1.05] text-[var(--text-primary)] font-['Syne',sans-serif]">
+            <h1 className="text-[clamp(2rem,4.2vw,3.6rem)] font-extrabold tracking-[-0.025em] leading-[1.12] text-[var(--text-primary)] font-['Syne',sans-serif]">
               <span className="value-word" style={{ animationDelay: "0.05s" }}>Understand</span>{" "}
               <span className="value-word" style={{ animationDelay: "0.13s" }}>what</span>
               <br />
               <span className="value-word" style={{ animationDelay: "0.21s" }}>your</span>{" "}
-              <span className="value-word" style={{ animationDelay: "0.29s" }}>experience</span>{" "}
-              <span className="relative inline-block">
+              <span className="value-word" style={{ animationDelay: "0.29s" }}>experience</span>
+              <br />
+              <span className="relative inline-block max-w-full">
                 <span
                   key={proofIndex}
-                  className="value-proof-flip font-editorial font-medium text-gradient-amber pr-2 inline-block min-w-[140px]"
+                  className="value-proof-flip font-editorial font-medium text-gradient-amber pr-2 inline-block break-words"
                 >
                   {proofPhrases[proofIndex]}
                 </span>
@@ -260,7 +289,13 @@ export default function ValueDashboardHeader({
 
             {/* Dynamic Pulse Proof Marquee (Marketing Ticker) */}
             <div className="pt-0.5 pb-1">
-              <ValuePulseProofTicker onChipClick={onExploreValue} />
+              <ValuePulseProofTicker
+                onChipClick={onExploreValue}
+                valueData={valueData}
+                confirmedFactsCount={confirmedFactsCount}
+                careerEventsCount={careerEventsCount}
+                evidenceItemsCount={evidenceItemsCount}
+              />
             </div>
 
             {/* CTAs */}
