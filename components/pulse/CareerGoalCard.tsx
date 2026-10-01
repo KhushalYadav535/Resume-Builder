@@ -18,9 +18,17 @@ import { CareerGoalData } from "./types";
 interface Props {
   goal: CareerGoalData | null;
   onSelectGoalType?: (goalTitle: string) => void;
+  forceExpand?: boolean;
 }
 
-export default function CareerGoalCard({ goal, onSelectGoalType }: Props) {
+export default function CareerGoalCard({
+  goal,
+  onSelectGoalType,
+  forceExpand,
+}: Props) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const expanded = forceExpand !== undefined ? forceExpand : isExpanded;
+
   const goalOptions = [
     { label: "Change Job", hint: "Move to a new company or role" },
     { label: "Get Promoted", hint: "Vertical transition in current track" },
@@ -36,53 +44,65 @@ export default function CareerGoalCard({ goal, onSelectGoalType }: Props) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-[#101736] dark:via-[#141F48] dark:to-[#0D132D] text-[var(--text-primary)] p-7 sm:p-8 shadow-[0_4px_24px_rgba(16,27,59,0.06)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.55)] flex flex-col justify-between"
+      className="group relative rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-[#101736] dark:via-[#141F48] dark:to-[#0D132D] text-[var(--text-primary)] p-5 sm:p-6 shadow-[0_4px_20px_rgba(16,27,59,0.05)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.55)] flex flex-col justify-between"
     >
       <div>
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-400/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner">
-              <Target className="w-4.5 h-4.5" />
+            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-400/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner">
+              <Target className="w-4 h-4" />
             </div>
             <div>
               <span className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-700 dark:text-amber-400 font-['Syne',sans-serif]">
-                Where I Am Going · Career Goal
+                CAREER GOAL
               </span>
-              <p className="text-[12px] text-[var(--text-muted)] font-medium">
-                Conscious desired outcome &amp; milestone readiness
+              <p className="text-[11.5px] text-[var(--text-muted)] font-medium">
+                Desired outcome · Progress/milestone
               </p>
             </div>
           </div>
 
-          <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-400/10 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-400/20">
-            Active Focus
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 dark:bg-amber-400/10 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-400/20">
+              Active Focus
+            </span>
+            {goal && (
+              <button
+                type="button"
+                onClick={() => setIsExpanded(!expanded)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/15 text-[11px] font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer shadow-2xs"
+              >
+                <span>{expanded ? "Collapse" : "Expand"}</span>
+                <span className="text-[9px]">{expanded ? "▴" : "▾"}</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Content */}
         {goal ? (
-          <div className="space-y-4">
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 space-y-3">
+          <div className="space-y-3">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 space-y-2.5">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 font-bold">
                   <Clock className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Target Timeframe: {goal.timeframe}</span>
+                  <span>Timeframe: {goal.timeframe}</span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-400/30 text-amber-700 dark:text-amber-300">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-400/30 text-amber-700 dark:text-amber-300">
                   {goal.status}
                 </span>
               </div>
 
-              <h3 className="text-xl sm:text-2xl font-black text-[var(--text-primary)] font-['Syne',sans-serif] leading-tight">
+              <h3 className="text-lg sm:text-xl font-black text-[var(--text-primary)] font-['Syne',sans-serif] leading-tight">
                 {goal.title}
               </h3>
 
               {/* Progress Milestones Stepper */}
               <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-2">
-                <div className="flex items-center justify-between text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                <div className="flex items-center justify-between text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
                   <span>Milestone Progression</span>
-                  <span className="text-amber-600 dark:text-amber-400">
+                  <span className="text-amber-600 dark:text-amber-400 font-semibold">
                     Step {goal.currentMilestoneIndex} of {goal.milestones.length}
                   </span>
                 </div>
@@ -102,36 +122,66 @@ export default function CareerGoalCard({ goal, onSelectGoalType }: Props) {
                   ))}
                 </div>
 
-                <div className="p-3 rounded-xl bg-amber-50/90 dark:bg-amber-500/10 border border-amber-200/80 dark:border-amber-400/20 text-xs">
+                <div className="p-2.5 rounded-lg bg-amber-50/90 dark:bg-amber-500/10 border border-amber-200/80 dark:border-amber-400/20 text-xs">
                   <span className="font-bold text-amber-800 dark:text-amber-300">Next Milestone: </span>
                   <span className="text-[var(--text-secondary)]">{goal.nextMilestone}</span>
                 </div>
+
+                {/* Expanded view: full list of milestone steps */}
+                {expanded && (
+                  <div className="pt-2 space-y-1.5 animate-fadeIn">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                      All Milestones:
+                    </div>
+                    {goal.milestones.map((ms, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-2 text-xs text-[var(--text-secondary)]"
+                      >
+                        <span
+                          className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                            idx < goal.currentMilestoneIndex
+                              ? "bg-amber-500 text-white"
+                              : idx === goal.currentMilestoneIndex
+                              ? "border-2 border-amber-500 text-amber-600 dark:text-amber-400"
+                              : "border border-slate-300 dark:border-white/20 text-slate-400"
+                          }`}
+                        >
+                          {idx + 1}
+                        </span>
+                        <span className={idx < goal.currentMilestoneIndex ? "line-through opacity-70" : ""}>
+                          {ms}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         ) : (
-          /* Empty state matching Scenario C in Section 14 */
-          <div className="space-y-3 p-5 rounded-2xl bg-amber-50/70 dark:bg-amber-500/10 border border-amber-200/80 dark:border-amber-400/20">
+          /* Empty state */
+          <div className="space-y-2.5 p-4 rounded-xl bg-amber-50/70 dark:bg-amber-500/10 border border-amber-200/80 dark:border-amber-400/20">
             <div>
-              <h4 className="text-base font-bold text-[var(--text-primary)] font-['Syne',sans-serif]">
-                You have a clear career foundation. What do you want next?
+              <h4 className="text-sm font-bold text-[var(--text-primary)] font-['Syne',sans-serif]">
+                What do you want next?
               </h4>
-              <p className="text-xs text-[var(--text-secondary)] mt-1">
-                Select your primary near-term objective to initiate calibrated recommendations:
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                Select your near-term objective to calibrate recommendations:
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
               {goalOptions.map((opt) => (
                 <button
                   key={opt.label}
                   type="button"
                   onClick={() => onSelectGoalType?.(opt.label)}
-                  className="p-3 rounded-xl bg-white dark:bg-white/5 hover:bg-amber-50/80 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-amber-500/40 text-left transition-all text-xs cursor-pointer group shadow-2xs hover:shadow-xs active:scale-[0.98]"
+                  className="p-2.5 rounded-lg bg-white dark:bg-white/5 hover:bg-amber-50/80 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-amber-500/40 text-left transition-all text-xs cursor-pointer group shadow-2xs hover:shadow-xs active:scale-[0.98]"
                 >
                   <div className="font-bold text-[var(--text-primary)] group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors flex items-center justify-between">
                     <span>{opt.label}</span>
-                    <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-amber-500" />
+                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-amber-500" />
                   </div>
                   <div className="text-[10px] text-[var(--text-muted)] mt-0.5">
                     {opt.hint}
@@ -143,8 +193,8 @@ export default function CareerGoalCard({ goal, onSelectGoalType }: Props) {
         )}
       </div>
 
-      <div className="pt-4 mt-6 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
-        <span className="text-[var(--text-muted)]">Goals &amp; Priorities Engine</span>
+      <div className="pt-3 mt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
+        <span className="text-[var(--text-muted)] text-[11px]">Goals &amp; Priorities</span>
         <Link
           href="/momentum#priorities"
           className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-bold hover:underline no-underline"
