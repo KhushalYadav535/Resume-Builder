@@ -12,6 +12,8 @@ import {
   Cpu,
 } from "lucide-react";
 
+import { CareerValueResponse } from "@/types/value";
+
 export interface ProofChip {
   id: string;
   icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
@@ -20,57 +22,6 @@ export interface ProofChip {
   tag: string;
   accent: "amber" | "emerald" | "sky" | "violet" | "rose";
 }
-
-const DEFAULT_PROOF_CHIPS: ProofChip[] = [
-  {
-    id: "chip-roi",
-    icon: Zap,
-    headline: "Legacy Cloud Cost Cut",
-    metric: "₹48L/year saved",
-    tag: "Quantified ROI",
-    accent: "amber",
-  },
-  {
-    id: "chip-promo",
-    icon: TrendingUp,
-    headline: "Fast-Track Velocity",
-    metric: "3 promotions in 6 yrs",
-    tag: "Progression",
-    accent: "emerald",
-  },
-  {
-    id: "chip-squads",
-    icon: Users,
-    headline: "Multi-Squad Scale",
-    metric: "24 engineers & designers led",
-    tag: "Leadership",
-    accent: "sky",
-  },
-  {
-    id: "chip-evidence",
-    icon: CheckCircle2,
-    headline: "Substantiated Facts",
-    metric: "18 verified proof links",
-    tag: "Zero Guesswork",
-    accent: "violet",
-  },
-  {
-    id: "chip-trajectory",
-    icon: Award,
-    headline: "Executive Alignment",
-    metric: "VP of Product trajectory",
-    tag: "High Market Value",
-    accent: "amber",
-  },
-  {
-    id: "chip-tech",
-    icon: Cpu,
-    headline: "System Optimization",
-    metric: "28% server efficiency gain",
-    tag: "Technical ROI",
-    accent: "emerald",
-  },
-];
 
 const ACCENT_STYLES = {
   amber: {
@@ -102,12 +53,108 @@ const ACCENT_STYLES = {
 
 interface ValuePulseProofTickerProps {
   onChipClick?: (chip: ProofChip) => void;
+  valueData?: CareerValueResponse | null;
+  confirmedFactsCount?: number;
+  careerEventsCount?: number;
+  evidenceItemsCount?: number;
 }
 
-export default function ValuePulseProofTicker({ onChipClick }: ValuePulseProofTickerProps) {
-  const [chips, setChips] = useState<ProofChip[]>(DEFAULT_PROOF_CHIPS);
+export default function ValuePulseProofTicker({
+  onChipClick,
+  valueData,
+  confirmedFactsCount = 0,
+  careerEventsCount = 0,
+  evidenceItemsCount = 0,
+}: ValuePulseProofTickerProps) {
+  // Build user-first dynamic proof chips from active profile data
+  const baseUserChips = React.useMemo(() => {
+    const list: ProofChip[] = [];
 
-  // Fetch live pulse data dynamically to populate recent user achievements
+    if (confirmedFactsCount > 0) {
+      list.push({
+        id: "chip-user-facts",
+        icon: CheckCircle2,
+        headline: "Confirmed Facts in Source",
+        metric: `${confirmedFactsCount} verified facts`,
+        tag: "Approved by You",
+        accent: "emerald",
+      });
+    }
+
+    if (careerEventsCount > 0) {
+      list.push({
+        id: "chip-user-events",
+        icon: TrendingUp,
+        headline: "Documented Milestones",
+        metric: `${careerEventsCount} career events`,
+        tag: "Career Velocity",
+        accent: "amber",
+      });
+    }
+
+    if (evidenceItemsCount > 0) {
+      list.push({
+        id: "chip-user-evidence",
+        icon: Sparkles,
+        headline: "Traceable Evidence Links",
+        metric: `${evidenceItemsCount} evidence sources`,
+        tag: "Zero Guesswork",
+        accent: "sky",
+      });
+    }
+
+    // Real impact interpretation from valueData
+    if (valueData?.profile?.impact?.[0]) {
+      const imp = valueData.profile.impact[0];
+      list.push({
+        id: "chip-user-impact",
+        icon: Zap,
+        headline: imp.description?.slice(0, 36) || "Substantiated Business ROI",
+        metric: imp.title.slice(0, 32),
+        tag: "Verified Impact",
+        accent: "amber",
+      });
+    }
+
+    // Real top capability from valueData
+    if (valueData?.profile?.capabilities?.[0]) {
+      const cap = valueData.profile.capabilities[0];
+      list.push({
+        id: "chip-user-cap",
+        icon: Award,
+        headline: cap.description?.slice(0, 36) || "Validated Core Competency",
+        metric: cap.title.slice(0, 30),
+        tag: "Core Capability",
+        accent: "violet",
+      });
+    }
+
+    // Real value pattern from valueData
+    if (valueData?.valuePatterns?.[0]) {
+      const pat = valueData.valuePatterns[0];
+      list.push({
+        id: "chip-user-pattern",
+        icon: Cpu,
+        headline: pat.description?.slice(0, 36) || "Cross-Role Strength",
+        metric: pat.title.slice(0, 30),
+        tag: "Value Pattern",
+        accent: "emerald",
+      });
+    }
+
+    return list;
+  }, [confirmedFactsCount, careerEventsCount, evidenceItemsCount, valueData]);
+
+  const [chips, setChips] = useState<ProofChip[]>(baseUserChips);
+
+  // Sync state whenever user's actual base data updates
+  useEffect(() => {
+    if (baseUserChips.length > 0) {
+      setChips(baseUserChips);
+    }
+  }, [baseUserChips]);
+
+  // Optionally supplement with live pulse API if available
   useEffect(() => {
     let isMounted = true;
 
@@ -118,9 +165,13 @@ export default function ValuePulseProofTicker({ onChipClick }: ValuePulseProofTi
         const data = await res.json();
         if (!isMounted || !data) return;
 
+        // If user already has base chips from their active resume, keep them and append any unique live pulse wins
+        if (baseUserChips.length >= 3) {
+          return;
+        }
+
         const liveChips: ProofChip[] = [];
 
-        // 1. Financial / Business ROI from recent event
         if (data.recentEvent?.impact) {
           const impact = data.recentEvent.impact;
           const matchCost = impact.match(/[₹$€£][0-9A-Za-z.,]+/);
@@ -134,19 +185,17 @@ export default function ValuePulseProofTicker({ onChipClick }: ValuePulseProofTi
           });
         }
 
-        // 2. Progression Signal from snapshot
         if (data.snapshot?.progressionSignal) {
           liveChips.push({
             id: "live-progression",
             icon: TrendingUp,
             headline: "Career Progression",
             metric: data.snapshot.progressionSignal.replace(/Fast-track trajectory · /i, ""),
-            tag: "Fast-Track",
+            tag: "Progression",
             accent: "emerald",
           });
         }
 
-        // 3. Leadership Scope
         if (data.snapshot?.scope) {
           liveChips.push({
             id: "live-scope",
@@ -158,7 +207,6 @@ export default function ValuePulseProofTicker({ onChipClick }: ValuePulseProofTi
           });
         }
 
-        // 4. Evidence count from careerValue or snapshot
         const count = data.careerValue?.traceableCount || data.snapshot?.evidenceCount || 18;
         liveChips.push({
           id: "live-evidence",
@@ -169,31 +217,7 @@ export default function ValuePulseProofTicker({ onChipClick }: ValuePulseProofTi
           accent: "violet",
         });
 
-        // 5. Career Direction
-        if (data.careerDirection?.title) {
-          liveChips.push({
-            id: "live-direction",
-            icon: Award,
-            headline: "Target Alignment",
-            metric: data.careerDirection.title,
-            tag: data.careerDirection.confidence || "High Alignment",
-            accent: "amber",
-          });
-        }
-
-        // 6. Recent progress win
-        if (data.recentProgress?.[1]?.description) {
-          liveChips.push({
-            id: "live-progress-2",
-            icon: Cpu,
-            headline: data.recentProgress[1].title?.slice(0, 26) || "Technical Win",
-            metric: data.recentProgress[1].description.slice(0, 35) + "…",
-            tag: "Substantiated",
-            accent: "emerald",
-          });
-        }
-
-        if (liveChips.length >= 3) {
+        if (liveChips.length >= 2) {
           setChips(liveChips);
         }
       } catch (err) {
@@ -205,7 +229,7 @@ export default function ValuePulseProofTicker({ onChipClick }: ValuePulseProofTi
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [baseUserChips]);
 
   const renderChipList = (keyPrefix: string) => (
     <div className="flex items-center gap-3 shrink-0 pr-3">

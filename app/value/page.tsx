@@ -502,6 +502,7 @@ function CareerValueDashboardContent() {
         confirmedFactsCount={confirmedFactsCount}
         careerEventsCount={valueData?.evidenceSummary?.careerEvents || 0}
         evidenceItemsCount={valueData?.evidenceSummary?.evidenceItems || 0}
+        valueData={valueData}
       />
 
       {/* Navigation Tabs (Spec Section 24) */}

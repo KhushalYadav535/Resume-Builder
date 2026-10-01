@@ -40,7 +40,6 @@ import {
 import PulseToast, { ToastVariant } from "@/components/pulse/PulseToast";
 import MobileActionBar from "@/components/pulse/MobileActionBar";
 import PulseAtAGlance from "@/components/pulse/PulseAtAGlance";
-import PulseChapterRail from "@/components/pulse/PulseChapterRail";
 
 // Canonical Established Leader Data (Matching Spec Sections 1–13)
 const CANONICAL_ESTABLISHED_DATA: PulseDashboardData = {
@@ -635,9 +634,6 @@ export default function PulseDashboardPage() {
           nextActionLink={activeData.nextBestAction.ctaLink || "/value"}
         />
       )}
-
-      {/* Floating chapter rail (xl screens) */}
-      {!initialLoading && <PulseChapterRail />}
       </div>
     </div>
   );
