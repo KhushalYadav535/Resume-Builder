@@ -1,8 +1,7 @@
 "use client";
 
-import { Sparkles, RefreshCw, CheckCircle2, FileText, ArrowRight, ShieldCheck, ChevronRight, BadgeCheck, Fingerprint, SearchCheck } from "lucide-react";
+import { Sparkles, Zap, RefreshCw, CheckCircle2, FileText, ArrowRight, ShieldCheck, ChevronRight, BadgeCheck } from "lucide-react";
 import ValueOrbitBadge from "./ValueOrbitBadge";
-import ValueMarquee from "./ValueMarquee";
 import ValueTraceChain from "./ValueTraceChain";
 import ValuePulseProofTicker from "./ValuePulseProofTicker";
 import { useEffect, useState, useMemo } from "react";
@@ -182,12 +181,6 @@ export default function ValueDashboardHeader({
     return () => clearInterval(timer);
   }, [proofPhrases.length]);
 
-  const trust = [
-    { icon: BadgeCheck, text: "You approve every fact" },
-    { icon: Fingerprint, text: "Every claim traces to source" },
-    { icon: SearchCheck, text: "No scores, no hallucinations" },
-  ];
-
   return (
     <section className="value-noise relative overflow-hidden border-b border-[var(--border)] bg-[var(--card)]">
       {/* ── Editorial mesh backdrop (same theme, deeper stage) ── */}
@@ -225,7 +218,7 @@ export default function ValueDashboardHeader({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             {resumes.length > 1 && (
               <label className="flex items-center gap-2 bg-[var(--bg-elevated)]/80 backdrop-blur border border-[var(--border)] rounded-xl pl-3 pr-2 py-1.5 shadow-xs hover:border-amber-500/40 transition-colors cursor-pointer">
                 <FileText size={14} className="text-amber-500 shrink-0" />
@@ -243,14 +236,29 @@ export default function ValueDashboardHeader({
                 </select>
               </label>
             )}
+            {totalFactsCount > 0 && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-[11px] font-black tabular-nums">
+                <CheckCircle2 size={13} />
+                {confirmedFactsCount}/{totalFactsCount} facts verified
+              </span>
+            )}
+            <button
+              onClick={onRecalculate}
+              disabled={recalculating}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-elevated)]/80 backdrop-blur border border-[var(--border)] text-[11px] font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-amber-500/50 hover:bg-amber-500/[0.06] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-wait"
+              title="Recalculate career value from confirmed facts"
+            >
+              <RefreshCw size={13} className={recalculating ? "animate-spin" : ""} />
+              <span>{recalculating ? "Recalculating…" : "Recalculate"}</span>
+            </button>
           </div>
         </div>
 
-        {/* Hero grid */}
-        <div className="mt-7 sm:mt-9 grid lg:grid-cols-[1.35fr_0.9fr] gap-8 lg:gap-10 items-center">
+        {/* Hero grid — 2-col from md so the right never feels empty on tablets/small laptops */}
+        <div className="mt-7 sm:mt-9 grid md:grid-cols-[1.05fr_0.95fr] lg:grid-cols-[1.12fr_0.88fr] gap-8 lg:gap-10 items-center">
           {/* Left: editorial statement */}
-          <div className="space-y-5">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="space-y-5 min-w-0">
+            <div className="flex items-center justify-between gap-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-[11px] font-black uppercase tracking-[0.16em] text-amber-600 dark:text-amber-400">
                 <span className="relative flex w-2 h-2">
                   <span className="absolute inline-flex w-full h-full rounded-full bg-amber-500 opacity-75 animate-ping" />
@@ -258,7 +266,7 @@ export default function ValueDashboardHeader({
                 </span>
                 Live Career Telemetry · Pulse Verified
               </div>
-              <div className="hidden md:block">
+              <div className="shrink-0 scale-90 sm:scale-100 origin-right">
                 <ValueOrbitBadge />
               </div>
             </div>
@@ -328,31 +336,49 @@ export default function ValueDashboardHeader({
             <ValueTraceChain />
           </div>
 
-          {/* Right: live evidence snapshot card */}
+          {/* Right: Executive Career Capital & Proof Matrix — fills the hero's right so it never feels empty */}
+          <div className="relative w-full max-w-[460px] justify-self-center md:justify-self-end md:w-full">
+            {/* floating accents that occupy the gap around the card */}
+            <div className="pointer-events-none absolute -top-5 -left-4 sm:-left-6 z-10 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--card)] border border-amber-500/30 shadow-[0_10px_28px_rgba(245,158,11,0.25)] text-[10px] font-black uppercase tracking-[0.12em] text-amber-700 dark:text-amber-300" aria-hidden="true">
+              <span className="relative flex w-1.5 h-1.5">
+                <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-500 opacity-75 animate-ping" />
+                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              </span>
+              Pulse live
+            </div>
+            <div className="pointer-events-none absolute -bottom-5 -right-2 sm:-right-4 z-10 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-navy text-amber-300 border border-amber-500/40 shadow-[0_10px_28px_rgba(16,27,59,0.35)] text-[10px] font-black uppercase tracking-[0.12em]" aria-hidden="true">
+              <ShieldCheck size={12} className="text-emerald-400" />
+              Traceable to source
+            </div>
+            <div className="pointer-events-none absolute top-1/2 -left-10 -translate-y-1/2 w-20 h-20 rounded-full border border-dashed border-amber-500/30 hidden lg:block" aria-hidden="true" />
           <aside
-            aria-label="Live evidence snapshot"
-            className="value-pop relative rounded-[1.6rem] border border-[var(--border-strong)] bg-[var(--bg-elevated)]/60 backdrop-blur-xl shadow-[0_24px_70px_rgba(16,27,59,0.14)] overflow-hidden"
+            aria-label="Executive Career Capital Telemetry"
+            className="value-pop relative rounded-[1.6rem] border border-[var(--border-strong)] bg-[var(--bg-elevated)]/75 backdrop-blur-xl shadow-[0_24px_70px_rgba(16,27,59,0.14)] overflow-hidden w-full"
           >
-            <div className="h-[3px] w-full bg-gradient-to-r from-amber-500 via-emerald-500/70 to-violet-500/70" aria-hidden="true" />
+            <div className="h-[3px] w-full bg-gradient-to-r from-amber-500 via-emerald-500 to-sky-500" aria-hidden="true" />
             <div className="absolute -top-20 right-[-40px] w-56 h-56 bg-amber-500/[0.12] rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
             <div className="relative p-6 sm:p-7 space-y-5">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                  Live evidence snapshot
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-emerald-600 dark:text-emerald-400">
+              {/* Header with live telemetry badge */}
+              <div className="flex items-center justify-between gap-2 border-b border-[var(--border)]/70 pb-3">
+                <div className="flex items-center gap-2">
                   <span className="relative flex w-2 h-2">
-                    <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-500 opacity-60 animate-ping" />
+                    <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-500 opacity-75 animate-ping" />
                     <span className="relative inline-flex w-2 h-2 rounded-full bg-emerald-500" />
                   </span>
-                  Live
+                  <span className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-primary)]">
+                    Career Capital Telemetry
+                  </span>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                  100% Fact-Grounded
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 divide-x divide-[var(--border)] rounded-2xl border border-[var(--border)] bg-[var(--card)]/70 overflow-hidden">
+              {/* 3 Metrics Counter Grid with hover response */}
+              <div className="grid grid-cols-3 divide-x divide-[var(--border)] rounded-2xl border border-[var(--border)] bg-[var(--card)]/80 shadow-xs overflow-hidden">
                 {snapshot.map((s, si) => (
-                  <div key={s.label} className="px-3 py-4 text-center">
-                    <div className="text-[1.7rem] leading-none font-extrabold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif] tabular-nums">
+                  <div key={s.label} className="px-3 py-3.5 text-center group hover:bg-amber-500/[0.04] transition-colors">
+                    <div className="text-[1.8rem] leading-none font-extrabold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif] tabular-nums">
                       {animatedSnapshot[si] ?? s.value}
                     </div>
                     <div className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--text-muted)] leading-tight">
@@ -362,32 +388,82 @@ export default function ValueDashboardHeader({
                 ))}
               </div>
 
-              <ul className="space-y-2.5">
-                {trust.map((t) => {
-                  const Icon = t.icon;
-                  return (
-                    <li key={t.text} className="flex items-center gap-2.5 text-[12.5px] font-semibold text-[var(--text-secondary)]">
-                      <span className="w-6 h-6 rounded-lg bg-emerald-500/12 border border-emerald-500/25 flex items-center justify-center text-emerald-500 shrink-0">
-                        <Icon size={13} />
-                      </span>
-                      {t.text}
-                    </li>
-                  );
-                })}
-              </ul>
+              {/* Verified Proof Signals from active profile */}
+              <div className="space-y-2.5">
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                  Active Proof Signals
+                </p>
 
-              <div className="flex items-center gap-1.5 pt-1 text-[11px] font-semibold text-[var(--text-muted)]">
-                <ShieldCheck size={13} className="text-amber-500" />
-                Multidimensional profile · zero pseudo-scores
+                {/* Signal 1: Top Verified Impact from user's active resume */}
+                {valueData?.profile?.impact?.[0] ? (
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-[var(--card)]/70 border border-[var(--border)] hover:border-amber-500/40 transition-colors">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0 mt-0.5">
+                      <Zap size={14} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="text-xs font-black text-[var(--text-primary)] truncate">
+                          {valueData.profile.impact[0].title}
+                        </span>
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                          Verified ROI
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[var(--text-muted)] line-clamp-1 mt-0.5">
+                        {valueData.profile.impact[0].description || "Quantified business outcome verified from facts"}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--card)]/50 border border-[var(--border)] text-[12px] font-semibold text-[var(--text-secondary)]">
+                    <span className="w-6 h-6 rounded-lg bg-emerald-500/12 border border-emerald-500/25 flex items-center justify-center text-emerald-500 shrink-0">
+                      <BadgeCheck size={13} />
+                    </span>
+                    <span>You approve every fact before interpretation</span>
+                  </div>
+                )}
+
+                {/* Signal 2: Top Capability from user's active resume */}
+                {valueData?.profile?.capabilities?.[0] && (
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-[var(--card)]/70 border border-[var(--border)] hover:border-violet-500/40 transition-colors">
+                    <div className="w-7 h-7 rounded-lg bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-500 shrink-0 mt-0.5">
+                      <Sparkles size={14} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="text-xs font-black text-[var(--text-primary)] truncate">
+                          {valueData.profile.capabilities[0].title}
+                        </span>
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 shrink-0">
+                          Demonstrated
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[var(--text-muted)] line-clamp-1 mt-0.5">
+                        {valueData.profile.capabilities[0].description || "Demonstrated core domain capability"}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Trust footer with review facts trigger */}
+              <div className="pt-2 border-t border-[var(--border)]/70 flex items-center justify-between text-[11px]">
+                <div className="flex items-center gap-1.5 font-semibold text-[var(--text-muted)]">
+                  <ShieldCheck size={13} className="text-emerald-500" />
+                  <span>Zero Hallucinations · Traceable</span>
+                </div>
+                <button
+                  onClick={onReviewFacts}
+                  className="font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>Review Evidence</span>
+                  <ArrowRight size={11} />
+                </button>
               </div>
             </div>
           </aside>
+          </div>
         </div>
-      </div>
-
-      {/* Brand drumbeat */}
-      <div className="relative z-10 mt-8 sm:mt-10">
-        <ValueMarquee />
       </div>
     </section>
   );
