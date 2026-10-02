@@ -1,135 +1,80 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 interface UpRoleLogoProps {
   href?: string;
-  showSubtitle?: boolean;
   size?: "sm" | "md" | "lg";
   variant?: "light" | "dark" | "auto";
   className?: string;
+  imageClassName?: string;
+  showSubtitle?: boolean;
 }
 
 /**
  * Canonical UpRole Brand Logo
- * Governed by UpRole Brand + Product Foundation:
- * - Symbol: The Career Path (Upward / forward continuous progression)
- * - Treatment: Deep Navy (#101B3B) + Warm Amber (#F59E0B)
- * - Dynamic expression: Navy -> Blue -> Teal -> Amber
- * - Sub-label: HIGHER CAREERS AHEAD
+ * Displays the official dual-leaf flame emblem and UpRole wordmark from /logo.png & /logo-white.png.
+ * Supports light, dark, and auto modes seamlessly with full responsive fidelity and crisp anti-aliasing.
  */
 export default function UpRoleLogo({
   href = "/",
-  showSubtitle = true,
   size = "md",
   variant = "auto",
   className = "",
+  imageClassName = "",
 }: UpRoleLogoProps) {
-  const iconDimensions = {
-    sm: { w: 20, h: 24 },
-    md: { w: 24, h: 28 },
-    lg: { w: 30, h: 35 },
+  // Height classes calibrated to 2.69:1 aspect ratio of official logo
+  const sizeClasses = {
+    sm: "h-7 w-auto",
+    md: "h-8 sm:h-9 w-auto",
+    lg: "h-11 sm:h-12 w-auto",
   }[size];
-
-  const textClasses = {
-    sm: "text-lg",
-    md: "text-2xl",
-    lg: "text-3xl",
-  }[size];
-
-  const subTextClasses = {
-    sm: "text-[8px] tracking-[1.8px] -mt-0.5",
-    md: "text-[9px] tracking-[2.2px] -mt-1",
-    lg: "text-[10px] tracking-[2.6px] -mt-1",
-  }[size];
-
-  const textColorClass =
-    variant === "dark"
-      ? "text-white"
-      : variant === "light"
-      ? "text-[#101B3B]"
-      : "text-[#101B3B] dark:text-white";
-
-  const subColorClass =
-    variant === "dark"
-      ? "text-slate-400"
-      : variant === "light"
-      ? "text-[#64748B]"
-      : "text-[#64748B] dark:text-slate-400";
 
   const content = (
-    <div className={`flex items-center gap-2.5 select-none ${className}`}>
-      {/* The Career Path Symbol: Distinctive upward/forward form */}
-      <svg
-        width={iconDimensions.w}
-        height={iconDimensions.h}
-        viewBox="0 0 24 28"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0 transition-transform duration-200 group-hover:scale-105"
-        aria-hidden="true"
-      >
-        <rect
-          x="2"
-          y="7"
-          width="6"
-          height="17"
-          rx="3"
-          transform="rotate(-12 2 7)"
-          fill="url(#uproleCareerPath1)"
+    <div className={`relative inline-flex items-center select-none ${className}`}>
+      {variant === "light" && (
+        <Image
+          src="/logo.png"
+          alt="UpRole"
+          width={1050}
+          height={390}
+          priority
+          className={`${sizeClasses} object-contain ${imageClassName}`}
         />
-        <rect
-          x="12"
-          y="2"
-          width="6"
-          height="22"
-          rx="3"
-          transform="rotate(-12 12 2)"
-          fill="url(#uproleCareerPath2)"
-        />
-        <defs>
-          {/* Bar 1: Deep Navy (#101B3B) -> UpRole Blue (#2563EB) */}
-          <linearGradient
-            id="uproleCareerPath1"
-            x1="2"
-            y1="7"
-            x2="8"
-            y2="24"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stopColor="#101B3B" />
-            <stop offset="1" stopColor="#2563EB" />
-          </linearGradient>
-          {/* Bar 2: UpRole Teal (#14B8A6) -> Warm Amber (#F59E0B) */}
-          <linearGradient
-            id="uproleCareerPath2"
-            x1="12"
-            y1="2"
-            x2="18"
-            y2="24"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stopColor="#14B8A6" />
-            <stop offset="1" stopColor="#F59E0B" />
-          </linearGradient>
-        </defs>
-      </svg>
+      )}
 
-      {/* Wordmark & Subtitle */}
-      <div className="flex flex-col">
-        <span
-          className={`font-serif font-bold tracking-tight leading-none ${textClasses} ${textColorClass}`}
-        >
-          Up<span className="text-[#F59E0B]">Role</span>
-        </span>
-        {showSubtitle && (
-          <span
-            className={`font-sans font-extrabold uppercase ${subTextClasses} ${subColorClass}`}
-          >
-            Higher Careers Ahead
-          </span>
-        )}
-      </div>
+      {variant === "dark" && (
+        <Image
+          src="/logo-white.png"
+          alt="UpRole"
+          width={1050}
+          height={390}
+          priority
+          className={`${sizeClasses} object-contain ${imageClassName}`}
+        />
+      )}
+
+      {variant === "auto" && (
+        <>
+          <Image
+            src="/logo.png"
+            alt="UpRole"
+            width={1050}
+            height={390}
+            priority
+            className={`${sizeClasses} object-contain dark:hidden ${imageClassName}`}
+          />
+          <Image
+            src="/logo-white.png"
+            alt="UpRole"
+            width={1050}
+            height={390}
+            priority
+            className={`${sizeClasses} object-contain hidden dark:block ${imageClassName}`}
+          />
+        </>
+      )}
     </div>
   );
 
@@ -137,8 +82,8 @@ export default function UpRoleLogo({
     return (
       <Link
         href={href}
-        className="no-underline group inline-flex items-center"
-        aria-label="UpRole Home - Higher Careers Ahead"
+        className="no-underline group inline-flex items-center transition-transform duration-200 hover:scale-[1.02] focus:outline-none"
+        aria-label="UpRole - Higher Careers Ahead"
       >
         {content}
       </Link>
@@ -147,3 +92,4 @@ export default function UpRoleLogo({
 
   return content;
 }
+

@@ -19,7 +19,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[var(--border)]">
           {/* Brand Col (2 cols on lg) */}
           <div className="lg:col-span-2 space-y-4">
-            <UpRoleLogo href="/" size="md" variant="dark" />
+            <UpRoleLogo href="/" size="md" variant="auto" />
             <p className="text-xs md:text-sm text-[var(--text-muted)] max-w-sm leading-relaxed">
               UpRole is the comprehensive Career Advancement Platform. Understand your market value, build your potential, and convert skills into premier career opportunities.
             </p>

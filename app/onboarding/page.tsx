@@ -28,6 +28,7 @@ import {
   Compass,
   Check,
 } from "lucide-react";
+import UpRoleLogo from "@/components/UpRoleLogo";
 import { Resume } from "@/types";
 
 const POPULAR_ROLES = [
@@ -247,15 +248,7 @@ export default function OnboardingPage() {
           gap: "1rem",
         }}
       >
-        <div className="bg-transparent dark:bg-white/95 py-1 px-3 rounded-[8px] flex items-center shadow-sm">
-          <Image
-            src="/UpRole logo.png"
-            alt="UpRole"
-            width={120}
-            height={30}
-            style={{ objectFit: "contain", height: "auto" }}
-          />
-        </div>
+        <UpRoleLogo href="" size="md" variant="auto" />
         <div className="spinner" style={{ width: 36, height: 36 }} />
         <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
           Loading your career session...
@@ -326,17 +319,7 @@ export default function OnboardingPage() {
           background: "var(--bg-glass-nav)",
         }}
       >
-        <Link href="/" className="flex items-center no-underline">
-          <div className="bg-transparent dark:bg-white/95 py-1 px-2.5 rounded-[8px] flex items-center shadow-xs">
-            <Image
-              src="/UpRole logo.png"
-              alt="UpRole"
-              width={110}
-              height={28}
-              style={{ objectFit: "contain", height: "auto" }}
-            />
-          </div>
-        </Link>
+        <UpRoleLogo href="/" size="sm" variant="auto" />
 
         {/* Wizard Step Indicator */}
         <div className="flex items-center gap-3">

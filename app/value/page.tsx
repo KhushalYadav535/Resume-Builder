@@ -15,10 +15,7 @@ import {
 import ValueDashboardHeader from "@/components/value/ValueDashboardHeader";
 import ValueNavigationTabs from "@/components/value/ValueNavigationTabs";
 import ValueJourneySteps from "@/components/value/ValueJourneySteps";
-import ValueProfileCard from "@/components/value/ValueProfileCard";
-import ValuePatternCard from "@/components/value/ValuePatternCard";
-import EvidenceFoundationCard from "@/components/value/EvidenceFoundationCard";
-import AreasToStrengthenCard from "@/components/value/AreasToStrengthenCard";
+import ValueOverviewDashboard from "@/components/value/ValueOverviewDashboard";
 import ValueTraceabilityDrawer from "@/components/value/ValueTraceabilityDrawer";
 import ValueFactsView from "@/components/value/ValueFactsView";
 import ValueDimensionDetailView from "@/components/value/ValueDimensionDetailView";
@@ -80,6 +77,9 @@ function CareerValueDashboardContent() {
   const handleTabChange = useCallback((tab: ValueNavigationTab) => {
     setActiveTab(tab);
     trackValueEvent("value_dimension_opened", { dimension: tab });
+    if (tab === "facts") {
+      trackValueEvent("value_fact_viewed", { source: "facts_tab" });
+    }
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       if (tab === "overview") {
@@ -156,12 +156,18 @@ function CareerValueDashboardContent() {
   const loadFacts = useCallback(
     async (resumeId?: string) => {
       setFactsLoading(true);
+      trackValueEvent("value_extraction_started", { resumeId });
       try {
         const url = resumeId ? `/api/value/facts?resumeId=${resumeId}` : "/api/value/facts";
         const res = await fetch(url);
         const data = await res.json();
         if (data.facts && Array.isArray(data.facts)) {
           setFacts(data.facts);
+          trackValueEvent("value_extraction_completed", {
+            resumeId,
+            totalCount: data.totalCount ?? data.facts.length,
+            extractedCount: data.extractedCount ?? 0,
+          });
         }
       } catch (err) {
         console.error("Error loading facts:", err);
@@ -212,6 +218,11 @@ function CareerValueDashboardContent() {
     setSelectedInterpretation(interp);
     setIsDrawerOpen(true);
     trackValueEvent("value_explanation_opened", { id: interp.id, type: interp.type });
+    trackValueEvent("value_evidence_viewed", {
+      id: interp.id,
+      type: interp.type,
+      evidenceCount: interp.supportingEvidence?.length ?? 0,
+    });
   };
 
   const handleAcceptInterpretation = async (interp: CareerInterpretation) => {
@@ -515,9 +526,9 @@ function CareerValueDashboardContent() {
 
       {/* Tab Contents */}
       <main aria-live="polite" className="max-w-7xl mx-auto px-6 sm:px-8 py-8 sm:py-10 w-full flex-1">
-        {/* TAB 1: OVERVIEW (The 4 Primary Dashboard Areas) */}
+        {/* TAB 1: OVERVIEW — Pulse-style compact dashboard (2 rows, every tile opens its page) */}
         {activeTab === "overview" && valueData && (
-          <div key="overview" className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
+          <div key="overview" className="space-y-5 animate-in fade-in duration-300">
             {/* Premium section rhythm */}
             <div className="value-rise flex items-center gap-3 px-1">
               <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Career Value Dashboard</span>
@@ -530,38 +541,28 @@ function CareerValueDashboardContent() {
               <ValueJourneySteps />
             </div>
 
-            {/* AREA 1: Career Value Profile (Spec Section 6) */}
+            {/* Compact dashboard grid — click any tile to open its particular page */}
             <div className="value-rise value-delay-2">
-              <ValueProfileCard
+              <ValueOverviewDashboard
                 capabilities={valueData.profile.capabilities}
                 impact={valueData.profile.impact}
                 experience={valueData.profile.experience}
                 progression={valueData.profile.progression}
-                onSelectInterpretation={handleOpenTraceability}
-                onExploreDimension={(dim) => handleTabChange(dim)}
-              />
-            </div>
-
-            {/* AREA 2: Your Value Pattern (Spec Section 7) */}
-            <div className="value-rise value-delay-3">
-              <ValuePatternCard
                 pattern={primaryValuePattern}
-                onWhyWeSayThis={handleOpenTraceability}
-              />
-            </div>
-
-            {/* AREA 3: Evidence Foundation (Spec Section 8) */}
-            <div className="value-rise value-delay-4">
-              <EvidenceFoundationCard
                 evidenceSummary={valueData.evidenceSummary}
-                onExploreFacts={() => handleTabChange("facts")}
+                strengtheningAreas={valueData.strengtheningAreas}
+                confirmedFactsCount={confirmedFactsCount}
+                totalFactsCount={facts.length}
+                unconfirmedFactsCount={unconfirmedFactsCount}
+                onOpenDimension={(dim) => handleTabChange(dim)}
+                onOpenInterpretation={handleOpenTraceability}
+                onOpenFacts={() => handleTabChange("facts")}
+                onOpenStrengthen={(link) => router.push(link)}
               />
             </div>
-
-            {/* AREA 4: Areas to Strengthen (Spec Section 9) */}
-            <div className="value-rise value-delay-5">
-              <AreasToStrengthenCard areas={valueData.strengtheningAreas} />
-            </div>
+            <p className="value-rise value-delay-3 text-center text-[11px] font-medium text-[var(--text-muted)] px-1">
+              Tap any card to open its detailed view — dimensions, evidence trace or facts.
+            </p>
           </div>
         )}
 

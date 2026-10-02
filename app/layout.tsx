@@ -48,19 +48,19 @@ export const metadata: Metadata = {
     siteName: "UpRole",
     images: [
       {
-        url: "/icon.png",
-        width: 512,
-        height: 512,
-        alt: "UpRole Logo",
+        url: "/logo.png",
+        width: 1050,
+        height: 390,
+        alt: "UpRole - Higher Careers Ahead",
       },
     ],
     type: "website",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "UpRole — More than a resume. A brighter career ahead.",
     description: "Understand your value. Build your potential. Turn it into real opportunities.",
-    images: ["/icon.png"],
+    images: ["/logo.png"],
   },
 };
 
