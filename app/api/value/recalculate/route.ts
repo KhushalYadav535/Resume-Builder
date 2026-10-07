@@ -6,6 +6,7 @@ import {
   parseJournalReviewLogs,
   extractCareerFactsFromResume,
   buildDerivationGraph,
+  computeRecalculationDiff,
 } from "@/lib/valueDerivationEngine";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { resumeId } = body;
+    const { resumeId, previousState } = body;
 
     let resumeQuery = supabase
       .from("resumes")
@@ -57,9 +58,12 @@ export async function POST(req: NextRequest) {
     const facts = extractCareerFactsFromResume(activeResume, journalList, reviewLogs);
     const valueResponse = buildDerivationGraph(facts, activeResume, journalList, reviewLogs);
 
+    const diffs = previousState ? computeRecalculationDiff(previousState, valueResponse) : [];
+
     return NextResponse.json({
       success: true,
       message: "Career Value successfully recalculated from confirmed facts graph.",
+      recalculationDiffs: diffs,
       ...valueResponse,
     });
   } catch (err: unknown) {

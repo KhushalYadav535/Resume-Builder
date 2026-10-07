@@ -92,10 +92,10 @@ export default function Home() {
           {/* Right Action Buttons */}
           <div className="hidden sm:flex items-center gap-5">
             <Link
-              href={user ? "/dashboard" : "/login"}
+              href={user ? "/now" : "/login"}
               className="text-[14.5px] font-semibold text-[#111827] hover:text-[#EB5A28] transition-colors"
             >
-              {user ? "Dashboard" : "Sign In"}
+              {user ? "Now" : "Sign In"}
             </Link>
 
             <button
@@ -162,11 +162,11 @@ export default function Home() {
 
             <div className="pt-4 border-t border-gray-200/80 flex flex-col gap-3">
               <Link
-                href={user ? "/dashboard" : "/login"}
+                href={user ? "/now" : "/login"}
                 onClick={() => setMobileNavOpen(false)}
                 className="text-center py-2.5 text-[14px] font-semibold text-[#111827] border border-gray-300 rounded-lg"
               >
-                {user ? "Dashboard" : "Sign In"}
+                {user ? "Now" : "Sign In"}
               </Link>
               <button
                 type="button"

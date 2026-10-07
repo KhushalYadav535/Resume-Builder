@@ -1,881 +1,830 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/toast-1";
 import {
-  TrendingUp,
-  Target,
-  Sparkles,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-  ArrowRight,
-  Zap,
-  Handshake,
-  MessageSquare,
-  BarChart3,
-  Rocket,
-  Compass,
-  Check,
-  ChevronRight,
-  Flame,
-  Clock,
-  Layers,
-  Award,
-  BookOpen,
-  ArrowUpRight,
-  Sliders,
-  Flag,
-  Crosshair,
-  FileText
-} from "lucide-react";
+  MomentumDashboardData,
+  CareerDirection,
+  CareerGoal,
+  CareerPriority,
+  GoalMilestone,
+  GoalStage,
+  GoalType,
+  GoalStatus,
+  ProgressSource,
+  SuggestedDirection,
+} from "@/types/momentum";
+import { EMPTY_MOMENTUM_DATA, getDefaultMilestonesForGoalType } from "@/lib/momentumData";
 
-interface PriorityItem {
-  id: string;
-  label: string;
-  desc: string;
-  category: "growth" | "comp" | "impact" | "culture";
-  selected: boolean;
-}
+// Components
+import MomentumHeader from "@/components/momentum/MomentumHeader";
+import CareerDirectionCard from "@/components/momentum/CareerDirectionCard";
+import ActiveCareerGoalCard from "@/components/momentum/ActiveCareerGoalCard";
+import WhyThisGoalCard from "@/components/momentum/WhyThisGoalCard";
+import CareerPrioritiesCard from "@/components/momentum/CareerPrioritiesCard";
+import GoalProgressCard from "@/components/momentum/GoalProgressCard";
+import OtherGoalsSection from "@/components/momentum/OtherGoalsSection";
+import EmptyMomentumState from "@/components/momentum/EmptyMomentumState";
 
-interface ActionStep {
-  id: string;
-  title: string;
-  toolName: string;
-  toolLink: string;
-  phase: "readiness" | "gaps" | "strategy" | "actions" | "outcomes";
-  completed: boolean;
-  tag: string;
-}
+// Modals & Drawers
+import ViewDirectionModal from "@/components/momentum/ViewDirectionModal";
+import EditDirectionModal from "@/components/momentum/EditDirectionModal";
+import GoalDetailModal from "@/components/momentum/GoalDetailModal";
+import AddGoalModal from "@/components/momentum/AddGoalModal";
+import EditPrioritiesModal from "@/components/momentum/EditPrioritiesModal";
+import WhyThisGoalDrawer from "@/components/momentum/WhyThisGoalDrawer";
+import ExploreDirectionsModal from "@/components/momentum/ExploreDirectionsModal";
+import GoalProgressDetailModal from "@/components/momentum/GoalProgressDetailModal";
 
-export default function MomentumPage() {
+function MomentumContent() {
   const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
 
-  // Tier 1: Career Priorities & Goals
-  const [priorities, setPriorities] = useState<PriorityItem[]>([
-    {
-      id: "comp",
-      label: "Compensation Growth",
-      desc: "Targeting top-decile market compensation and equity packages",
-      category: "comp",
-      selected: true,
-    },
-    {
-      id: "scope",
-      label: "Leadership & Ownership",
-      desc: "Leading high-visibility cross-functional initiatives & teams",
-      category: "growth",
-      selected: true,
-    },
-    {
-      id: "tech",
-      label: "Technical Architecture",
-      desc: "Mastering large-scale distributed systems and AI systems",
-      category: "growth",
-      selected: false,
-    },
-    {
-      id: "impact",
-      label: "High-Visibility Impact",
-      desc: "Delivering bottom-line revenue & mission-critical reliability",
-      category: "impact",
-      selected: true,
-    },
-    {
-      id: "balance",
-      label: "Autonomy & Balance",
-      desc: "High-trust asynchronous culture with clear work-life bounds",
-      category: "culture",
-      selected: false,
-    },
-  ]);
+  const storageKey = `uprole_momentum_state_${user?.id || "guest"}`;
 
-  const [careerGoal, setCareerGoal] = useState("Staff Software Engineer / Tech Lead");
-  const [goalTimeline, setGoalTimeline] = useState("Next 6 Months");
-  const [isEditingGoal, setIsEditingGoal] = useState(false);
-  const [tempGoal, setTempGoal] = useState(careerGoal);
+  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<MomentumDashboardData>(EMPTY_MOMENTUM_DATA);
+  const [isEmptyStatePreview, setIsEmptyStatePreview] = useState(false);
 
-  // Tier 2: Level 2 Execution Tab
-  const [activeTier2Tab, setActiveTier2Tab] = useState<
-    "readiness" | "gaps" | "strategy" | "actions" | "outcomes"
-  >("readiness");
+  // Modal / Drawer states
+  const [isViewDirectionOpen, setIsViewDirectionOpen] = useState(false);
+  const [isEditDirectionOpen, setIsEditDirectionOpen] = useState(false);
+  const [isGoalDetailOpen, setIsGoalDetailOpen] = useState(false);
+  const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
+  const [isEditPrioritiesOpen, setIsEditPrioritiesOpen] = useState(false);
+  const [isWhyThisGoalOpen, setIsWhyThisGoalOpen] = useState(false);
+  const [isExploreDirectionsOpen, setIsExploreDirectionsOpen] = useState(false);
+  const [isProgressDetailOpen, setIsProgressDetailOpen] = useState(false);
+  const [selectedGoalForDetail, setSelectedGoalForDetail] = useState<CareerGoal | null>(null);
 
-  // Concrete Actions list
-  const [actionSteps, setActionSteps] = useState<ActionStep[]>([
-    {
-      id: "action-1",
-      title: "Audit current resume against target Staff Engineer benchmarks",
-      toolName: "Precision JD Matching & AI Tailoring",
-      toolLink: "/resume/tailor",
-      phase: "readiness",
-      completed: true,
-      tag: "Match",
-    },
-    {
-      id: "action-2",
-      title: "Identify missing system design & architectural competencies",
-      toolName: "Skill Gap Telemetry",
-      toolLink: "/career-copilot?tab=skillgap",
-      phase: "gaps",
-      completed: false,
-      tag: "Skill Gap",
-    },
-    {
-      id: "action-3",
-      title: "Construct STAR narratives for multi-stakeholder friction scenarios",
-      toolName: "Narrative Studio",
-      toolLink: "/career-copilot?tab=interview",
-      phase: "strategy",
-      completed: false,
-      tag: "Interview",
-    },
-    {
-      id: "action-4",
-      title: "Frame 6-month career transition period constructively",
-      toolName: "Gap Storyteller",
-      toolLink: "/career-copilot?tab=interview",
-      phase: "strategy",
-      completed: true,
-      tag: "Narrative",
-    },
-    {
-      id: "action-5",
-      title: "Run peer compensation benchmark for target base + RSUs",
-      toolName: "Offer Evaluator & Negotiation Scripts",
-      toolLink: "/career-copilot?tab=negotiation",
-      phase: "actions",
-      completed: false,
-      tag: "Negotiation",
-    },
-    {
-      id: "action-6",
-      title: "Document weekly wins in Journal to build promotion case",
-      toolName: "Promotion Case Builder & Journal",
-      toolLink: "/career-journal",
-      phase: "outcomes",
-      completed: false,
-      tag: "Growth",
-    },
-  ]);
+  // Pre-fill parameters from cross-pillar navigation (Spec Section 15)
+  const [initialGoalPrefill, setInitialGoalPrefill] = useState<{
+    title?: string;
+    targetRole?: string;
+    goalType?: GoalType;
+  } | null>(null);
 
+  // Interconnected Navigation Entry Points (Spec Section 15: Pulse → Set Goal, Value → Explore)
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login");
+    const action = searchParams.get("action");
+    const target = searchParams.get("target") || searchParams.get("role") || "";
+    const type = (searchParams.get("type") as GoalType) || undefined;
+
+    if (target || type) {
+      setInitialGoalPrefill({
+        title: target ? `Achieve ${target}` : undefined,
+        targetRole: target || undefined,
+        goalType: type,
+      });
     }
-  }, [authLoading, user, router]);
 
-  const togglePriority = (id: string) => {
-    setPriorities((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, selected: !p.selected } : p))
-    );
-    showToast("Career priorities updated", "info");
-  };
-
-  const handleSaveGoal = () => {
-    if (tempGoal.trim()) {
-      setCareerGoal(tempGoal.trim());
-      setIsEditingGoal(false);
-      showToast("Target Career Goal saved!", "success");
+    if (action === "create" || action === "set-goal" || action === "new-goal") {
+      setIsAddGoalOpen(true);
+    } else if (action === "explore") {
+      setIsExploreDirectionsOpen(true);
+    } else if (action === "priorities") {
+      setIsEditPrioritiesOpen(true);
     }
-  };
+  }, [searchParams]);
 
-  const toggleActionCompleted = (id: string) => {
-    setActionSteps((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, completed: !a.completed } : a))
-    );
-  };
+  // Load initial data: cache-first with eager server synchronization
+  useEffect(() => {
+    let isMounted = true;
 
-  const completedCount = actionSteps.filter((a) => a.completed).length;
-  const readinessPercent = Math.round((completedCount / actionSteps.length) * 100);
+    async function loadData() {
+      try {
+        // Read local storage cache if available
+        const localSaved = localStorage.getItem(storageKey);
+        if (localSaved) {
+          try {
+            const parsed = JSON.parse(localSaved);
+            // Skip legacy mock data cache
+            const isMockData = parsed?.activeGoal?.id === "goal-1" || parsed?.direction?.id === "dir-1";
+            if (!isMockData && isMounted) {
+              setData(parsed);
+              setIsLoading(false);
+            }
+          } catch (e) {
+            console.warn("Invalid localStorage cache", e);
+          }
+        }
+
+        // Fetch fresh data from API
+        const res = await fetch("/api/momentum");
+        if (res.ok) {
+          const apiData: MomentumDashboardData = await res.json();
+          if (isMounted) {
+            setData(apiData);
+            try {
+              localStorage.setItem(storageKey, JSON.stringify(apiData));
+            } catch (e) {
+              // Ignore quota errors
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load momentum data:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    if (!authLoading) {
+      loadData();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id, authLoading, storageKey]);
+
+  // Sync state to local storage and background API
+  const persistState = useCallback(
+    (updated: MomentumDashboardData) => {
+      setData(updated);
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+        // Background sync to server API
+        fetch("/api/momentum", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updated),
+        }).catch((e) => console.warn("API background sync failed", e));
+      } catch (e) {
+        console.warn("Could not save state to localStorage", e);
+      }
+    },
+    [storageKey]
+  );
+
+  // 1. Update Direction
+  const handleSaveDirection = useCallback(
+    (updatedPartial: Partial<CareerDirection>) => {
+      const updatedDirection: CareerDirection = {
+        id: data.direction?.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `dir-${Date.now()}`),
+        title: updatedPartial.title || data.direction?.title || "Career Direction",
+        description: updatedPartial.description || data.direction?.description || "",
+        currentPath: updatedPartial.currentPath || data.direction?.currentPath || "Current",
+        targetPath: updatedPartial.targetPath || data.direction?.targetPath || "Target",
+        fullTrajectory: updatedPartial.fullTrajectory || data.direction?.fullTrajectory || ["Current", "Target"],
+        status: updatedPartial.status || data.direction?.status || "Active",
+        source: "User Confirmed",
+        createdAt: data.direction?.createdAt || new Date().toISOString(),
+        ...data.direction,
+        ...updatedPartial,
+        updatedAt: new Date().toISOString(),
+      };
+      const updatedData: MomentumDashboardData = {
+        ...data,
+        direction: updatedDirection,
+      };
+      persistState(updatedData);
+      showToast("Career direction updated successfully", "success");
+    },
+    [data, persistState, showToast]
+  );
+
+  // 2. Multi-goal Update (Handles Primary Goal OR Secondary Goal correctly!)
+  const handleUpdateGoal = useCallback(
+    (updatedPartial: Partial<CareerGoal>) => {
+      const targetId = updatedPartial.id || selectedGoalForDetail?.id || data.activeGoal?.id;
+
+      // Case A: Target is the Active Primary Goal
+      if (data.activeGoal && data.activeGoal.id === targetId) {
+        const updatedActive: CareerGoal = {
+          ...data.activeGoal,
+          ...updatedPartial,
+          updatedAt: new Date().toISOString(),
+        };
+
+        const updatedMilestones = updatedPartial.milestones || updatedActive.milestones;
+        const completedCount = updatedMilestones.filter((m) => m.completed).length;
+
+        // Synchronize Why This Goal statement if goal changed
+        const dynamicWhy = {
+          ...data.whyThisGoal,
+          summary: updatedActive.reasonSummary || data.whyThisGoal.summary,
+          supportingEvidence: updatedActive.supportingEvidence || data.whyThisGoal.supportingEvidence,
+        };
+
+        const updatedData: MomentumDashboardData = {
+          ...data,
+          activeGoal: updatedActive,
+          whyThisGoal: dynamicWhy,
+          progress: {
+            completedMilestones: completedCount,
+            totalMilestones: updatedMilestones.length,
+            milestones: updatedMilestones,
+          },
+        };
+
+        persistState(updatedData);
+        setSelectedGoalForDetail(updatedActive);
+        showToast("Active goal updated", "success");
+        return;
+      }
+
+      // Case B: Target is one of the Secondary Goals
+      const isSecondary = data.otherGoals.some((g) => g.id === targetId);
+      if (isSecondary) {
+        const updatedOtherGoals = data.otherGoals.map((g) => {
+          if (g.id === targetId) {
+            const nextGoal: CareerGoal = {
+              ...g,
+              ...updatedPartial,
+              updatedAt: new Date().toISOString(),
+            };
+            setSelectedGoalForDetail(nextGoal);
+            return nextGoal;
+          }
+          return g;
+        });
+
+        const updatedData: MomentumDashboardData = {
+          ...data,
+          otherGoals: updatedOtherGoals,
+        };
+
+        persistState(updatedData);
+        showToast("Secondary goal updated", "success");
+      }
+    },
+    [data, selectedGoalForDetail, persistState, showToast]
+  );
+
+  // 3. Toggle Milestone Completion with dynamic stage progression
+  const handleToggleMilestone = useCallback(
+    (milestoneId: string) => {
+      if (!data.activeGoal) return;
+
+      const targetMilestone = data.activeGoal.milestones.find((m) => m.id === milestoneId);
+      const nextCompleted = targetMilestone ? !targetMilestone.completed : true;
+
+      const updatedMilestones = data.activeGoal.milestones.map((m) =>
+        m.id === milestoneId
+          ? {
+              ...m,
+              completed: nextCompleted,
+              completedAt: nextCompleted ? new Date().toISOString().split("T")[0] : undefined,
+            }
+          : m
+      );
+
+      const completedCount = updatedMilestones.filter((m) => m.completed).length;
+
+      // Dynamically calculate stage progression based on milestone completion
+      let nextStage = data.activeGoal.stage;
+      if (updatedMilestones.length > 0) {
+        const ratio = completedCount / updatedMilestones.length;
+        if (ratio >= 0.8 || updatedMilestones.some((m) => m.completed && m.stage === "outcome")) {
+          nextStage = "outcome";
+        } else if (ratio >= 0.4 || updatedMilestones.some((m) => m.completed && m.stage === "strategy")) {
+          nextStage = "strategy";
+        } else if (completedCount > 0 || updatedMilestones.some((m) => m.completed && (m.stage === "direction" || m.stage === "target"))) {
+          nextStage = "target";
+        } else {
+          nextStage = "direction";
+        }
+      }
+
+      const updatedGoal: CareerGoal = {
+        ...data.activeGoal,
+        stage: nextStage,
+        milestones: updatedMilestones,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updatedData: MomentumDashboardData = {
+        ...data,
+        activeGoal: updatedGoal,
+        progress: {
+          completedMilestones: completedCount,
+          totalMilestones: updatedMilestones.length,
+          milestones: updatedMilestones,
+        },
+      };
+
+      persistState(updatedData);
+
+      // Async sync to progress sub-endpoint
+      if (data.activeGoal.id) {
+        fetch(`/api/momentum/goals/${data.activeGoal.id}/progress`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ milestoneId, completed: nextCompleted, goalStage: nextStage }),
+        }).catch((e) => console.warn("Failed milestone PATCH", e));
+      }
+
+      showToast("Milestone updated", "info");
+    },
+    [data, persistState, showToast]
+  );
+
+  // 4. Add Custom Milestone (with Section 10 progress source support)
+  const handleAddMilestone = useCallback(
+    (title: string, stage: GoalStage, sourceType?: ProgressSource) => {
+      if (!data.activeGoal) return;
+
+      const newMilestone: GoalMilestone = {
+        id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `m-${Date.now()}`,
+        title,
+        completed: false,
+        stage,
+        sourceType: sourceType || "Capability development",
+      };
+
+      const updatedMilestones = [...data.activeGoal.milestones, newMilestone];
+      const completedCount = updatedMilestones.filter((m) => m.completed).length;
+
+      const updatedGoal: CareerGoal = {
+        ...data.activeGoal,
+        milestones: updatedMilestones,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updatedData: MomentumDashboardData = {
+        ...data,
+        activeGoal: updatedGoal,
+        progress: {
+          completedMilestones: completedCount,
+          totalMilestones: updatedMilestones.length,
+          milestones: updatedMilestones,
+        },
+      };
+
+      persistState(updatedData);
+
+      if (data.activeGoal.id) {
+        fetch(`/api/momentum/goals/${data.activeGoal.id}/progress`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "add", title, stage, sourceType, completed: false }),
+        }).catch((e) => console.warn("Failed milestone add", e));
+      }
+
+      showToast(`Added milestone: "${title}"`, "success");
+    },
+    [data, persistState, showToast]
+  );
+
+  // 5. Update Priorities
+  const handleSavePriorities = useCallback(
+    (updatedPriorities: CareerPriority[]) => {
+      const updatedData: MomentumDashboardData = {
+        ...data,
+        priorities: updatedPriorities,
+      };
+      persistState(updatedData);
+      showToast("Career priorities updated", "success");
+    },
+    [data, persistState, showToast]
+  );
+
+  // 6. Add New Goal (with domain-specific taxonomy milestones and valid RFC UUIDs)
+  const handleAddGoal = useCallback(
+    (newGoalPartial: Partial<CareerGoal>) => {
+      const shouldBePrimary =
+        Boolean(newGoalPartial.isPrimary) || !data.activeGoal;
+
+      const goalId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `goal-${Date.now()}`;
+      const goalType = newGoalPartial.goalType || "Role Change";
+      const targetRole = newGoalPartial.targetRole || "Target Role";
+
+      const defaultMilestones = getDefaultMilestonesForGoalType(goalType, targetRole).map((m) => ({
+        ...m,
+        id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : m.id,
+      }));
+
+      const newGoal: CareerGoal = {
+        id: goalId,
+        userId: user?.id,
+        title: newGoalPartial.title || `Target: ${targetRole}`,
+        targetRole: targetRole,
+        currentRole: newGoalPartial.currentRole || data.activeGoal?.currentRole || "Current Role",
+        targetHorizon: newGoalPartial.targetHorizon || "6–12 months",
+        goalType: goalType,
+        status: newGoalPartial.status || "Active",
+        isPrimary: shouldBePrimary,
+        stage: newGoalPartial.stage || "direction",
+        objective: newGoalPartial.objective || `Accelerate readiness and achieve the ${targetRole} role with strategic alignment.`,
+        strategyOverview: newGoalPartial.strategyOverview || "Execute on key milestones spanning capability verification, stakeholder networking, and concrete career evidence.",
+        milestones: newGoalPartial.milestones && newGoalPartial.milestones.length > 0 ? newGoalPartial.milestones : defaultMilestones,
+        reasonSummary: newGoalPartial.reasonSummary || `Targeting ${targetRole} leverages your validated capabilities and career trajectory.`,
+        supportingEvidence: newGoalPartial.supportingEvidence || [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (shouldBePrimary) {
+        const oldPrimary = data.activeGoal ? [{ ...data.activeGoal, isPrimary: false }] : [];
+        const updatedData: MomentumDashboardData = {
+          ...data,
+          activeGoal: newGoal,
+          whyThisGoal: {
+            ...data.whyThisGoal,
+            summary: newGoal.reasonSummary || data.whyThisGoal.summary,
+            supportingEvidence: newGoal.supportingEvidence || data.whyThisGoal.supportingEvidence,
+          },
+          otherGoals: [...oldPrimary, ...data.otherGoals],
+          progress: {
+            completedMilestones: newGoal.milestones.filter((m) => m.completed).length,
+            totalMilestones: newGoal.milestones.length,
+            milestones: newGoal.milestones,
+          },
+        };
+        persistState(updatedData);
+      } else {
+        const updatedData: MomentumDashboardData = {
+          ...data,
+          otherGoals: [newGoal, ...data.otherGoals],
+        };
+        persistState(updatedData);
+      }
+
+      setIsEmptyStatePreview(false);
+      showToast("New career goal created", "success");
+    },
+    [data, user, persistState, showToast]
+  );
+
+  // 7. Set Secondary Goal as Primary
+  const handleSetAsPrimary = useCallback(
+    (goalId: string) => {
+      const targetGoal = data.otherGoals.find((g) => g.id === goalId);
+      if (!targetGoal) return;
+
+      const remainingOthers = data.otherGoals.filter((g) => g.id !== goalId);
+      const oldActive = data.activeGoal ? [{ ...data.activeGoal, isPrimary: false }] : [];
+
+      const newPrimaryGoal: CareerGoal = {
+        ...targetGoal,
+        isPrimary: true,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updatedData: MomentumDashboardData = {
+        ...data,
+        activeGoal: newPrimaryGoal,
+        whyThisGoal: {
+          ...data.whyThisGoal,
+          summary: newPrimaryGoal.reasonSummary || `Focused on achieving ${newPrimaryGoal.targetRole} based on your career trajectory.`,
+          supportingEvidence: newPrimaryGoal.supportingEvidence || data.whyThisGoal.supportingEvidence,
+        },
+        otherGoals: [...oldActive, ...remainingOthers],
+        progress: {
+          completedMilestones: (newPrimaryGoal.milestones || []).filter((m) => m.completed).length,
+          totalMilestones: (newPrimaryGoal.milestones || []).length,
+          milestones: newPrimaryGoal.milestones || [],
+        },
+      };
+
+      persistState(updatedData);
+      showToast(`Set "${targetGoal.title}" as primary goal`, "success");
+    },
+    [data, persistState, showToast]
+  );
+
+  // 8. Archive Secondary Goal (with backend DELETE sync)
+  const handleArchiveGoal = useCallback(
+    (goalId: string) => {
+      const updatedOthers = data.otherGoals.filter((g) => g.id !== goalId);
+      const updatedData: MomentumDashboardData = {
+        ...data,
+        otherGoals: updatedOthers,
+      };
+      persistState(updatedData);
+
+      // Async backend removal / soft-delete
+      fetch(`/api/momentum/goals/${goalId}`, {
+        method: "DELETE",
+      }).catch((e) => console.warn("Failed to delete goal", e));
+
+      showToast("Secondary goal archived", "info");
+    },
+    [data, persistState, showToast]
+  );
+
+  // 9. Adopt Suggested Direction (ensures active goal exists with domain milestones)
+  const handleAdoptDirection = useCallback(
+    (suggested: SuggestedDirection) => {
+      const trajectoryParts = suggested.trajectory.split("→").map((s) => s.trim());
+      const dirId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `dir-${Date.now()}`;
+
+      const updatedDirection: CareerDirection = {
+        id: data.direction?.id || dirId,
+        title: suggested.title,
+        description: suggested.rationale,
+        currentPath: trajectoryParts[0] || "Current",
+        targetPath: trajectoryParts[trajectoryParts.length - 1] || suggested.title,
+        fullTrajectory: trajectoryParts,
+        status: "Active",
+        source: "User Adopted from Value",
+        createdAt: data.direction?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      // If user had no active goal, generate an active starter goal for this direction
+      let updatedActiveGoal = data.activeGoal;
+      let updatedProgress = data.progress;
+
+      if (!updatedActiveGoal) {
+        const targetRole = trajectoryParts[trajectoryParts.length - 1] || suggested.title;
+        const goalId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `goal-${Date.now()}`;
+        const starterMilestones = getDefaultMilestonesForGoalType("Role Change", targetRole).map((m) => ({
+          ...m,
+          id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : m.id,
+        }));
+
+        updatedActiveGoal = {
+          id: goalId,
+          userId: user?.id,
+          title: `Transition into ${suggested.title}`,
+          targetRole: targetRole,
+          currentRole: trajectoryParts[0] || "Current Role",
+          targetHorizon: "6–12 months",
+          goalType: "Role Change",
+          status: "Active",
+          isPrimary: true,
+          stage: "direction",
+          objective: `Transition into ${targetRole} with verified domain capabilities and strategic career momentum.`,
+          strategyOverview: "Advance systematically from role definition and gap closure to strategic positioning and executive outcome delivery.",
+          milestones: starterMilestones,
+          reasonSummary: suggested.rationale,
+          supportingEvidence: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        updatedProgress = {
+          completedMilestones: starterMilestones.filter((m) => m.completed).length,
+          totalMilestones: starterMilestones.length,
+          milestones: starterMilestones,
+        };
+      }
+
+      const updatedData: MomentumDashboardData = {
+        ...data,
+        direction: updatedDirection,
+        activeGoal: updatedActiveGoal,
+        progress: updatedProgress,
+      };
+
+      persistState(updatedData);
+      setIsEmptyStatePreview(false);
+      showToast(`Adopted "${suggested.title}" as active direction`, "success");
+    },
+    [data, user, persistState, showToast]
+  );
+
+  // 10. Confirm & Keep Active Goal (User Agency Confirmation)
+  const handleConfirmGoal = useCallback(() => {
+    if (!data.activeGoal) return;
+
+    const confirmedDirection = data.direction
+      ? { ...data.direction, source: "User Confirmed", updatedAt: new Date().toISOString() }
+      : null;
+
+    const confirmedGoal = {
+      ...data.activeGoal,
+      status: "Active" as const,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedData: MomentumDashboardData = {
+      ...data,
+      direction: confirmedDirection,
+      activeGoal: confirmedGoal,
+    };
+
+    persistState(updatedData);
+    showToast("Goal confirmed as your chosen career target", "success");
+  }, [data, persistState, showToast]);
+
+  // Refresh real data from server API
+  const handleResetData = useCallback(async () => {
+    localStorage.removeItem(storageKey);
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/momentum");
+      if (res.ok) {
+        const freshData: MomentumDashboardData = await res.json();
+        setData(freshData);
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(freshData));
+        } catch (e) {}
+      } else {
+        setData(EMPTY_MOMENTUM_DATA);
+      }
+    } catch (e) {
+      setData(EMPTY_MOMENTUM_DATA);
+    } finally {
+      setIsLoading(false);
+      setIsEmptyStatePreview(false);
+      showToast("Dashboard refreshed with real profile data", "info");
+    }
+  }, [storageKey, showToast]);
+
+  const hasNoActiveGoals = isEmptyStatePreview || (!data.activeGoal && data.otherGoals.length === 0);
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans">
       <Navbar />
 
-      {/* Hero Header */}
-      <section className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--card)] py-10 px-6 sm:px-8">
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Header */}
+      <MomentumHeader
+        isEmptyState={isEmptyStatePreview}
+        onToggleEmptyState={() => setIsEmptyStatePreview((prev) => !prev)}
+        onResetData={handleResetData}
+      />
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-3">
-                <Flame size={14} className="text-amber-500 animate-pulse" />
-                <span>Top Level Menu 3 · Execution Engine</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
-                Momentum
-              </h1>
-              <p className="mt-2 text-sm sm:text-base text-[var(--text-secondary)] max-w-2xl">
-                Convert what matters to you into concrete milestones. Align career priorities and specific desired outcomes with audited readiness, gap closure, and Level 3 strategic tools.
-              </p>
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto w-full px-6 sm:px-8 py-9 flex-1 space-y-8">
+        {isLoading ? (
+          <div className="space-y-6 animate-pulse" role="status" aria-label="Loading momentum dashboard">
+            <div className="h-44 rounded-2xl bg-[var(--card)] border border-[var(--border)] opacity-60" />
+            <div className="h-64 rounded-2xl bg-[var(--card)] border border-[var(--border)] opacity-60" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="h-48 rounded-2xl bg-[var(--card)] border border-[var(--border)] opacity-60" />
+              <div className="h-48 rounded-2xl bg-[var(--card)] border border-[var(--border)] opacity-60" />
+            </div>
+          </div>
+        ) : hasNoActiveGoals ? (
+          /* Spec Section 14: Psychologically supportive empty state */
+          <EmptyMomentumState
+            suggestedDirections={data.suggestedDirections}
+            onExploreDirections={() => setIsExploreDirectionsOpen(true)}
+            onSetCareerGoal={() => setIsAddGoalOpen(true)}
+            onSelectSuggestedDirection={handleAdoptDirection}
+          />
+        ) : (
+          /* Populated Dashboard matching Spec Section 4 layout */
+          <div className="space-y-8">
+            {/* 1. YOUR CAREER DIRECTION */}
+            {data.direction && (
+              <CareerDirectionCard
+                direction={data.direction}
+                onView={() => setIsViewDirectionOpen(true)}
+                onEdit={() => setIsEditDirectionOpen(true)}
+              />
+            )}
+
+            {/* 2. ACTIVE CAREER GOAL */}
+            {data.activeGoal && (
+              <ActiveCareerGoalCard
+                goal={data.activeGoal}
+                onViewGoal={() => {
+                  setSelectedGoalForDetail(data.activeGoal);
+                  setIsGoalDetailOpen(true);
+                }}
+                onToggleStatus={(status) => {
+                  handleUpdateGoal({ id: data.activeGoal?.id, status });
+                  if (status === "Achieved") {
+                    showToast("Career goal achieved! 🎉 Consider recording this achievement in your Career Journal or Value Story.", "success");
+                  }
+                }}
+                onSelectStage={(stage) => handleUpdateGoal({ id: data.activeGoal?.id, stage })}
+                onSeeEvidence={() => setIsWhyThisGoalOpen(true)}
+              />
+            )}
+
+            {/* 3 & 4. WHY THIS GOAL + YOUR PRIORITIES (2 Columns) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <WhyThisGoalCard
+                whyThisGoal={data.whyThisGoal}
+                onSeeReasoning={() => setIsWhyThisGoalOpen(true)}
+                onSeeEvidence={() => setIsWhyThisGoalOpen(true)}
+              />
+
+              <CareerPrioritiesCard
+                priorities={data.priorities}
+                onEditPriorities={() => setIsEditPrioritiesOpen(true)}
+              />
             </div>
 
-            {/* Quick Readiness Score Card */}
-            <div className="flex items-center gap-4 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-4 shadow-sm">
-              <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 border-2 border-amber-500/30 text-amber-600 dark:text-amber-400 font-extrabold text-xl">
-                {readinessPercent}%
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
-                  Target Readiness
-                </div>
-                <div className="text-sm font-bold text-[var(--text-primary)] mt-0.5">
-                  {readinessPercent >= 70
-                    ? "Advancement Ready"
-                    : readinessPercent >= 40
-                    ? "Active Execution"
-                    : "Calibrating Positioning"}
-                </div>
-                <div className="text-xs text-[var(--text-secondary)] mt-0.5">
-                  {completedCount} of {actionSteps.length} milestones cleared
-                </div>
-              </div>
-            </div>
+            {/* 5. PROGRESS TOWARD GOAL */}
+            {data.progress && (
+              <GoalProgressCard
+                milestones={data.progress.milestones}
+                onToggleMilestone={handleToggleMilestone}
+                onViewProgress={() => setIsProgressDetailOpen(true)}
+              />
+            )}
+
+            {/* 6. OTHER CAREER GOALS */}
+            <OtherGoalsSection
+              otherGoals={data.otherGoals}
+              onAddGoal={() => {
+                setInitialGoalPrefill(null);
+                setIsAddGoalOpen(true);
+              }}
+              onSetAsPrimary={handleSetAsPrimary}
+              onSelectGoal={(goal) => {
+                setSelectedGoalForDetail(goal);
+                setIsGoalDetailOpen(true);
+              }}
+              onArchiveGoal={handleArchiveGoal}
+              onUpdateGoalStatus={(goalId, status) => {
+                handleUpdateGoal({ id: goalId, status });
+                if (status === "Achieved") {
+                  showToast("Goal marked as achieved! Record this outcome in your Value Story.", "success");
+                }
+              }}
+            />
+          </div>
+        )}
+      </main>
+
+      {/* MODALS & DRAWERS */}
+      <ViewDirectionModal
+        isOpen={isViewDirectionOpen}
+        onClose={() => setIsViewDirectionOpen(false)}
+        direction={data.direction}
+        onOpenEdit={() => setIsEditDirectionOpen(true)}
+      />
+
+      <EditDirectionModal
+        isOpen={isEditDirectionOpen}
+        onClose={() => setIsEditDirectionOpen(false)}
+        direction={data.direction}
+        onSave={handleSaveDirection}
+      />
+
+      <GoalDetailModal
+        isOpen={isGoalDetailOpen}
+        onClose={() => {
+          setIsGoalDetailOpen(false);
+          setSelectedGoalForDetail(null);
+        }}
+        goal={selectedGoalForDetail || data.activeGoal}
+        onUpdateGoal={handleUpdateGoal}
+        onArchiveGoal={handleArchiveGoal}
+      />
+
+      <AddGoalModal
+        isOpen={isAddGoalOpen}
+        onClose={() => {
+          setIsAddGoalOpen(false);
+          setInitialGoalPrefill(null);
+        }}
+        onAdd={handleAddGoal}
+        initialPrefill={initialGoalPrefill}
+      />
+
+      <EditPrioritiesModal
+        isOpen={isEditPrioritiesOpen}
+        onClose={() => setIsEditPrioritiesOpen(false)}
+        priorities={data.priorities}
+        onSave={handleSavePriorities}
+      />
+
+      <WhyThisGoalDrawer
+        isOpen={isWhyThisGoalOpen}
+        onClose={() => setIsWhyThisGoalOpen(false)}
+        whyThisGoal={data.whyThisGoal}
+        activeGoalTitle={data.activeGoal?.title}
+        onConfirmGoal={handleConfirmGoal}
+        onEditPriorities={() => setIsEditPrioritiesOpen(true)}
+      />
+
+      <ExploreDirectionsModal
+        isOpen={isExploreDirectionsOpen}
+        onClose={() => setIsExploreDirectionsOpen(false)}
+        directions={data.suggestedDirections}
+        onSelectDirection={handleAdoptDirection}
+        selectedTitle={searchParams.get("direction") || undefined}
+      />
+
+      <GoalProgressDetailModal
+        isOpen={isProgressDetailOpen}
+        onClose={() => setIsProgressDetailOpen(false)}
+        goal={data.activeGoal}
+        milestones={data.progress?.milestones || []}
+        onToggleMilestone={handleToggleMilestone}
+        onAddMilestone={handleAddMilestone}
+      />
+
+      <Footer />
+    </div>
+  );
+}
+
+export default function MomentumPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center font-sans">
+          <div className="text-sm font-semibold text-[var(--text-muted)] animate-pulse">
+            Loading Momentum...
           </div>
         </div>
-      </section>
-
-      {/* Main Content Hub */}
-      <main className="max-w-7xl mx-auto w-full px-6 sm:px-8 py-10 flex-1 space-y-12">
-        {/* ─── TIER 1: CAREER PRIORITIES & GOALS ─── */}
-        <section id="priorities" className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                <Target size={14} /> Level 1 Foundation
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
-                Career Priorities & Target Goals
-              </h2>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Priorities Selector (What matters to the person) */}
-            <div className="lg:col-span-2 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-base font-bold text-[var(--text-primary)]">
-                    Career Priorities (What Matters to You)
-                  </h3>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    Select the core drivers guiding your next transition or promotion.
-                  </p>
-                </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  {priorities.filter((p) => p.selected).length} Active
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                {priorities.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => togglePriority(item.id)}
-                    className={`flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all ${
-                      item.selected
-                        ? "bg-amber-500/10 border-amber-500/50 shadow-sm"
-                        : "bg-[var(--bg-elevated)] border-[var(--border)] hover:border-slate-400 dark:hover:border-slate-600 opacity-70"
-                    }`}
-                  >
-                    <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold ${
-                        item.selected
-                          ? "bg-amber-500 text-brand-navy"
-                          : "border border-[var(--border)] bg-white/50 dark:bg-black/20"
-                      }`}
-                    >
-                      {item.selected && <Check size={12} strokeWidth={3} />}
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-[var(--text-primary)]">
-                        {item.label}
-                      </div>
-                      <div className="text-xs text-[var(--text-secondary)] mt-0.5 leading-snug">
-                        {item.desc}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Target Career Goal (Specific Desired Outcome) */}
-            <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-blue-500">
-                    <Flag size={13} /> Desired Outcome
-                  </div>
-                  {!isEditingGoal && (
-                    <button
-                      onClick={() => {
-                        setTempGoal(careerGoal);
-                        setIsEditingGoal(true);
-                      }}
-                      className="text-xs font-semibold text-amber-500 hover:underline"
-                    >
-                      Edit Goal
-                    </button>
-                  )}
-                </div>
-
-                <div className="text-xs text-[var(--text-muted)] mb-3">
-                  Your primary target objective for this career momentum cycle:
-                </div>
-
-                {isEditingGoal ? (
-                  <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={tempGoal}
-                      onChange={(e) => setTempGoal(e.target.value)}
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-amber-500/50 bg-[var(--bg-elevated)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-amber-500/30 font-bold"
-                      placeholder="e.g. Staff Engineer, VP of Product"
-                    />
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={handleSaveGoal}
-                        className="px-3 py-1.5 rounded-lg bg-amber-500 text-brand-navy font-bold text-xs hover:bg-amber-400"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setIsEditingGoal(false)}
-                        className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 via-transparent to-blue-500/10 border border-amber-500/20">
-                    <div className="text-lg font-black text-[var(--text-primary)] font-['Syne',sans-serif]">
-                      {careerGoal}
-                    </div>
-                    <div className="flex items-center gap-2 mt-2 text-xs font-semibold text-[var(--text-secondary)]">
-                      <Clock size={12} className="text-amber-500" />
-                      <span>Horizon: {goalTimeline}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-[var(--border)]">
-                <div className="text-xs font-semibold text-[var(--text-muted)]">
-                  Active Calibration:
-                </div>
-                <div className="text-xs text-[var(--text-secondary)] mt-1">
-                  Targeting Indian tech scale-up & MNC benchmarks (Tier 1 equity + ₹45L-₹60L base).
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── TIER 2: EXECUTION ENGINE (Readiness, Gaps, Strategy, Actions, Outcomes) ─── */}
-        <section id="readiness" className="space-y-6">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 flex items-center gap-1.5">
-              <Sliders size={14} /> Level 2 Execution Framework
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
-              Readiness, Gaps, Strategy, Actions & Outcomes
-            </h2>
-          </div>
-
-          {/* Sub-tabs for Level 2 */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[var(--border)]">
-            {[
-              { id: "readiness", label: "Readiness", count: "82%" },
-              { id: "gaps", label: "Gaps", count: "3 Key" },
-              { id: "strategy", label: "Strategy", count: "Roadmap" },
-              { id: "actions", label: "Actions", count: `${completedCount}/${actionSteps.length}` },
-              { id: "outcomes", label: "Outcomes", count: "Tracked" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTier2Tab(tab.id as any)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
-                  activeTier2Tab === tab.id
-                    ? "bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30 shadow-xs"
-                    : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-white/10 text-[var(--text-muted)] font-mono">
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Level 2 Tab Contents */}
-          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm">
-            {activeTier2Tab === "readiness" && (
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border)]">
-                  <div>
-                    <h3 className="text-base font-bold text-[var(--text-primary)]">
-                      Current Readiness Assessment
-                    </h3>
-                    <p className="text-xs text-[var(--text-muted)]">
-                      Evaluated against {careerGoal} requirements and verified proof in your Journal.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      Strong Core Alignment
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)]">
-                    <div className="text-xs font-bold text-emerald-500 uppercase tracking-wider flex items-center gap-1">
-                      <CheckCircle2 size={13} /> Verified Strengths
-                    </div>
-                    <ul className="mt-2 space-y-1.5 text-xs text-[var(--text-secondary)]">
-                      <li>• High-concurrency backend services architecture</li>
-                      <li>• Production incident management & zero-downtime migrations</li>
-                      <li>• Mentoring & technical documentation in Journal</li>
-                    </ul>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)]">
-                    <div className="text-xs font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1">
-                      <AlertCircle size={13} /> Elevation Needs
-                    </div>
-                    <ul className="mt-2 space-y-1.5 text-xs text-[var(--text-secondary)]">
-                      <li>• Multi-team roadmap synthesis & business case formulation</li>
-                      <li>• Executive presentation & STAR narrative delivery</li>
-                      <li>• Public GitHub / tech blog architectural proof</li>
-                    </ul>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)]">
-                    <div className="text-xs font-bold text-blue-500 uppercase tracking-wider flex items-center gap-1">
-                      <Rocket size={13} /> Recommended Quick Win
-                    </div>
-                    <p className="mt-2 text-xs text-[var(--text-secondary)] leading-relaxed">
-                      Run the <strong>Precision JD Matcher</strong> with your latest target opening to generate targeted resume bullet points.
-                    </p>
-                    <Link
-                      href="/resume/tailor"
-                      className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-blue-500 hover:underline"
-                    >
-                      <span>Tailor Resume</span>
-                      <ArrowRight size={12} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTier2Tab === "gaps" && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-[var(--text-primary)]">
-                    Identified Career & Competency Gaps
-                  </h3>
-                  <Link
-                    href="/career-copilot?tab=skillgap"
-                    className="text-xs font-bold text-amber-500 hover:underline inline-flex items-center gap-1"
-                  >
-                    <span>Open Skill Gap Telemetry</span>
-                    <ArrowUpRight size={12} />
-                  </Link>
-                </div>
-                <div className="space-y-3">
-                  <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-bold text-[var(--text-primary)]">
-                        Staff-Level Cross-Functional Influence
-                      </div>
-                      <div className="text-xs text-[var(--text-secondary)] mt-1">
-                        Target roles require documented examples of driving consensus across Product, Data, and SRE organizations.
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-red-500/10 text-red-500 border border-red-500/20 shrink-0">
-                      High Priority Gap
-                    </span>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-bold text-[var(--text-primary)]">
-                        Strategic Financial & ROI Telemetry
-                      </div>
-                      <div className="text-xs text-[var(--text-secondary)] mt-1">
-                        Resume and stories lack explicit ₹/$ cloud optimization numbers and bottom-line efficiency gains.
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 shrink-0">
-                      Medium Gap
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTier2Tab === "strategy" && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-[var(--text-primary)]">
-                    Strategic Execution Plan (How to Reach It)
-                  </h3>
-                  <span className="text-xs text-[var(--text-muted)]">3 Pillars Defined</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)]">
-                    <div className="text-xs font-extrabold text-amber-500 uppercase tracking-wider">
-                      Pillar 1 · Evidence
-                    </div>
-                    <div className="text-sm font-bold text-[var(--text-primary)] mt-1">
-                      Proof Vault & Journaling
-                    </div>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">
-                      Log at least 2 quantified impact events per week in the Career Journal to generate promotion evidence.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)]">
-                    <div className="text-xs font-extrabold text-teal-500 uppercase tracking-wider">
-                      Pillar 2 · Narrative
-                    </div>
-                    <div className="text-sm font-bold text-[var(--text-primary)] mt-1">
-                      Executive Storytelling
-                    </div>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">
-                      Use Narrative Studio and Gap Storyteller to construct concise 2-minute elevator pitches and transition framing.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)]">
-                    <div className="text-xs font-extrabold text-blue-500 uppercase tracking-wider">
-                      Pillar 3 · Leverage
-                    </div>
-                    <div className="text-sm font-bold text-[var(--text-primary)] mt-1">
-                      Offer & Compensation
-                    </div>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed">
-                      Leverage salary benchmarking and negotiation scripts before any compensation review or counter-offer discussion.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTier2Tab === "actions" && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-[var(--text-primary)]">
-                    Concrete Next Actions
-                  </h3>
-                  <span className="text-xs text-[var(--text-muted)]">
-                    Click checkbox to mark milestone completed
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  {actionSteps.map((action) => (
-                    <div
-                      key={action.id}
-                      className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
-                        action.completed
-                          ? "bg-slate-50 dark:bg-white/[0.02] border-[var(--border)] opacity-60"
-                          : "bg-[var(--bg-elevated)] border-[var(--border)] hover:border-amber-500/40"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => toggleActionCompleted(action.id)}
-                          className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold transition-colors ${
-                            action.completed
-                              ? "bg-emerald-500 text-white"
-                              : "border border-slate-400 dark:border-slate-600 hover:border-amber-500"
-                          }`}
-                        >
-                          {action.completed && <Check size={12} strokeWidth={3} />}
-                        </button>
-                        <div>
-                          <span
-                            className={`text-sm font-semibold ${
-                              action.completed
-                                ? "line-through text-[var(--text-muted)]"
-                                : "text-[var(--text-primary)]"
-                            }`}
-                          >
-                            {action.title}
-                          </span>
-                          <div className="text-[11px] text-[var(--text-muted)] flex items-center gap-1.5 mt-0.5">
-                            <span className="font-mono text-amber-500">[{action.tag}]</span>
-                            <span>via {action.toolName}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <Link
-                        href={action.toolLink}
-                        className="text-xs font-bold text-amber-500 hover:text-amber-400 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-all shrink-0"
-                      >
-                        <span>Launch</span>
-                        <ArrowRight size={12} />
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeTier2Tab === "outcomes" && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-[var(--text-primary)]">
-                    Tracked Outcomes (What Actually Happened)
-                  </h3>
-                  <span className="text-xs text-emerald-500 font-bold">2 Recorded Wins</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase">
-                      <Award size={14} /> Resume ATS Optimization
-                    </div>
-                    <div className="text-sm font-bold text-[var(--text-primary)] mt-1">
-                      ATS Score Raised to 88/100
-                    </div>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1">
-                      Matched with 14 target Indian unicorn tech specifications via Precision JD Matcher.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-                    <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 uppercase">
-                      <BookOpen size={14} /> Journal Proof Vault
-                    </div>
-                    <div className="text-sm font-bold text-[var(--text-primary)] mt-1">
-                      4 High-Impact Wins Synced
-                    </div>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1">
-                      Ready for one-click promotion case compilation or portfolio export.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ─── TIER 3: LEVEL 3 TOOLS (Already Available Suite) ─── */}
-        <section id="tools" className="space-y-6">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-              <Zap size={14} /> Level 3 Strategic Tools
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-primary)] font-['Syne',sans-serif]">
-              Integrated Execution Launchpad
-            </h2>
-            <p className="text-xs text-[var(--text-secondary)] mt-1">
-              Direct access to all specialized AI tools aligned with your priorities.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {/* Tool 1: Negotiations and Offers */}
-            <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:border-amber-500/40 transition-all flex flex-col justify-between group">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center mb-4">
-                  <Handshake size={20} />
-                </div>
-                <h3 className="text-base font-bold text-[var(--text-primary)] group-hover:text-amber-500 transition-colors">
-                  Negotiations & Offers
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-                  Evaluate multiple offer letters side-by-side, analyze equity vesting cliffs, and generate personalized negotiation scripts.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold">
-                    Offer Evaluator
-                  </span>
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold">
-                    Script Generator
-                  </span>
-                </div>
-              </div>
-              <Link
-                href="/career-copilot?tab=negotiation"
-                className="mt-5 inline-flex items-center justify-between w-full text-xs font-bold text-brand-navy bg-amber-500 hover:bg-amber-400 px-3.5 py-2 rounded-xl transition-all shadow-xs"
-              >
-                <span>Launch Negotiation Suite</span>
-                <ArrowRight size={13} />
-              </Link>
-            </div>
-
-            {/* Tool 2: Interview Prep & Pitch */}
-            <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:border-teal-500/40 transition-all flex flex-col justify-between group">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-teal-500/15 text-teal-500 flex items-center justify-center mb-4">
-                  <MessageSquare size={20} />
-                </div>
-                <h3 className="text-base font-bold text-[var(--text-primary)] group-hover:text-teal-500 transition-colors">
-                  Interview Prep & Pitch
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-                  Generate AI-predicted questions, calibrate your professional narrative in Narrative Studio, and constructively frame career gaps.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-teal-500/10 text-teal-600 dark:text-teal-400 font-semibold">
-                    Narrative Studio
-                  </span>
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-teal-500/10 text-teal-600 dark:text-teal-400 font-semibold">
-                    AI Questions
-                  </span>
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-teal-500/10 text-teal-600 dark:text-teal-400 font-semibold">
-                    Gap Storyteller
-                  </span>
-                </div>
-              </div>
-              <Link
-                href="/career-copilot?tab=interview"
-                className="mt-5 inline-flex items-center justify-between w-full text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 px-3.5 py-2 rounded-xl transition-all shadow-xs"
-              >
-                <span>Launch Interview Prep</span>
-                <ArrowRight size={13} />
-              </Link>
-            </div>
-
-            {/* Tool 3: Skill Gap & Career Path */}
-            <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:border-purple-500/40 transition-all flex flex-col justify-between group">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-500 flex items-center justify-center mb-4">
-                  <Sparkles size={20} />
-                </div>
-                <h3 className="text-base font-bold text-[var(--text-primary)] group-hover:text-purple-500 transition-colors">
-                  Skill Gap & Career Path
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-                  Real-time telemetry on missing tech stack proficiencies and AI-recommended next-step career trajectories.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold">
-                    Skill Telemetry
-                  </span>
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold">
-                    Trajectory AI
-                  </span>
-                </div>
-              </div>
-              <Link
-                href="/career-copilot?tab=skillgap"
-                className="mt-5 inline-flex items-center justify-between w-full text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 px-3.5 py-2 rounded-xl transition-all shadow-xs"
-              >
-                <span>Audit Skill Gaps</span>
-                <ArrowRight size={13} />
-              </Link>
-            </div>
-
-            {/* Tool 4: Planning & Growth */}
-            <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:border-rose-500/40 transition-all flex flex-col justify-between group">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-500 flex items-center justify-center mb-4">
-                  <Rocket size={20} />
-                </div>
-                <h3 className="text-base font-bold text-[var(--text-primary)] group-hover:text-rose-500 transition-colors">
-                  Planning & Growth
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-                  Build ironclad promotion business cases with logged accomplishments and draft executive networking outreach.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 font-semibold">
-                    Promotion Case Builder
-                  </span>
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 font-semibold">
-                    Networking Assistant
-                  </span>
-                </div>
-              </div>
-              <Link
-                href="/career-copilot?tab=growth"
-                className="mt-5 inline-flex items-center justify-between w-full text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 px-3.5 py-2 rounded-xl transition-all shadow-xs"
-              >
-                <span>Launch Growth Suite</span>
-                <ArrowRight size={13} />
-              </Link>
-            </div>
-
-            {/* Tool 5: Match & Tailoring */}
-            <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:border-blue-500/40 transition-all flex flex-col justify-between group">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-500 flex items-center justify-center mb-4">
-                  <Crosshair size={20} />
-                </div>
-                <h3 className="text-base font-bold text-[var(--text-primary)] group-hover:text-blue-500 transition-colors">
-                  Match: Precision JD Matching
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-                  Paste any job description to compute instant ATS match percentages and generate AI-tailored resume bullets.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
-                    JD Match Score
-                  </span>
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
-                    Bullet Tailoring
-                  </span>
-                </div>
-              </div>
-              <Link
-                href="/resume/tailor"
-                className="mt-5 inline-flex items-center justify-between w-full text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 px-3.5 py-2 rounded-xl transition-all shadow-xs"
-              >
-                <span>Launch JD Matcher</span>
-                <ArrowRight size={13} />
-              </Link>
-            </div>
-
-            {/* Tool 6: Journal Integration */}
-            <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:border-emerald-500/40 transition-all flex flex-col justify-between group">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center mb-4">
-                  <BookOpen size={20} />
-                </div>
-                <h3 className="text-base font-bold text-[var(--text-primary)] group-hover:text-emerald-500 transition-colors">
-                  Proof Vault & Journal
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-                  Record weekly impact events, maintain streak telemetry, and synchronize GitHub commits and PRs into permanent career capital.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold">
-                    Weekly Wins
-                  </span>
-                  <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold">
-                    Achievement Radar
-                  </span>
-                </div>
-              </div>
-              <Link
-                href="/career-journal"
-                className="mt-5 inline-flex items-center justify-between w-full text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 px-3.5 py-2 rounded-xl transition-all shadow-xs"
-              >
-                <span>Open Career Journal</span>
-                <ArrowRight size={13} />
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
+      }
+    >
+      <MomentumContent />
+    </Suspense>
   );
 }

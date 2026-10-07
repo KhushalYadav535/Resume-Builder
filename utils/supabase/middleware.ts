@@ -42,6 +42,8 @@ export async function updateSession(request: NextRequest) {
 
   // Protect paths: unauthenticated users redirect to /login
   const isProtectedPath =
+    pathname === "/now" ||
+    pathname.startsWith("/now/") ||
     pathname === "/dashboard" ||
     pathname === "/analytics" ||
     pathname.startsWith("/analytics/") ||
@@ -79,7 +81,7 @@ export async function updateSession(request: NextRequest) {
     // Normal user trying to access admin pages
     if (role !== "admin" && isAdminPath) {
       const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
+      url.pathname = "/now";
       return NextResponse.redirect(url);
     }
 
@@ -87,7 +89,7 @@ export async function updateSession(request: NextRequest) {
     const isAuthPath = pathname === "/login" || pathname === "/signup";
     if (isAuthPath) {
       const url = request.nextUrl.clone();
-      url.pathname = role === "admin" ? "/admin" : "/dashboard";
+      url.pathname = role === "admin" ? "/admin" : "/now";
       return NextResponse.redirect(url);
     }
   }

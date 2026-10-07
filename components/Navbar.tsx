@@ -152,8 +152,14 @@ export default function Navbar() {
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ];
 
-  // 5 Top Level Pillars (Pulse, Value, Momentum, Journal, Navigator)
+  // Top Level Navigation (Now + 5 Pillars: Pulse, Value, Momentum, Journal, Navigator)
   const pillars: NavItem[] = [
+    {
+      label: "Now",
+      href: "/now",
+      icon: Zap,
+      activeMatch: (p) => p === "/now" || p.startsWith("/now"),
+    },
     {
       label: "Pulse",
       href: "/pulse",
@@ -225,7 +231,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <UpRoleLogo
-            href={user ? (role === "admin" ? "/admin" : "/dashboard") : "/"}
+            href={user ? (role === "admin" ? "/admin" : "/now") : "/"}
             size="md"
             variant={pathname === "/" ? "dark" : "auto"}
           />

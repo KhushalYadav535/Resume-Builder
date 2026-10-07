@@ -5,13 +5,19 @@ import {
   CareerInterpretation,
   CareerInterpretationType,
   CareerInterpretationStatus,
+  CapabilityClassification,
   CareerInterpretationConfidence,
   EvidenceFactItem,
+  EvidenceConfidence,
+  DimensionSupport,
+  FactContribution,
   ExperienceDimension,
   ProgressionSignalItem,
   StrengtheningArea,
   EvidenceSummary,
   CareerValueResponse,
+  SourceDetail,
+  RecalculationDiff,
 } from "@/types/value";
 
 export interface ReviewLogMap {
@@ -91,6 +97,7 @@ export function extractCareerFactsFromResume(
       const role = w.role || "Role";
       const dateRange = `${w.startDate || ""} - ${w.current ? "Present" : w.endDate || ""}`.trim();
       const sourceTitle = `${role} · ${company}`;
+      const contextPrefix = `Experience — ${company}, ${role}`;
 
       // Fact: Role
       const roleFactId = `fact-role-${expIdx}`;
@@ -104,6 +111,7 @@ export function extractCareerFactsFromResume(
         sourceId,
         sourceTitle,
         sourceDate: dateRange,
+        extractedFromContext: `${contextPrefix} (Role Appointment)`,
         status: roleLog?.status || "CONFIRMED",
         confidence: "HIGH",
         extractedAt,
@@ -124,6 +132,7 @@ export function extractCareerFactsFromResume(
           sourceId,
           sourceTitle,
           sourceDate: dateRange,
+          extractedFromContext: `${contextPrefix} (Career Progression)`,
           status: promoLog?.status || "EXTRACTED",
           confidence: "HIGH",
           extractedAt,
@@ -143,6 +152,7 @@ export function extractCareerFactsFromResume(
           sourceId,
           sourceTitle,
           sourceDate: dateRange,
+          extractedFromContext: `${contextPrefix} (Team Scope)`,
           status: teamLog?.status || "EXTRACTED",
           confidence: "HIGH",
           extractedAt,
@@ -185,6 +195,7 @@ export function extractCareerFactsFromResume(
           sourceId,
           sourceTitle,
           sourceDate: dateRange,
+          extractedFromContext: `${contextPrefix} (${category})`,
           status: bulletLog?.status || "EXTRACTED",
           confidence: isMetric || isBiz ? "HIGH" : "MEDIUM",
           extractedAt,
@@ -206,6 +217,7 @@ export function extractCareerFactsFromResume(
         sourceType: "Resume",
         sourceId,
         sourceTitle: `Project · ${projName}`,
+        extractedFromContext: `Projects — ${projName}`,
         status: projLog?.status || "EXTRACTED",
         confidence: "HIGH",
         extractedAt,
@@ -223,6 +235,7 @@ export function extractCareerFactsFromResume(
           sourceType: "Resume",
           sourceId,
           sourceTitle: `Project · ${projName}`,
+          extractedFromContext: `Projects — ${projName} (Tech Stack)`,
           status: techLog?.status || "CONFIRMED",
           confidence: "HIGH",
           extractedAt,
@@ -243,109 +256,85 @@ export function extractCareerFactsFromResume(
         sourceType: "Resume",
         sourceId,
         sourceTitle: fileName,
+        extractedFromContext: `Skills — Technical Stack`,
         status: skillLog?.status || "CONFIRMED",
         confidence: "HIGH",
         extractedAt,
       });
     }
 
-    // 4. Education
-    (resumeData.education || []).forEach((edu: Education, eIdx: number) => {
-      const eduFactId = `fact-edu-${eIdx}`;
-      const eduLog = reviewLogs.facts[eduFactId];
-      const eduTitle = `${edu.degree || "Degree"} from ${edu.institution || "University"}`;
-      const eduEnd = edu.endDate || (edu as any).graduationDate || "Completed";
-
+    const softSkills = resumeData.skills?.soft || [];
+    if (softSkills.length > 0) {
+      const softFactId = `fact-skills-soft`;
+      const softLog = reviewLogs.facts[softFactId];
       facts.push({
-        id: eduFactId,
-        category: "EDUCATION",
-        statement: eduLog?.editedText || `${eduTitle} (${eduEnd}).`,
-        originalStatement: `${eduTitle} (${eduEnd}).`,
+        id: softFactId,
+        category: "DOMAIN",
+        statement: softLog?.editedText || `Core leadership & domain competencies: ${softSkills.slice(0, 8).join(", ")}.`,
+        originalStatement: `Core leadership & domain competencies: ${softSkills.slice(0, 8).join(", ")}.`,
         sourceType: "Resume",
         sourceId,
-        sourceTitle: edu.institution || "Academic Institution",
-        status: eduLog?.status || "CONFIRMED",
+        sourceTitle: fileName,
+        extractedFromContext: `Skills — Soft & Domain Competencies`,
+        status: softLog?.status || "CONFIRMED",
+        confidence: "MEDIUM",
+        extractedAt,
+      });
+    }
+
+    // 4. Education
+    (resumeData.education || []).forEach((ed: Education, edIdx: number) => {
+      const institution = ed.institution || "University";
+      const degree = ed.degree || "Degree";
+      const edFactId = `fact-ed-${edIdx}`;
+      const edGradYear = ed.endDate || (ed as any).graduationYear || "Graduated";
+      const edLog = reviewLogs.facts[edFactId];
+      facts.push({
+        id: edFactId,
+        category: "EDUCATION",
+        statement: edLog?.editedText || `Attained ${degree} from ${institution} (${edGradYear}).`,
+        originalStatement: `Attained ${degree} from ${institution} (${edGradYear}).`,
+        sourceType: "Resume",
+        sourceId,
+        sourceTitle: institution,
+        sourceDate: ed.endDate || (ed as any).graduationYear ? String((ed as any).graduationYear || ed.endDate) : undefined,
+        extractedFromContext: `Education — ${institution}, ${degree}`,
+        status: edLog?.status || "CONFIRMED",
         confidence: "HIGH",
         extractedAt,
       });
     });
 
     // 5. Certifications
-    (resumeData.certifications || []).forEach((cert: Certification, cIdx: number) => {
+    (resumeData.certifications || []).forEach((c: Certification, cIdx: number) => {
+      const certName = c.name || "Professional Certification";
+      const issuer = c.issuer || "Issuing Body";
       const certFactId = `fact-cert-${cIdx}`;
       const certLog = reviewLogs.facts[certFactId];
       facts.push({
         id: certFactId,
         category: "CERTIFICATION",
-        statement: certLog?.editedText || `${cert.name} issued by ${cert.issuer || "Accredited Body"}.`,
-        originalStatement: `${cert.name} issued by ${cert.issuer || "Accredited Body"}.`,
+        statement: certLog?.editedText || `Holds credential: ${certName} issued by ${issuer} (${c.date || "Certified"}).`,
+        originalStatement: `Holds credential: ${certName} issued by ${issuer} (${c.date || "Certified"}).`,
         sourceType: "Resume",
         sourceId,
-        sourceTitle: cert.issuer || "Certification Authority",
+        sourceTitle: issuer,
+        sourceDate: c.date,
+        extractedFromContext: `Certifications — ${certName}`,
         status: certLog?.status || "CONFIRMED",
-        confidence: "HIGH",
-        extractedAt,
-      });
-    });
-
-    // 6. Hackathons & Competitions (RECOGNITION)
-    (resumeData.hackathons || []).forEach((h: string, hIdx: number) => {
-      const hFactId = `fact-hackathon-${hIdx}`;
-      const hLog = reviewLogs.facts[hFactId];
-      facts.push({
-        id: hFactId,
-        category: "RECOGNITION",
-        statement: hLog?.editedText || h,
-        originalStatement: h,
-        sourceType: "Resume",
-        sourceId,
-        sourceTitle: "Hackathon / Competition Award",
-        status: hLog?.status || "CONFIRMED",
-        confidence: "HIGH",
-        extractedAt,
-      });
-    });
-
-    (resumeData.campusAchievements || []).forEach((ach: string, aIdx: number) => {
-      const aFactId = `fact-ach-${aIdx}`;
-      const aLog = reviewLogs.facts[aFactId];
-      facts.push({
-        id: aFactId,
-        category: "RECOGNITION",
-        statement: aLog?.editedText || ach,
-        originalStatement: ach,
-        sourceType: "Resume",
-        sourceId,
-        sourceTitle: "Academic / Campus Distinction",
-        status: aLog?.status || "CONFIRMED",
         confidence: "HIGH",
         extractedAt,
       });
     });
   }
 
-  // 7. Journal Entries as Career Event Facts
+  // 6. Ingest Career Journal Entries as Career Facts
   journalEntries.forEach((entry, jIdx) => {
-    const tags = Array.isArray(entry.tags) ? entry.tags : [];
-    // Ignore internal review actions as raw facts
-    if (tags.includes("FactReview") || tags.includes("CapabilityReview") || tags.includes("PatternReview") || tags.includes("InterpretationReview")) {
-      return;
-    }
-
-    const type = entry.entry_type || "win";
-    let category: CareerFact["category"] = "ACHIEVEMENT";
-    if (type === "promotion") category = "PROMOTION";
-    else if (type === "skill") category = "DOMAIN";
-    else if (type === "impact") category = "BUSINESS_OUTCOME";
-    else if (type === "award" || type === "win") category = "RECOGNITION";
-    else if (type === "project") category = "PROJECT";
-
     const jFactId = `fact-journal-${entry.id || jIdx}`;
     const jLog = reviewLogs.facts[jFactId];
-
     facts.push({
       id: jFactId,
-      category,
+      category: entry.entry_type === "metric" ? "METRIC" : entry.entry_type === "skill" ? "ROLE" : "ACHIEVEMENT",
       statement: jLog?.editedText || entry.content,
       originalStatement: entry.content,
       sourceType: "Career Event",
@@ -353,6 +342,7 @@ export function extractCareerFactsFromResume(
       careerEventId: entry.id,
       sourceTitle: entry.linked_role ? `Journal · ${entry.linked_role}` : `Career Event · ${entry.date || "Recorded"}`,
       sourceDate: entry.date,
+      extractedFromContext: `Career Journal — ${entry.linked_role || entry.date || "Recorded Event"}`,
       status: jLog?.status || "CONFIRMED",
       confidence: "HIGH",
       extractedAt: entry.created_at || new Date().toISOString(),
@@ -400,16 +390,35 @@ export function buildDerivationGraph(
     /stakeholder|cross-functional|partnered|aligned|client|coordinat|roadmap|collaborat/i.test(f.statement)
   );
 
-  // Evidence Items (Level 3)
+  // Helper for qualitative confidence (Spec §15)
+  const calculateEvidenceConfidence = (factsList: CareerFact[]): EvidenceConfidence => {
+    const confirmedCount = factsList.filter((f) => f.status === "CONFIRMED" || f.status === "EDITED").length;
+    if (factsList.length >= 3 || (factsList.length >= 2 && confirmedCount >= 1)) {
+      return "Strong evidence";
+    }
+    if (factsList.length >= 2 || confirmedCount >= 1) {
+      return "Moderate evidence";
+    }
+    return "Limited evidence";
+  };
+
+  // Evidence Items (Level 3) with multi-dimensional supports mapping (Spec §14)
   const evidenceMap: Record<string, CareerEvidence> = {
     "ev-leadership": {
       id: "ev-leadership",
       statement: leadershipFacts.length > 0
-        ? `Proven team leadership and talent guidance across organizational initiatives.`
+        ? `Proven team leadership, technical mentorship, and delivery ownership across organizational initiatives.`
         : `Demonstrated technical collaboration and squad mentorship.`,
       type: "Team Leadership at Scale",
       factIds: leadershipFacts.map((f) => f.id),
       facts: leadershipFacts,
+      confidence: calculateEvidenceConfidence(leadershipFacts),
+      supports: [
+        { dimension: "capabilities", label: "Technical Leadership & Mentorship", interpretationId: "cap-tech-leadership" },
+        { dimension: "impact", label: "Operational Velocity & Delivery Acceleration", interpretationId: "imp-operational-velocity" },
+        { dimension: "progression", label: "Increasing Team Scale & Responsibility" },
+      ],
+      factCount: leadershipFacts.length,
     },
     "ev-architecture": {
       id: "ev-architecture",
@@ -417,6 +426,13 @@ export function buildDerivationGraph(
       type: "High-Scale Technical Architecture",
       factIds: architectureFacts.map((f) => f.id),
       facts: architectureFacts,
+      confidence: calculateEvidenceConfidence(architectureFacts),
+      supports: [
+        { dimension: "capabilities", label: "High-Scale System Architecture", interpretationId: "cap-architecture" },
+        { dimension: "impact", label: "High-Throughput Reliability & Zero Downtime", interpretationId: "imp-system-resilience" },
+        { dimension: "progression", label: "Technical Scope & Architectural Autonomy" },
+      ],
+      factCount: architectureFacts.length,
     },
     "ev-process": {
       id: "ev-process",
@@ -424,6 +440,13 @@ export function buildDerivationGraph(
       type: "Operational Efficiency & Automation",
       factIds: processFacts.map((f) => f.id),
       facts: processFacts,
+      confidence: calculateEvidenceConfidence(processFacts),
+      supports: [
+        { dimension: "capabilities", label: "Process Improvement & Workflow Automation", interpretationId: "cap-process-optimization" },
+        { dimension: "impact", label: "Operational Velocity & Delivery Acceleration", interpretationId: "imp-operational-velocity" },
+        { dimension: "progression", label: "Workflow Optimization & Operational Maturity" },
+      ],
+      factCount: processFacts.length,
     },
     "ev-commercial": {
       id: "ev-commercial",
@@ -431,6 +454,13 @@ export function buildDerivationGraph(
       type: "Commercial Impact & Value Optimization",
       factIds: commercialImpactFacts.map((f) => f.id),
       facts: commercialImpactFacts,
+      confidence: calculateEvidenceConfidence(commercialImpactFacts),
+      supports: [
+        { dimension: "capabilities", label: "Commercial Impact & Value Optimization", interpretationId: "cap-commercial-value" },
+        { dimension: "impact", label: "Measurable Commercial Growth & Cost Reduction", interpretationId: "imp-business-outcomes" },
+        { dimension: "progression", label: "Business Impact & P&L Awareness" },
+      ],
+      factCount: commercialImpactFacts.length,
     },
     "ev-coordination": {
       id: "ev-coordination",
@@ -438,25 +468,72 @@ export function buildDerivationGraph(
       type: "Cross-Functional Stakeholder Alignment",
       factIds: coordinationFacts.map((f) => f.id),
       facts: coordinationFacts,
+      confidence: calculateEvidenceConfidence(coordinationFacts),
+      supports: [
+        { dimension: "capabilities", label: "Stakeholder Alignment & Product Execution", interpretationId: "cap-stakeholder-alignment" },
+        { dimension: "impact", label: "End-to-End Strategic Initiative Ownership", interpretationId: "imp-strategic-ownership" },
+        { dimension: "progression", label: "Executive Roadmap Influence & Cross-Functional Breadth" },
+      ],
+      factCount: coordinationFacts.length,
     },
   };
 
   // Helper to format supporting evidence for an interpretation (Rule 1 & Rule 5: rejected facts cannot support active evidence)
-  const getSupportingEvidence = (evIds: string[]) => {
+  const getSupportingEvidence = (evIds: string[]): EvidenceFactItem[] => {
     return evIds
       .map((evId) => evidenceMap[evId])
       .filter(Boolean)
       .map((ev) => ({
         evidenceId: ev.id,
         statement: ev.statement,
-        facts: ev.facts ? ev.facts.filter((f) => f.status !== "REJECTED").slice(0, 3) : [],
+        facts: ev.facts ? ev.facts.filter((f) => f.status !== "REJECTED").slice(0, 4) : [],
+        confidence: ev.confidence,
+        supports: ev.supports,
       }))
       .filter((ev) => ev.facts.length > 0);
+  };
+
+  // Helper for 3-tier Capability Classification (Spec §5)
+  const deriveCapabilityClassification = (
+    reviewStatus: CareerInterpretationStatus | undefined,
+    confidence: CareerInterpretationConfidence,
+    evidenceList: EvidenceFactItem[]
+  ): CapabilityClassification => {
+    // If explicitly confirmed or has strong multi-evidence support
+    if (reviewStatus === "ACCEPTED" || reviewStatus === "EDITED") {
+      return "DEMONSTRATED";
+    }
+    if (confidence === "HIGH" && evidenceList.length >= 1) {
+      return "DEMONSTRATED";
+    }
+    if (confidence === "MODERATE" && evidenceList.length >= 1) {
+      return "EMERGING";
+    }
+    return "SUGGESTED";
+  };
+
+  // Check if any underlying facts for given evidence were modified/rejected (Spec §31 Stale state)
+  const checkStaleState = (evIds: string[]) => {
+    for (const evId of evIds) {
+      const ev = evidenceMap[evId];
+      if (!ev || !ev.facts) continue;
+      for (const fact of ev.facts) {
+        const log = reviewLogs.facts[fact.id];
+        if (log && (log.status === "REJECTED" || log.status === "EDITED")) {
+          return {
+            isStale: true,
+            reason: `Underlying fact "${fact.statement.slice(0, 40)}..." was recently ${log.status.toLowerCase()}. Recalculation recommended.`,
+          };
+        }
+      }
+    }
+    return { isStale: false, reason: undefined };
   };
 
   const makeInterpretation = (
     id: string,
     type: CareerInterpretationType,
+    dimension: "capabilities" | "impact" | "experience" | "progression",
     defaultTitle: string,
     defaultDesc: string,
     confidence: CareerInterpretationConfidence,
@@ -468,15 +545,23 @@ export function buildDerivationGraph(
     const effectiveConfidence: CareerInterpretationConfidence =
       evidence.length === 0 ? "DEVELOPING" : confidence;
 
+    const classification = deriveCapabilityClassification(review?.status, effectiveConfidence, evidence);
+    const staleInfo = checkStaleState(evidenceIds);
+
     return {
       id,
       type,
+      dimension,
       title: review?.editedTitle || defaultTitle,
       description: review?.editedDesc || defaultDesc,
       status: review?.status || "SUGGESTED",
       confidence: effectiveConfidence,
+      classification,
       evidenceIds,
       supportingEvidence: evidence,
+      isStale: staleInfo.isStale,
+      staleReason: staleInfo.reason,
+      needsRecalculation: staleInfo.isStale,
     };
   };
 
@@ -485,6 +570,7 @@ export function buildDerivationGraph(
     makeInterpretation(
       "cap-tech-leadership",
       "CAPABILITY",
+      "capabilities",
       "Technical Leadership & Mentorship",
       "Demonstrated ability to guide engineering teams, structure development practices, unblock technical delivery, and mentor engineers.",
       leadershipFacts.length >= 2 ? "HIGH" : "MODERATE",
@@ -493,6 +579,7 @@ export function buildDerivationGraph(
     makeInterpretation(
       "cap-architecture",
       "CAPABILITY",
+      "capabilities",
       "High-Scale System Architecture",
       "Designing robust, fault-tolerant backend architectures, microservices ecosystems, and data pipelines built for zero-downtime reliability.",
       architectureFacts.length >= 2 ? "HIGH" : "MODERATE",
@@ -501,6 +588,7 @@ export function buildDerivationGraph(
     makeInterpretation(
       "cap-process-optimization",
       "CAPABILITY",
+      "capabilities",
       "Process Improvement & Workflow Automation",
       "Identifying organizational and engineering bottlenecks, replacing manual overhead with automated pipelines, and accelerating delivery cycles.",
       processFacts.length >= 2 ? "HIGH" : "MODERATE",
@@ -509,6 +597,7 @@ export function buildDerivationGraph(
     makeInterpretation(
       "cap-stakeholder-alignment",
       "CAPABILITY",
+      "capabilities",
       "Stakeholder Alignment & Product Execution",
       "Bridging business priorities with technical execution, communicating trade-offs to senior leadership, and driving roadmap clarity.",
       coordinationFacts.length >= 1 ? "HIGH" : "DEVELOPING",
@@ -517,6 +606,7 @@ export function buildDerivationGraph(
     makeInterpretation(
       "cap-commercial-value",
       "CAPABILITY",
+      "capabilities",
       "Commercial Impact & Value Optimization",
       "Translating technology innovations into measurable top-line revenue acceleration, infrastructure cost savings, and business sustainability.",
       commercialImpactFacts.length >= 2 ? "HIGH" : "MODERATE",
@@ -529,6 +619,7 @@ export function buildDerivationGraph(
     makeInterpretation(
       "imp-operational-velocity",
       "IMPACT",
+      "impact",
       "Operational Velocity & Delivery Acceleration",
       "Consistently eliminated deployment bottlenecks and accelerated team release cadence through automation and systematic workflow hygiene.",
       processFacts.length > 0 ? "HIGH" : "MODERATE",
@@ -537,6 +628,7 @@ export function buildDerivationGraph(
     makeInterpretation(
       "imp-system-resilience",
       "IMPACT",
+      "impact",
       "High-Throughput Reliability & Zero Downtime",
       "Modernized infrastructure and optimized database query patterns to maintain high uptime and handle heavy concurrent traffic.",
       architectureFacts.length > 0 ? "HIGH" : "MODERATE",
@@ -545,6 +637,7 @@ export function buildDerivationGraph(
     makeInterpretation(
       "imp-business-outcomes",
       "IMPACT",
+      "impact",
       "Measurable Commercial Growth & Cost Reduction",
       "Directly influenced operational margins and customer retention by deploying high-value features with verifiable business metrics.",
       commercialImpactFacts.length > 0 ? "HIGH" : "MODERATE",
@@ -553,6 +646,7 @@ export function buildDerivationGraph(
     makeInterpretation(
       "imp-strategic-ownership",
       "IMPACT",
+      "impact",
       "End-to-End Strategic Initiative Ownership",
       "Steered multi-team initiatives from inception to post-launch monitoring with clear milestone execution and accountable outcomes.",
       coordinationFacts.length > 0 ? "HIGH" : "DEVELOPING",
@@ -564,8 +658,7 @@ export function buildDerivationGraph(
   const expList = resume?.resume_data?.workExperience || [];
   const rolesCount = expList.length;
   const organizations = Array.from(new Set(expList.map((e) => e.company).filter(Boolean)));
-  
-  // Approximate total years
+
   const totalYears = Math.max(
     rolesCount > 0 ? rolesCount * 2 : 1,
     expList.reduce((acc, curr) => acc + (curr.startDate && curr.endDate ? 2 : 1.5), 0)
@@ -629,6 +722,7 @@ export function buildDerivationGraph(
     {
       id: patternId,
       type: "VALUE_PATTERN" as const,
+      dimension: "capabilities" as const,
       title:
         patternReview?.editedTitle ||
         "Strategic Problem Solver & Scalable Engineering Leader",
@@ -637,26 +731,50 @@ export function buildDerivationGraph(
         "Across your career, you have repeatedly moved from solving core technical challenges to taking ownership of broader business, architecture, and team outcomes.",
       status: (patternReview?.status || "SUGGESTED") as CareerInterpretationStatus,
       confidence: "HIGH" as const,
+      classification: "DEMONSTRATED" as CapabilityClassification,
       evidenceIds: ["ev-leadership", "ev-architecture", "ev-process"],
       supportingEvidence: [
         {
           evidenceId: "ev-leadership",
           statement: leadershipFacts[0]?.statement || "Managed engineering team delivery across multi-timezone squads.",
           facts: leadershipFacts.slice(0, 2),
+          confidence: "Strong evidence" as EvidenceConfidence,
         },
         {
           evidenceId: "ev-architecture",
           statement: architectureFacts[0]?.statement || "Architected high-throughput services with fault-tolerant reliability.",
           facts: architectureFacts.slice(0, 2),
+          confidence: "Strong evidence" as EvidenceConfidence,
         },
         {
           evidenceId: "ev-process",
           statement: processFacts[0]?.statement || "Automated deployment workflows and streamlined operational velocity.",
           facts: processFacts.slice(0, 2),
+          confidence: "Strong evidence" as EvidenceConfidence,
         },
       ],
     },
   ].filter((p) => reviewLogs.interpretations[p.id]?.status !== "REJECTED");
+
+  // POPULATE REVERSE FACT TRACEABILITY GRAPH (Spec §19: "This fact contributes to...")
+  const allInterpretations = [...capabilities, ...impact, ...valuePatterns];
+  facts.forEach((fact) => {
+    const contributions: FactContribution[] = [];
+    allInterpretations.forEach((interp) => {
+      interp.supportingEvidence?.forEach((ev) => {
+        if (ev.facts.some((f) => f.id === fact.id)) {
+          contributions.push({
+            interpretationId: interp.id,
+            interpretationTitle: interp.title,
+            dimension: interp.dimension || "capabilities",
+            evidenceId: ev.evidenceId,
+            evidenceTitle: ev.statement,
+          });
+        }
+      });
+    });
+    fact.contributesTo = contributions;
+  });
 
   // Area 3: Evidence Foundation
   const evidenceSummary: EvidenceSummary = {
@@ -720,4 +838,68 @@ export function buildDerivationGraph(
     strengtheningAreas,
     activeResumeId: resume?.id,
   };
+}
+
+/** Helper to generate source provenance breakdown for Screen 5 (Spec §22-24) */
+export function getSourceDetail(
+  sourceId: string,
+  facts: CareerFact[],
+  resume: Resume | null
+): SourceDetail {
+  const sourceFacts = facts.filter((f) => f.sourceId === sourceId || f.sourceType === "Resume");
+  const confirmed = sourceFacts.filter((f) => f.status === "CONFIRMED").length;
+  const edited = sourceFacts.filter((f) => f.status === "EDITED").length;
+  const rejected = sourceFacts.filter((f) => f.status === "REJECTED").length;
+
+  const categoriesMap: Record<string, CareerFact[]> = {};
+  sourceFacts.forEach((f) => {
+    if (!categoriesMap[f.category]) categoriesMap[f.category] = [];
+    categoriesMap[f.category].push(f);
+  });
+
+  const categories = Object.keys(categoriesMap).map((cat) => ({
+    category: cat as any,
+    label: cat.replace(/_/g, " "),
+    count: categoriesMap[cat].length,
+    facts: categoriesMap[cat],
+  }));
+
+  return {
+    id: sourceId || "resume-source",
+    name: resume?.file_name || "Primary Resume.pdf",
+    type: "Resume",
+    uploadedAt: resume?.created_at || new Date().toISOString(),
+    summary: {
+      totalFacts: sourceFacts.length,
+      confirmedFacts: confirmed,
+      editedFacts: edited,
+      rejectedFacts: rejected,
+    },
+    categories,
+  };
+}
+
+/** Computes recalculation diffs after facts/interpretations have been updated (Spec §33) */
+export function computeRecalculationDiff(
+  previousGraph: CareerValueResponse | null,
+  newGraph: CareerValueResponse
+): RecalculationDiff[] {
+  if (!previousGraph) return [];
+  const diffs: RecalculationDiff[] = [];
+
+  const prevCapMap = new Map(previousGraph.profile.capabilities.map((c) => [c.id, c]));
+  newGraph.profile.capabilities.forEach((newCap) => {
+    const prev = prevCapMap.get(newCap.id);
+    if (prev && prev.classification !== newCap.classification) {
+      diffs.push({
+        itemTitle: newCap.title,
+        dimension: "Capabilities",
+        previousStatus: prev.classification || "SUGGESTED",
+        newStatus: newCap.classification || "DEMONSTRATED",
+        reason: "Confirmed or modified career facts adjusted supporting evidence strength.",
+      });
+    }
+  });
+
+  return diffs;
 }

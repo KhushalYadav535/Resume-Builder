@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import {
   CheckCircle2,
   Edit3,
@@ -156,9 +157,22 @@ export default function ValueFactsView({
   return (
     <div className="space-y-6">
       {/* View Header with Explanation & Counters */}
-      <div className="relative rounded-[1.75rem] bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 space-y-4 overflow-hidden shadow-[0_20px_60px_rgba(16,27,59,0.08)]">
-        <div className="h-[3px] absolute top-0 inset-x-0 bg-gradient-to-r from-emerald-500 via-amber-500/60 to-violet-500/50" aria-hidden="true" />
-        <div className="absolute -top-24 right-0 w-72 h-72 bg-emerald-500/[0.06] rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+      <div className="value-rise relative rounded-[1.75rem] bg-[var(--card)] border border-[var(--border)] p-6 sm:p-8 space-y-4 overflow-hidden shadow-[0_20px_60px_rgba(16,27,59,0.08)]">
+        <div className="h-[3px] absolute top-0 inset-x-0 bg-gradient-to-r from-emerald-500 via-amber-500/60 to-violet-500/50 z-20" aria-hidden="true" />
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute inset-0 bg-dot-matrix opacity-40" />
+          <div className="value-drift absolute -top-24 right-[4%] w-72 h-72 bg-emerald-500/[0.08] rounded-full blur-[100px]" />
+          <div className="value-drift-slow absolute -bottom-24 left-[8%] w-60 h-60 bg-amber-500/[0.07] rounded-full blur-[100px]" />
+        </div>
+        <span className="value-ghost absolute right-5 top-1/2 -translate-y-1/2 text-[2.6rem] sm:text-[3.4rem] hidden md:block select-none" aria-hidden="true">FACTS</span>
+        {/* Breadcrumb trail (Spec §25) */}
+        <nav aria-label="Breadcrumb" className="relative flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+          <Link href="/value" className="hover:text-[var(--text-primary)] transition-colors">
+            Value
+          </Link>
+          <span className="opacity-50" aria-hidden="true">/</span>
+          <span aria-current="page" className="text-emerald-600 dark:text-emerald-400">Facts</span>
+        </nav>
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
           <div>
             <div className="flex items-center gap-2 text-emerald-500 font-bold text-xs uppercase tracking-wider mb-1">
@@ -208,8 +222,8 @@ export default function ValueFactsView({
 
         {/* Filter Controls Row */}
         <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
-          {/* Status Tabs */}
-          <div className="flex items-center gap-1.5 flex-wrap" role="tablist" aria-label="Filter facts by status">
+          {/* Status Tabs — segmented premium control */}
+          <div className="flex items-center gap-1 overflow-x-auto value-noscroll rounded-full bg-[var(--bg-elevated)]/70 border border-[var(--border)]/70 p-1" role="tablist" aria-label="Filter facts by status">
             {[
               { id: "ALL", label: `All (${facts.length})` },
               { id: "EXTRACTED", label: `To review (${unconfirmedCount})`, alert: unconfirmedCount > 0 },
@@ -221,10 +235,10 @@ export default function ValueFactsView({
                 role="tab"
                 aria-selected={statusFilter === tab.id}
                 onClick={() => setStatusFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   statusFilter === tab.id
-                    ? "bg-amber-500 text-brand-navy border-amber-500 shadow-[0_4px_14px_rgba(245,158,11,0.35)]"
-                    : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)] hover:border-amber-500/40"
+                    ? "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-brand-navy shadow-[0_6px_18px_rgba(245,158,11,0.4)]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--card)]"
                 }`}
               >
                 <span>{tab.label}</span>
@@ -328,7 +342,7 @@ export default function ValueFactsView({
             )}
           </div>
         ) : (
-          filteredFacts.map((fact) => {
+          filteredFacts.map((fact, idx) => {
             const isEditing = editingFactId === fact.id;
             const isSubmitting = submittingId === fact.id;
             const isConfirmed = fact.status === "CONFIRMED" || fact.status === "EDITED";
@@ -337,7 +351,8 @@ export default function ValueFactsView({
             return (
               <ValueSpotlight
                 key={fact.id}
-                className={`relative p-5 pl-6 rounded-[1.4rem] bg-[var(--card)] border transition-all duration-300 hover:-translate-y-px space-y-3 overflow-hidden ${
+                style={{ animationDelay: `${Math.min(idx, 9) * 0.045}s` }}
+                className={`value-rise relative p-5 pl-6 rounded-[1.4rem] bg-[var(--card)] border transition-all duration-300 hover:-translate-y-0.5 space-y-3 overflow-hidden ${
                   isRejected
                     ? "border-red-500/20 opacity-60 bg-red-500/5"
                     : isConfirmed
@@ -376,9 +391,12 @@ export default function ValueFactsView({
 
                   {/* Provenance Badge */}
                   <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)]">
-                    <span className="font-semibold text-[var(--text-secondary)]">
+                    <Link
+                      href={`/value/sources/${fact.sourceId || "default"}`}
+                      className="font-semibold text-[var(--text-secondary)] hover:text-amber-500 hover:underline"
+                    >
                       Source: {fact.sourceType}
-                    </span>
+                    </Link>
                     <span>· {fact.sourceTitle}</span>
                     {fact.sourceDate && <span>({fact.sourceDate})</span>}
                   </div>
@@ -410,20 +428,50 @@ export default function ValueFactsView({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs sm:text-sm font-medium text-[var(--text-primary)] leading-relaxed">
-                    {fact.statement}
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-xs sm:text-sm font-medium text-[var(--text-primary)] leading-relaxed">
+                      {fact.statement}
+                    </p>
+
+                    {/* Spec §19: Reverse Contributes To Pills */}
+                    {fact.contributesTo && fact.contributesTo.length > 0 && (
+                      <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                        <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                          Contributes to:
+                        </span>
+                        {fact.contributesTo.map((rel, rIdx) => (
+                          <Link
+                            key={rIdx}
+                            href={`/value/interpretations/${rel.interpretationId}`}
+                            className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
+                          >
+                            {rel.interpretationTitle}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* Actions Footer */}
                 {!isEditing && (
-                  <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
-                    <div className="text-[10px] text-[var(--text-muted)]">
-                      {isRejected
-                        ? "Rejected facts cannot support active Career Value interpretations."
-                        : isConfirmed
-                        ? "Active input in Career Value derivation."
-                        : "Awaiting confirmation from user."}
+                  <div className="flex items-center justify-between pt-2 border-t border-[var(--border)] flex-wrap gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className="text-[10px] text-[var(--text-muted)]">
+                        {isRejected
+                          ? "Rejected facts cannot support active interpretations."
+                          : isConfirmed
+                          ? "Active input in Career Value."
+                          : "Awaiting confirmation."}
+                      </div>
+
+                      <Link
+                        href={`/value/facts/${fact.id}`}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-500 hover:text-amber-400 hover:underline"
+                      >
+                        <span>Fact Detail</span>
+                        <ArrowRight size={11} />
+                      </Link>
                     </div>
 
                     <div className="flex items-center gap-2">

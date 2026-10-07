@@ -188,7 +188,7 @@ function CareerValueDashboardContent() {
     }
   }, [user, selectedResumeId, loadValueProfile, loadFacts]);
 
-  // Recalculate Career Value (Spec Section 26.8)
+  // Recalculate Career Value (Spec Section 26.8 & Spec §33 Recalculation Diffs)
   const handleRecalculate = async () => {
     setRecalculating(true);
     trackValueEvent("value_derivation_started", { resumeId: selectedResumeId });
@@ -196,13 +196,20 @@ function CareerValueDashboardContent() {
       const res = await fetch("/api/value/recalculate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeId: selectedResumeId }),
+        body: JSON.stringify({ resumeId: selectedResumeId, previousState: valueData }),
       });
       const data = await res.json();
       if (data.profile) {
         setValueData(data);
         trackValueEvent("value_derivation_completed", { resumeId: selectedResumeId });
-        showToast("Career Value recalculated from confirmed facts!", "success");
+        if (data.recalculationDiffs && data.recalculationDiffs.length > 0) {
+          const diffText = data.recalculationDiffs
+            .map((d: any) => `${d.itemTitle}: ${d.previousStatus} → ${d.newStatus}`)
+            .join(" | ");
+          showToast(`Updated: ${diffText}`, "success");
+        } else {
+          showToast("Career Value recalculated from confirmed facts!", "success");
+        }
       }
       await loadFacts(selectedResumeId);
     } catch (err) {
@@ -579,6 +586,7 @@ function CareerValueDashboardContent() {
                 impact={valueData.profile.impact}
                 experience={valueData.profile.experience}
                 progression={valueData.profile.progression}
+                evidenceSummary={valueData.evidenceSummary}
                 onSelectInterpretation={handleOpenTraceability}
                 onExploreFacts={() => handleTabChange("facts")}
               />

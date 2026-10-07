@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Momentum | Career Priorities, Strategy & Execution Engine",
+  title: "Momentum | Career Direction, Goals & Milestone Progress · UpRole",
   description:
-    "Define your career priorities and goals, audit readiness and gaps, execute strategic actions, and launch advanced interview, negotiation, and trajectory tools.",
+    "Where do you want your career to go? UpRole Momentum converts your career priorities into active goals, clear directions, and visible milestone progress.",
 };
 
 export default function MomentumLayout({

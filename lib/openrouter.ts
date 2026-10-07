@@ -41,7 +41,7 @@ interface OpenRouterOptions {
  * Robust helper to fetch completions from OpenRouter using a cascading model chain
  * to self-heal when upstream models encounter transient rate limits.
  */
-async function fetchOpenRouter(
+export async function fetchOpenRouter(
   messages: any[],
   temperature: number = 0.3,
   maxTokens: number = 2000,

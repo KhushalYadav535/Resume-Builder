@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(data.user);
-      router.push("/dashboard");
+      router.push("/now");
       return { error: null };
     } catch (err: any) {
       return { error: err.message || "An unexpected error occurred during login." };
@@ -140,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             { onConflict: "id", ignoreDuplicates: true }
           );
         setUser(data.user);
-        router.push("/dashboard");
+        router.push("/now");
       }
       return { error: null };
     } catch (err: any) {

@@ -110,7 +110,7 @@ export default function SignupPage() {
             setErrorMsg(error.message);
           } else {
             setSuccessMsg("Mobile registration verified! Redirecting...");
-            router.push("/dashboard");
+            router.push("/now");
           }
         }
       }
