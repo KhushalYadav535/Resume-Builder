@@ -8,10 +8,7 @@ import {
   Activity,
   Compass,
   Zap,
-  CornerDownLeft,
   Clock,
-  Play,
-  CheckCircle2,
 } from "lucide-react";
 import { CareerContextModel } from "@/app/api/now/context/route";
 
@@ -91,46 +88,8 @@ export default function NowHome({
   return (
     <div className="max-w-[920px] mx-auto px-4 sm:px-6 py-10 sm:py-16">
       
-      {/* ── Active Thread Continuation Card (Spec Section 21) ── */}
-      {activeThread && (
-        <div className="mb-10 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-500/15 dark:via-white/[0.03] dark:to-transparent border border-amber-500/30 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-              <Clock size={13} />
-              <span>Continue where you left off · {activeThread.last_activity_at}</span>
-            </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white m-0 font-['Syne',sans-serif]">
-              {activeThread.title}
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 m-0 leading-relaxed">
-              {activeThread.summary}
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              if (onResumeThread) {
-                onResumeThread(activeThread.id);
-              } else {
-                onSubmitIntent("Continue promotion readiness", activeThread.intent);
-              }
-            }}
-            disabled={isLoading}
-            className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 text-brand-navy shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-          >
-            <Play size={14} className="fill-current" />
-            <span>Continue Thread</span>
-          </button>
-        </div>
-      )}
-
       {/* ── Primary Hero Section (Spec Section 6) ── */}
       <div className="text-center mb-8 sm:mb-12">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 mb-4">
-          <Zap size={13} className="text-amber-500" />
-          <span>NOW · Intent-First Orchestration</span>
-        </div>
-
         <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white font-['Syne',sans-serif] m-0 mb-3">
           What matters to you right now?
         </h1>
@@ -173,10 +132,44 @@ export default function NowHome({
             </button>
           </div>
         </div>
-        <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 mt-2 px-2">
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-400 dark:text-slate-500 mt-2.5 px-2 gap-2">
           <span>Press <strong>Enter ↵</strong> to submit · Shift+Enter for newline</span>
           <span>Zero chat clutter · Dynamic structured output</span>
         </div>
+
+        {/* ── Compact Thread Resumption Pill (Spec Section 21) ── */}
+        {activeThread && (
+          <div className="mt-4 flex items-center justify-center animate-in fade-in slide-in-from-top-2 duration-300">
+            <button
+              type="button"
+              onClick={() => {
+                if (onResumeThread) {
+                  onResumeThread(activeThread.id);
+                } else {
+                  onSubmitIntent("Continue promotion readiness", activeThread.intent);
+                }
+              }}
+              disabled={isLoading}
+              className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 hover:border-amber-500/50 shadow-sm transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50"
+            >
+              <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                <Clock size={12} />
+                <span className="font-semibold uppercase tracking-wider text-[10px]">Resume</span>
+              </div>
+              <span className="text-slate-300 dark:text-slate-600 font-light">·</span>
+              <span className="font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                {activeThread.title}
+              </span>
+              {activeThread.last_activity_at && (
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline">
+                  ({activeThread.last_activity_at})
+                </span>
+              )}
+              <ArrowRight size={12} className="text-amber-600 dark:text-amber-400 group-hover:translate-x-0.5 transition-transform ml-0.5" />
+            </button>
+          </div>
+        )}
       </form>
 
       {/* ── Suggested Starting Intents Grid (Spec Section 6) ── */}
