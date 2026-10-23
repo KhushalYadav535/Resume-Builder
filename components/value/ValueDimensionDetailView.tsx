@@ -14,6 +14,7 @@ import {
   Filter,
   AlertTriangle,
   ExternalLink,
+  Sparkles,
 } from "lucide-react";
 import {
   CareerInterpretation,
@@ -243,6 +244,13 @@ export default function ValueDimensionDetailView({
                   {cap.description}
                 </p>
 
+                {cap.discoveryPrompt && (
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300/90 flex items-start gap-2">
+                    <Sparkles size={13} className="text-amber-500 shrink-0 mt-0.5" />
+                    <span><strong>Discovery Follow-up:</strong> {cap.discoveryPrompt}</span>
+                  </div>
+                )}
+
                 {cap.isStale && cap.staleReason && (
                   <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300">
                     {cap.staleReason}
@@ -394,6 +402,13 @@ export default function ValueDimensionDetailView({
                 <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
                   {imp.description}
                 </p>
+
+                {imp.discoveryPrompt && (
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300/90 flex items-start gap-2">
+                    <Sparkles size={13} className="text-emerald-500 shrink-0 mt-0.5" />
+                    <span><strong>Impact Discovery:</strong> {imp.discoveryPrompt}</span>
+                  </div>
+                )}
               </div>
 
               <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between">
