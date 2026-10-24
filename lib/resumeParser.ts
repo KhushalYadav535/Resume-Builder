@@ -455,21 +455,25 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
       }
 
       // ── Multi-Line Lookbehind & Lookahead Fallback ──
+      const TABLE_KEYWORD_REGEX = /^(?:duration|dates|period|tenure|role|designation|client|clients|team\s*size|technologies|environment|assignment|details|responsibilities|project\s*details|sr\.?\s*no\.?|organization)$/i;
+
       // If headerText was empty or only contained Duration / whitespace:
-      if (!companyName || companyName === "Duration:" || companyName.length <= 2) {
+      if (!companyName || TABLE_KEYWORD_REGEX.test(companyName) || companyName.length <= 2) {
         const prevLine = lineIdx > 0 ? expLines[lineIdx - 1].trim() : "";
         const nextLine = lineIdx + 1 < expLines.length ? expLines[lineIdx + 1].trim() : "";
-        if (prevLine && !/^[•\-\*■●▪▸◦]/.test(prevLine) && prevLine.length <= 70) {
+        if (prevLine && !/^[•\-\*■●▪▸◦]/.test(prevLine) && prevLine.length <= 70 && !TABLE_KEYWORD_REGEX.test(prevLine)) {
           companyName = prevLine.replace(/^[,\-\s|.:/_\\]+|[,\-\s|.:/_\\]+$/g, "");
         }
         const nextRoleMatch = nextLine.match(/^(?:role|designation|title|position)\s*[:\-–—]\s*(.+)$/i);
         if (nextRoleMatch) {
           jobTitle = nextRoleMatch[1].trim().replace(/[,\-\s|.:/_\\]+$/, "");
+        } else if (nextLine && titleKeywords.test(nextLine) && !TABLE_KEYWORD_REGEX.test(nextLine)) {
+          jobTitle = nextLine.trim().replace(/[,\-\s|.:/_\\]+$/, "");
         }
       } else if (titleKeywords.test(companyName) && !companyKeywords.test(companyName)) {
         // The line had only Job Title + Date (e.g. Ashvini: "Front-End Developer (Aug 2021 to Present).")
         const prevLine = lineIdx > 0 ? expLines[lineIdx - 1].trim() : "";
-        if (prevLine && !/^[•\-\*■●▪▸◦]/.test(prevLine) && prevLine.length <= 70 && !/^(?:responsibilities|duties|summary|projects?)\b/i.test(prevLine)) {
+        if (prevLine && !/^[•\-\*■●▪▸◦]/.test(prevLine) && prevLine.length <= 70 && !/^(?:responsibilities|duties|summary|projects?)\b/i.test(prevLine) && !TABLE_KEYWORD_REGEX.test(prevLine)) {
           jobTitle = companyName;
           companyName = prevLine.replace(/^[,\-\s|.:/_\\]+|[,\-\s|.:/_\\]+$/g, "");
         } else {
@@ -493,17 +497,25 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
         companyName = companyName.replace(/^[,\-\s|.:/_\\]+|[,\-\s|.:/_\\]+$/g, "");
       }
 
-      // Check if an existing role from an overview table already exists for this company
-      const existingJob = workExperience.find(j =>
-        j.company && companyName &&
-        (j.company.toLowerCase() === companyName.toLowerCase() || companyName.toLowerCase().startsWith(j.company.toLowerCase())) &&
-        (j.role === "Role / Position" || j.role === "Software Professional")
-      );
+      // Discard invalid company names that are table column headers or keywords
+      if (!companyName || TABLE_KEYWORD_REGEX.test(companyName) || companyName.length <= 2) {
+        continue;
+      }
 
-      if (existingJob && jobTitle && jobTitle !== "Role / Position") {
-        existingJob.role = jobTitle;
-        if (startDate) existingJob.startDate = startDate;
-        if (endDate) existingJob.endDate = isCurrent ? "Present" : endDate;
+      // Check if an existing role from an overview table already exists for this company
+      const existingJob = workExperience.find(j => {
+        if (!j.company || !companyName) return false;
+        const jc = j.company.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const cc = companyName.toLowerCase().replace(/[^a-z0-9]/g, "");
+        return jc === cc || cc.startsWith(jc) || jc.startsWith(cc);
+      });
+
+      if (existingJob) {
+        if (jobTitle && (!existingJob.role || existingJob.role === "Role / Position" || existingJob.role === "Software Professional")) {
+          existingJob.role = jobTitle;
+        }
+        if (startDate && !existingJob.startDate) existingJob.startDate = startDate;
+        if (endDate && (!existingJob.endDate || existingJob.endDate === "Present")) existingJob.endDate = isCurrent ? "Present" : endDate;
         if (workLocation && !existingJob.city) existingJob.city = workLocation;
         currentJob = existingJob;
         continue;
@@ -1063,6 +1075,118 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
       if (!currentProject.description) {
         currentProject.description = bulletText;
       }
+    }
+  }
+
+  // 4b. Extract Projects from Tabular Assignments (Word Tables / Assignment blocks)
+  if (projects.length === 0) {
+    const allDocLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const KNOWN_KEYS = new Set(["client", "domain", "duration", "role", "designation", "team size", "technologies", "environment"]);
+    const IGNORE_KEYS = new Set(["assignment", "details", "responsibilities", "project details", "key responsibilities"]);
+
+    let currProj: Project | null = null;
+    let i = 0;
+
+    while (i < allDocLines.length) {
+      const line = allDocLines[i];
+      const lower = line.toLowerCase();
+
+      // Check for piped row: "Synergy MNET Development | Client | Multichoice"
+      if (line.includes("|")) {
+        const parts = line.split("|").map(p => p.trim()).filter(Boolean);
+        const dedup: string[] = [];
+        for (const p of parts) {
+          if (!dedup.length || dedup[dedup.length - 1] !== p) dedup.push(p);
+        }
+
+        if (dedup.length >= 2) {
+          const projNameCand = dedup[0].replace(/^[•\-\*■●▪▸◦\s]+/, "").trim();
+          const keyCand = (dedup[1] || "").toLowerCase();
+          const valCand = dedup[2] || "";
+          const respCand = dedup[3] || (dedup[2] && dedup[2].length > 40 ? dedup[2] : "");
+
+          if (projNameCand.length > 2 && projNameCand.length < 70 && KNOWN_KEYS.has(keyCand)) {
+            if (!currProj || currProj.name !== projNameCand) {
+              currProj = {
+                id: uid(),
+                name: projNameCand,
+                description: "",
+                techStack: [],
+                link: "",
+                bullets: [],
+                responsibilities: [],
+                measurableOutcomes: [],
+              };
+              projects.push(currProj);
+            }
+
+            if (/^(?:technologies|environment)/i.test(keyCand) && valCand) {
+              const techs = valCand.split(/[,|;]/).map(t => t.trim()).filter(Boolean);
+              currProj.techStack = Array.from(new Set([...currProj.techStack, ...techs]));
+            } else if (/^(?:duration)/i.test(keyCand) && valCand) {
+              currProj.date = valCand;
+            } else if (/^(?:role|designation)/i.test(keyCand) && valCand) {
+              (currProj as any).role = valCand;
+            } else if (/^(?:client)/i.test(keyCand) && valCand) {
+              (currProj as any).client = valCand;
+            }
+
+            if (respCand && respCand.length > 20 && !currProj.bullets?.includes(respCand)) {
+              currProj.bullets = currProj.bullets || [];
+              currProj.bullets.push(respCand);
+              if (!currProj.description) currProj.description = respCand;
+            }
+          }
+        }
+        i++;
+        continue;
+      }
+
+      // Check for sequential cell lines (from Mammoth)
+      if (lower === "client" && i > 0) {
+        const prev = allDocLines[i - 1];
+        const prevLower = prev.toLowerCase();
+        if (!IGNORE_KEYS.has(prevLower) && !KNOWN_KEYS.has(prevLower) && prev.length > 2 && prev.length < 60) {
+          if (!currProj || currProj.name !== prev) {
+            currProj = {
+              id: uid(),
+              name: prev,
+              description: "",
+              techStack: [],
+              link: "",
+              bullets: [],
+              responsibilities: [],
+              measurableOutcomes: [],
+            };
+            projects.push(currProj);
+          }
+        }
+      }
+
+      if (currProj && KNOWN_KEYS.has(lower) && i + 1 < allDocLines.length) {
+        const val = allDocLines[i + 1];
+        if (lower === "client") (currProj as any).client = val;
+        else if (lower === "duration") currProj.date = val;
+        else if (lower === "role" || lower === "designation") (currProj as any).role = val;
+        else if (lower === "team size") (currProj as any).teamSize = val;
+        else if (lower === "technologies" || lower === "environment") {
+          const techs = val.split(/[,|;]/).map(t => t.trim()).filter(Boolean);
+          currProj.techStack = Array.from(new Set([...currProj.techStack, ...techs]));
+        }
+        i += 2;
+        continue;
+      }
+
+      // Capture responsibilities (long sentences under current project)
+      if (currProj && line.length > 35 && !IGNORE_KEYS.has(lower) && !KNOWN_KEYS.has(lower) && !/^(?:academic|education|technical\s*skills|certifications|personal\s*details)/i.test(line)) {
+        if (!currProj.bullets?.includes(line)) {
+          currProj.bullets = currProj.bullets || [];
+          currProj.bullets.push(line);
+          if (!currProj.description) currProj.description = line;
+        }
+      }
+
+      i++;
     }
   }
 
