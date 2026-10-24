@@ -314,6 +314,7 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
   const workExperience: WorkExperience[] = [];
   let currentJob: Partial<WorkExperience> | null = null;
   let roleCounter = 1;
+  let pendingBullets: string[] = [];
 
   const expLines = sections.experience;
   const titleKeywords = /\b(Manager|Analyst|Engineer|Developer|Lead|Consultant|Specialist|Officer|Director|VP|Vice\s+President|Head|Founder|Architect|Intern|Coordinator|Executive|Supervisor|Administrator|Associate|President|Leader|Specialist|Designer)\b/i;
@@ -613,7 +614,7 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
         const empId = `emp_${String(roleCounter++).padStart(3, "0")}`;
         currentJob = {
           id: empId,
-          company: isJobTitleLabel ? "ViitorCloud Client Application" : entityVal || "Company / Client",
+          company: isJobTitleLabel ? (entityVal || "Client Project") : entityVal || "Enterprise Client",
           role: isJobTitleLabel ? entityVal : (personalInfo.professionalHeadline || personalInfo.title || "Software Engineer"),
           city: personalInfo.location || "",
           startDate: "",
@@ -695,20 +696,10 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
       }
     }
 
-    // Initialize default job if duties/responsibilities are encountered before an explicit job header
+    // Buffer duties/responsibilities encountered before an explicit job header
     if (!currentJob && cleanLine.length > 2 && !/^(responsibilities|duties)/i.test(cleanLine)) {
-      const empId = `emp_${String(roleCounter++).padStart(3, "0")}`;
-      currentJob = {
-        id: empId,
-        company: "ViitorCloud / Enterprise Organization",
-        role: personalInfo.professionalHeadline || personalInfo.title || "Senior Software Engineer",
-        city: personalInfo.location || "",
-        startDate: "",
-        endDate: "Present",
-        current: true,
-        bullets: [],
-      };
-      workExperience.push(currentJob as WorkExperience);
+      pendingBullets.push(cleanLine);
+      continue;
     }
 
     if (currentJob && cleanLine.length > 2) {
@@ -735,6 +726,25 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
 
       bullets.push(cleanLine);
     }
+  }
+
+  // Attach buffered pre-header bullets to first real employer
+  if (pendingBullets.length > 0 && workExperience.length > 0) {
+    workExperience[0].bullets = [...pendingBullets, ...(workExperience[0].bullets || [])];
+    pendingBullets = [];
+  } else if (workExperience.length === 0 && pendingBullets.length > 0) {
+    const empId = `emp_${String(roleCounter++).padStart(3, "0")}`;
+    workExperience.push({
+      id: empId,
+      company: personalInfo.professionalHeadline || "Enterprise Project",
+      role: personalInfo.professionalHeadline || personalInfo.title || "Software Engineer",
+      city: personalInfo.location || "",
+      startDate: "",
+      endDate: "Present",
+      current: true,
+      bullets: pendingBullets,
+    });
+    pendingBullets = [];
   }
 
   // Post-process workExperience: separate responsibilities, outcomes, metrics, and leadership scope
