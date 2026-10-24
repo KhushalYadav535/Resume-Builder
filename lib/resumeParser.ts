@@ -433,7 +433,8 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
           }
         }
       } else {
-        const dashParts = headerText.split(/\s*[\-–—]\s*/).map(p => p.trim()).filter(Boolean);
+        const isCompoundTitle = /^(?:Front|Back|Full|Cloud|Mean|Mern|Dotnet|Dot\s*Net|React|Angular|Lead)\s*[\-–—]\s*(?:End|Stack|Tier|Developer|Engineer|Architect|Consultant)\b/i.test(headerText);
+        const dashParts = isCompoundTitle ? [headerText] : headerText.split(/\s*[\-–—]\s*/).map(p => p.trim()).filter(Boolean);
         if (dashParts.length >= 2) {
           const locIdx = dashParts.findIndex(p =>
             CITY_NAMES.some(c => new RegExp(`\\b${c}\\b`, "i").test(p)) ||
@@ -497,8 +498,14 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
         companyName = companyName.replace(/^[,\-\s|.:/_\\]+|[,\-\s|.:/_\\]+$/g, "");
       }
 
-      // Discard invalid company names that are table column headers or keywords
-      if (!companyName || TABLE_KEYWORD_REGEX.test(companyName) || companyName.length <= 2) {
+      // Discard invalid company names that are table column headers, educational boards, or keywords
+      if (
+        !companyName ||
+        TABLE_KEYWORD_REGEX.test(companyName) ||
+        companyName.length <= 2 ||
+        /\b(?:MSBTE|CBSE|ICSE|Board|University|College|School|Diploma|H\.?S\.?C|S\.?S\.?C)\b/i.test(companyName) ||
+        /%\s*$/.test(companyName)
+      ) {
         continue;
       }
 
@@ -609,6 +616,11 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
         bullets: [],
       };
       workExperience.push(currentJob as WorkExperience);
+      continue;
+    }
+
+    // Skip technical skill headings like "Client-Side Technologies" or "Server-Side Technologies"
+    if (/^(?:Client|Server)\s*[-–—]\s*Side/i.test(line)) {
       continue;
     }
 
