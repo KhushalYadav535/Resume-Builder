@@ -16,6 +16,7 @@ import ValueDashboardHeader from "@/components/value/ValueDashboardHeader";
 import ValueNavigationTabs from "@/components/value/ValueNavigationTabs";
 import ValueJourneySteps from "@/components/value/ValueJourneySteps";
 import ValueOverviewDashboard from "@/components/value/ValueOverviewDashboard";
+import ValueCategoryCardsGrid from "@/components/value/ValueCategoryCardsGrid";
 import ValueTraceabilityDrawer from "@/components/value/ValueTraceabilityDrawer";
 import ValueFactsView from "@/components/value/ValueFactsView";
 import ValueDimensionDetailView from "@/components/value/ValueDimensionDetailView";
@@ -125,6 +126,10 @@ function CareerValueDashboardContent() {
       })
       .catch((err) => console.error("Error fetching resumes:", err));
   }, [user]);
+
+  const activeResume = useMemo(() => {
+    return resumes.find((r) => r.id === selectedResumeId) || resumes[0] || null;
+  }, [resumes, selectedResumeId]);
 
   // Load Career Value Profile and Facts
   const loadValueProfile = useCallback(
@@ -567,8 +572,14 @@ function CareerValueDashboardContent() {
                 onOpenStrengthen={(link) => router.push(link)}
               />
             </div>
-            <p className="value-rise value-delay-3 text-center text-[11px] font-medium text-[var(--text-muted)] px-1">
-              Tap any card to open its detailed view — dimensions, evidence trace or facts.
+
+            {/* Stage 1 Structured Resume Heads & Records Grid */}
+            <div className="value-rise value-delay-3">
+              <ValueCategoryCardsGrid resumeData={activeResume?.resume_data} />
+            </div>
+
+            <p className="value-rise value-delay-3 text-center text-[11px] font-medium text-[var(--text-muted)] px-1 pt-2">
+              Tap any card to open its detailed view — dimensions, evidence trace, records or facts.
             </p>
           </div>
         )}

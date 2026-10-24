@@ -197,6 +197,21 @@ export default function CapabilityReviewModal({
                 </p>
               </div>
 
+              {/* Discovery Prompt (Spec Stage 4 §6 & §13) */}
+              {(capability as any).discoveryPrompt && (
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
+                  <Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                  <div className="text-xs space-y-1">
+                    <span className="font-bold text-amber-900 dark:text-amber-300">
+                      Discovery Follow-up:
+                    </span>
+                    <p className="text-amber-800 dark:text-amber-200/90 m-0 leading-relaxed">
+                      {(capability as any).discoveryPrompt}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Supporting Career Evidence */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">

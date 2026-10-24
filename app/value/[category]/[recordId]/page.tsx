@@ -26,7 +26,9 @@ import {
   MapPin,
   Users,
   Target,
-  Shield
+  Shield,
+  BookOpen,
+  ExternalLink
 } from "lucide-react";
 
 const CATEGORY_MAP: Record<
@@ -46,7 +48,7 @@ const CATEGORY_MAP: Record<
     color: "text-blue-500",
   },
   achievements: {
-    label: "Impact & Achievements",
+    label: "Impact & Measurable Outcomes",
     icon: Award,
     addHash: "experience",
     color: "text-emerald-500",
@@ -58,7 +60,7 @@ const CATEGORY_MAP: Record<
     color: "text-purple-500",
   },
   awards: {
-    label: "Awards & Honors",
+    label: "Awards & Recognition",
     icon: Sparkles,
     addHash: "achievements",
     color: "text-rose-500",
@@ -75,11 +77,23 @@ const CATEGORY_MAP: Record<
     addHash: "education",
     color: "text-indigo-500",
   },
+  publications: {
+    label: "Publications & Research",
+    icon: BookOpen,
+    addHash: "projects",
+    color: "text-sky-500",
+  },
+  volunteer: {
+    label: "Volunteering & Leadership",
+    icon: Users,
+    addHash: "experience",
+    color: "text-emerald-600",
+  },
   additional: {
-    label: "Languages & Context",
+    label: "Languages & Additional Info",
     icon: Languages,
     addHash: "languages",
-    color: "text-sky-500",
+    color: "text-cyan-500",
   },
 };
 
@@ -152,6 +166,8 @@ export default function RecordDetailsPage() {
           employmentType: found.employmentType,
           description: found.contextNote,
           bullets: found.bullets || [],
+          responsibilities: found.responsibilities || [],
+          measurableOutcomes: found.measurableOutcomes || found.achievements || [],
           tools: found.toolsUsed || [],
           raw: found,
         };
@@ -169,9 +185,93 @@ export default function RecordDetailsPage() {
           link: found.link,
           description: found.description,
           bullets: found.bullets || [],
+          responsibilities: found.responsibilities || [],
+          measurableOutcomes: found.measurableOutcomes || [],
           tools: found.techStack || [],
           raw: found,
         };
+      }
+
+      case "achievements": {
+        if (recordId.startsWith("campus-")) {
+          const idx = parseInt(recordId.split("-")[1] || "0", 10);
+          const ach = data.campusAchievements?.[idx];
+          if (!ach) return null;
+          return {
+            title: ach,
+            subtitle: "Academic / Campus Achievement",
+            badge: "Campus",
+            description: "Verifiable academic or campus accomplishment extracted from your resume.",
+            raw: ach,
+          };
+        }
+        for (let wIdx = 0; wIdx < (data.workExperience || []).length; wIdx++) {
+          const w = data.workExperience[wIdx];
+          const outcomes = w.measurableOutcomes || w.achievements || [];
+          for (let oIdx = 0; oIdx < outcomes.length; oIdx++) {
+            if (`work-ach-${w.id || wIdx}-${oIdx}` === recordId || `work-ach-${w.id}-${oIdx}` === recordId) {
+              return {
+                title: outcomes[oIdx],
+                subtitle: `${w.role} at ${w.company}`,
+                badge: "Measurable Outcome",
+                description: `Quantified impact delivered during tenure as ${w.role} at ${w.company}.`,
+                raw: outcomes[oIdx],
+              };
+            }
+          }
+          const bullets = w.bullets || [];
+          for (let bIdx = 0; bIdx < bullets.length; bIdx++) {
+            if (`work-ach-${w.id || wIdx}-${bIdx}` === recordId || `work-ach-${w.id}-${bIdx}` === recordId) {
+              return {
+                title: bullets[bIdx],
+                subtitle: `${w.role} at ${w.company}`,
+                badge: "Impact Metric",
+                description: `Extracted impact metric from ${w.role} at ${w.company}.`,
+                raw: bullets[bIdx],
+              };
+            }
+          }
+        }
+        return null;
+      }
+
+      case "awards": {
+        const explicit = (data.awards || []).find((aw, idx) => (aw.id || `award-${idx}`) === recordId);
+        if (explicit) {
+          return {
+            title: explicit.title,
+            subtitle: explicit.issuer || "Honors & Recognition",
+            dateRange: explicit.date,
+            badge: explicit.category || "Award",
+            description: explicit.description || "Honored for excellence.",
+            raw: explicit,
+          };
+        }
+        if (recordId.startsWith("hack-")) {
+          const idx = parseInt(recordId.split("-")[1] || "0", 10);
+          const h = data.hackathons?.[idx];
+          if (!h) return null;
+          return {
+            title: h,
+            subtitle: "Hackathon / Competition Award",
+            badge: "Hackathon",
+            description: "Demonstrated hackathon and rapid engineering achievement.",
+            raw: h,
+          };
+        }
+        if (recordId.startsWith("contest-")) {
+          const idx = parseInt(recordId.split("-")[1] || "0", 10);
+          const c = data.codingContests?.[idx];
+          if (!c) return null;
+          return {
+            title: c,
+            subtitle: "Coding Contest / Contest Honor",
+            badge: "Contest",
+            description: "Demonstrated competitive algorithmic performance.",
+            raw: c,
+          };
+        }
+        return null;
       }
 
       case "education": {
@@ -200,21 +300,69 @@ export default function RecordDetailsPage() {
           title: found.name || "Certification",
           subtitle: found.issuer,
           dateRange: found.date,
+          link: found.url,
+          badge: "Verified Credential",
+          raw: found,
+        };
+      }
+
+      case "publications": {
+        const found = (data.publications || []).find(
+          (p, idx) => (p.id || `pub-${idx}`) === recordId
+        );
+        if (!found) return null;
+        return {
+          title: found.title,
+          subtitle: found.publisher || "Publication / Journal",
+          dateRange: found.date,
+          link: found.url,
+          description: found.description,
+          badge: "Publication",
+          raw: found,
+        };
+      }
+
+      case "volunteer": {
+        const found = (data.volunteerExperience || []).find(
+          (v, idx) => (v.id || `vol-${idx}`) === recordId
+        );
+        if (!found) return null;
+        return {
+          title: found.role,
+          subtitle: found.organization,
+          dateRange: `${found.startDate || ""} – ${found.endDate || ""}`.trim(),
+          description: found.description,
+          badge: "Volunteer",
           raw: found,
         };
       }
 
       case "additional": {
-        const found = data.languagesKnown?.find(
+        const langFound = data.languagesKnown?.find(
           (l, idx) => (l.id || `lang-${idx}`) === recordId
         );
-        if (!found) return null;
-        return {
-          title: found.language || "Language",
-          subtitle: `Proficiency: ${found.proficiency || "Fluent"}`,
-          description: found.usageContext,
-          raw: found,
-        };
+        if (langFound) {
+          return {
+            title: langFound.language || "Language",
+            subtitle: `Proficiency: ${langFound.proficiency || "Fluent"}`,
+            description: langFound.usageContext || `Demonstrated communication ability in ${langFound.language}.`,
+            badge: langFound.proficiency || "Language",
+            raw: langFound,
+          };
+        }
+        const addFound = (data.additionalRecords || []).find(
+          (a, idx) => (a.id || `add-${idx}`) === recordId
+        );
+        if (addFound) {
+          return {
+            title: addFound.title,
+            subtitle: addFound.category,
+            badge: addFound.category,
+            description: addFound.description,
+            raw: addFound,
+          };
+        }
+        return null;
       }
 
       case "skills": {
@@ -376,9 +524,70 @@ export default function RecordDetailsPage() {
               </div>
             )}
 
-            {/* Responsibilities & Contributions */}
-            {recordData.bullets && recordData.bullets.length > 0 && (
-              <div className="space-y-3">
+            {/* External Link */}
+            {recordData.link && (
+              <div className="pt-2">
+                <a
+                  href={recordData.link.startsWith("http") ? recordData.link : `https://${recordData.link}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-semibold transition-colors no-underline"
+                >
+                  <ExternalLink size={13} />
+                  <span>View Project / Credential Source</span>
+                </a>
+              </div>
+            )}
+
+            {/* Core Responsibilities Block */}
+            {recordData.responsibilities && recordData.responsibilities.length > 0 && (
+              <div className="space-y-3 pt-3 border-t border-[var(--border)]">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-amber-500/15 text-amber-500 flex items-center justify-center">
+                    <Briefcase size={12} />
+                  </div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)] font-['Syne',sans-serif]">
+                    Core Responsibilities & Scope
+                  </h3>
+                </div>
+                <ul className="space-y-2.5 text-xs sm:text-sm text-[var(--text-secondary)] pl-4 list-disc">
+                  {recordData.responsibilities.map((resp: string, idx: number) => (
+                    <li key={idx} className="leading-relaxed">
+                      {resp}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Measurable Outcomes & Quantified Impact Block */}
+            {recordData.measurableOutcomes && recordData.measurableOutcomes.length > 0 && (
+              <div className="space-y-3 pt-3 border-t border-[var(--border)]">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-emerald-500/15 text-emerald-500 flex items-center justify-center">
+                    <Target size={12} />
+                  </div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-['Syne',sans-serif]">
+                    Measurable Outcomes & Business Impact
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {recordData.measurableOutcomes.map((outcome: string, idx: number) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs sm:text-sm text-[var(--text-primary)] flex items-start gap-2.5"
+                    >
+                      <CheckCircle2 size={15} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <span className="leading-relaxed font-medium">{outcome}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Fallback Bullets (if neither separate array is populated) */}
+            {(!recordData.responsibilities?.length && !recordData.measurableOutcomes?.length && recordData.bullets && recordData.bullets.length > 0) && (
+              <div className="space-y-3 pt-3 border-t border-[var(--border)]">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
                   Responsibilities & Stated Outcomes
                 </h3>
@@ -394,7 +603,7 @@ export default function RecordDetailsPage() {
 
             {/* Technologies / Tools Used */}
             {recordData.tools && recordData.tools.length > 0 && (
-              <div className="space-y-2.5 pt-2 border-t border-[var(--border)]">
+              <div className="space-y-2.5 pt-3 border-t border-[var(--border)]">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
                   Technologies & Skills
                 </h3>

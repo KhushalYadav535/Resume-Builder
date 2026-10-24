@@ -1,4 +1,4 @@
-import { Resume, WorkExperience, Project, Education, Certification } from "@/types";
+import { Resume, WorkExperience, Project, Education, Certification, Award, Publication, VolunteerExperience, AdditionalRecord } from "@/types";
 import {
   CareerFact,
   CareerEvidence,
@@ -19,6 +19,11 @@ import {
   SourceDetail,
   RecalculationDiff,
 } from "@/types/value";
+import { analyzeBulletLocally } from "./deepFactExtraction";
+import {
+  deriveDynamicInterpretations,
+  detectCandidateDomain,
+} from "./dynamicInterpretationEngine";
 
 export interface ReviewLogMap {
   facts: Record<string, { status: "CONFIRMED" | "EDITED" | "REJECTED"; editedText?: string; reason?: string }>;
@@ -167,24 +172,9 @@ export function extractCareerFactsFromResume(
         const bulletFactId = `fact-bullet-${expIdx}-${bIdx}`;
         const bulletLog = reviewLogs.facts[bulletFactId];
 
-        // Classify category based on text analysis
-        const isBiz = /\$|₹|revenue|cost reduction|margin|profit|arr|mrr|cost savings/i.test(bulletText);
-        const isMetric = /\d+%|\$\d+|₹\d+|\d+x|reduced|increased|improved|scaled|saved|growth/i.test(bulletText);
-        const isTeam = /managed|led|hired|mentored|guided|team of/i.test(bulletText);
-        const isPromo = /promoted|elevated/i.test(bulletText);
-        const isProject = /architected|developed|built|deployed|designed|engineered/i.test(bulletText);
-
-        const category = isBiz
-          ? "BUSINESS_OUTCOME"
-          : isPromo
-          ? "PROMOTION"
-          : isMetric
-          ? "METRIC"
-          : isTeam
-          ? "TEAM"
-          : isProject
-          ? "PROJECT"
-          : "RESPONSIBILITY";
+        // Deep local semantic analysis (Action vs Outcome, Scope, Metrics, Gaps)
+        const analysis = analyzeBulletLocally(bulletText, role, company);
+        const category = analysis.category;
 
         facts.push({
           id: bulletFactId,
@@ -197,8 +187,14 @@ export function extractCareerFactsFromResume(
           sourceDate: dateRange,
           extractedFromContext: `${contextPrefix} (${category})`,
           status: bulletLog?.status || "EXTRACTED",
-          confidence: isMetric || isBiz ? "HIGH" : "MEDIUM",
+          confidence: analysis.confidence,
           extractedAt,
+          scope: analysis.scope,
+          actionDetail: analysis.actionDetail,
+          outcomeDetail: analysis.outcomeDetail,
+          metrics: analysis.metrics,
+          informationGaps: analysis.informationGaps,
+          isExplicit: true,
         });
       });
     });
@@ -326,9 +322,107 @@ export function extractCareerFactsFromResume(
         extractedAt,
       });
     });
+
+    // 6. Awards & Recognition
+    (resumeData.awards || []).forEach((aw: Award, awIdx: number) => {
+      const awFactId = `fact-award-${aw.id || awIdx}`;
+      const awLog = reviewLogs.facts[awFactId];
+      facts.push({
+        id: awFactId,
+        category: "AWARD",
+        statement: awLog?.editedText || `${aw.title}${aw.issuer ? ` by ${aw.issuer}` : ""}${aw.date ? ` (${aw.date})` : ""}: ${aw.description || "Honored for career excellence."}`,
+        originalStatement: `${aw.title}${aw.issuer ? ` by ${aw.issuer}` : ""}${aw.date ? ` (${aw.date})` : ""}: ${aw.description || "Honored for career excellence."}`,
+        sourceType: "Resume",
+        sourceId,
+        sourceTitle: aw.issuer || "Honors & Recognition",
+        sourceDate: aw.date,
+        extractedFromContext: `Awards & Recognition — ${aw.title}`,
+        status: awLog?.status || "CONFIRMED",
+        confidence: "HIGH",
+        extractedAt,
+      });
+    });
+
+    // 7. Languages Known
+    (resumeData.languagesKnown || []).forEach((lang, lIdx: number) => {
+      const lFactId = `fact-lang-${lang.id || lIdx}`;
+      const lLog = reviewLogs.facts[lFactId];
+      facts.push({
+        id: lFactId,
+        category: "LANGUAGE",
+        statement: lLog?.editedText || `Proficient in ${lang.language} (${lang.proficiency || "Fluent"}).`,
+        originalStatement: `Proficient in ${lang.language} (${lang.proficiency || "Fluent"}).`,
+        sourceType: "Resume",
+        sourceId,
+        sourceTitle: "Languages",
+        extractedFromContext: `Languages — ${lang.language}`,
+        status: lLog?.status || "CONFIRMED",
+        confidence: "HIGH",
+        extractedAt,
+      });
+    });
+
+    // 8. Publications & Research
+    (resumeData.publications || []).forEach((pub: Publication, pIdx: number) => {
+      const pubFactId = `fact-pub-${pub.id || pIdx}`;
+      const pubLog = reviewLogs.facts[pubFactId];
+      facts.push({
+        id: pubFactId,
+        category: "PUBLICATION",
+        statement: pubLog?.editedText || `Published: "${pub.title}"${pub.publisher ? ` in ${pub.publisher}` : ""}${pub.date ? ` (${pub.date})` : ""}.`,
+        originalStatement: `Published: "${pub.title}"${pub.publisher ? ` in ${pub.publisher}` : ""}${pub.date ? ` (${pub.date})` : ""}.`,
+        sourceType: "Resume",
+        sourceId,
+        sourceTitle: pub.publisher || "Publications",
+        sourceDate: pub.date,
+        extractedFromContext: `Publications — ${pub.title}`,
+        status: pubLog?.status || "CONFIRMED",
+        confidence: "HIGH",
+        extractedAt,
+      });
+    });
+
+    // 9. Volunteer & Extracurricular Experience
+    (resumeData.volunteerExperience || []).forEach((vol: VolunteerExperience, vIdx: number) => {
+      const vFactId = `fact-vol-${vol.id || vIdx}`;
+      const vLog = reviewLogs.facts[vFactId];
+      facts.push({
+        id: vFactId,
+        category: "VOLUNTEER",
+        statement: vLog?.editedText || `Served as ${vol.role} at ${vol.organization}: ${vol.description || "Community contribution."}`,
+        originalStatement: `Served as ${vol.role} at ${vol.organization}: ${vol.description || "Community contribution."}`,
+        sourceType: "Resume",
+        sourceId,
+        sourceTitle: vol.organization,
+        sourceDate: `${vol.startDate || ""} - ${vol.endDate || ""}`.trim() || undefined,
+        extractedFromContext: `Volunteering — ${vol.organization}`,
+        status: vLog?.status || "CONFIRMED",
+        confidence: "HIGH",
+        extractedAt,
+      });
+    });
+
+    // 10. Additional Records
+    (resumeData.additionalRecords || []).forEach((add: AdditionalRecord, aIdx: number) => {
+      const aFactId = `fact-add-${add.id || aIdx}`;
+      const aLog = reviewLogs.facts[aFactId];
+      facts.push({
+        id: aFactId,
+        category: "ADDITIONAL",
+        statement: aLog?.editedText || `${add.category}: ${add.title} — ${add.description || ""}`,
+        originalStatement: `${add.category}: ${add.title} — ${add.description || ""}`,
+        sourceType: "Resume",
+        sourceId,
+        sourceTitle: add.category,
+        extractedFromContext: `Additional — ${add.category}`,
+        status: aLog?.status || "CONFIRMED",
+        confidence: "HIGH",
+        extractedAt,
+      });
+    });
   }
 
-  // 6. Ingest Career Journal Entries as Career Facts
+  // 11. Ingest Career Journal Entries as Career Facts
   journalEntries.forEach((entry, jIdx) => {
     const jFactId = `fact-journal-${entry.id || jIdx}`;
     const jLog = reviewLogs.facts[jFactId];
@@ -362,297 +456,13 @@ export function buildDerivationGraph(
   const activeFacts = facts.filter((f) => f.status !== "REJECTED");
   const confirmedFacts = facts.filter((f) => f.status === "CONFIRMED" || f.status === "EDITED");
 
-  // Build Supporting Evidence Collections
-  const leadershipFacts = activeFacts.filter(
-    (f) =>
-      f.category === "TEAM" ||
-      /managed|led|hired|mentored|team of|director|manager|lead|squad/i.test(f.statement)
-  );
-
-  const architectureFacts = activeFacts.filter(
-    (f) =>
-      f.category === "PROJECT" ||
-      f.category === "TECHNOLOGY" ||
-      /architect|concurrency|latency|microservices|distributed|pipeline|cloud|backend|infrastructure/i.test(f.statement)
-  );
-
-  const processFacts = activeFacts.filter((f) =>
-    /process|workflow|automat|pipeline|reporting|bottleneck|efficiency|cycle time|streamlined/i.test(f.statement)
-  );
-
-  const commercialImpactFacts = activeFacts.filter(
-    (f) =>
-      f.category === "METRIC" ||
-      /\$|₹|revenue|cost|saved|growth|retention|conversion|roi|margin|scale/i.test(f.statement)
-  );
-
-  const coordinationFacts = activeFacts.filter((f) =>
-    /stakeholder|cross-functional|partnered|aligned|client|coordinat|roadmap|collaborat/i.test(f.statement)
-  );
-
-  // Helper for qualitative confidence (Spec §15)
-  const calculateEvidenceConfidence = (factsList: CareerFact[]): EvidenceConfidence => {
-    const confirmedCount = factsList.filter((f) => f.status === "CONFIRMED" || f.status === "EDITED").length;
-    if (factsList.length >= 3 || (factsList.length >= 2 && confirmedCount >= 1)) {
-      return "Strong evidence";
-    }
-    if (factsList.length >= 2 || confirmedCount >= 1) {
-      return "Moderate evidence";
-    }
-    return "Limited evidence";
-  };
-
-  // Evidence Items (Level 3) with multi-dimensional supports mapping (Spec §14)
-  const evidenceMap: Record<string, CareerEvidence> = {
-    "ev-leadership": {
-      id: "ev-leadership",
-      statement: leadershipFacts.length > 0
-        ? `Proven team leadership, technical mentorship, and delivery ownership across organizational initiatives.`
-        : `Demonstrated technical collaboration and squad mentorship.`,
-      type: "Team Leadership at Scale",
-      factIds: leadershipFacts.map((f) => f.id),
-      facts: leadershipFacts,
-      confidence: calculateEvidenceConfidence(leadershipFacts),
-      supports: [
-        { dimension: "capabilities", label: "Technical Leadership & Mentorship", interpretationId: "cap-tech-leadership" },
-        { dimension: "impact", label: "Operational Velocity & Delivery Acceleration", interpretationId: "imp-operational-velocity" },
-        { dimension: "progression", label: "Increasing Team Scale & Responsibility" },
-      ],
-      factCount: leadershipFacts.length,
-    },
-    "ev-architecture": {
-      id: "ev-architecture",
-      statement: `Production system architecture with high concurrency resilience and scalable distributed services.`,
-      type: "High-Scale Technical Architecture",
-      factIds: architectureFacts.map((f) => f.id),
-      facts: architectureFacts,
-      confidence: calculateEvidenceConfidence(architectureFacts),
-      supports: [
-        { dimension: "capabilities", label: "High-Scale System Architecture", interpretationId: "cap-architecture" },
-        { dimension: "impact", label: "High-Throughput Reliability & Zero Downtime", interpretationId: "imp-system-resilience" },
-        { dimension: "progression", label: "Technical Scope & Architectural Autonomy" },
-      ],
-      factCount: architectureFacts.length,
-    },
-    "ev-process": {
-      id: "ev-process",
-      statement: `Systematic bottleneck elimination, automated build pipelines, and workflow modernization.`,
-      type: "Operational Efficiency & Automation",
-      factIds: processFacts.map((f) => f.id),
-      facts: processFacts,
-      confidence: calculateEvidenceConfidence(processFacts),
-      supports: [
-        { dimension: "capabilities", label: "Process Improvement & Workflow Automation", interpretationId: "cap-process-optimization" },
-        { dimension: "impact", label: "Operational Velocity & Delivery Acceleration", interpretationId: "imp-operational-velocity" },
-        { dimension: "progression", label: "Workflow Optimization & Operational Maturity" },
-      ],
-      factCount: processFacts.length,
-    },
-    "ev-commercial": {
-      id: "ev-commercial",
-      statement: `Translating technical capabilities into measurable business growth, margin expansion, and cost efficiencies.`,
-      type: "Commercial Impact & Value Optimization",
-      factIds: commercialImpactFacts.map((f) => f.id),
-      facts: commercialImpactFacts,
-      confidence: calculateEvidenceConfidence(commercialImpactFacts),
-      supports: [
-        { dimension: "capabilities", label: "Commercial Impact & Value Optimization", interpretationId: "cap-commercial-value" },
-        { dimension: "impact", label: "Measurable Commercial Growth & Cost Reduction", interpretationId: "imp-business-outcomes" },
-        { dimension: "progression", label: "Business Impact & P&L Awareness" },
-      ],
-      factCount: commercialImpactFacts.length,
-    },
-    "ev-coordination": {
-      id: "ev-coordination",
-      statement: `Synthesizing technical constraints into executive roadmaps and aligning multi-disciplinary stakeholders.`,
-      type: "Cross-Functional Stakeholder Alignment",
-      factIds: coordinationFacts.map((f) => f.id),
-      facts: coordinationFacts,
-      confidence: calculateEvidenceConfidence(coordinationFacts),
-      supports: [
-        { dimension: "capabilities", label: "Stakeholder Alignment & Product Execution", interpretationId: "cap-stakeholder-alignment" },
-        { dimension: "impact", label: "End-to-End Strategic Initiative Ownership", interpretationId: "imp-strategic-ownership" },
-        { dimension: "progression", label: "Executive Roadmap Influence & Cross-Functional Breadth" },
-      ],
-      factCount: coordinationFacts.length,
-    },
-  };
-
-  // Helper to format supporting evidence for an interpretation (Rule 1 & Rule 5: rejected facts cannot support active evidence)
-  const getSupportingEvidence = (evIds: string[]): EvidenceFactItem[] => {
-    return evIds
-      .map((evId) => evidenceMap[evId])
-      .filter(Boolean)
-      .map((ev) => ({
-        evidenceId: ev.id,
-        statement: ev.statement,
-        facts: ev.facts ? ev.facts.filter((f) => f.status !== "REJECTED").slice(0, 4) : [],
-        confidence: ev.confidence,
-        supports: ev.supports,
-      }))
-      .filter((ev) => ev.facts.length > 0);
-  };
-
-  // Helper for 3-tier Capability Classification (Spec §5)
-  const deriveCapabilityClassification = (
-    reviewStatus: CareerInterpretationStatus | undefined,
-    confidence: CareerInterpretationConfidence,
-    evidenceList: EvidenceFactItem[]
-  ): CapabilityClassification => {
-    // If explicitly confirmed or has strong multi-evidence support
-    if (reviewStatus === "ACCEPTED" || reviewStatus === "EDITED") {
-      return "DEMONSTRATED";
-    }
-    if (confidence === "HIGH" && evidenceList.length >= 1) {
-      return "DEMONSTRATED";
-    }
-    if (confidence === "MODERATE" && evidenceList.length >= 1) {
-      return "EMERGING";
-    }
-    return "SUGGESTED";
-  };
-
-  // Check if any underlying facts for given evidence were modified/rejected (Spec §31 Stale state)
-  const checkStaleState = (evIds: string[]) => {
-    for (const evId of evIds) {
-      const ev = evidenceMap[evId];
-      if (!ev || !ev.facts) continue;
-      for (const fact of ev.facts) {
-        const log = reviewLogs.facts[fact.id];
-        if (log && (log.status === "REJECTED" || log.status === "EDITED")) {
-          return {
-            isStale: true,
-            reason: `Underlying fact "${fact.statement.slice(0, 40)}..." was recently ${log.status.toLowerCase()}. Recalculation recommended.`,
-          };
-        }
-      }
-    }
-    return { isStale: false, reason: undefined };
-  };
-
-  const makeInterpretation = (
-    id: string,
-    type: CareerInterpretationType,
-    dimension: "capabilities" | "impact" | "experience" | "progression",
-    defaultTitle: string,
-    defaultDesc: string,
-    confidence: CareerInterpretationConfidence,
-    evidenceIds: string[]
-  ): CareerInterpretation => {
-    const review = reviewLogs.interpretations[id];
-    const evidence = getSupportingEvidence(evidenceIds);
-    // Rule 6: Depleted evidence automatically downgrades confidence to DEVELOPING
-    const effectiveConfidence: CareerInterpretationConfidence =
-      evidence.length === 0 ? "DEVELOPING" : confidence;
-
-    const classification = deriveCapabilityClassification(review?.status, effectiveConfidence, evidence);
-    const staleInfo = checkStaleState(evidenceIds);
-
-    return {
-      id,
-      type,
-      dimension,
-      title: review?.editedTitle || defaultTitle,
-      description: review?.editedDesc || defaultDesc,
-      status: review?.status || "SUGGESTED",
-      confidence: effectiveConfidence,
-      classification,
-      evidenceIds,
-      supportingEvidence: evidence,
-      isStale: staleInfo.isStale,
-      staleReason: staleInfo.reason,
-      needsRecalculation: staleInfo.isStale,
-    };
-  };
-
-  // Interpretations: Capabilities (Dimension 1)
-  const capabilities: CareerInterpretation[] = [
-    makeInterpretation(
-      "cap-tech-leadership",
-      "CAPABILITY",
-      "capabilities",
-      "Technical Leadership & Mentorship",
-      "Demonstrated ability to guide engineering teams, structure development practices, unblock technical delivery, and mentor engineers.",
-      leadershipFacts.length >= 2 ? "HIGH" : "MODERATE",
-      ["ev-leadership"]
-    ),
-    makeInterpretation(
-      "cap-architecture",
-      "CAPABILITY",
-      "capabilities",
-      "High-Scale System Architecture",
-      "Designing robust, fault-tolerant backend architectures, microservices ecosystems, and data pipelines built for zero-downtime reliability.",
-      architectureFacts.length >= 2 ? "HIGH" : "MODERATE",
-      ["ev-architecture"]
-    ),
-    makeInterpretation(
-      "cap-process-optimization",
-      "CAPABILITY",
-      "capabilities",
-      "Process Improvement & Workflow Automation",
-      "Identifying organizational and engineering bottlenecks, replacing manual overhead with automated pipelines, and accelerating delivery cycles.",
-      processFacts.length >= 2 ? "HIGH" : "MODERATE",
-      ["ev-process"]
-    ),
-    makeInterpretation(
-      "cap-stakeholder-alignment",
-      "CAPABILITY",
-      "capabilities",
-      "Stakeholder Alignment & Product Execution",
-      "Bridging business priorities with technical execution, communicating trade-offs to senior leadership, and driving roadmap clarity.",
-      coordinationFacts.length >= 1 ? "HIGH" : "DEVELOPING",
-      ["ev-coordination"]
-    ),
-    makeInterpretation(
-      "cap-commercial-value",
-      "CAPABILITY",
-      "capabilities",
-      "Commercial Impact & Value Optimization",
-      "Translating technology innovations into measurable top-line revenue acceleration, infrastructure cost savings, and business sustainability.",
-      commercialImpactFacts.length >= 2 ? "HIGH" : "MODERATE",
-      ["ev-commercial"]
-    ),
-  ].filter((c) => reviewLogs.interpretations[c.id]?.status !== "REJECTED");
-
-  // Interpretations: Impact (Dimension 2)
-  const impact: CareerInterpretation[] = [
-    makeInterpretation(
-      "imp-operational-velocity",
-      "IMPACT",
-      "impact",
-      "Operational Velocity & Delivery Acceleration",
-      "Consistently eliminated deployment bottlenecks and accelerated team release cadence through automation and systematic workflow hygiene.",
-      processFacts.length > 0 ? "HIGH" : "MODERATE",
-      ["ev-process"]
-    ),
-    makeInterpretation(
-      "imp-system-resilience",
-      "IMPACT",
-      "impact",
-      "High-Throughput Reliability & Zero Downtime",
-      "Modernized infrastructure and optimized database query patterns to maintain high uptime and handle heavy concurrent traffic.",
-      architectureFacts.length > 0 ? "HIGH" : "MODERATE",
-      ["ev-architecture"]
-    ),
-    makeInterpretation(
-      "imp-business-outcomes",
-      "IMPACT",
-      "impact",
-      "Measurable Commercial Growth & Cost Reduction",
-      "Directly influenced operational margins and customer retention by deploying high-value features with verifiable business metrics.",
-      commercialImpactFacts.length > 0 ? "HIGH" : "MODERATE",
-      ["ev-commercial"]
-    ),
-    makeInterpretation(
-      "imp-strategic-ownership",
-      "IMPACT",
-      "impact",
-      "End-to-End Strategic Initiative Ownership",
-      "Steered multi-team initiatives from inception to post-launch monitoring with clear milestone execution and accountable outcomes.",
-      coordinationFacts.length > 0 ? "HIGH" : "DEVELOPING",
-      ["ev-coordination"]
-    ),
-  ].filter((i) => reviewLogs.interpretations[i.id]?.status !== "REJECTED");
+  // Stage 4: Dynamic Domain-Agnostic Semantic Derivation
+  const {
+    capabilities,
+    impact,
+    valuePatterns,
+    evidenceMap,
+  } = deriveDynamicInterpretations(facts, resume, journalEntries, reviewLogs);
 
   // Dimension 3: Experience
   const expList = resume?.resume_data?.workExperience || [];
@@ -715,47 +525,6 @@ export function buildDerivationGraph(
     evolutionSummary: "Demonstrates consistent trajectory from specialized hands-on implementation towards larger organizational scope, team leadership, and cross-functional business accountability.",
   };
 
-  // Area 2: Value Pattern (Synthesized recurring career pattern)
-  const patternId = "pattern-primary-synthesis";
-  const patternReview = reviewLogs.interpretations[patternId];
-  const valuePatterns: CareerInterpretation[] = [
-    {
-      id: patternId,
-      type: "VALUE_PATTERN" as const,
-      dimension: "capabilities" as const,
-      title:
-        patternReview?.editedTitle ||
-        "Strategic Problem Solver & Scalable Engineering Leader",
-      description:
-        patternReview?.editedDesc ||
-        "Across your career, you have repeatedly moved from solving core technical challenges to taking ownership of broader business, architecture, and team outcomes.",
-      status: (patternReview?.status || "SUGGESTED") as CareerInterpretationStatus,
-      confidence: "HIGH" as const,
-      classification: "DEMONSTRATED" as CapabilityClassification,
-      evidenceIds: ["ev-leadership", "ev-architecture", "ev-process"],
-      supportingEvidence: [
-        {
-          evidenceId: "ev-leadership",
-          statement: leadershipFacts[0]?.statement || "Managed engineering team delivery across multi-timezone squads.",
-          facts: leadershipFacts.slice(0, 2),
-          confidence: "Strong evidence" as EvidenceConfidence,
-        },
-        {
-          evidenceId: "ev-architecture",
-          statement: architectureFacts[0]?.statement || "Architected high-throughput services with fault-tolerant reliability.",
-          facts: architectureFacts.slice(0, 2),
-          confidence: "Strong evidence" as EvidenceConfidence,
-        },
-        {
-          evidenceId: "ev-process",
-          statement: processFacts[0]?.statement || "Automated deployment workflows and streamlined operational velocity.",
-          facts: processFacts.slice(0, 2),
-          confidence: "Strong evidence" as EvidenceConfidence,
-        },
-      ],
-    },
-  ].filter((p) => reviewLogs.interpretations[p.id]?.status !== "REJECTED");
-
   // POPULATE REVERSE FACT TRACEABILITY GRAPH (Spec §19: "This fact contributes to...")
   const allInterpretations = [...capabilities, ...impact, ...valuePatterns];
   facts.forEach((fact) => {
@@ -784,47 +553,53 @@ export function buildDerivationGraph(
     totalFacts: facts.length,
   };
 
-  // Area 4: Areas to Strengthen (Non-judgmental gap analysis)
-  const strengtheningAreas: StrengtheningArea[] = [
-    {
-      dimension: "Technical Leadership & Mentorship",
-      level: leadershipFacts.length >= 2 ? "Strong evidence" : "Moderate evidence",
-      explanation:
-        leadershipFacts.length >= 2
-          ? "Robust records of team leadership, mentorship, and squad coordination."
-          : "Demonstrated technical contribution; additional records on formal team size or hiring would further substantiate organizational scale.",
-      suggestedAction: "Log a mentorship or team milestone in Career Journal",
+  // Area 4: Areas to Strengthen (Derived directly from Stage 1 Information Gaps)
+  const allGaps = activeFacts.flatMap((f) => f.informationGaps || []);
+  const unquantifiedGaps = allGaps.filter((g) => /quantified|metric|baseline/i.test(g));
+  const scopeGaps = allGaps.filter((g) => /scope|team size|audience/i.test(g));
+  const outcomeGaps = allGaps.filter((g) => /outcome|business impact|result/i.test(g));
+
+  const strengtheningAreas: StrengtheningArea[] = [];
+
+  if (unquantifiedGaps.length > 0) {
+    strengtheningAreas.push({
+      dimension: "Quantified Impact & Business Metrics",
+      level: unquantifiedGaps.length > 3 ? "Limited evidence currently available" : "Moderate evidence",
+      explanation: `${unquantifiedGaps.length} career statements describe achievements qualitatively. Adding exact numbers, percentages, or savings will strengthen proof.`,
+      suggestedAction: "Log measured metrics in Career Journal",
       actionLink: "/career-journal",
-    },
-    {
-      dimension: "High-Scale Technical Architecture",
-      level: architectureFacts.length >= 2 ? "Strong evidence" : "Moderate evidence",
-      explanation:
-        architectureFacts.length >= 2
-          ? "Solid evidence of scalable backend, cloud systems, and architectural design."
-          : "Architecture experience stated; adding quantified system uptime or latency benchmarks will clarify technical scale.",
-      suggestedAction: "Add an architecture benchmark or system diagram",
+    });
+  }
+
+  if (scopeGaps.length > 0) {
+    strengtheningAreas.push({
+      dimension: "Organizational Scope & Team Scale",
+      level: "Moderate evidence",
+      explanation: `Specific team counts or stakeholder seniority are unspecified across ${scopeGaps.length} initiative statements.`,
+      suggestedAction: "Clarify team scale in Proof Vault",
       actionLink: "/career-journal",
-    },
-    {
-      dimension: "Commercial Impact & Value Optimization",
-      level: commercialImpactFacts.length >= 2 ? "Strong evidence" : "Moderate evidence",
-      explanation:
-        commercialImpactFacts.length >= 2
-          ? "Verifiable financial or metric-based impact recorded across career roles."
-          : "Substantiated deliverables recorded; capturing exact revenue, savings, or user adoption metrics will elevate commercial value.",
-      suggestedAction: "Record an achievement with quantified business outcome",
+    });
+  }
+
+  if (outcomeGaps.length > 0) {
+    strengtheningAreas.push({
+      dimension: "Stated Outcome Verification",
+      level: "Moderate evidence",
+      explanation: "Several responsibilities are documented without specifying what changed as a direct outcome of your contribution.",
+      suggestedAction: "Complete Guided Impact Discovery",
+      actionLink: "/value/impact",
+    });
+  }
+
+  if (strengtheningAreas.length === 0) {
+    strengtheningAreas.push({
+      dimension: "Strategic Initiative Breadth",
+      level: "Strong evidence",
+      explanation: "Strong multi-dimensional proof verified across your career records. Continuing to document strategic milestones will sustain high momentum.",
+      suggestedAction: "Log a new project in Career Journal",
       actionLink: "/career-journal",
-    },
-    {
-      dimension: "Strategic Product & Executive Ownership",
-      level: coordinationFacts.length >= 2 ? "Moderate evidence" : "Limited evidence currently available",
-      explanation:
-        "Limited evidence currently recorded for long-term product roadmapping or executive decision-making. Adding strategic milestones provides balanced representation.",
-      suggestedAction: "Add a career event for a strategic initiative led",
-      actionLink: "/career-journal",
-    },
-  ];
+    });
+  }
 
   return {
     profile: {

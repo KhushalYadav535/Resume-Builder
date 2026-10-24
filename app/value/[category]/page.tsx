@@ -24,7 +24,9 @@ import {
   Sparkles,
   CheckCircle2,
   Trash2,
-  Loader2
+  Loader2,
+  BookOpen,
+  Users
 } from "lucide-react";
 
 interface RecordItem {
@@ -62,7 +64,7 @@ const CATEGORY_MAP: Record<
     border: "border-blue-500/40",
   },
   achievements: {
-    label: "Impact & Achievements",
+    label: "Impact & Measurable Outcomes",
     icon: Award,
     addHash: "experience",
     emptyMessage: "No explicit achievement records found.",
@@ -106,14 +108,32 @@ const CATEGORY_MAP: Record<
     color: "text-indigo-500 bg-indigo-500/15 border-indigo-500/30",
     border: "border-indigo-500/40",
   },
-  additional: {
-    label: "Languages & Context",
-    icon: Languages,
-    addHash: "languages",
-    emptyMessage: "No additional information records found.",
+  publications: {
+    label: "Publications & Research",
+    icon: BookOpen,
+    addHash: "projects",
+    emptyMessage: "No publications or research records found.",
     gradient: "from-sky-500/20 via-sky-500/5 to-transparent",
     color: "text-sky-500 bg-sky-500/15 border-sky-500/30",
     border: "border-sky-500/40",
+  },
+  volunteer: {
+    label: "Volunteering & Leadership",
+    icon: Users,
+    addHash: "experience",
+    emptyMessage: "No volunteering or extracurricular records found.",
+    gradient: "from-emerald-600/20 via-emerald-600/5 to-transparent",
+    color: "text-emerald-600 bg-emerald-600/15 border-emerald-600/30",
+    border: "border-emerald-600/40",
+  },
+  additional: {
+    label: "Languages & Additional Info",
+    icon: Languages,
+    addHash: "languages",
+    emptyMessage: "No additional information records found.",
+    gradient: "from-cyan-500/20 via-cyan-500/5 to-transparent",
+    color: "text-cyan-500 bg-cyan-500/15 border-cyan-500/30",
+    border: "border-cyan-500/40",
   },
 };
 
@@ -209,21 +229,30 @@ export default function CategoryDetailsPage() {
           badge: "Campus",
           raw: ach,
         }));
-        const workBullets = (data.workExperience || [])
-          .flatMap((w) =>
-            (w.bullets || [])
-              .filter((b) =>
-                /\d+%|\$\d+|₹\d+|\d+x|reduced|increased|improved|scaled|delivered/i.test(b)
-              )
-              .map((b, idx) => ({
-                id: `work-ach-${w.id || idx}-${idx}`,
-                title: b,
-                subtitle: `${w.role} at ${w.company}`,
-                badge: "Impact Metric",
-                raw: b,
-              }))
-          );
-        return [...campus, ...workBullets];
+        const workAchievements = (data.workExperience || []).flatMap((w, wIdx) => {
+          const outcomes = w.measurableOutcomes || w.achievements || [];
+          if (outcomes.length > 0) {
+            return outcomes.map((o, oIdx) => ({
+              id: `work-ach-${w.id || wIdx}-${oIdx}`,
+              title: o,
+              subtitle: `${w.role} at ${w.company}`,
+              badge: "Measurable Outcome",
+              raw: o,
+            }));
+          }
+          return (w.bullets || [])
+            .filter((b) =>
+              /\d+%|\$\d+|₹\d+|\d+x|reduced|increased|improved|scaled|delivered/i.test(b)
+            )
+            .map((b, bIdx) => ({
+              id: `work-ach-${w.id || wIdx}-${bIdx}`,
+              title: b,
+              subtitle: `${w.role} at ${w.company}`,
+              badge: "Impact Metric",
+              raw: b,
+            }));
+        });
+        return [...campus, ...workAchievements];
       }
 
       case "skills": {
@@ -241,10 +270,26 @@ export default function CategoryDetailsPage() {
           badge: "Leadership",
           raw: sk,
         }));
-        return [...techSkills, ...softSkills];
+        const toolsSkills = (data.skills?.tools || []).map((sk, idx) => ({
+          id: `tool-${idx}`,
+          title: sk,
+          subtitle: "Tool & Platform",
+          badge: "Tool",
+          raw: sk,
+        }));
+        return [...techSkills, ...softSkills, ...toolsSkills];
       }
 
       case "awards": {
+        const explicitAwards = (data.awards || []).map((aw, idx) => ({
+          id: aw.id || `award-${idx}`,
+          title: aw.title,
+          subtitle: aw.issuer || "Honors & Recognition",
+          dateRange: aw.date,
+          badge: aw.category || "Award",
+          description: aw.description,
+          raw: aw,
+        }));
         const hacks = (data.hackathons || []).map((h, idx) => ({
           id: `hack-${idx}`,
           title: h,
@@ -259,7 +304,7 @@ export default function CategoryDetailsPage() {
           badge: "Contest",
           raw: c,
         }));
-        return [...hacks, ...contests];
+        return [...explicitAwards, ...hacks, ...contests];
       }
 
       case "certifications":
@@ -283,15 +328,65 @@ export default function CategoryDetailsPage() {
           raw: edu,
         }));
 
-      case "additional":
-        return (data.languagesKnown || []).map((lang, idx) => ({
+      case "publications":
+        return (data.publications || []).map((pub, idx) => ({
+          id: pub.id || `pub-${idx}`,
+          title: pub.title,
+          subtitle: pub.publisher || "Publication / Journal",
+          dateRange: pub.date,
+          badge: "Publication",
+          description: pub.description,
+          raw: pub,
+        }));
+
+      case "volunteer":
+        return (data.volunteerExperience || []).map((vol, idx) => ({
+          id: vol.id || `vol-${idx}`,
+          title: vol.role,
+          subtitle: vol.organization,
+          dateRange: `${vol.startDate || ""} – ${vol.endDate || ""}`.trim(),
+          badge: "Volunteer",
+          description: vol.description,
+          raw: vol,
+        }));
+
+      case "additional": {
+        const langs = (data.languagesKnown || []).map((lang, idx) => ({
           id: lang.id || `lang-${idx}`,
           title: lang.language || "Language",
           subtitle: `Proficiency: ${lang.proficiency || "Fluent"}`,
-          badge: lang.proficiency,
+          badge: lang.proficiency || "Language",
           description: lang.usageContext,
           raw: lang,
         }));
+        const adds = (data.additionalRecords || []).map((add, idx) => ({
+          id: add.id || `add-${idx}`,
+          title: add.title,
+          subtitle: add.category,
+          badge: add.category,
+          description: add.description,
+          raw: add,
+        }));
+        const pubs = (data.publications || []).map((pub, idx) => ({
+          id: pub.id || `pub-add-${idx}`,
+          title: pub.title,
+          subtitle: pub.publisher || "Publication",
+          dateRange: pub.date,
+          badge: "Publication",
+          description: pub.description,
+          raw: pub,
+        }));
+        const vols = (data.volunteerExperience || []).map((vol, idx) => ({
+          id: vol.id || `vol-add-${idx}`,
+          title: vol.role,
+          subtitle: vol.organization,
+          dateRange: `${vol.startDate || ""} – ${vol.endDate || ""}`.trim(),
+          badge: "Volunteer",
+          description: vol.description,
+          raw: vol,
+        }));
+        return [...langs, ...adds, ...pubs, ...vols];
+      }
 
       default:
         return [];

@@ -7,11 +7,16 @@ export type CareerFactCategory =
   | "METRIC"
   | "PROMOTION"
   | "RECOGNITION"
+  | "AWARD"
   | "EDUCATION"
   | "CERTIFICATION"
   | "DOMAIN"
   | "TECHNOLOGY"
-  | "BUSINESS_OUTCOME";
+  | "BUSINESS_OUTCOME"
+  | "PUBLICATION"
+  | "VOLUNTEER"
+  | "LANGUAGE"
+  | "ADDITIONAL";
 
 export type CareerFactStatus = "EXTRACTED" | "CONFIRMED" | "EDITED" | "REJECTED";
 
@@ -28,6 +33,14 @@ export interface FactContribution {
   dimension: "capabilities" | "impact" | "experience" | "progression";
   evidenceId: string;
   evidenceTitle: string;
+}
+
+export interface CareerFactScope {
+  teamSize?: number;
+  budget?: string;
+  geography?: string;
+  stakeholderLevel?: string;
+  autonomy?: string;
 }
 
 export interface CareerFact {
@@ -50,6 +63,13 @@ export interface CareerFact {
   rejectionReason?: string;
   updatedAt?: string;
   contributesTo?: FactContribution[];
+  // Stage 1 Deep Extraction Primitives
+  scope?: CareerFactScope;
+  actionDetail?: string;
+  outcomeDetail?: string;
+  metrics?: string[];
+  informationGaps?: string[];
+  isExplicit?: boolean;
 }
 
 export type EvidenceConfidence =
@@ -115,6 +135,10 @@ export interface CareerInterpretation {
   isStale?: boolean; // Spec §31: Marked stale when underlying facts are modified/rejected
   staleReason?: string;
   needsRecalculation?: boolean;
+  // Stage 4 Derivation & Governance additions
+  discoveryPrompt?: string; // Contextual follow-up question to strengthen/validate hypothesis
+  evidenceSummarySnippet?: string; // Concise summary of supporting evidence
+  domainCategory?: string; // e.g., "Technical Architecture", "Commercial & Growth", "People & Operations"
 }
 
 export interface ExperienceDimension {

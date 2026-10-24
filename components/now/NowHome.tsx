@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Sparkles,
-  ArrowRight,
+  ArrowUp,
   TrendingUp,
   Activity,
   Compass,
@@ -21,46 +21,34 @@ interface NowHomeProps {
 
 const SUGGESTED_INTENTS = [
   {
-    label: "Move up",
+    label: "Target next promotion",
     hint: "PROMOTION",
-    desc: "Target next level & build promotion case",
     icon: TrendingUp,
-    badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25",
   },
   {
-    label: "Earn more",
+    label: "Benchmark my compensation",
     hint: "COMPENSATION",
-    desc: "Benchmark compensation & negotiation leverage",
     icon: Sparkles,
-    badgeColor: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25",
   },
   {
-    label: "Find a better opportunity",
+    label: "Find better opportunities",
     hint: "JOB_CHANGE",
-    desc: "Align profile to high-leverage roles",
     icon: Compass,
-    badgeColor: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25",
   },
   {
-    label: "Change direction",
+    label: "Explore career transition",
     hint: "CAREER_EXPLORATION",
-    desc: "Explore adjacent trajectories & transition plans",
     icon: Zap,
-    badgeColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/25",
   },
   {
-    label: "Understand my strengths",
+    label: "Uncover my key strengths",
     hint: "CAPABILITY_DISCOVERY",
-    desc: "Extract substantiated capabilities & proof",
     icon: Activity,
-    badgeColor: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/25",
   },
   {
     label: "Figure out what's next",
     hint: "CAREER_PLANNING",
-    desc: "Synthesize career signals when unsure",
     icon: Clock,
-    badgeColor: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/25",
   },
 ];
 
@@ -71,9 +59,26 @@ export default function NowHome({
   onResumeThread,
 }: NowHomeProps) {
   const [inputText, setInputText] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const roleTitle = careerContext?.current_position?.title || "";
+  const companyName = careerContext?.current_position?.company || "";
+  const skills = careerContext?.career_summary?.topCapabilities || [];
+  const topSkill = skills[0] || "Frontend";
+  const secondSkill = skills[1] || "React";
+  const firstName = careerContext?.user?.name ? careerContext.user.name.split(" ")[0] : "";
+  const isEarlyCareer = /intern|junior|entry|trainee|fresher|student/i.test(roleTitle);
+
+  // Auto-resize textarea like ChatGPT
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+    }
+  }, [inputText]);
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!inputText.trim() || isLoading) return;
     onSubmitIntent(inputText.trim());
   };
@@ -85,150 +90,227 @@ export default function NowHome({
 
   const activeThread = careerContext?.active_threads?.[0];
 
-  return (
-    <div className="max-w-[920px] mx-auto px-4 sm:px-6 py-10 sm:py-16">
-      
-      {/* ── Primary Hero Section (Spec Section 6) ── */}
-      <div className="text-center mb-8 sm:mb-12">
-        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white font-['Syne',sans-serif] m-0 mb-3">
-          What matters to you right now?
-        </h1>
+  // Dynamically tailor prompt chips to the user's real resume data
+  const dynamicIntents = (() => {
+    if (isEarlyCareer) {
+      return [
+        {
+          label: `Optimize resume for Full-Time ${roleTitle.replace(/intern|trainee/gi, "").trim() || "Developer"} roles`,
+          hint: "JOB_CHANGE",
+          icon: TrendingUp,
+        },
+        {
+          label: `Strengthen ${companyName || "internship"} project bullets`,
+          hint: "CAPABILITY_DISCOVERY",
+          icon: Sparkles,
+        },
+        {
+          label: `Highlight ${secondSkill} & ${topSkill} projects`,
+          hint: "EVIDENCE_REVIEW",
+          icon: Zap,
+        },
+        {
+          label: `Check ATS score for Junior Developer roles`,
+          hint: "RESUME_REVIEW",
+          icon: Compass,
+        },
+        {
+          label: `Identify missing skills in my resume`,
+          hint: "GAP_ANALYSIS",
+          icon: Activity,
+        },
+        {
+          label: `Prepare interview answers from my projects`,
+          hint: "INTERVIEW_PREP",
+          icon: Clock,
+        },
+      ];
+    }
 
-        <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed m-0">
-          Tell UpRole what you're thinking about. We'll interpret your intent, pull relevant career intelligence, and help you move it forward.
-        </p>
+    if (roleTitle && !/Senior Technology Professional/i.test(roleTitle)) {
+      return [
+        {
+          label: `Target next level from ${roleTitle}`,
+          hint: "PROMOTION",
+          icon: TrendingUp,
+        },
+        {
+          label: `Quantify impact at ${companyName || "current role"}`,
+          hint: "CAPABILITY_DISCOVERY",
+          icon: Sparkles,
+        },
+        {
+          label: `Benchmark compensation for ${roleTitle}`,
+          hint: "COMPENSATION",
+          icon: Compass,
+        },
+        {
+          label: `Highlight my top ${topSkill} & ${secondSkill} capabilities`,
+          hint: "CAPABILITY_DISCOVERY",
+          icon: Activity,
+        },
+        {
+          label: `Tailor resume for high-growth opportunities`,
+          hint: "JOB_CHANGE",
+          icon: Zap,
+        },
+        {
+          label: `Prepare STAR stories from my resume`,
+          hint: "INTERVIEW_PREP",
+          icon: Clock,
+        },
+      ];
+    }
+
+    // Default resume-first chips
+    return [
+      {
+        label: "Tailor resume for target role",
+        hint: "JOB_CHANGE",
+        icon: TrendingUp,
+      },
+      {
+        label: "Improve project bullet points & impact",
+        hint: "CAPABILITY_DISCOVERY",
+        icon: Sparkles,
+      },
+      {
+        label: "Check ATS score & keyword match",
+        hint: "RESUME_REVIEW",
+        icon: Compass,
+      },
+      {
+        label: "Extract verified strengths from my resume",
+        hint: "CAPABILITY_DISCOVERY",
+        icon: Activity,
+      },
+      {
+        label: "Prepare interview questions from my projects",
+        hint: "INTERVIEW_PREP",
+        icon: Zap,
+      },
+      {
+        label: "Figure out what's next in my career",
+        hint: "CAREER_PLANNING",
+        icon: Clock,
+      },
+    ];
+  })();
+
+  const headingText = firstName
+    ? `Hi ${firstName}, what can I help with on your resume?`
+    : roleTitle
+    ? `How can I help with your ${roleTitle} resume?`
+    : "What can I help with on your resume today?";
+
+  const placeholderText = roleTitle
+    ? `Ask anything about your ${roleTitle} resume, projects, or next role...`
+    : "Ask anything about your resume, skills, or target roles...";
+
+  return (
+    <div className="max-w-[780px] mx-auto px-4 sm:px-6 min-h-[calc(100vh-120px)] flex flex-col justify-center py-8">
+      {/* ── ChatGPT Style Clean Hero ── */}
+      <div className="text-center mb-8">
+        <h1 className="text-2xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white m-0">
+          {headingText}
+        </h1>
       </div>
 
-      {/* ── Free-form Intent Input Bar ── */}
-      <form onSubmit={handleSubmit} className="mb-10 sm:mb-14">
-        <div className="relative rounded-2xl bg-white dark:bg-[#0E172B] border-2 border-slate-200 dark:border-white/15 shadow-xl transition-all focus-within:border-amber-500 dark:focus-within:border-amber-500 focus-within:ring-4 focus-within:ring-amber-500/15">
+      {/* ── ChatGPT Style Rounded Input Card ── */}
+      <form onSubmit={handleSubmit} className="mb-6">
+        <div className="relative rounded-3xl bg-white dark:bg-[#1E222B] border border-slate-200/90 dark:border-white/10 shadow-lg shadow-slate-200/40 dark:shadow-black/20 transition-all focus-within:border-amber-500/80 dark:focus-within:border-amber-500/80 focus-within:ring-4 focus-within:ring-amber-500/10 p-3 sm:p-4">
           <textarea
+            ref={textareaRef}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSubmit(e);
+                handleSubmit();
               }
             }}
-            placeholder="Tell UpRole what you're thinking about..."
-            rows={3}
+            placeholder={placeholderText}
+            rows={1}
             disabled={isLoading}
-            className="w-full p-4 sm:p-5 pr-28 rounded-2xl bg-transparent text-base sm:text-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none resize-none leading-relaxed"
+            className="w-full bg-transparent text-base sm:text-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none resize-none leading-relaxed min-h-[48px] max-h-[180px] px-2 py-1"
           />
 
-          <div className="absolute right-3.5 bottom-3.5 flex items-center gap-2">
+          {/* Action Row Inside Box */}
+          <div className="flex items-center justify-between pt-2 px-1">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-white/5">
+                <Sparkles size={11} className="text-amber-500" />
+                <span>{roleTitle ? `${roleTitle} Resume` : "Resume Intelligence"}</span>
+              </span>
+            </div>
+
+            {/* Circular Send Button (ChatGPT style) */}
             <button
               type="submit"
               disabled={!inputText.trim() || isLoading}
-              className="px-4 sm:px-5 py-2.5 rounded-xl font-black text-xs sm:text-sm bg-amber-500 hover:bg-amber-400 text-brand-navy shadow-md shadow-amber-500/25 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+              aria-label="Send prompt"
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-all bg-slate-900 hover:bg-slate-800 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-slate-950 disabled:opacity-20 disabled:hover:bg-slate-900 dark:disabled:hover:bg-amber-500 disabled:cursor-not-allowed shadow-sm cursor-pointer"
             >
-              <span>Move Forward</span>
               {isLoading ? (
-                <div className="w-4 h-4 border-2 border-brand-navy border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
               ) : (
-                <ArrowRight size={15} />
+                <ArrowUp size={18} strokeWidth={2.5} />
               )}
             </button>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-400 dark:text-slate-500 mt-2.5 px-2 gap-2">
-          <span>Press <strong>Enter ↵</strong> to submit · Shift+Enter for newline</span>
-          <span>Zero chat clutter · Dynamic structured output</span>
-        </div>
-
-        {/* ── Compact Thread Resumption Pill (Spec Section 21) ── */}
+        {/* ── Compact Resume Thread Pill (if active) ── */}
         {activeThread && (
-          <div className="mt-4 flex items-center justify-center animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="mt-3 flex items-center justify-center">
             <button
               type="button"
               onClick={() => {
                 if (onResumeThread) {
                   onResumeThread(activeThread.id);
                 } else {
-                  onSubmitIntent("Continue promotion readiness", activeThread.intent);
+                  onSubmitIntent(`Continue ${activeThread.title}`, activeThread.intent);
                 }
               }}
               disabled={isLoading}
-              className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 hover:border-amber-500/50 shadow-sm transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 hover:bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/20 transition-all cursor-pointer shadow-sm hover:scale-[1.01]"
             >
-              <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-                <Clock size={12} />
-                <span className="font-semibold uppercase tracking-wider text-[10px]">Resume</span>
-              </div>
-              <span className="text-slate-300 dark:text-slate-600 font-light">·</span>
-              <span className="font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                {activeThread.title}
-              </span>
-              {activeThread.last_activity_at && (
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline">
-                  ({activeThread.last_activity_at})
-                </span>
-              )}
-              <ArrowRight size={12} className="text-amber-600 dark:text-amber-400 group-hover:translate-x-0.5 transition-transform ml-0.5" />
+              <Clock size={12} className="text-amber-600 dark:text-amber-400" />
+              <span>Resume Focus: <strong>{activeThread.title}</strong></span>
+              <span className="text-amber-600 dark:text-amber-400">→</span>
             </button>
           </div>
         )}
       </form>
 
-      {/* ── Suggested Starting Intents Grid (Spec Section 6) ── */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 m-0">
-            Suggested Starting Points
-          </h2>
-          <span className="text-xs text-slate-400 dark:text-slate-500">
-            Pick one to begin instantly
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {SUGGESTED_INTENTS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => handleChipClick(item.label, item.hint)}
-                disabled={isLoading}
-                className="p-4 rounded-xl text-left bg-white dark:bg-[#0D1527] border border-slate-200/80 dark:border-white/10 hover:border-amber-500/50 dark:hover:border-amber-500/50 hover:bg-amber-500/[0.03] dark:hover:bg-amber-500/[0.04] transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 cursor-pointer group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors font-['Syne',sans-serif]">
-                      {item.label}
-                    </span>
-                    <Icon size={16} className="text-slate-400 group-hover:text-amber-500 transition-colors" />
-                  </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 m-0 leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+      {/* ── ChatGPT Style Quick Suggestion Chips (Tailored to Resume) ── */}
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 max-w-2xl mx-auto">
+        {dynamicIntents.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => handleChipClick(item.label, item.hint)}
+              disabled={isLoading}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white dark:bg-[#151922] border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300 transition-all shadow-sm hover:shadow cursor-pointer active:scale-95"
+            >
+              <Icon size={14} className="text-amber-500/90 dark:text-amber-400" />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── Contextual Career State Ticker (Spec Section 6.7) ── */}
+      {/* ── Subtle Footnote / Connection Status ── */}
       {careerContext && (
-        <div className="mt-12 pt-6 border-t border-slate-200/60 dark:border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>
-              Connected to <strong>{careerContext.current_position.title}</strong> at {careerContext.current_position.company}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span>
-              Grounding: <strong className="text-slate-800 dark:text-slate-200">{careerContext.career_summary.evidenceCount} verified evidence points</strong>
-            </span>
-            <span>
-              Momentum: <strong className="text-emerald-500">{careerContext.momentum_summary.state}</strong>
-            </span>
-          </div>
+        <div className="mt-12 text-center text-xs text-slate-400 dark:text-slate-500 flex items-center justify-center gap-3">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            {careerContext.current_position.title} @ {careerContext.current_position.company}
+          </span>
+          <span>·</span>
+          <span>{careerContext.career_summary.evidenceCount} verified evidence points</span>
         </div>
       )}
     </div>

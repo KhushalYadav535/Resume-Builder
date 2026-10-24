@@ -7,6 +7,36 @@ export interface PersonalInfo {
   website: string;
   expectedCTC?: string;
   currentCTC?: string;
+  title?: string;
+  professionalHeadline?: string;
+  statedTotalExperience?: string;
+  emails?: string[];
+  phoneNumbers?: string[];
+  profileUrls?: string[];
+  github?: string;
+  portfolio?: string;
+}
+
+export interface ExtractedMetric {
+  id: string;
+  name?: string;
+  value?: number | string;
+  unit?: string; // percent, percentage_points, stores, employees, hours/week, etc.
+  currency?: string;
+  originalValueText: string;
+  baseline?: number | string;
+  result?: number | string;
+  attributionStatus?: "explicit_individual" | "explicit_team" | "shared_or_contributed" | "unclear";
+  isDerived?: boolean;
+}
+
+export interface LeadershipScope {
+  directReports?: number;
+  teamSize?: number;
+  reportingLevel?: string;
+  crossFunctionalTeams?: string[];
+  geographicScope?: string;
+  stakeholders?: string[];
 }
 
 export interface WorkExperience {
@@ -30,6 +60,13 @@ export interface WorkExperience {
   salaryBreakup?: string;
   showSalary?: boolean;
   contextNote?: string;
+  // Stage 1 Deep Extraction Heads
+  responsibilities?: string[];
+  measurableOutcomes?: string[];
+  achievements?: string[];
+  metricsBreakdown?: ExtractedMetric[];
+  leadershipScope?: LeadershipScope;
+  actionTerms?: string[];
 }
 
 export interface Education {
@@ -58,6 +95,8 @@ export interface Project {
   link: string;
   date?: string;
   bullets?: string[];
+  responsibilities?: string[];
+  measurableOutcomes?: string[];
 }
 
 export interface Certification {
@@ -65,6 +104,45 @@ export interface Certification {
   name: string;
   issuer: string;
   date: string;
+  credentialId?: string;
+  url?: string;
+}
+
+export interface Award {
+  id: string;
+  title: string;
+  issuer?: string;
+  date?: string;
+  description?: string;
+  category?: "Honor" | "Hackathon" | "Competition" | "Academic" | "Corporate" | "Other";
+}
+
+export interface Publication {
+  id: string;
+  title: string;
+  publisher?: string;
+  date?: string;
+  url?: string;
+  description?: string;
+}
+
+export interface VolunteerExperience {
+  id: string;
+  organization: string;
+  role: string;
+  startDate?: string;
+  endDate?: string;
+  current?: boolean;
+  description?: string;
+  highlights?: string[];
+}
+
+export interface AdditionalRecord {
+  id: string;
+  category: string; // e.g. "Patents", "Speaking", "Interests", "Memberships", "Miscellaneous"
+  title: string;
+  description?: string;
+  date?: string;
 }
 
 export interface LanguagesKnown {
@@ -75,7 +153,52 @@ export interface LanguagesKnown {
   usageContext?: string;
 }
 
+export interface DocumentMetadata {
+  documentId?: string;
+  fileName?: string;
+  fileType?: "pdf" | "docx" | "txt" | "image" | string;
+  pageCount?: number | null;
+  documentLanguage?: string;
+  sectionsDetected?: string[];
+  parsingStatus: "success" | "partial" | "failed" | "needs_ocr";
+  parsingWarnings?: string[];
+  ocrRequired: boolean;
+  schemaVersion?: string;
+}
+
+export interface ProvenanceRecord {
+  recordId: string;
+  entityType:
+    | "document_metadata"
+    | "identity"
+    | "employment"
+    | "responsibilities"
+    | "achievements"
+    | "metrics"
+    | "projects"
+    | "skills"
+    | "education"
+    | "credentials"
+    | "provenance";
+  fieldKey: string;
+  sourceText: string;
+  sourceSection?: string;
+  sourceLocator?: {
+    locatorType: "line_id" | "pdf_page_text_offset" | "docx_paragraph" | "fixture_line";
+    page?: number;
+    paragraphIndex?: number;
+    startOffset?: number;
+    endOffset?: number;
+    lineId?: string;
+  } | string;
+  assertionType: "explicit_fact" | "source_classification" | "inference";
+  extractionMethod: "regex" | "section_rule" | "llm" | "manual_review";
+  confidence?: number;
+  validationStatus: "not_reviewed" | "user_confirmed" | "user_edited" | "user_rejected";
+}
+
 export interface ResumeData {
+  documentMetadata?: DocumentMetadata;
   personalInfo: PersonalInfo;
   summary: string;
   workExperience: WorkExperience[];
@@ -83,9 +206,17 @@ export interface ResumeData {
   skills: {
     technical: string[];
     soft: string[];
+    tools?: string[];
+    domains?: string[];
+    rawList?: { name: string; proficiency: string | null }[];
   };
   projects: Project[];
   certifications: Certification[];
+  awards?: Award[];
+  publications?: Publication[];
+  volunteerExperience?: VolunteerExperience[];
+  additionalRecords?: AdditionalRecord[];
+  provenance?: ProvenanceRecord[];
   // India & Fresher extensions
   languagesKnown?: LanguagesKnown[];
   fresherMode?: boolean;
@@ -101,6 +232,7 @@ export interface ResumeData {
   spacing?: number; // Line spacing margin multiplier
   sectionOrder?: string[]; // Custom ordering sequence
   targetJobDescription?: string;
+  targetRole?: string;
 }
 
 export interface ATSScore {

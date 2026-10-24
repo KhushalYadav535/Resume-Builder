@@ -309,16 +309,22 @@ export async function GET(req: NextRequest) {
     }
 
     if (activeThreads.length === 0) {
+      const isEarlyCareer = /intern|junior|entry|trainee|fresher|student/i.test(roleTitle) || totalYears <= 2;
+      const threadTitle = isEarlyCareer
+        ? `Full-Time Readiness · ${companyName}`
+        : `${roleTitle} Advancement · ${companyName}`;
+      const threadIntent = isEarlyCareer ? "JOB_CHANGE" : "PROMOTION";
+
       activeThreads = [
         {
-          id: "thread-user-promo",
-          title: "Promotion Readiness",
-          intent: "PROMOTION",
+          id: "thread-user-readiness",
+          title: threadTitle,
+          intent: threadIntent,
           status: "ACTIVE",
           current_stage: "EVIDENCE_REVIEW",
           last_activity_at: "Today",
-          next_action: "Review leadership & impact evidence",
-          summary: `Synthesizing ${companyName} achievements for your next level advancement.`,
+          next_action: isEarlyCareer ? `Strengthen ${companyName} project outcomes and tech stack` : "Review leadership & impact evidence",
+          summary: `Synthesizing ${companyName} achievements for your next career move.`,
         },
       ];
     }
