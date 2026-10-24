@@ -858,12 +858,12 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
   // 3. Parse Education
   const education: Education[] = [];
   const instKeywordsRegex = /(?:University|College|Institute|School|Academy|Board|IIT|NIT|BITS|Polytechnic|Vidyalaya|Vidhyalaya)/i;
-  const degreeKeywordsRegex = /(?:B\.?\s*Tech|M\.?\s*Tech|B\.?\s*E\.?|B\.?\s*S\.?|M\.?\s*S\.?|B\.?\s*Sc|M\.?\s*Sc|B\.?\s*A\.?|M\.?\s*A\.?|Ph\.?\s*D|BCA|MCA|BBA|MBA|B\.?\s*Com|M\.?\s*Com|Bachelor|Master|Doctor|Diploma|H\.?S\.?C\.?|S\.?S\.?C\.?|Higher\s+Secondary|High\s+School|12th|10th|Matriculation|Intermediate)/i;
+  const degreeKeywordsRegex = /\b(?:B\.?\s*Tech|M\.?\s*Tech|B\.?\s*E\.?|B\.?\s*S\.?|M\.?\s*S\.?|B\.?\s*Sc|M\.?\s*Sc|B\.?\s*A\.?|M\.?\s*A\.?|Ph\.?\s*D|BCA|MCA|BBA|MBA|B\.?\s*Com|M\.?\s*Com|Bachelor(?:'s)?|Master(?:'s)?|Doctor|Diploma|H\.?S\.?C\.?|S\.?S\.?C\.?|Higher\s+Secondary|High\s+School|12th|10th|Matriculation|Intermediate)\b/i;
 
   let eduCounter = 1;
   for (const line of sections.education) {
     if (!line || /^[•\-\*■●▪▸◦]/.test(line)) continue;
-    if (/^(education|academic background|academics|qualification\s*\|\s*institute)$/i.test(line.trim())) continue;
+    if (/^(?:education|academic\s*background|academics|qualification\s*\|\s*institute|qualification|institute|institution|college|university|year\s*of\s*passing|passing\s*year|board|grade|percentage|marks|sr\.?\s*no\.?)$/i.test(line.trim())) continue;
 
     const years = line.match(/\b(19|20)\d{2}\b/g);
     const completionYear = years?.[years.length - 1] || "";
@@ -879,10 +879,24 @@ export function parseResume(text: string, fileTypeHint?: "pdf" | "docx" | "txt")
       continue;
     }
 
-    let degree = parts.find(p => degreeKeywordsRegex.test(p)) || "";
+    let degree = parts.find(p => degreeKeywordsRegex.test(p) && !instKeywordsRegex.test(p)) || "";
     let institution = parts.find(p => instKeywordsRegex.test(p)) || "";
 
-    if (!degree && degreeKeywordsRegex.test(parts[0])) degree = parts[0];
+    // Sequential table cell handling: if line is an institution and previous degree is missing institution
+    if (!degree && education.length > 0 && !education[education.length - 1].institution) {
+      if (instKeywordsRegex.test(line) || (!completionYear && line.length > 3)) {
+        education[education.length - 1].institution = line.replace(/[,\-\s|]+$/, "").trim();
+        continue;
+      }
+    }
+
+    // Sequential table cell handling: if line is just a year of passing, attach to previous degree endDate
+    if (!degree && !institution && completionYear && education.length > 0 && !education[education.length - 1].endDate) {
+      education[education.length - 1].endDate = completionYear;
+      continue;
+    }
+
+    if (!degree && degreeKeywordsRegex.test(parts[0]) && !instKeywordsRegex.test(parts[0])) degree = parts[0];
     if (!institution && parts.length > 1 && instKeywordsRegex.test(parts[1])) institution = parts[1];
     else if (!institution && parts.length > 1 && degree) institution = parts[1];
 
